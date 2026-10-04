@@ -353,23 +353,23 @@ TEST_SCOPE=auth ./hooks/test-gate.sh
 ## 12. Tham khảo chéo
 
 - Lệnh debug & sessions:
-  - [../01-huong-dan-su-dung/commands/status/README.md](../01-huong-dan-su-dung/commands/status/README.md) — mình là ai, ở đâu
-  - [../01-huong-dan-su-dung/commands/doctor/README.md](../01-huong-dan-su-dung/commands/doctor/README.md) — khám setup
-  - [../01-huong-dan-su-dung/commands/context/README.md](../01-huong-dan-su-dung/commands/context/README.md) — RAM còn bao nhiêu
-  - [../01-huong-dan-su-dung/commands/cost/README.md](../01-huong-dan-su-dung/commands/cost/README.md) — tiền session
-  - [../01-huong-dan-su-dung/commands/usage/README.md](../01-huong-dan-su-dung/commands/usage/README.md) — ai ngốn
-  - [../01-huong-dan-su-dung/commands/hooks/README.md](../01-huong-dan-su-dung/commands/hooks/README.md) — hook nào chặn
-  - [../01-huong-dan-su-dung/commands/mcp/README.md](../01-huong-dan-su-dung/commands/mcp/README.md) — MCP nào fail
-  - [../01-huong-dan-su-dung/commands/permissions/README.md](../01-huong-dan-su-dung/commands/permissions/README.md) — rule nào chặn
-  - [../01-huong-dan-su-dung/commands/debug/README.md](../01-huong-dan-su-dung/commands/debug/README.md) — troubleshoot session
-  - [../01-huong-dan-su-dung/commands/bug/README.md](../01-huong-dan-su-dung/commands/bug/README.md) — gửi Anthropic
-  - [../01-huong-dan-su-dung/commands/export/README.md](../01-huong-dan-su-dung/commands/export/README.md) — xuất transcript
-  - [../01-huong-dan-su-dung/commands/rewind/README.md](../01-huong-dan-su-dung/commands/rewind/README.md) — quay checkpoint
-  - [../01-huong-dan-su-dung/commands/clear/README.md](../01-huong-dan-su-dung/commands/clear/README.md) — reset trắng
-  - [../01-huong-dan-su-dung/commands/compact/README.md](../01-huong-dan-su-dung/commands/compact/README.md) — nén giữ tóm tắt
-  - [../01-huong-dan-su-dung/commands/terminal-setup/README.md](../01-huong-dan-su-dung/commands/terminal-setup/README.md) — fix phím
-  - [../01-huong-dan-su-dung/commands/agents/README.md](../01-huong-dan-su-dung/commands/agents/README.md) — agents nền
-  - [../01-huong-dan-su-dung/commands/teleport/README.md](../01-huong-dan-su-dung/commands/teleport/README.md) — resume remote
+  - [../01-huong-dan-su-dung/commands/auth-settings/status/README.md](../01-huong-dan-su-dung/commands/auth-settings/status/README.md) — mình là ai, ở đâu
+  - [../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md](../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md) — khám setup
+  - [../01-huong-dan-su-dung/commands/session-context/context/README.md](../01-huong-dan-su-dung/commands/session-context/context/README.md) — RAM còn bao nhiêu
+  - [../01-huong-dan-su-dung/commands/session-context/cost/README.md](../01-huong-dan-su-dung/commands/session-context/cost/README.md) — tiền session
+  - [../01-huong-dan-su-dung/commands/session-context/usage/README.md](../01-huong-dan-su-dung/commands/session-context/usage/README.md) — ai ngốn
+  - [../01-huong-dan-su-dung/commands/knowledge-system/hooks/README.md](../01-huong-dan-su-dung/commands/knowledge-system/hooks/README.md) — hook nào chặn
+  - [../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md](../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md) — MCP nào fail
+  - [../01-huong-dan-su-dung/commands/model-mode/permissions/README.md](../01-huong-dan-su-dung/commands/model-mode/permissions/README.md) — rule nào chặn
+  - [../01-huong-dan-su-dung/commands/knowledge-system/debug/README.md](../01-huong-dan-su-dung/commands/knowledge-system/debug/README.md) — troubleshoot session
+  - [../01-huong-dan-su-dung/commands/knowledge-system/bug/README.md](../01-huong-dan-su-dung/commands/knowledge-system/bug/README.md) — gửi Anthropic
+  - [../01-huong-dan-su-dung/commands/session-context/export/README.md](../01-huong-dan-su-dung/commands/session-context/export/README.md) — xuất transcript
+  - [../01-huong-dan-su-dung/commands/session-context/rewind/README.md](../01-huong-dan-su-dung/commands/session-context/rewind/README.md) — quay checkpoint
+  - [../01-huong-dan-su-dung/commands/session-context/clear/README.md](../01-huong-dan-su-dung/commands/session-context/clear/README.md) — reset trắng
+  - [../01-huong-dan-su-dung/commands/session-context/compact/README.md](../01-huong-dan-su-dung/commands/session-context/compact/README.md) — nén giữ tóm tắt
+  - [../01-huong-dan-su-dung/commands/auth-settings/terminal-setup/README.md](../01-huong-dan-su-dung/commands/auth-settings/terminal-setup/README.md) — fix phím
+  - [../01-huong-dan-su-dung/commands/knowledge-system/agents/README.md](../01-huong-dan-su-dung/commands/knowledge-system/agents/README.md) — agents nền
+  - [../01-huong-dan-su-dung/commands/auth-settings/teleport/README.md](../01-huong-dan-su-dung/commands/auth-settings/teleport/README.md) — resume remote
 - Bài tips liên quan:
   - [Tips 01](./01-context-hygiene.md) — context bẩn (L2)
   - [Tips 06](./06-hooks-recipes.md) — hooks chặn nhầm (L3)

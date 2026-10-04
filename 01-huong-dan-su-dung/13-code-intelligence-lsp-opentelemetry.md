@@ -405,7 +405,7 @@ export OTEL_TRACES_EXPORTER="console" OTEL_METRICS_EXPORTER="console"
 - **Tips 07 — Thiết kế skills**: hẹp trigger skill ngốn (ca B).
 - **Tips 10 — Debugging**: L1→L4; OTel là evidence cho L2/L3.
 - Commands:
-  - [commands/plugin/README.md](./commands/plugin/README.md) — bật code-intel plugin
-  - [commands/doctor/README.md](./commands/doctor/README.md) — khám servers + cost
-  - [commands/usage/README.md](./commands/usage/README.md) — ai ngốn (bản không OTel)
-  - [commands/mcp/README.md](./commands/mcp/README.md) — MCP treo thì disable
+  - [commands/knowledge-system/plugin/README.md](./commands/knowledge-system/plugin/README.md) — bật code-intel plugin
+  - [commands/knowledge-system/doctor/README.md](./commands/knowledge-system/doctor/README.md) — khám servers + cost
+  - [commands/session-context/usage/README.md](./commands/session-context/usage/README.md) — ai ngốn (bản không OTel)
+  - [commands/knowledge-system/mcp/README.md](./commands/knowledge-system/mcp/README.md) — MCP treo thì disable

@@ -485,11 +485,11 @@ Pitfalls triển khai (không chạy, chặn oan, treo CI, chậm, hardcode path
 ## 10. Tham khảo chéo
 
 - Lệnh hooks:
-  - [../01-huong-dan-su-dung/commands/hooks/README.md](../01-huong-dan-su-dung/commands/hooks/README.md) — xem/sửa hooks
-  - [../01-huong-dan-su-dung/commands/doctor/README.md](../01-huong-dan-su-dung/commands/doctor/README.md) — phát hiện hooks chậm
-  - [../01-huong-dan-su-dung/commands/goal/README.md](../01-huong-dan-su-dung/commands/goal/README.md) — kết hợp Stop-gate
-  - [../01-huong-dan-su-dung/commands/loop/README.md](../01-huong-dan-su-dung/commands/loop/README.md) — loops + gate
-  - [../01-huong-dan-su-dung/commands/mcp/README.md](../01-huong-dan-su-dung/commands/mcp/README.md) — mcp_tool hooks
+  - [../01-huong-dan-su-dung/commands/knowledge-system/hooks/README.md](../01-huong-dan-su-dung/commands/knowledge-system/hooks/README.md) — xem/sửa hooks
+  - [../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md](../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md) — phát hiện hooks chậm
+  - [../01-huong-dan-su-dung/commands/model-mode/goal/README.md](../01-huong-dan-su-dung/commands/model-mode/goal/README.md) — kết hợp Stop-gate
+  - [../01-huong-dan-su-dung/commands/code-repo/loop/README.md](../01-huong-dan-su-dung/commands/code-repo/loop/README.md) — loops + gate
+  - [../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md](../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md) — mcp_tool hooks
 - Bài tips liên quan:
   - [Tips 04](./04-verification-done-that.md) — Stop test-gate + loops guard
   - [Tips 05](./05-parallel-agents.md) — hooks bound từng subagent recipe

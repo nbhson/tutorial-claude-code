@@ -282,15 +282,15 @@ wc -l CLAUDE.md
 ## Tham khảo chéo
 
 - Lệnh liên quan:
-  - [../01-huong-dan-su-dung/commands/model/README.md](../01-huong-dan-su-dung/commands/model/README.md) — đổi model giữa session
-  - [../01-huong-dan-su-dung/commands/context/README.md](../01-huong-dan-su-dung/commands/context/README.md) — xem context đầy bao nhiêu
-  - [../01-huong-dan-su-dung/commands/compact/README.md](../01-huong-dan-su-dung/commands/compact/README.md) — cứu context nhẹ nhất
-  - [../01-huong-dan-su-dung/commands/clear/README.md](../01-huong-dan-su-dung/commands/clear/README.md) — reset sạch + paste plan
-  - [../01-huong-dan-su-dung/commands/cost/README.md](../01-huong-dan-su-dung/commands/cost/README.md) — tiền session hiện tại
-  - [../01-huong-dan-su-dung/commands/usage/README.md](../01-huong-dan-su-dung/commands/usage/README.md) — breakdown + rate limits
-  - [../01-huong-dan-su-dung/commands/rewind/README.md](../01-huong-dan-su-dung/commands/rewind/README.md) — quay về checkpoint sạch
-  - [../01-huong-dan-su-dung/commands/agents/README.md](../01-huong-dan-su-dung/commands/agents/README.md) — quản lý subagents
-  - [../01-huong-dan-su-dung/commands/mcp/README.md](../01-huong-dan-su-dung/commands/mcp/README.md) — list/disable servers thừa
+  - [../01-huong-dan-su-dung/commands/model-mode/model/README.md](../01-huong-dan-su-dung/commands/model-mode/model/README.md) — đổi model giữa session
+  - [../01-huong-dan-su-dung/commands/session-context/context/README.md](../01-huong-dan-su-dung/commands/session-context/context/README.md) — xem context đầy bao nhiêu
+  - [../01-huong-dan-su-dung/commands/session-context/compact/README.md](../01-huong-dan-su-dung/commands/session-context/compact/README.md) — cứu context nhẹ nhất
+  - [../01-huong-dan-su-dung/commands/session-context/clear/README.md](../01-huong-dan-su-dung/commands/session-context/clear/README.md) — reset sạch + paste plan
+  - [../01-huong-dan-su-dung/commands/session-context/cost/README.md](../01-huong-dan-su-dung/commands/session-context/cost/README.md) — tiền session hiện tại
+  - [../01-huong-dan-su-dung/commands/session-context/usage/README.md](../01-huong-dan-su-dung/commands/session-context/usage/README.md) — breakdown + rate limits
+  - [../01-huong-dan-su-dung/commands/session-context/rewind/README.md](../01-huong-dan-su-dung/commands/session-context/rewind/README.md) — quay về checkpoint sạch
+  - [../01-huong-dan-su-dung/commands/knowledge-system/agents/README.md](../01-huong-dan-su-dung/commands/knowledge-system/agents/README.md) — quản lý subagents
+  - [../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md](../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md) — list/disable servers thừa
 - Bài tổng quan:
   - [../01-huong-dan-su-dung/03-claude-md-memory-rules.md](../01-huong-dan-su-dung/03-claude-md-memory-rules.md) — giữ CLAUDE.md <200 dòng
   - [../01-huong-dan-su-dung/05-skills-custom-commands.md](../01-huong-dan-su-dung/05-skills-custom-commands.md) — skills rẻ nhất

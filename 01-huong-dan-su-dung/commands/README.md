@@ -1,116 +1,97 @@
-# Index 78 lệnh `/...` — tra cứu chi tiết từng lệnh
+# Index 78 Lệnh Claude Code (theo nhóm)
 
-> Quy ước: mỗi dòng là `/slug` — 1 dòng mô tả — link tới `./<slug>/README.md`.
-> Tổng **78 slugs** = 78 thư mục con trong `commands/`
-> (`ls -F ... | grep -c '/$'`; `ls ... | wc -l` trả 79 vì tính cả file README.md này).
+Mỗi lệnh có 1 folder riêng với tài liệu 8 mục: cú pháp, cách hoạt động, ví dụ, rủi ro, workflow, lỗi hay gặp.
+Tra cứu: `commands/<nhóm>/<lệnh>/` — ví dụ `commands/model-mode/plan/`.
 
-## Cách tra cứu
+## Phiên làm việc & Context (18 lệnh) — `session-context/`
 
-- Biết tên lệnh → mở trực tiếp `./<slug>/README.md` (vd `./plan/README.md`).
-- Không nhớ tên → tìm theo 1 trong 4 nhóm bên dưới.
-- Từ repo root: `01-huong-dan-su-dung/commands/<slug>/README.md`.
+- [/background](./session-context/background/README.md) — Loại Built-in · Nhóm Session & Song song · Nguy hiểm Thấp (chạy nền vẫn dùng quyền session hiện tại; nhưng Có nếu task nền ghi file/xóa/migr...
+- [/branch](./session-context/branch/README.md) — Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (không xóa/sửa file; chỉ copy context sang nhánh thử nghiệm — an toàn nếu kết hợp g...
+- [/clear](./session-context/clear/README.md) — Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (không xóa/sửa file code, chỉ xóa conversation context trong bộ nhớ phiên hiện tại;...
+- [/compact](./session-context/compact/README.md) — Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (không xóa/sửa file code; chỉ thay conversation dài bằng bản tóm tắt — chi tiết gốc...
+- [/context](./session-context/context/README.md) — Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (lệnh chỉ đọc, không xóa/sửa gì cả — an toàn tuyệt đối)
+- [/copy](./session-context/copy/README.md) — Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (chỉ đọc + ghi clipboard, không xóa/sửa code hay history)
+- [/cost](./session-context/cost/README.md) — Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (lệnh chỉ đọc báo cáo billing, không xóa/sửa gì, không phát sinh phí khi gọi)
+- [/export](./session-context/export/README.md) — Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (chỉ đọc + ghi 1 file export mới, không xóa/sửa code hay history)
+- [/fork](./session-context/fork/README.md) — Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (không xóa/sửa file; chỉ copy context sang session mới — bản gốc giữ nguyên)
+- [/help](./session-context/help/README.md) — Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (chỉ hiển thị tài liệu, không thay đổi gì)
+- [/recap](./session-context/recap/README.md) — Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (chỉ đọc + tóm tắt, không sửa gì)
+- [/rename](./session-context/rename/README.md) — Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (chỉ đổi tên hiển thị trong index, không xóa/sửa code hay history)
+- [/restart](./session-context/restart/README.md) — Loại Built-in · Nhóm Session & Hệ thống · Nguy hiểm Không (giữ session; nhưng Có nhẹ nếu bạn restart giữa lúc tool đang ghi file — chờ nó xo...
+- [/resume](./session-context/resume/README.md) — Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (không xóa/sửa file; chỉ nạp lại transcript cũ vào context — an toàn, nhưng có thể ...
+- [/rewind](./session-context/rewind/README.md) — Loại Built-in · Nhóm Session & Context · Nguy hiểm Có — có thể xóa đoạn hội thoại sau checkpoint và revert file code về trạng thái checkpoin...
+- [/tasks](./session-context/tasks/README.md) — Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (chỉ liệt kê/theo dõi jobs; kill job có thể dừng việc đang chạy — không xóa code)
+- [/todos](./session-context/todos/README.md) — Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (chỉ đọc/ghi todo list trong memory session, không xóa/sửa code)
+- [/usage](./session-context/usage/README.md) — Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (chỉ đọc thống kê, không xóa/sửa gì)
 
-## 1. Session & Context — phiên làm việc, ngữ cảnh, chi phí (24)
+## Model & Permission Modes (7 lệnh) — `model-mode/`
 
-| Lệnh | Mô tả | Link |
-|------|-------|------|
-| `/clear` | Xóa hội thoại, bắt đầu task mới sạch | [README](./clear/README.md) |
-| `/compact` | Nén ngữ cảnh dài để tiếp tục làm việc | [README](./compact/README.md) |
-| `/context` | Xem dung lượng/chi tiết context hiện tại | [README](./context/README.md) |
-| `/cost` | Xem chi phí token ước tính của phiên | [README](./cost/README.md) |
-| `/usage` | Xem mức dùng quota/subscription | [README](./usage/README.md) |
-| `/extra-usage` | Bật/tắt dùng thêm ngoài quota (với `/fast`) | [README](./extra-usage/README.md) |
-| `/stats` | Thống kê hoạt động phiên | [README](./stats/README.md) |
-| `/insights` | Phân tích insight về cách dùng | [README](./insights/README.md) |
-| `/export` | Xuất hội thoại/phiên ra file | [README](./export/README.md) |
-| `/resume` | Tiếp tục phiên cũ theo ID | [README](./resume/README.md) |
-| `/fork` | Rẽ nhánh phiên để thử hướng khác | [README](./fork/README.md) |
-| `/branch` | Quản lý nhánh hội thoại | [README](./branch/README.md) |
-| `/rename` | Đổi tên phiên hiện tại | [README](./rename/README.md) |
-| `/rewind` | Quay lui về checkpoint trước (menu double-Esc) | [README](./rewind/README.md) |
-| `/todos` | Quản lý checklist việc đang làm | [README](./todos/README.md) |
-| `/tasks` | Quản lý task nền/background | [README](./tasks/README.md) |
-| `/copy` | Sao chép nội dung hội thoại | [README](./copy/README.md) |
-| `/btw` | Hỏi nhanh, không ghi vào history | [README](./btw/README.md) |
-| `/help` | Trợ giúp, liệt kê lệnh | [README](./help/README.md) |
-| `/exit` | Thoát phiên/CLI | [README](./exit/README.md) |
-| `/status` | Xem trạng thái phiên và môi trường | [README](./status/README.md) |
-| `/restart` | Khởi động lại CLI giữ nguyên session | [README](./restart/README.md) |
-| `/background` | Đẩy session thành agent nền, rảnh tay làm việc khác | [README](./background/README.md) |
-| `/recap` | Tóm tắt context khi quay lại session sau break | [README](./recap/README.md) |
+- [/effort](./model-mode/effort/README.md) — Loại Built-in · Nhóm Model & Mode · Nguy hiểm Không (không sửa file, chỉ tăng/giảm tokens suy luận; effort cao tốn tiền và chậm hơn)
+- [/extra-usage](./model-mode/extra-usage/README.md) — Loại Built-in · Nhóm Model & Mode · Nguy hiểm Không (chỉ liên quan billing/quota; không sửa code; có thể tốn tiền thật — đọc kỹ giá trước kh...
+- [/fast](./model-mode/fast/README.md) — Loại Built-in · Nhóm Model & Mode · Nguy hiểm Không (chỉ giảm độ sâu suy luận / về model nhẹ; không sửa file ngoài ý muốn)
+- [/goal](./model-mode/goal/README.md) — Loại Built-in · Nhóm Model & Mode · Nguy hiểm Không (không sửa file; chỉ đặt tiêu chí dừng + vòng check; tốn thêm tokens evaluator — cần ≥2....
+- [/model](./model-mode/model/README.md) — Loại Built-in · Nhóm Model & Mode · Nguy hiểm Không (không sửa file, chỉ đổi engine suy luận cho các turn tiếp theo; context cũ giữ nguyên)
+- [/permissions](./model-mode/permissions/README.md) — Loại Built-in (alias /allowed-tools) · Nhóm Model & Mode · Nguy hiểm Có nếu cấu hình ẩu (allow-all / bypass trên máy thật = mất phanh; deny ...
+- [/plan](./model-mode/plan/README.md) — Loại Built-in · Nhóm Model & Mode · Nguy hiểm Không (bản thân plan mode an toàn — cấm ghi/sửa file; nguy hiểm chỉ khi bạn duyệt plan ẩu rồi ...
 
-## 2. Model–Mode–Code — model, chế độ chạy, viết & kiểm chứng code (24)
+## Code & Repo (17 lệnh) — `code-repo/`
 
-| Lệnh | Mô tả | Link |
-|------|-------|------|
-| `/model` | Chọn model (opus / sonnet / haiku) | [README](./model/README.md) |
-| `/effort` | Mức nỗ lực suy luận (low…max, auto) | [README](./effort/README.md) |
-| `/fast` | Chế độ nhanh (kèm `/extra-usage`) | [README](./fast/README.md) |
-| `/permissions` | Xem/sửa phân quyền tool | [README](./permissions/README.md) |
-| `/sandbox` | Chạy trong sandbox cách ly | [README](./sandbox/README.md) |
-| `/plan` | Lập kế hoạch trước khi code (plan-first) | [README](./plan/README.md) |
-| `/goal` | Đặt mục tiêu/điều kiện hoàn thành (`clear` để xóa) | [README](./goal/README.md) |
-| `/loop` | Lặp lại tác vụ tới khi đạt điều kiện | [README](./loop/README.md) |
-| `/batch` | Chạy hàng loạt tác vụ | [README](./batch/README.md) |
-| `/verify` | Kiểm chứng kết quả (≥2.1.145) | [README](./verify/README.md) |
-| `/review` | Review code hiện tại | [README](./review/README.md) |
-| `/code-review` | Review code theo PR/branch | [README](./code-review/README.md) |
-| `/ultrareview` | Review sâu nhiều vòng | [README](./ultrareview/README.md) |
-| `/pr_comments` | Xem/bình luận PR | [README](./pr_comments/README.md) |
-| `/diff` | Xem diff thay đổi | [README](./diff/README.md) |
-| `/simplify` | Đơn giản hóa code | [README](./simplify/README.md) |
-| `/design-sync` | Đồng bộ thiết kế ↔ code | [README](./design-sync/README.md) |
-| `/claude-api` | Gọi Claude API trực tiếp | [README](./claude-api/README.md) |
-| `/radio` | Kênh/tín hiệu điều phối (theo provider) | [README](./radio/README.md) |
-| `/cd` | Đổi thư mục làm việc (≥2.1.169) | [README](./cd/README.md) |
-| `/security-review` | Quét bảo mật on-demand trên branch hiện tại | [README](./security-review/README.md) |
-| `/run` | Mở app thật và lái nó để thấy change chạy được | [README](./run/README.md) |
-| `/subtask` | Giao việc phụ cho subagent, báo về ngay trong session | [README](./subtask/README.md) |
-| `/fewer-permission-prompts` | Quét transcripts, đề xuất allowlist read-only cho đỡ hỏi | [README](./fewer-permission-prompts/README.md) |
+- [/batch](./code-repo/batch/README.md) — Loại Skill/Workflow · Nhóm Code & Repo · Nguy hiểm Có nếu ẩu (30 đứa cùng sửa + cùng push = conflict/loạn branch; tốn quota mạnh — luôn giới...
+- [/btw](./code-repo/btw/README.md) — Loại Built-in · Nhóm Model & Mode · Nguy hiểm Không (không gọi tools, không sửa file, không ghi history — hỏi xong là quên)
+- [/code-review](./code-repo/code-review/README.md) — Loại Skill/Workflow · Nhóm Code & Repo · Nguy hiểm Không (mặc định chỉ đọc + báo cáo; chỉ nguy hiểm nếu bạn bật auto-fix + bypass — luôn rev...
+- [/design-sync](./code-repo/design-sync/README.md) — Loại Built-in (version-gated) · Nhóm Code/UI · Nguy hiểm Thấp (chỉ đọc design + sinh/sửa code UI; nhưng Trung bình nếu auto-apply vào codeba...
+- [/diff](./code-repo/diff/README.md) — Loại Built-in · Nhóm Code & Repo · Nguy hiểm Không (chỉ xem, không sửa thêm; là kính lúp bắt buộc sau mỗi bước thực thi)
+- [/fewer-permission-prompts](./code-repo/fewer-permission-prompts/README.md) — Loại Built-in · Nhóm Quyền & Ma sát · Nguy hiểm Thấp (chỉ ĐỀ XUẤT allowlist read-only; nhưng Có nếu bạn Yes mù cả suggest ghi/xoá — chỉ Yes ...
+- [/init](./code-repo/init/README.md) — Loại Built-in · Nhóm Code & Repo · Nguy hiểm Không (chỉ đọc repo + sinh file docs/settings; có ghi file mới nhưng là file docs — review trướ...
+- [/loop](./code-repo/loop/README.md) — Loại Built-in/Workflow · Nhóm Code & Repo · Nguy hiểm Trung bình (loop + auto/bypass = chạy hàng chục vòng không hỏi — tốn quota + có thể sử...
+- [/pr_comments](./code-repo/pr_comments/README.md) — Loại Skill (quy trình PR) · Nhóm Tri thức & Hệ thống · Nguy hiểm Không (chỉ sửa code theo comment; nhưng Có nhẹ nếu auto-push — luôn review ...
+- [/radio](./code-repo/radio/README.md) — Loại Built-in (version-gated) · Nhóm Session/Realtime · Nguy hiểm Thấp (chủ yếu hỏi-đáp + nghe; nhưng Trung bình nếu bạn đọc secrets lên kên...
+- [/review](./code-repo/review/README.md) — Loại Built-in · Nhóm Code & Repo · Nguy hiểm Không (chỉ đọc + nhận xét; không sửa file; dùng cùng context phiên hiện tại)
+- [/run](./code-repo/run/README.md) — Loại Built-in · Nhóm Model–Mode–Code · Nguy hiểm Thấp (chạy app local: tốn port/CPU, có thể ghi DB dev; nhưng Không nếu recipe chỉ đọc + chạ...
+- [/run-skill-generator](./code-repo/run-skill-generator/README.md) — Loại Built-in · Nhóm Tri thức & Hệ thống · Nguy hiểm Không (chỉ hỏi + ghi file SKILL.md; nhưng Có nếu bạn commit recipe chứa secret hardcode...
+- [/security-review](./code-repo/security-review/README.md) — Loại Built-in · Nhóm Review & Bảo mật · Nguy hiểm Không (chỉ đọc + báo cáo; nhưng Có nếu bạn auto-apply fix bảo mật mà không review — patch ...
+- [/subtask](./code-repo/subtask/README.md) — Loại Built-in (v2.1.212+) · Nhóm Song song & Ủy thác · Nguy hiểm Thấp (chạy trong session, quyền kế thừa; nhưng Có nếu việc phụ có ghi/xoá m...
+- [/ultrareview](./code-repo/ultrareview/README.md) — Loại Skill/Workflow · Nhóm Code & Repo · Nguy hiểm Không (chỉ đọc + chạy trong sandbox cách ly; không chạm máy bạn; tốn nhiều quota/$$ nhất)
+- [/verify](./code-repo/verify/README.md) — Loại Skill/Workflow · Nhóm Code & Repo · Nguy hiểm Thấp (có chạy code — nhưng chỉ build/test/dev, không deploy; nguy hiểm nếu verify script ...
 
-## 3. Tri thức & Hệ thống — agents, hooks, MCP, cấu hình (20)
+## Tri thức & Hệ thống (16 lệnh) — `knowledge-system/`
 
-| Lệnh | Mô tả | Link |
-|------|-------|------|
-| `/agents` | Quản lý subagents | [README](./agents/README.md) |
-| `/hooks` | Xem/sửa hooks tự động hóa | [README](./hooks/README.md) |
-| `/mcp` | Quản lý MCP servers (reconnect/enable/disable) | [README](./mcp/README.md) |
-| `/plugin` | Quản lý plugins | [README](./plugin/README.md) |
-| `/memory` | Quản lý bộ nhớ dài hạn | [README](./memory/README.md) |
-| `/rules` | Xem/sửa rules dự án | [README](./rules/README.md) |
-| `/config` | Cấu hình chung | [README](./config/README.md) |
-| `/doctor` | Chẩn đoán môi trường (`/checkup`) | [README](./doctor/README.md) |
-| `/debug` | Chế độ gỡ lỗi chi tiết | [README](./debug/README.md) |
-| `/bug` | Báo lỗi về Claude Code | [README](./bug/README.md) |
-| `/ide` | Tích hợp IDE | [README](./ide/README.md) |
-| `/theme` | Đổi theme giao diện | [README](./theme/README.md) |
-| `/keybindings` | Xem/sửa phím tắt | [README](./keybindings/README.md) |
-| `/vim` | Chế độ/chỉnh sửa kiểu Vim | [README](./vim/README.md) |
-| `/statusline` | Tùy biến dòng trạng thái | [README](./statusline/README.md) |
-| `/terminal-setup` | Thiết lập terminal tối ưu | [README](./terminal-setup/README.md) |
-| `/run-skill-generator` | Ghi recipe cách chạy app thành skill tái dùng | [README](./run-skill-generator/README.md) |
-| `/skill-doctor` | Báo cáo skill nào ngốn context, skill nào chết lâm sàng | [README](./skill-doctor/README.md) |
-| `/mcp-serve` | Biến Claude Code thành MCP server cho app khác gọi | [README](./mcp-serve/README.md) |
-| `/plugin-validate` | Audit plugin/mod trước khi cài | [README](./plugin-validate/README.md) |
+- [/agents](./knowledge-system/agents/README.md) — Loại Built-in · Nhóm Tri thức & Hệ thống · Nguy hiểm Có nếu batch ẩu (30 subagent cùng ghi 1 file = xung đột; subagent kế thừa permissions n...
+- [/bug](./knowledge-system/bug/README.md) — Loại Workflow (thu thập + đóng gói) · Nhóm Tri thức & Hệ thống · Nguy hiểm Có nếu ẩu (gói conversation gửi đi có thể chứa secret/code nội bộ...
+- [/claude-api](./knowledge-system/claude-api/README.md) — Loại Skill (tích hợp API) · Nhóm Tri thức & Hệ thống · Nguy hiểm Không (chỉ sinh code; nhưng Có nhẹ khi code chạm API key/tiền thật — key và...
+- [/debug](./knowledge-system/debug/README.md) — Loại Built-in · Nhóm Tri thức & Hệ thống · Nguy hiểm Không (chỉ đọc + chẩn đoán, không sửa gì — muốn sửa thì sang `/doctor --fix`)
+- [/doctor](./knowledge-system/doctor/README.md) — Loại Built-in · Nhóm Tri thức & Hệ thống · Nguy hiểm Không (chỉ đọc + báo cáo; nhưng Có nếu bạn Yes hết mọi đề xuất fix — nhất là trim CLAUD...
+- [/hooks](./knowledge-system/hooks/README.md) — Loại Built-in · Nhóm Tri thức & Hệ thống · Nguy hiểm Có (hooks chạy shell code trên máy bạn mỗi khi trigger — hook độc/sai là mất file, lộ s...
+- [/insights](./knowledge-system/insights/README.md) — Loại Skill (phân tích) · Nhóm Tri thức & Hệ thống · Nguy hiểm Không (chỉ đọc log local, không sửa, không gửi đi)
+- [/mcp](./knowledge-system/mcp/README.md) — Loại Built-in · Nhóm Tri thức & Hệ thống · Nguy hiểm Có nếu cấu hình ẩu (OAuth/token lọt vào file commit git; server độc hại đọc file local;...
+- [/mcp-serve](./knowledge-system/mcp-serve/README.md) — Loại CLI (`claude mcp serve`) · Nhóm MCP & Tích hợp · Nguy hiểm Trung bình (mở stdio server cho tiến trình khác gọi; restricted mode chặn ba...
+- [/memory](./knowledge-system/memory/README.md) — Loại Built-in · Nhóm Tri thức & Hệ thống · Nguy hiểm Không (nhưng Có nếu lưu secret/API key vào memory — sẽ bị nạp lại mọi session sau)
+- [/plugin](./knowledge-system/plugin/README.md) — Loại Built-in · Nhóm Tri thức & Hệ thống · Nguy hiểm Có (plugin chạy code trên máy bạn: hooks + MCP server của plugin có thể đọc file, gọi m...
+- [/plugin-validate](./knowledge-system/plugin-validate/README.md) — Loại CLI (`claude plugin validate`) · Nhóm Plugin & Bảo mật · Nguy hiểm Không (chỉ đọc + in báo cáo; nhưng Có nếu bạn bỏ qua red flags rồi c...
+- [/rules](./knowledge-system/rules/README.md) — Loại Built-in · Nhóm Tri thức & Hệ thống · Nguy hiểm Không (nhưng Có nếu rules mâu thuẫn nhau — model làm lúc đúng lúc sai khó debug)
+- [/simplify](./knowledge-system/simplify/README.md) — Loại Skill (refactor) · Nhóm Tri thức & Hệ thống · Nguy hiểm Không (chỉ refactor; nhưng Có nhẹ nếu simplify đụng logic tinh vi — luôn chạy t...
+- [/skill-doctor](./knowledge-system/skill-doctor/README.md) — Loại Built-in (v2.1.252+, terminal-only) · Nhóm Tri thức & Tối ưu · Nguy hiểm Không (chỉ đọc + báo cáo, không sửa/xoá gì)
+- [/stats](./knowledge-system/stats/README.md) — Loại Built-in · Nhóm Tri thức & Hệ thống · Nguy hiểm Không (chỉ xem số, không sửa, không gửi đi)
 
-## 4. Auth–Remote–Settings — xác thực, thiết bị, thư mục (10)
+## Auth, Remote & Settings (20 lệnh) — `auth-settings/`
 
-| Lệnh | Mô tả | Link |
-|------|-------|------|
-| `/login` | Đăng nhập tài khoản | [README](./login/README.md) |
-| `/logout` | Đăng xuất | [README](./logout/README.md) |
-| `/mobile` | Liên kết/điều khiển qua mobile | [README](./mobile/README.md) |
-| `/remote-env` | Quản lý môi trường remote | [README](./remote-env/README.md) |
-| `/teleport` | Chuyển phiên giữa máy/thiết bị | [README](./teleport/README.md) |
-| `/add-dir` | Thêm thư mục vào workspace (`--add-dir`) | [README](./add-dir/README.md) |
-| `/init` | Khởi tạo dự án (tạo CLAUDE.md, settings ban đầu) | [README](./init/README.md) |
-| `/voice` | Nói thay vì gõ (giữ Space để nói, thả để gửi) | [README](./voice/README.md) |
-| `/setup-bedrock` | Wizard cắm Claude Code vào AWS Bedrock | [README](./setup-bedrock/README.md) |
-| `/setup-vertex` | Wizard cắm Claude Code vào Google Vertex AI | [README](./setup-vertex/README.md) |
-
-## Ghi chú version / provider
-
-- Một số lệnh yêu cầu version tối thiểu: `/verify` (≥2.1.145), `/cd` (≥2.1.169).
-  Kiểm tra version bằng `claude --version` và chạy `/doctor` khi lệnh không khả dụng.
-- Hành vi có thể khác theo provider/subscription (quota, `/extra-usage`, `/fast`):
-  đối chiếu `/usage`, `/cost` và tài liệu gói đang dùng.
+- [/add-dir](./auth-settings/add-dir/README.md) — Loại Built-in · Nhóm Settings · Nguy hiểm Có (mỗi dir thêm vào là thêm CLAUDE.md + hooks + MCP lạ vào context — càng nhiều dir, attack surfa...
+- [/cd](./auth-settings/cd/README.md) — Loại Built-in · Nhóm Settings · Nguy hiểm Có (chuyển vào thư mục untrusted là tự rước CLAUDE.md + hooks + MCP lạ vào session — đọc kỹ trust ...
+- [/config](./auth-settings/config/README.md) — Loại Built-in · Nhóm Settings · Nguy hiểm Có (sửa sai settings.json là mất phanh (permissions), mất tools (MCP), hoặc khoá luôn session — ba...
+- [/exit](./auth-settings/exit/README.md) — Loại Built-in · Nhóm Auth · Nguy hiểm Không (chỉ đóng CLI; history + token + code giữ nguyên — muốn xoá auth phải `/logout`)
+- [/ide](./auth-settings/ide/README.md) — Loại Built-in · Nhóm Remote · Nguy hiểm Không (chỉ kết nối editor — nhưng Có nhẹ nếu IDE mở folder nhạy cảm mà Claude được đọc toàn workspac...
+- [/keybindings](./auth-settings/keybindings/README.md) — Loại Built-in · Nhóm Settings · Nguy hiểm Không (chỉ đổi phím — nhưng Có nhẹ nếu remap đè phím huỷ lệnh quen tay rồi bấm nhầm lúc nguy hiểm)
+- [/login](./auth-settings/login/README.md) — Loại Built-in · Nhóm Auth · Nguy hiểm Không (chỉ mở flow xác thực; nhưng Có nhẹ nếu login nhầm tài khoản cá nhân trên máy công ty — token lư...
+- [/logout](./auth-settings/logout/README.md) — Loại Built-in · Nhóm Auth · Nguy hiểm Có nhẹ (mất token local — session đang chạy đứt auth, cloud session pair cùng account cũng phải login ...
+- [/mobile](./auth-settings/mobile/README.md) — Loại Built-in · Nhóm Remote · Nguy hiểm Có nhẹ (điện thoại thành remote full-quyền của session — mất điện thoại = mất điều khiển; nhưng Khôn...
+- [/remote-env](./auth-settings/remote-env/README.md) — Loại Built-in · Nhóm Remote · Nguy hiểm Có nhẹ (env chứa secret — set sai rò rỉ vào log/transcript; nhưng Không đụng code local)
+- [/sandbox](./auth-settings/sandbox/README.md) — Loại Built-in · Nhóm Settings · Nguy hiểm Không (chính nó là phanh — chạy trong cát thì nổ cũng không văng ra ngoài; nhưng Có nếu bạn tin "đ...
+- [/setup-bedrock](./auth-settings/setup-bedrock/README.md) — Loại Built-in · Nhóm Provider & Cloud · Nguy hiểm Thấp (chỉ ghi config + test kết nối; nhưng Có nếu bạn dán access key vào file rồi commit —...
+- [/setup-vertex](./auth-settings/setup-vertex/README.md) — Loại Built-in · Nhóm Provider & Cloud · Nguy hiểm Thấp (chỉ ghi config + test kết nối; nhưng Có nếu bạn dán service-account JSON vào repo — ...
+- [/status](./auth-settings/status/README.md) — Loại Built-in · Nhóm Settings · Nguy hiểm Không (chỉ đọc — lệnh an toàn nhất, gõ bao nhiêu lần cũng được)
+- [/statusline](./auth-settings/statusline/README.md) — Loại Built-in · Nhóm Settings · Nguy hiểm Không (chỉ hiển thị — nhưng Có nhẹ nếu statusline chạy script ngoài lạ mà bạn paste mù từ internet...
+- [/teleport](./auth-settings/teleport/README.md) — Loại Built-in · Nhóm Remote · Nguy hiểm Có nhẹ (session + file context di chuyển qua mạng — mạng lạ/VPN công ty có thể nhìn thấy metadata; n...
+- [/terminal-setup](./auth-settings/terminal-setup/README.md) — Loại Built-in · Nhóm Settings · Nguy hiểm Không (chỉ hướng dẫn + kiểm tra cấu hình terminal — không đụng code hay auth)
+- [/theme](./auth-settings/theme/README.md) — Loại Built-in · Nhóm Settings · Nguy hiểm Không (chỉ đổi màu — không đụng code, auth, hay permissions)
+- [/vim](./auth-settings/vim/README.md) — Loại Built-in · Nhóm Settings · Nguy hiểm Không (chỉ đổi cách soạn phím — nhưng Có nhẹ nếu normal-mode bấm nhầm `shift+y` duyệt permission l...
+- [/voice](./auth-settings/voice/README.md) — Loại Built-in · Nhóm Nhập liệu & Trợ năng · Nguy hiểm Không (chỉ đổi cách nhập; nhưng Có nhẹ nếu bạn đọc to secret/mã OTP nơi đông người)

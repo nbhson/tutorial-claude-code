@@ -266,11 +266,11 @@ claude mcp get github
 ## Tham khảo chéo
 
 - Lệnh liên quan:
-  - [../01-huong-dan-su-dung/commands/mcp/README.md](../01-huong-dan-su-dung/commands/mcp/README.md) — add/list/reconnect/enable chi tiết
+  - [../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md](../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md) — add/list/reconnect/enable chi tiết
   - [../01-huong-dan-su-dung/02-cac-be-mat-terminal-ide-web-desktop.md](../01-huong-dan-su-dung/02-cac-be-mat-terminal-ide-web-desktop.md) — dựng cloud environment
-  - [../01-huong-dan-su-dung/commands/doctor/README.md](../01-huong-dan-su-dung/commands/doctor/README.md) — quét secret + tools thừa
-  - [../01-huong-dan-su-dung/commands/usage/README.md](../01-huong-dan-su-dung/commands/usage/README.md) — MCP nào ngốn nhất
-  - [../01-huong-dan-su-dung/commands/debug/README.md](../01-huong-dan-su-dung/commands/debug/README.md) — chẩn đoán khi reconnect hoài không được
+  - [../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md](../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md) — quét secret + tools thừa
+  - [../01-huong-dan-su-dung/commands/session-context/usage/README.md](../01-huong-dan-su-dung/commands/session-context/usage/README.md) — MCP nào ngốn nhất
+  - [../01-huong-dan-su-dung/commands/knowledge-system/debug/README.md](../01-huong-dan-su-dung/commands/knowledge-system/debug/README.md) — chẩn đoán khi reconnect hoài không được
 - Bài tổng quan:
   - [../01-huong-dan-su-dung/08-mcp-ket-noi-cong-cu-ngoai.md](../01-huong-dan-su-dung/08-mcp-ket-noi-cong-cu-ngoai.md) — transports + scopes + secrets
   - [../01-huong-dan-su-dung/05-skills-custom-commands.md](../01-huong-dan-su-dung/05-skills-custom-commands.md) — viết skill kèm MCP

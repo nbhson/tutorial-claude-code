@@ -285,12 +285,12 @@ claude -p "ping" --output-format json --permission-mode dontAsk --allowedTools "
 
 - Lệnh liên quan:
   - [../01-huong-dan-su-dung/02-cac-be-mat-terminal-ide-web-desktop.md](../01-huong-dan-su-dung/02-cac-be-mat-terminal-ide-web-desktop.md) — dựng cloud environment
-  - [../01-huong-dan-su-dung/commands/teleport/README.md](../01-huong-dan-su-dung/commands/teleport/README.md) — chuyển session terminal ↔ cloud
-  - [../01-huong-dan-su-dung/commands/doctor/README.md](../01-huong-dan-su-dung/commands/doctor/README.md) — doctor-gate trong CI
-  - [../01-huong-dan-su-dung/commands/insights/README.md](../01-huong-dan-su-dung/commands/insights/README.md) — analytics habits
-  - [../01-huong-dan-su-dung/commands/stats/README.md](../01-huong-dan-su-dung/commands/stats/README.md) — đo tiêu thụ
-  - [../01-huong-dan-su-dung/commands/status/README.md](../01-huong-dan-su-dung/commands/status/README.md) — provider/version cho CI
-  - [../01-huong-dan-su-dung/commands/claude-api/README.md](../01-huong-dan-su-dung/commands/claude-api/README.md) — migrate/onboard API
+  - [../01-huong-dan-su-dung/commands/auth-settings/teleport/README.md](../01-huong-dan-su-dung/commands/auth-settings/teleport/README.md) — chuyển session terminal ↔ cloud
+  - [../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md](../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md) — doctor-gate trong CI
+  - [../01-huong-dan-su-dung/commands/knowledge-system/insights/README.md](../01-huong-dan-su-dung/commands/knowledge-system/insights/README.md) — analytics habits
+  - [../01-huong-dan-su-dung/commands/knowledge-system/stats/README.md](../01-huong-dan-su-dung/commands/knowledge-system/stats/README.md) — đo tiêu thụ
+  - [../01-huong-dan-su-dung/commands/auth-settings/status/README.md](../01-huong-dan-su-dung/commands/auth-settings/status/README.md) — provider/version cho CI
+  - [../01-huong-dan-su-dung/commands/knowledge-system/claude-api/README.md](../01-huong-dan-su-dung/commands/knowledge-system/claude-api/README.md) — migrate/onboard API
 - Bài tổng quan:
   - [../01-huong-dan-su-dung/12-agent-sdk-ci-cd-automation.md](../01-huong-dan-su-dung/12-agent-sdk-ci-cd-automation.md) — SDK + CI chi tiết
   - [../01-huong-dan-su-dung/01-cai-dat-va-xac-thuc.md](../01-huong-dan-su-dung/01-cai-dat-va-xac-thuc.md) — provider nào hỗ trợ CI

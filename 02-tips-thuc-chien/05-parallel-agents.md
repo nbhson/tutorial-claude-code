@@ -233,7 +233,7 @@ Migrate 20 files, thêm test toàn repo, đổi import 50 chỗ → 1 agent làm
 /batch Thêm missing tests cho src/utils/*.ts: mỗi file 1 subagent, chỉ thêm test, không sửa source.
 ```
 
-> Xem [../01-huong-dan-su-dung/commands/batch/README.md](../01-huong-dan-su-dung/commands/batch/README.md).
+> Xem [../01-huong-dan-su-dung/commands/code-repo/batch/README.md](../01-huong-dan-su-dung/commands/code-repo/batch/README.md).
 
 ### 7.3. Agent teams (experimental)
 
@@ -345,11 +345,11 @@ Tối đa 15 bullet. Nếu không đủ info thì ghi BLOCKED + thiếu gì, đ�
 ## 12. Tham khảo chéo
 
 - Lệnh agents & scale:
-  - [../01-huong-dan-su-dung/commands/agents/README.md](../01-huong-dan-su-dung/commands/agents/README.md) — xem Running/Library
-  - [../01-huong-dan-su-dung/commands/tasks/README.md](../01-huong-dan-su-dung/commands/tasks/README.md) — theo dõi tasks nền
-  - [../01-huong-dan-su-dung/commands/batch/README.md](../01-huong-dan-su-dung/commands/batch/README.md) — lặp pattern quy mô lớn
-  - [../01-huong-dan-su-dung/commands/code-review/README.md](../01-huong-dan-su-dung/commands/code-review/README.md) — reviewer chuẩn
-  - [../01-huong-dan-su-dung/commands/verify/README.md](../01-huong-dan-su-dung/commands/verify/README.md) — verify sau fan-out
+  - [../01-huong-dan-su-dung/commands/knowledge-system/agents/README.md](../01-huong-dan-su-dung/commands/knowledge-system/agents/README.md) — xem Running/Library
+  - [../01-huong-dan-su-dung/commands/session-context/tasks/README.md](../01-huong-dan-su-dung/commands/session-context/tasks/README.md) — theo dõi tasks nền
+  - [../01-huong-dan-su-dung/commands/code-repo/batch/README.md](../01-huong-dan-su-dung/commands/code-repo/batch/README.md) — lặp pattern quy mô lớn
+  - [../01-huong-dan-su-dung/commands/code-repo/code-review/README.md](../01-huong-dan-su-dung/commands/code-repo/code-review/README.md) — reviewer chuẩn
+  - [../01-huong-dan-su-dung/commands/code-repo/verify/README.md](../01-huong-dan-su-dung/commands/code-repo/verify/README.md) — verify sau fan-out
 - Bài tips liên quan:
   - [Tips 01](./01-context-hygiene.md) — vì sao đẩy explore sang subagent
   - [Tips 04](./04-verification-done-that.md) — reviewer calibration + tester flaky

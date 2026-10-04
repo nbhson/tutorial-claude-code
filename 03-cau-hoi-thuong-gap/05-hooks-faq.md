@@ -279,11 +279,11 @@ echo '{"tool_name":"Bash","tool_input":{"command":"git push origin main"}}' | ./
 ## Tham khảo chéo
 
 - Lệnh liên quan:
-  - [../01-huong-dan-su-dung/commands/hooks/README.md](../01-huong-dan-su-dung/commands/hooks/README.md) — xem/sửa hooks theo events
-  - [../01-huong-dan-su-dung/commands/status/README.md](../01-huong-dan-su-dung/commands/status/README.md) — version đang chạy (drift?)
-  - [../01-huong-dan-su-dung/commands/permissions/README.md](../01-huong-dan-su-dung/commands/permissions/README.md) — hook deny vs permission ai thắng
-  - [../01-huong-dan-su-dung/commands/debug/README.md](../01-huong-dan-su-dung/commands/debug/README.md) — chẩn đoán hook im re
-  - [../01-huong-dan-su-dung/commands/agents/README.md](../01-huong-dan-su-dung/commands/agents/README.md) — frontmatter hooks của agents
+  - [../01-huong-dan-su-dung/commands/knowledge-system/hooks/README.md](../01-huong-dan-su-dung/commands/knowledge-system/hooks/README.md) — xem/sửa hooks theo events
+  - [../01-huong-dan-su-dung/commands/auth-settings/status/README.md](../01-huong-dan-su-dung/commands/auth-settings/status/README.md) — version đang chạy (drift?)
+  - [../01-huong-dan-su-dung/commands/model-mode/permissions/README.md](../01-huong-dan-su-dung/commands/model-mode/permissions/README.md) — hook deny vs permission ai thắng
+  - [../01-huong-dan-su-dung/commands/knowledge-system/debug/README.md](../01-huong-dan-su-dung/commands/knowledge-system/debug/README.md) — chẩn đoán hook im re
+  - [../01-huong-dan-su-dung/commands/knowledge-system/agents/README.md](../01-huong-dan-su-dung/commands/knowledge-system/agents/README.md) — frontmatter hooks của agents
 - Bài tổng quan:
   - [../01-huong-dan-su-dung/07-hooks-tu-dong-hoa.md](../01-huong-dan-su-dung/07-hooks-tu-dong-hoa.md) — events + schema chi tiết
   - [../01-huong-dan-su-dung/10-permissions-modes-availability.md](../01-huong-dan-su-dung/10-permissions-modes-availability.md) — hook vs rule vs bypass

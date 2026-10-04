@@ -29,7 +29,7 @@ Ngày 4: 02 tips 01 → 05 (context, prompt, plan, verify, parallel)
 Ngày 5: 02 tips 06 → 10 + 03 FAQ tra cứu khi gặp lỗi
 ```
 
-Tra cứu lệnh: 01-huong-dan-su-dung/commands/<tên-lệnh>/ (vd commands/plan/)
+Tra cứu lệnh: 01-huong-dan-su-dung/commands/<tên-lệnh>/ (vd commands/model-mode/plan/)
 
 Quy tắc vàng (nhớ 4 câu này là đủ 80% sức mạnh):
 

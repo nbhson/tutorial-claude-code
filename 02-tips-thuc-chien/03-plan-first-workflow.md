@@ -102,7 +102,7 @@ default → acceptEdits → plan → auto → bypass → (quay về default)
 # → ép vào plan mode ngay, khỏi xoay Shift+Tab
 ```
 
-> Xem [../01-huong-dan-su-dung/commands/plan/README.md](../01-huong-dan-su-dung/commands/plan/README.md).
+> Xem [../01-huong-dan-su-dung/commands/model-mode/plan/README.md](../01-huong-dan-su-dung/commands/model-mode/plan/README.md).
 
 ### Cách 3 — Dặn bằng lời (không cần nhớ phím)
 
@@ -390,12 +390,12 @@ Thiếu 1 trong 3 → quay lại plan.
 ## 12. Tham khảo chéo
 
 - Lệnh plan & sessions:
-  - [../01-huong-dan-su-dung/commands/plan/README.md](../01-huong-dan-su-dung/commands/plan/README.md) — vào plan mode bằng lệnh
-  - [../01-huong-dan-su-dung/commands/clear/README.md](../01-huong-dan-su-dung/commands/clear/README.md) — tách sessions sạch
-  - [../01-huong-dan-su-dung/commands/compact/README.md](../01-huong-dan-su-dung/commands/compact/README.md) — nén khi cùng task
-  - [../01-huong-dan-su-dung/commands/goal/README.md](../01-huong-dan-su-dung/commands/goal/README.md) — đặt completion condition cho plan dài
-  - [../01-huong-dan-su-dung/commands/verify/README.md](../01-huong-dan-su-dung/commands/verify/README.md) — verify bằng app thật
-  - [../01-huong-dan-su-dung/commands/terminal-setup/README.md](../01-huong-dan-su-dung/commands/terminal-setup/README.md) — fix Shift+Tab
+  - [../01-huong-dan-su-dung/commands/model-mode/plan/README.md](../01-huong-dan-su-dung/commands/model-mode/plan/README.md) — vào plan mode bằng lệnh
+  - [../01-huong-dan-su-dung/commands/session-context/clear/README.md](../01-huong-dan-su-dung/commands/session-context/clear/README.md) — tách sessions sạch
+  - [../01-huong-dan-su-dung/commands/session-context/compact/README.md](../01-huong-dan-su-dung/commands/session-context/compact/README.md) — nén khi cùng task
+  - [../01-huong-dan-su-dung/commands/model-mode/goal/README.md](../01-huong-dan-su-dung/commands/model-mode/goal/README.md) — đặt completion condition cho plan dài
+  - [../01-huong-dan-su-dung/commands/code-repo/verify/README.md](../01-huong-dan-su-dung/commands/code-repo/verify/README.md) — verify bằng app thật
+  - [../01-huong-dan-su-dung/commands/auth-settings/terminal-setup/README.md](../01-huong-dan-su-dung/commands/auth-settings/terminal-setup/README.md) — fix Shift+Tab
 - Bài tips liên quan:
   - [Tips 01](./01-context-hygiene.md) — vì sao tách sessions
   - [Tips 02](./02-prompt-engineering.md) — viết prompt plan chuẩn

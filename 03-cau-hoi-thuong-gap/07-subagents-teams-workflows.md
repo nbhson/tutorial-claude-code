@@ -258,13 +258,13 @@ Chi tiết verify xem [../02-tips-thuc-chien/04-verification-done-that.md](../02
 ## Tham khảo chéo
 
 - Lệnh liên quan:
-  - [../01-huong-dan-su-dung/commands/agents/README.md](../01-huong-dan-su-dung/commands/agents/README.md) — quản lý Running/Library
-  - [../01-huong-dan-su-dung/commands/tasks/README.md](../01-huong-dan-su-dung/commands/tasks/README.md) — theo dõi tasks nền
-  - [../01-huong-dan-su-dung/commands/batch/README.md](../01-huong-dan-su-dung/commands/batch/README.md) — chia epic thành worktree-subagents
-  - [../01-huong-dan-su-dung/commands/branch/README.md](../01-huong-dan-su-dung/commands/branch/README.md) — worktrees song song
-  - [../01-huong-dan-su-dung/commands/model/README.md](../01-huong-dan-su-dung/commands/model/README.md) — route Haiku/Sonnet/Opus theo phase
-  - [../01-huong-dan-su-dung/commands/verify/README.md](../01-huong-dan-su-dung/commands/verify/README.md) — verify sau implement
-  - [../01-huong-dan-su-dung/commands/fork/README.md](../01-huong-dan-su-dung/commands/fork/README.md) — fork cô lập
+  - [../01-huong-dan-su-dung/commands/knowledge-system/agents/README.md](../01-huong-dan-su-dung/commands/knowledge-system/agents/README.md) — quản lý Running/Library
+  - [../01-huong-dan-su-dung/commands/session-context/tasks/README.md](../01-huong-dan-su-dung/commands/session-context/tasks/README.md) — theo dõi tasks nền
+  - [../01-huong-dan-su-dung/commands/code-repo/batch/README.md](../01-huong-dan-su-dung/commands/code-repo/batch/README.md) — chia epic thành worktree-subagents
+  - [../01-huong-dan-su-dung/commands/session-context/branch/README.md](../01-huong-dan-su-dung/commands/session-context/branch/README.md) — worktrees song song
+  - [../01-huong-dan-su-dung/commands/model-mode/model/README.md](../01-huong-dan-su-dung/commands/model-mode/model/README.md) — route Haiku/Sonnet/Opus theo phase
+  - [../01-huong-dan-su-dung/commands/code-repo/verify/README.md](../01-huong-dan-su-dung/commands/code-repo/verify/README.md) — verify sau implement
+  - [../01-huong-dan-su-dung/commands/session-context/fork/README.md](../01-huong-dan-su-dung/commands/session-context/fork/README.md) — fork cô lập
 - Bài tổng quan:
   - [../01-huong-dan-su-dung/06-subagents-agent-teams-parallel.md](../01-huong-dan-su-dung/06-subagents-agent-teams-parallel.md) — subagents + teams chi tiết
   - [../01-huong-dan-su-dung/11-git-worktrees-checkpoints.md](../01-huong-dan-su-dung/11-git-worktrees-checkpoints.md) — worktrees + checkpoints

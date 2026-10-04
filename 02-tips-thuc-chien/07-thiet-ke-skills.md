@@ -413,11 +413,11 @@ Skill-rot = skills đống thành rác: không ai gọi, gọi sai lúc, descrip
 
 - Lệnh skills/plugins:
   - [../01-huong-dan-su-dung/05-skills-custom-commands.md](../01-huong-dan-su-dung/05-skills-custom-commands.md) (nếu có) — quản lý skills
-  - [../01-huong-dan-su-dung/commands/plugin/README.md](../01-huong-dan-su-dung/commands/plugin/README.md) — đóng plugin phân phối
-  - [../01-huong-dan-su-dung/commands/doctor/README.md](../01-huong-dan-su-dung/commands/doctor/README.md) — flag unused skills
-  - [../01-huong-dan-su-dung/commands/usage/README.md](../01-huong-dan-su-dung/commands/usage/README.md) — per-skill cost
-  - [../01-huong-dan-su-dung/commands/plan/README.md](../01-huong-dan-su-dung/commands/plan/README.md) — skill `/plan`
-  - [../01-huong-dan-su-dung/commands/code-review/README.md](../01-huong-dan-su-dung/commands/code-review/README.md) — skill `/review`
+  - [../01-huong-dan-su-dung/commands/knowledge-system/plugin/README.md](../01-huong-dan-su-dung/commands/knowledge-system/plugin/README.md) — đóng plugin phân phối
+  - [../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md](../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md) — flag unused skills
+  - [../01-huong-dan-su-dung/commands/session-context/usage/README.md](../01-huong-dan-su-dung/commands/session-context/usage/README.md) — per-skill cost
+  - [../01-huong-dan-su-dung/commands/model-mode/plan/README.md](../01-huong-dan-su-dung/commands/model-mode/plan/README.md) — skill `/plan`
+  - [../01-huong-dan-su-dung/commands/code-repo/code-review/README.md](../01-huong-dan-su-dung/commands/code-repo/code-review/README.md) — skill `/review`
 - Bài tips liên quan:
   - [Tips 01](./01-context-hygiene.md) — vì sao procedures vào skills, không vào CLAUDE.md
   - [Tips 05](./05-parallel-agents.md) — tools/model route cho subagents từ skills

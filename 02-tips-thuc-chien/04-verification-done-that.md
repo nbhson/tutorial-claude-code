@@ -414,12 +414,12 @@ Luôn có 3 guard:
 ## 13. Tham khảo chéo
 
 - Lệnh verify:
-  - [../01-huong-dan-su-dung/commands/goal/README.md](../01-huong-dan-su-dung/commands/goal/README.md) — đặt completion condition
-  - [../01-huong-dan-su-dung/commands/loop/README.md](../01-huong-dan-su-dung/commands/loop/README.md) — lặp tới khi đúng
-  - [../01-huong-dan-su-dung/commands/verify/README.md](../01-huong-dan-su-dung/commands/verify/README.md) — chạy app thật
-  - [../01-huong-dan-su-dung/commands/code-review/README.md](../01-huong-dan-su-dung/commands/code-review/README.md) — review diff
-  - [../01-huong-dan-su-dung/commands/ultrareview/README.md](../01-huong-dan-su-dung/commands/ultrareview/README.md) — multi-agent review nặng
-  - [../01-huong-dan-su-dung/commands/hooks/README.md](../01-huong-dan-su-dung/commands/hooks/README.md) — kiểm tra Stop gate
+  - [../01-huong-dan-su-dung/commands/model-mode/goal/README.md](../01-huong-dan-su-dung/commands/model-mode/goal/README.md) — đặt completion condition
+  - [../01-huong-dan-su-dung/commands/code-repo/loop/README.md](../01-huong-dan-su-dung/commands/code-repo/loop/README.md) — lặp tới khi đúng
+  - [../01-huong-dan-su-dung/commands/code-repo/verify/README.md](../01-huong-dan-su-dung/commands/code-repo/verify/README.md) — chạy app thật
+  - [../01-huong-dan-su-dung/commands/code-repo/code-review/README.md](../01-huong-dan-su-dung/commands/code-repo/code-review/README.md) — review diff
+  - [../01-huong-dan-su-dung/commands/code-repo/ultrareview/README.md](../01-huong-dan-su-dung/commands/code-repo/ultrareview/README.md) — multi-agent review nặng
+  - [../01-huong-dan-su-dung/commands/knowledge-system/hooks/README.md](../01-huong-dan-su-dung/commands/knowledge-system/hooks/README.md) — kiểm tra Stop gate
 - Bài tips liên quan:
   - [Tips 02](./02-prompt-engineering.md) — viết verify ngay trong prompt
   - [Tips 03](./03-plan-first-workflow.md) — phase-gate từng phase

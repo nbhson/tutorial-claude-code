@@ -138,7 +138,7 @@ Done = pnpm test payments xanh + pnpm lint 0 error.
 Hãy đọc docs/decisions.md và tiếp tục implement bước 3 trong plan.md.
 ```
 
-> Chi tiết lệnh xem [../01-huong-dan-su-dung/commands/clear/README.md](../01-huong-dan-su-dung/commands/clear/README.md).
+> Chi tiết lệnh xem [../01-huong-dan-su-dung/commands/session-context/clear/README.md](../01-huong-dan-su-dung/commands/session-context/clear/README.md).
 
 ### 3.2. Rewind thay vì cãi
 
@@ -161,7 +161,7 @@ STOP. Không gõ turn 3. Nhấn Esc Esc → chọn checkpoint trước turn 1 �
 Trước khi sửa, đọc src/auth/__tests__/login.test.ts và liệt kê 3 cases phải giữ xanh."
 ```
 
-> Xem thêm [../01-huong-dan-su-dung/commands/rewind/README.md](../01-huong-dan-su-dung/commands/rewind/README.md), [../01-huong-dan-su-dung/commands/fork/README.md](../01-huong-dan-su-dung/commands/fork/README.md).
+> Xem thêm [../01-huong-dan-su-dung/commands/session-context/rewind/README.md](../01-huong-dan-su-dung/commands/session-context/rewind/README.md), [../01-huong-dan-su-dung/commands/session-context/fork/README.md](../01-huong-dan-su-dung/commands/session-context/fork/README.md).
 
 ### 3.3. `/btw` cho câu hỏi phụ
 
@@ -184,7 +184,7 @@ Dùng khi bạn thắc mắc giữa chừng nhưng không muốn làm bẩn mạ
 - Cần chạy tools (đọc file mới, grep, test) → dùng subagent hoặc hỏi thường.
 - Muốn lưu quyết định → hỏi thường + ghi ra file.
 
-> Xem [../01-huong-dan-su-dung/commands/btw/README.md](../01-huong-dan-su-dung/commands/btw/README.md).
+> Xem [../01-huong-dan-su-dung/commands/code-repo/btw/README.md](../01-huong-dan-su-dung/commands/code-repo/btw/README.md).
 
 ### 3.4. Đẩy exploration ồn sang subagents
 
@@ -220,7 +220,7 @@ Pattern này là xương sống của [Tips 05](./05-parallel-agents.md). Đừn
 # → xác nhận sau compact còn bao nhiêu, server nào nên tắt
 ```
 
-> Xem [../01-huong-dan-su-dung/commands/compact/README.md](../01-huong-dan-su-dung/commands/compact/README.md), [../01-huong-dan-su-dung/commands/context/README.md](../01-huong-dan-su-dung/commands/context/README.md), [../01-huong-dan-su-dung/commands/usage/README.md](../01-huong-dan-su-dung/commands/usage/README.md).
+> Xem [../01-huong-dan-su-dung/commands/session-context/compact/README.md](../01-huong-dan-su-dung/commands/session-context/compact/README.md), [../01-huong-dan-su-dung/commands/session-context/context/README.md](../01-huong-dan-su-dung/commands/session-context/context/README.md), [../01-huong-dan-su-dung/commands/session-context/usage/README.md](../01-huong-dan-su-dung/commands/session-context/usage/README.md).
 
 ---
 
@@ -476,7 +476,7 @@ Kết quả: 5–6 sessions gọn (<50% context mỗi cái) thay vì 1 session 9
 ## 12. Tham khảo chéo
 
 - Lệnh session & context:
-  - [clear](../01-huong-dan-su-dung/commands/clear/README.md) · [compact](../01-huong-dan-su-dung/commands/compact/README.md) · [context](../01-huong-dan-su-dung/commands/context/README.md) · [usage](../01-huong-dan-su-dung/commands/usage/README.md) · [cost](../01-huong-dan-su-dung/commands/cost/README.md) · [doctor](../01-huong-dan-su-dung/commands/doctor/README.md) · [rewind](../01-huong-dan-su-dung/commands/rewind/README.md) · [fork](../01-huong-dan-su-dung/commands/fork/README.md) · [btw](../01-huong-dan-su-dung/commands/btw/README.md) · [mcp](../01-huong-dan-su-dung/commands/mcp/README.md) · [hooks](../01-huong-dan-su-dung/commands/hooks/README.md)
+  - [clear](../01-huong-dan-su-dung/commands/session-context/clear/README.md) · [compact](../01-huong-dan-su-dung/commands/session-context/compact/README.md) · [context](../01-huong-dan-su-dung/commands/session-context/context/README.md) · [usage](../01-huong-dan-su-dung/commands/session-context/usage/README.md) · [cost](../01-huong-dan-su-dung/commands/session-context/cost/README.md) · [doctor](../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md) · [rewind](../01-huong-dan-su-dung/commands/session-context/rewind/README.md) · [fork](../01-huong-dan-su-dung/commands/session-context/fork/README.md) · [btw](../01-huong-dan-su-dung/commands/code-repo/btw/README.md) · [mcp](../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md) · [hooks](../01-huong-dan-su-dung/commands/knowledge-system/hooks/README.md)
 - Bài tips liên quan:
   - [Tips 02](./02-prompt-engineering.md) — viết prompt gọn để đỡ rác từ đầu
   - [Tips 03](./03-plan-first-workflow.md) — plan-first + 2-session flow

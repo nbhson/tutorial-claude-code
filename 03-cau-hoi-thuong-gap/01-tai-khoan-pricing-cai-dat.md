@@ -292,14 +292,14 @@ claude update && claude doctor
 ## Tham khảo chéo
 
 - Lệnh liên quan:
-  - [../01-huong-dan-su-dung/commands/status/README.md](../01-huong-dan-su-dung/commands/status/README.md) — soi version/account/provider
-  - [../01-huong-dan-su-dung/commands/doctor/README.md](../01-huong-dan-su-dung/commands/doctor/README.md) — khám duplicate install, settings lỗi
-  - [../01-huong-dan-su-dung/commands/login/README.md](../01-huong-dan-su-dung/commands/login/README.md) — đăng nhập trong session
-  - [../01-huong-dan-su-dung/commands/bug/README.md](../01-huong-dan-su-dung/commands/bug/README.md) — gửi bug report
-  - [../01-huong-dan-su-dung/commands/init/README.md](../01-huong-dan-su-dung/commands/init/README.md) — setup repo mới
-  - [../01-huong-dan-su-dung/commands/permissions/README.md](../01-huong-dan-su-dung/commands/permissions/README.md) — dựng phanh baseline
+  - [../01-huong-dan-su-dung/commands/auth-settings/status/README.md](../01-huong-dan-su-dung/commands/auth-settings/status/README.md) — soi version/account/provider
+  - [../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md](../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md) — khám duplicate install, settings lỗi
+  - [../01-huong-dan-su-dung/commands/auth-settings/login/README.md](../01-huong-dan-su-dung/commands/auth-settings/login/README.md) — đăng nhập trong session
+  - [../01-huong-dan-su-dung/commands/knowledge-system/bug/README.md](../01-huong-dan-su-dung/commands/knowledge-system/bug/README.md) — gửi bug report
+  - [../01-huong-dan-su-dung/commands/code-repo/init/README.md](../01-huong-dan-su-dung/commands/code-repo/init/README.md) — setup repo mới
+  - [../01-huong-dan-su-dung/commands/model-mode/permissions/README.md](../01-huong-dan-su-dung/commands/model-mode/permissions/README.md) — dựng phanh baseline
   - [../01-huong-dan-su-dung/02-cac-be-mat-terminal-ide-web-desktop.md](../01-huong-dan-su-dung/02-cac-be-mat-terminal-ide-web-desktop.md) — lên cloud (cần sign-in)
-  - [../01-huong-dan-su-dung/commands/teleport/README.md](../01-huong-dan-su-dung/commands/teleport/README.md) — chuyển session lên cloud
+  - [../01-huong-dan-su-dung/commands/auth-settings/teleport/README.md](../01-huong-dan-su-dung/commands/auth-settings/teleport/README.md) — chuyển session lên cloud
 - Bài tổng quan:
   - [../01-huong-dan-su-dung/01-cai-dat-va-xac-thuc.md](../01-huong-dan-su-dung/01-cai-dat-va-xac-thuc.md) — cài đặt + xác thực chi tiết
   - [../01-huong-dan-su-dung/04-slash-commands-toan-tap.md](../01-huong-dan-su-dung/04-slash-commands-toan-tap.md) — tra cứu lệnh theo version

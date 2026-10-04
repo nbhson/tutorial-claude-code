@@ -31,5 +31,5 @@ models 5.x, security stack và mods bảo mật.
 
 - Tổng số: **78** thư mục lệnh (`ls -F 01-huong-dan-su-dung/commands | grep -c '/$'`; `ls ... | wc -l` trả 79 vì tính cả file README.md này).
 - Index đầy đủ theo 4 nhóm: [commands/README.md](./commands/README.md)
-- Ví dụ tra cứu nhanh: [commands/plan/README.md](./commands/plan/README.md)
-  (thay `plan` bằng slug bất kỳ, vd `./commands/compact/README.md`, `./commands/mcp/README.md`).
+- Ví dụ tra cứu nhanh: [commands/model-mode/plan/README.md](./commands/model-mode/plan/README.md)
+  (thay `plan` bằng slug bất kỳ, vd `./commands/session-context/compact/README.md`, `./commands/knowledge-system/mcp/README.md`).

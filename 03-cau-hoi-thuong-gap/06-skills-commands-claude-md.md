@@ -292,12 +292,12 @@ wc -l CLAUDE.md
 ## Tham khảo chéo
 
 - Lệnh liên quan:
-  - [../01-huong-dan-su-dung/commands/doctor/README.md](../01-huong-dan-su-dung/commands/doctor/README.md) — khám CLAUDE.md phình
-  - [../01-huong-dan-su-dung/commands/init/README.md](../01-huong-dan-su-dung/commands/init/README.md) — sinh CLAUDE.md từ code
-  - [../01-huong-dan-su-dung/commands/memory/README.md](../01-huong-dan-su-dung/commands/memory/README.md) — tách sở thích cá nhân
-  - [../01-huong-dan-su-dung/commands/rules/README.md](../01-huong-dan-su-dung/commands/rules/README.md) — luật theo path
-  - [../01-huong-dan-su-dung/commands/verify/README.md](../01-huong-dan-su-dung/commands/verify/README.md) — kiểm chứng sau code
-  - [../01-huong-dan-su-dung/commands/debug/README.md](../01-huong-dan-su-dung/commands/debug/README.md) — skill không trigger?
+  - [../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md](../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md) — khám CLAUDE.md phình
+  - [../01-huong-dan-su-dung/commands/code-repo/init/README.md](../01-huong-dan-su-dung/commands/code-repo/init/README.md) — sinh CLAUDE.md từ code
+  - [../01-huong-dan-su-dung/commands/knowledge-system/memory/README.md](../01-huong-dan-su-dung/commands/knowledge-system/memory/README.md) — tách sở thích cá nhân
+  - [../01-huong-dan-su-dung/commands/knowledge-system/rules/README.md](../01-huong-dan-su-dung/commands/knowledge-system/rules/README.md) — luật theo path
+  - [../01-huong-dan-su-dung/commands/code-repo/verify/README.md](../01-huong-dan-su-dung/commands/code-repo/verify/README.md) — kiểm chứng sau code
+  - [../01-huong-dan-su-dung/commands/knowledge-system/debug/README.md](../01-huong-dan-su-dung/commands/knowledge-system/debug/README.md) — skill không trigger?
 - Bài tổng quan:
   - [../01-huong-dan-su-dung/03-claude-md-memory-rules.md](../01-huong-dan-su-dung/03-claude-md-memory-rules.md) — ranh giới md/memory/rules
   - [../01-huong-dan-su-dung/05-skills-custom-commands.md](../01-huong-dan-su-dung/05-skills-custom-commands.md) — viết skill chuẩn

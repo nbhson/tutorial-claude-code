@@ -107,7 +107,7 @@ claude mcp reset-project-choices   # khi đổi approvals project
 
 ## 5. Skills / plugins / hooks có nguy hiểm không? (supply-chain — có)
 
-**Giải thích.** Có — chúng chạy code/quyết định trên máy bạn. Plugin community xin cùng lúc đọc file + chạy shell + gọi mạng = full access. Chỉ cài nguồn tin cậy, đọc **Browse** (commands/agents/skills/hooks/MCP) trước khi cài plugin; review scripts hooks như production code.
+**Giải thích.** Có — chúng chạy code/quyết định trên máy bạn. Plugin community xin cùng lúc đọc file + chạy shell + gọi mạng = full access. Chỉ cài nguồn tin cậy, đọc **Browse** (commands/knowledge-system/agents/skills/hooks/MCP) trước khi cài plugin; review scripts hooks như production code.
 
 ```bash
 # Trước khi cài plugin lạ:
@@ -241,13 +241,13 @@ git grep -E 'ghp_|sk-ant_|xoxb-|AKIA' -- . .
 ## Tham khảo chéo
 
 - Lệnh liên quan:
-  - [../01-huong-dan-su-dung/commands/permissions/README.md](../01-huong-dan-su-dung/commands/permissions/README.md) — working dirs + allow/ask/deny
-  - [../01-huong-dan-su-dung/commands/hooks/README.md](../01-huong-dan-su-dung/commands/hooks/README.md) — hook deny không bypass được
-  - [../01-huong-dan-su-dung/commands/mcp/README.md](../01-huong-dan-su-dung/commands/mcp/README.md) — secrets-env + reset-project-choices
-  - [../01-huong-dan-su-dung/commands/plugin/README.md](../01-huong-dan-su-dung/commands/plugin/README.md) — Browse trước khi cài
-  - [../01-huong-dan-su-dung/commands/code-review/README.md](../01-huong-dan-su-dung/commands/code-review/README.md) — review AI code
-  - [../01-huong-dan-su-dung/commands/verify/README.md](../01-huong-dan-su-dung/commands/verify/README.md) — chạy app thật kiểm chứng
-  - [../01-huong-dan-su-dung/commands/sandbox/README.md](../01-huong-dan-su-dung/commands/sandbox/README.md) — sandbox OS cho việc nguy hiểm
+  - [../01-huong-dan-su-dung/commands/model-mode/permissions/README.md](../01-huong-dan-su-dung/commands/model-mode/permissions/README.md) — working dirs + allow/ask/deny
+  - [../01-huong-dan-su-dung/commands/knowledge-system/hooks/README.md](../01-huong-dan-su-dung/commands/knowledge-system/hooks/README.md) — hook deny không bypass được
+  - [../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md](../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md) — secrets-env + reset-project-choices
+  - [../01-huong-dan-su-dung/commands/knowledge-system/plugin/README.md](../01-huong-dan-su-dung/commands/knowledge-system/plugin/README.md) — Browse trước khi cài
+  - [../01-huong-dan-su-dung/commands/code-repo/code-review/README.md](../01-huong-dan-su-dung/commands/code-repo/code-review/README.md) — review AI code
+  - [../01-huong-dan-su-dung/commands/code-repo/verify/README.md](../01-huong-dan-su-dung/commands/code-repo/verify/README.md) — chạy app thật kiểm chứng
+  - [../01-huong-dan-su-dung/commands/auth-settings/sandbox/README.md](../01-huong-dan-su-dung/commands/auth-settings/sandbox/README.md) — sandbox OS cho việc nguy hiểm
 - Bài tổng quan:
   - [../01-huong-dan-su-dung/10-permissions-modes-availability.md](../01-huong-dan-su-dung/10-permissions-modes-availability.md) — modes + unbypassable
   - [../01-huong-dan-su-dung/09-plugins-marketplaces.md](../01-huong-dan-su-dung/09-plugins-marketplaces.md) — supply-chain plugins

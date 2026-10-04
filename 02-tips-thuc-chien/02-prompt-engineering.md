@@ -380,12 +380,12 @@ Mỗi lý do kèm 2 quotes nguyên văn + số lượng. Output table markdown.
 ## 11. Tham khảo chéo
 
 - Lệnh hay kèm prompt:
-  - [../01-huong-dan-su-dung/commands/plan/README.md](../01-huong-dan-su-dung/commands/plan/README.md) — ép plan mode bằng lệnh
-  - [../01-huong-dan-su-dung/commands/goal/README.md](../01-huong-dan-su-dung/commands/goal/README.md) — đặt completion condition
-  - [../01-huong-dan-su-dung/commands/verify/README.md](../01-huong-dan-su-dung/commands/verify/README.md) — chạy app thật để chứng minh
-  - [../01-huong-dan-su-dung/commands/loop/README.md](../01-huong-dan-su-dung/commands/loop/README.md) — lặp tới khi đúng
-  - [../01-huong-dan-su-dung/commands/code-review/README.md](../01-huong-dan-su-dung/commands/code-review/README.md) — review prompt mẫu
-  - [../01-huong-dan-su-dung/commands/batch/README.md](../01-huong-dan-su-dung/commands/batch/README.md) — lặp pattern quy mô lớn
+  - [../01-huong-dan-su-dung/commands/model-mode/plan/README.md](../01-huong-dan-su-dung/commands/model-mode/plan/README.md) — ép plan mode bằng lệnh
+  - [../01-huong-dan-su-dung/commands/model-mode/goal/README.md](../01-huong-dan-su-dung/commands/model-mode/goal/README.md) — đặt completion condition
+  - [../01-huong-dan-su-dung/commands/code-repo/verify/README.md](../01-huong-dan-su-dung/commands/code-repo/verify/README.md) — chạy app thật để chứng minh
+  - [../01-huong-dan-su-dung/commands/code-repo/loop/README.md](../01-huong-dan-su-dung/commands/code-repo/loop/README.md) — lặp tới khi đúng
+  - [../01-huong-dan-su-dung/commands/code-repo/code-review/README.md](../01-huong-dan-su-dung/commands/code-repo/code-review/README.md) — review prompt mẫu
+  - [../01-huong-dan-su-dung/commands/code-repo/batch/README.md](../01-huong-dan-su-dung/commands/code-repo/batch/README.md) — lặp pattern quy mô lớn
 - Bài tips liên quan:
   - [Tips 01](./01-context-hygiene.md) — scope gọn + session sạch
   - [Tips 03](./03-plan-first-workflow.md) — plan-first workflow

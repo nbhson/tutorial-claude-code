@@ -23,7 +23,7 @@ Cảm ơn bạn muốn đóng góp! Repo này là tài liệu tiếng Việt, m�
 ### Lệnh mới trong `01-huong-dan-su-dung/commands/<slug>/README.md`
 
 - 1 folder = 1 lệnh, chỉ 1 file `README.md`. Độ dài 120–200 dòng.
-- Format 8 mục (bắt chước `commands/sandbox/README.md`):
+- Format 8 mục (bắt chước `commands/auth-settings/sandbox/README.md`):
   1. Tiêu đề `# /ten-lenh — mô tả 1 dòng` + quote loại/nhóm/nguy hiểm + intro ví von.
   2. `## Cú pháp & tham số` (bảng 3 cột + ví dụ gọi từng dạng).
   3. `## Cách nó hoạt động` (cơ chế sâu + sơ đồ text + bảng "khác gì lệnh dễ nhầm" + quy tắc ngón tay cái).

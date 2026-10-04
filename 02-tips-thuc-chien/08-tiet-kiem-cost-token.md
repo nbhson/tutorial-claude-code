@@ -326,15 +326,15 @@ Kết quả điển hình team 3 người: **-40–60% input tokens**, retry gi�
 ## 11. Tham khảo chéo
 
 - Lệnh cost/model:
-  - [../01-huong-dan-su-dung/commands/cost/README.md](../01-huong-dan-su-dung/commands/cost/README.md) — session này tốn bao nhiêu
-  - [../01-huong-dan-su-dung/commands/usage/README.md](../01-huong-dan-su-dung/commands/usage/README.md) — breakdown ai ngốn
-  - [../01-huong-dan-su-dung/commands/model/README.md](../01-huong-dan-su-dung/commands/model/README.md) (nếu có) — đổi model
-  - [../01-huong-dan-su-dung/commands/effort/README.md](../01-huong-dan-su-dung/commands/effort/README.md) (nếu có) — low/medium/high/max
-  - [../01-huong-dan-su-dung/commands/fast/README.md](../01-huong-dan-su-dung/commands/fast/README.md) (nếu có) — fast mode
-  - [../01-huong-dan-su-dung/commands/doctor/README.md](../01-huong-dan-su-dung/commands/doctor/README.md) — audit setup
-  - [../01-huong-dan-su-dung/commands/mcp/README.md](../01-huong-dan-su-dung/commands/mcp/README.md) — prune servers
-  - [../01-huong-dan-su-dung/commands/compact/README.md](../01-huong-dan-su-dung/commands/compact/README.md) — compact sớm
-  - [../01-huong-dan-su-dung/commands/clear/README.md](../01-huong-dan-su-dung/commands/clear/README.md) — 1 task 1 session
+  - [../01-huong-dan-su-dung/commands/session-context/cost/README.md](../01-huong-dan-su-dung/commands/session-context/cost/README.md) — session này tốn bao nhiêu
+  - [../01-huong-dan-su-dung/commands/session-context/usage/README.md](../01-huong-dan-su-dung/commands/session-context/usage/README.md) — breakdown ai ngốn
+  - [../01-huong-dan-su-dung/commands/model-mode/model/README.md](../01-huong-dan-su-dung/commands/model-mode/model/README.md) (nếu có) — đổi model
+  - [../01-huong-dan-su-dung/commands/model-mode/effort/README.md](../01-huong-dan-su-dung/commands/model-mode/effort/README.md) (nếu có) — low/medium/high/max
+  - [../01-huong-dan-su-dung/commands/model-mode/fast/README.md](../01-huong-dan-su-dung/commands/model-mode/fast/README.md) (nếu có) — fast mode
+  - [../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md](../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md) — audit setup
+  - [../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md](../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md) — prune servers
+  - [../01-huong-dan-su-dung/commands/session-context/compact/README.md](../01-huong-dan-su-dung/commands/session-context/compact/README.md) — compact sớm
+  - [../01-huong-dan-su-dung/commands/session-context/clear/README.md](../01-huong-dan-su-dung/commands/session-context/clear/README.md) — 1 task 1 session
 - Bài tips liên quan:
   - [Tips 01](./01-context-hygiene.md) — trần context + session sạch
   - [Tips 05](./05-parallel-agents.md) — overhead subagents + route model

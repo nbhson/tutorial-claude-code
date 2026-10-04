@@ -130,7 +130,7 @@ Bộ setup chuẩn (skills + hooks + agents + MCP) dùng ≥2 repo → đóng **
 
 ```bash
 /plugin
-# → Browse hiện trước commands/agents/skills/hooks/MCP để audit rồi mới cài
+# → Browse hiện trước commands/knowledge-system/agents/skills/hooks/MCP để audit rồi mới cài
 # → cài plugin team (vd team-claude-standard), mọi repo hưởng cùng bộ
 ```
 
@@ -366,15 +366,15 @@ Tổng human meetings: 0. Async comments: ~5. Rewind: 0 (phase-gate bắt sớm)
 ## 12. Tham khảo chéo
 
 - Lệnh team/plugin/review:
-  - [../01-huong-dan-su-dung/commands/plugin/README.md](../01-huong-dan-su-dung/commands/plugin/README.md) — manager + Browse audit
-  - [../01-huong-dan-su-dung/commands/code-review/README.md](../01-huong-dan-su-dung/commands/code-review/README.md) — review chuẩn
-  - [../01-huong-dan-su-dung/commands/ultrareview/README.md](../01-huong-dan-su-dung/commands/ultrareview/README.md) — multi-agent PR lớn
-  - [../01-huong-dan-su-dung/commands/batch/README.md](../01-huong-dan-su-dung/commands/batch/README.md) (nếu có) — đóng PR
-  - [../01-huong-dan-su-dung/commands/diff/README.md](../01-huong-dan-su-dung/commands/diff/README.md) — tự đọc diff
-  - [../01-huong-dan-su-dung/commands/verify/README.md](../01-huong-dan-su-dung/commands/verify/README.md) — QA chạy thật
-  - [../01-huong-dan-su-dung/commands/insights/README.md](../01-huong-dan-su-dung/commands/insights/README.md) (nếu có) — report thói quen
-  - [../01-huong-dan-su-dung/commands/stats/README.md](../01-huong-dan-su-dung/commands/stats/README.md) (nếu có) — usage/streaks
-  - [../01-huong-dan-su-dung/commands/doctor/README.md](../01-huong-dan-su-dung/commands/doctor/README.md) — audit team monthly
+  - [../01-huong-dan-su-dung/commands/knowledge-system/plugin/README.md](../01-huong-dan-su-dung/commands/knowledge-system/plugin/README.md) — manager + Browse audit
+  - [../01-huong-dan-su-dung/commands/code-repo/code-review/README.md](../01-huong-dan-su-dung/commands/code-repo/code-review/README.md) — review chuẩn
+  - [../01-huong-dan-su-dung/commands/code-repo/ultrareview/README.md](../01-huong-dan-su-dung/commands/code-repo/ultrareview/README.md) — multi-agent PR lớn
+  - [../01-huong-dan-su-dung/commands/code-repo/batch/README.md](../01-huong-dan-su-dung/commands/code-repo/batch/README.md) (nếu có) — đóng PR
+  - [../01-huong-dan-su-dung/commands/code-repo/diff/README.md](../01-huong-dan-su-dung/commands/code-repo/diff/README.md) — tự đọc diff
+  - [../01-huong-dan-su-dung/commands/code-repo/verify/README.md](../01-huong-dan-su-dung/commands/code-repo/verify/README.md) — QA chạy thật
+  - [../01-huong-dan-su-dung/commands/knowledge-system/insights/README.md](../01-huong-dan-su-dung/commands/knowledge-system/insights/README.md) (nếu có) — report thói quen
+  - [../01-huong-dan-su-dung/commands/knowledge-system/stats/README.md](../01-huong-dan-su-dung/commands/knowledge-system/stats/README.md) (nếu có) — usage/streaks
+  - [../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md](../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md) — audit team monthly
 - Bài tips liên quan:
   - [Tips 04](./04-verification-done-that.md) — reviewer + verify levels
   - [Tips 05](./05-parallel-agents.md) — reviewer/tester + worktrees/batch
