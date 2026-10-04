@@ -298,7 +298,7 @@ claude update && claude doctor
   - [../01-huong-dan-su-dung/commands/bug/README.md](../01-huong-dan-su-dung/commands/bug/README.md) — gửi bug report
   - [../01-huong-dan-su-dung/commands/init/README.md](../01-huong-dan-su-dung/commands/init/README.md) — setup repo mới
   - [../01-huong-dan-su-dung/commands/permissions/README.md](../01-huong-dan-su-dung/commands/permissions/README.md) — dựng phanh baseline
-  - [../01-huong-dan-su-dung/commands/web-setup/README.md](../01-huong-dan-su-dung/commands/web-setup/README.md) — lên cloud (cần sign-in)
+  - [../01-huong-dan-su-dung/02-cac-be-mat-terminal-ide-web-desktop.md](../01-huong-dan-su-dung/02-cac-be-mat-terminal-ide-web-desktop.md) — lên cloud (cần sign-in)
   - [../01-huong-dan-su-dung/commands/teleport/README.md](../01-huong-dan-su-dung/commands/teleport/README.md) — chuyển session lên cloud
 - Bài tổng quan:
   - [../01-huong-dan-su-dung/01-cai-dat-va-xac-thuc.md](../01-huong-dan-su-dung/01-cai-dat-va-xac-thuc.md) — cài đặt + xác thực chi tiết

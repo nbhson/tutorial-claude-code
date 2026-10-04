@@ -369,7 +369,7 @@ Tổng human meetings: 0. Async comments: ~5. Rewind: 0 (phase-gate bắt sớm)
   - [../01-huong-dan-su-dung/commands/plugin/README.md](../01-huong-dan-su-dung/commands/plugin/README.md) — manager + Browse audit
   - [../01-huong-dan-su-dung/commands/code-review/README.md](../01-huong-dan-su-dung/commands/code-review/README.md) — review chuẩn
   - [../01-huong-dan-su-dung/commands/ultrareview/README.md](../01-huong-dan-su-dung/commands/ultrareview/README.md) — multi-agent PR lớn
-  - [../01-huong-dan-su-dung/commands/ship/README.md](../01-huong-dan-su-dung/commands/ship/README.md) (nếu có) — đóng PR
+  - [../01-huong-dan-su-dung/commands/batch/README.md](../01-huong-dan-su-dung/commands/batch/README.md) (nếu có) — đóng PR
   - [../01-huong-dan-su-dung/commands/diff/README.md](../01-huong-dan-su-dung/commands/diff/README.md) — tự đọc diff
   - [../01-huong-dan-su-dung/commands/verify/README.md](../01-huong-dan-su-dung/commands/verify/README.md) — QA chạy thật
   - [../01-huong-dan-su-dung/commands/insights/README.md](../01-huong-dan-su-dung/commands/insights/README.md) (nếu có) — report thói quen

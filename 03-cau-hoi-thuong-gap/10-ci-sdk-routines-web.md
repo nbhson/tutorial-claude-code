@@ -284,7 +284,7 @@ claude -p "ping" --output-format json --permission-mode dontAsk --allowedTools "
 ## Tham khảo chéo
 
 - Lệnh liên quan:
-  - [../01-huong-dan-su-dung/commands/web-setup/README.md](../01-huong-dan-su-dung/commands/web-setup/README.md) — dựng cloud environment
+  - [../01-huong-dan-su-dung/02-cac-be-mat-terminal-ide-web-desktop.md](../01-huong-dan-su-dung/02-cac-be-mat-terminal-ide-web-desktop.md) — dựng cloud environment
   - [../01-huong-dan-su-dung/commands/teleport/README.md](../01-huong-dan-su-dung/commands/teleport/README.md) — chuyển session terminal ↔ cloud
   - [../01-huong-dan-su-dung/commands/doctor/README.md](../01-huong-dan-su-dung/commands/doctor/README.md) — doctor-gate trong CI
   - [../01-huong-dan-su-dung/commands/insights/README.md](../01-huong-dan-su-dung/commands/insights/README.md) — analytics habits

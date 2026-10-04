@@ -412,7 +412,7 @@ Skill-rot = skills đống thành rác: không ai gọi, gọi sai lúc, descrip
 ## 12. Tham khảo chéo
 
 - Lệnh skills/plugins:
-  - [../01-huong-dan-su-dung/commands/skills/README.md](../01-huong-dan-su-dung/commands/skills/README.md) (nếu có) — quản lý skills
+  - [../01-huong-dan-su-dung/05-skills-custom-commands.md](../01-huong-dan-su-dung/05-skills-custom-commands.md) (nếu có) — quản lý skills
   - [../01-huong-dan-su-dung/commands/plugin/README.md](../01-huong-dan-su-dung/commands/plugin/README.md) — đóng plugin phân phối
   - [../01-huong-dan-su-dung/commands/doctor/README.md](../01-huong-dan-su-dung/commands/doctor/README.md) — flag unused skills
   - [../01-huong-dan-su-dung/commands/usage/README.md](../01-huong-dan-su-dung/commands/usage/README.md) — per-skill cost

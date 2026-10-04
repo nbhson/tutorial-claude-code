@@ -1,0 +1,68 @@
+# Claude CI Triage — phân tích CI failure overnight, mở issue tóm tắt
+# Copy file này vào .github/workflows/claude-ci-triage.yml của repo bạn.
+name: claude-ci-triage
+
+on:
+  # 1. Chạy đêm (22:00 UTC) + cho phép chạy tay khi cần.
+  schedule:
+    - cron: "0 22 * * *"
+  workflow_dispatch: {}
+  # 2. (Tùy chọn) chạy ngay sau khi 1 workflow CI khác xong:
+  #    mở comment dòng dưới nếu muốn triage liền thay vì đợi đêm.
+  # workflow_run:
+  #   workflows: ["CI"]
+  #   types: [completed]
+
+# Quyền tối thiểu: đọc code + đọc runs + mở issue.
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 1. Cài Claude Code + GitHub CLI (gh có sẵn trên ubuntu-latest).
+      - name: Cài Claude Code
+        run: |
+          curl -fsSL https://claude.ai/install.sh | bash
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      # 2. Thu thập runs gần nhất + nhờ claude -p tóm tắt log failure.
+      #    Guardrails giống workflow review: dontAsk + allowlist hẹp, không skip-permissions.
+      - name: Phân tích failures gần nhất
+        run: |
+          gh run list --branch main --limit 5 --json conclusion,name,headSha,url > runs.json
+          cat runs.json | jq '.'
+          claude -p "Doc runs.json (5 runs gan nhat main). Voi runs failed: chay 'gh run view <id> --log-failed' lay logs, tom tat root cause + de xuat fix (toi da 5 bullets/run). Output markdown tieng Viet." \
+            --output-format text \
+            --permission-mode dontAsk \
+            --allowedTools "Read, Grep, Glob, Bash" > triage.md
+          cat triage.md
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 3. Mở issue khi có failure thật, bỏ qua khi all green.
+      - name: Mở issue khi có failure
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('triage.md', 'utf8');
+            if (/no failures|all passed|khong co failure|khong thay/i.test(body)) {
+              console.log('All green — khong mo issue.');
+              return;
+            }
+            await github.rest.issues.create({
+              ...context.repo,
+              title: `CI triage ${new Date().toISOString().slice(0, 10)}`,
+              body,
+              labels: ['ci'],
+            });

@@ -33,3 +33,16 @@ GitHub · Playwright · Postgres/MySQL · Fetch/Brave Search · Linear/Notion (3
 
 ## Vòng chuẩn
 Explore→Plan (duyệt)→Implement (phase-gate)→Verify (`/verify`+reviewer fresh). Rule miss 2 lần→hook.
+
+## Tra cứu chi tiết từng lệnh
+Index đầy đủ 64 lệnh: [01-huong-dan-su-dung/commands/README.md](01-huong-dan-su-dung/commands/README.md)
+- `/plan` → [commands/plan/README.md](01-huong-dan-su-dung/commands/plan/README.md)
+- `/permissions` → [commands/permissions/README.md](01-huong-dan-su-dung/commands/permissions/README.md)
+- `/compact` → [commands/compact/README.md](01-huong-dan-su-dung/commands/compact/README.md)
+- `/cost` → [commands/cost/README.md](01-huong-dan-su-dung/commands/cost/README.md)
+- `/init` → [commands/init/README.md](01-huong-dan-su-dung/commands/init/README.md)
+- `/batch` → [commands/batch/README.md](01-huong-dan-su-dung/commands/batch/README.md)
+- `/verify` → [commands/verify/README.md](01-huong-dan-su-dung/commands/verify/README.md)
+- `/doctor` → [commands/doctor/README.md](01-huong-dan-su-dung/commands/doctor/README.md)
+- `/mcp` → [commands/mcp/README.md](01-huong-dan-su-dung/commands/mcp/README.md)
+- `/hooks` → [commands/hooks/README.md](01-huong-dan-su-dung/commands/hooks/README.md)

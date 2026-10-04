@@ -267,7 +267,7 @@ claude mcp get github
 
 - Lệnh liên quan:
   - [../01-huong-dan-su-dung/commands/mcp/README.md](../01-huong-dan-su-dung/commands/mcp/README.md) — add/list/reconnect/enable chi tiết
-  - [../01-huong-dan-su-dung/commands/web-setup/README.md](../01-huong-dan-su-dung/commands/web-setup/README.md) — dựng cloud environment
+  - [../01-huong-dan-su-dung/02-cac-be-mat-terminal-ide-web-desktop.md](../01-huong-dan-su-dung/02-cac-be-mat-terminal-ide-web-desktop.md) — dựng cloud environment
   - [../01-huong-dan-su-dung/commands/doctor/README.md](../01-huong-dan-su-dung/commands/doctor/README.md) — quét secret + tools thừa
   - [../01-huong-dan-su-dung/commands/usage/README.md](../01-huong-dan-su-dung/commands/usage/README.md) — MCP nào ngốn nhất
   - [../01-huong-dan-su-dung/commands/debug/README.md](../01-huong-dan-su-dung/commands/debug/README.md) — chẩn đoán khi reconnect hoài không được

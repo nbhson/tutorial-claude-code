@@ -1,0 +1,67 @@
+# Claude Review — tự động review PR bằng claude -p
+# Copy file này vào .github/workflows/claude-review.yml của repo bạn.
+name: claude-review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+# Quyền tối thiểu: đọc code + ghi comment PR.
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # 1. Lấy full diff (cần fetch-depth 0 để so với base).
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2. Cài Claude Code (runner Ubuntu mới mỗi lần).
+      - name: Cài Claude Code
+        run: |
+          curl -fsSL https://claude.ai/install.sh | bash
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      # 3. Warmup project (chạy Setup hooks nếu có, fail fast khi thiếu config).
+      - name: Warmup (Setup hooks)
+        run: claude --init-only
+        env:
+          # Secrets qua env runner, không hardcode, không echo ra log.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      # 4. Review diff ở chế độ guardrailed:
+      #    - scope hẹp: chỉ Read/Grep/Glob + Bash (git read-only ở bước parse sau).
+      #    - dontAsk: CI không có người approve giữa chừng.
+      #    - KHÔNG dùng dangerously-skip-permissions (chỉ dành cho sandbox ephemeral).
+      - name: Review diff (guardrailed)
+        id: review
+        run: |
+          claude -p "Review git diff origin/${{ github.base_ref }}...HEAD. Output JSON: {findings: [{severity, file, line, msg, fix}]}. Toi da 10 findings, chi loi that su, bo qua style vat." \
+            --output-format json \
+            --permission-mode dontAsk \
+            --allowedTools "Read, Grep, Glob, Bash" > review.json
+          cat review.json | jq '.findings // .'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      # 5. Đăng findings thành comment PR (dùng github-script, không cần token custom).
+      - name: Đăng findings lên PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const raw = fs.readFileSync('review.json', 'utf8');
+            let findings = [];
+            try { findings = JSON.parse(raw).findings ?? JSON.parse(raw); } catch (e) { findings = []; }
+            if (!Array.isArray(findings)) findings = [];
+            const body = findings.length
+              ? `## Claude Review (${findings.length})\n` + findings.map(f =>
+                  `- **[${f.severity}]** \`${f.file}:${f.line}\` — ${f.msg}\n  Fix: ${f.fix}`).join('\n')
+              : `## Claude Review\nKhong thay issue dang ke.`;
+            github.rest.issues.createComment({
+              ...context.repo, issue_number: context.issue.number, body });

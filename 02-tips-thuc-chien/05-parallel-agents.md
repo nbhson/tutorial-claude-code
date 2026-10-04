@@ -222,7 +222,7 @@ git worktree add ../myrepo-worktrees/stream-cart -b feat/cart-promo
 git worktree remove ../myrepo-worktrees/stream-cart
 ```
 
-> Xem [../01-huong-dan-su-dung/commands/worktrees/README.md](../01-huong-dan-su-dung/commands/worktrees/README.md) (nếu có) và [Tips 09](./09-teamwork-chuan-hoa.md).
+> Xem [../01-huong-dan-su-dung/11-git-worktrees-checkpoints.md](../01-huong-dan-su-dung/11-git-worktrees-checkpoints.md) (nếu có) và [Tips 09](./09-teamwork-chuan-hoa.md).
 
 ### 7.2. 1 change lặp pattern → `/batch`
 
