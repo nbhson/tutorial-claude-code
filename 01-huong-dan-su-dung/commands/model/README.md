@@ -182,12 +182,17 @@ Hãy phân tích toàn bộ query N+1 trong src/api/, đề xuất schema mới,
 
 ### Tốn token / tiền?
 
-| Model | Tốc độ | Chi phí tương đối | Khi nào dùng |
+| Model (5.5) | Input / Output (per 1M tokens) | Tốc độ | Khi nào dùng |
 |---|---|---|---|
-| `haiku` | Nhanh nhất | Rẻ nhất (~1x) | Việc vặt, đọc log, rename, format |
-| `sonnet` | Nhanh | Trung bình (~3x Haiku) | Mặc định hàng ngày, code CRUD, review thường |
-| `opus` | Chậm hơn | Đắt nhất (~5x Sonnet, ~15x Haiku) | Kiến trúc, bug khó, bảo mật, thuật toán |
-| `sonnet[1m]` | Nhanh + context 1M | Cao hơn Sonnet thường | Đọc cả monorepo lớn |
+| `haiku` | $1 / $5 | Nhanh nhất | Việc vặt, đọc log, rename, format |
+| `sonnet` (5.5) | $2 / $10 | Nhanh | Mặc định hàng ngày, code CRUD, review thường |
+| `opus` (5.5) | $4 / $20 | Chậm hơn | Kiến trúc, bug khó, bảo mật, thuật toán |
+| `fable` | $10 / $50 | Chậm nhất, mạnh nhất | Agent xuất sắc nhất, task cực khó — không bao giờ là default |
+
+- Alias `opusplan` = plan bằng Opus, thực thi bằng Sonnet (tiết kiệm ~40% so với Opus thuần).
+- `fable` không bao giờ là default — chỉ dùng khi gọi tường minh (`/model fable` hoặc `--model fable`).
+- IDs đầy đủ (dùng trong script/CI): `claude-opus-5-5`, `claude-sonnet-5-5`, `claude-fable-...`, `claude-haiku-...`
+  — picker `/model` luôn là nguồn sự thật, đừng hardcode ID cũ.
 
 - `/model` tự nó tốn 0 token. Nhưng Opus trả lời dài hơn → tốn output tokens hơn.
 - Ví dụ số học: 1 task Opus ~$0.50, Sonnet ~$0.10, Haiku ~$0.02. Dùng sai chỗ = đốt tiền.

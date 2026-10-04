@@ -1,18 +1,18 @@
 # 04 — Slash Commands Toàn Tập (Built-in + Bundled Skills)
 
-> Bài 04 là INDEX tra cứu 62 slash commands v2.1.x. Mỗi lệnh có 1 folder riêng trong `commands/` (vd `commands/plan/`), chứa README chi tiết: cú pháp, ví dụ, pitfalls, version floor.
+> Bài 04 là INDEX tra cứu 76 slash commands v2.1.x. Mỗi lệnh có 1 folder riêng trong `commands/` (vd `commands/plan/`), chứa README chi tiết: cú pháp, ví dụ, pitfalls, version floor.
 > Cách dùng file này: tìm nhóm của bạn → đọc dòng mô tả 1 dòng → click link sang folder chi tiết.
 > Gõ `/` trong session để xem lệnh khả dụng **ở môi trường của bạn** (khác plan/provider/version sẽ khác).
 
 ## Cách đọc index này
 
 - Mỗi dòng = 1 lệnh: `/lệnh` — 1 dòng mô tả — link tới `./commands/<slug>/README.md`.
-- Tổng 62 folders, chia 4 nhóm: Session & Context (15) · Model & Mode + Code (16) · Tri thức & Hệ thống (14) · Auth/Remote/Settings (17).
+- Tổng 76 folders, chia 4 nhóm: Session & Context (18) · Model & Mode + Code (20) · Tri thức & Hệ thống (18) · Auth/Remote/Settings (20).
 - Nếu link nào 404 ở máy bạn (lệnh vắng mặt) → xem mục "Công thức 5 lệnh + lưu ý version/provider" cuối file.
 
 ---
 
-## Nhóm 1 — Session & Context (15)
+## Nhóm 1 — Session & Context (18)
 
 | Lệnh | Mô tả 1 dòng | Chi tiết |
 |---|---|---|
@@ -31,8 +31,11 @@
 | `/tasks` | Xem background work/subagents đang chạy hoặc đã xong | [./commands/tasks/README.md](./commands/tasks/README.md) |
 | `/todos` | Xem quản lý todo list của task nhiều bước | [./commands/todos/README.md](./commands/todos/README.md) |
 | `/usage` | Breakdown limit theo category (skills, subagents, per-MCP-server) | [./commands/usage/README.md](./commands/usage/README.md) |
+| `/restart` | Khởi động lại CLI giữ nguyên session | [./commands/restart/README.md](./commands/restart/README.md) |
+| `/background` | Đẩy session thành agent nền, rảnh tay làm việc khác | [./commands/background/README.md](./commands/background/README.md) |
+| `/recap` | Tóm tắt context khi quay lại session sau break | [./commands/recap/README.md](./commands/recap/README.md) |
 
-## Nhóm 2 — Model & Mode + Code (16)
+## Nhóm 2 — Model & Mode + Code (20)
 
 | Lệnh | Mô tả 1 dòng | Chi tiết |
 |---|---|---|
@@ -52,8 +55,12 @@
 | `/batch` | Chia change lớn thành 5-30 worktree-isolated subagents, mỗi đứa 1 PR | [./commands/batch/README.md](./commands/batch/README.md) |
 | `/loop` | Lặp task theo schedule (kết hợp /schedule routines) | [./commands/loop/README.md](./commands/loop/README.md) |
 | `/btw` | Hỏi nhanh dùng full context nhưng không thêm vào history | [./commands/btw/README.md](./commands/btw/README.md) |
+| `/security-review` | Quét bảo mật on-demand trên branch hiện tại | [./commands/security-review/README.md](./commands/security-review/README.md) |
+| `/run` | Mở app thật và lái nó để thấy change chạy được | [./commands/run/README.md](./commands/run/README.md) |
+| `/subtask` | Giao việc phụ cho subagent, báo về ngay trong session | [./commands/subtask/README.md](./commands/subtask/README.md) |
+| `/fewer-permission-prompts` | Quét transcripts, đề xuất allowlist read-only cho đỡ hỏi | [./commands/fewer-permission-prompts/README.md](./commands/fewer-permission-prompts/README.md) |
 
-## Nhóm 3 — Tri thức & Hệ thống (14)
+## Nhóm 3 — Tri thức & Hệ thống (18)
 
 | Lệnh | Mô tả 1 dòng | Chi tiết |
 |---|---|---|
@@ -71,8 +78,12 @@
 | `/simplify` | Rút gọn code/context thừa theo gợi ý | [./commands/simplify/README.md](./commands/simplify/README.md) |
 | `/insights` | Báo cáo thói quen coding, streaks, model prefs | [./commands/insights/README.md](./commands/insights/README.md) |
 | `/stats` | Thống kê coding dạng HTML report cuối tuần | [./commands/stats/README.md](./commands/stats/README.md) |
+| `/run-skill-generator` | Ghi recipe cách chạy app thành skill tái dùng | [./commands/run-skill-generator/README.md](./commands/run-skill-generator/README.md) |
+| `/skill-doctor` | Báo cáo skill nào ngốn context, skill nào chết lâm sàng | [./commands/skill-doctor/README.md](./commands/skill-doctor/README.md) |
+| `/mcp-serve` | Biến Claude Code thành MCP server cho app khác gọi | [./commands/mcp-serve/README.md](./commands/mcp-serve/README.md) |
+| `/plugin-validate` | Audit plugin/mod trước khi cài | [./commands/plugin-validate/README.md](./commands/plugin-validate/README.md) |
 
-## Nhóm 4 — Auth/Remote/Settings (17)
+## Nhóm 4 — Auth/Remote/Settings (20)
 
 | Lệnh | Mô tả 1 dòng | Chi tiết |
 |---|---|---|
@@ -93,6 +104,9 @@
 | `/statusline` | Cấu hình dòng statusline hiển thị dưới prompt | [./commands/statusline/README.md](./commands/statusline/README.md) |
 | `/terminal-setup` | Setup terminal (font, truecolor, keycodes) cho Claude Code | [./commands/terminal-setup/README.md](./commands/terminal-setup/README.md) |
 | `/sandbox` | Quản lý sandbox cô lập lệnh nguy hiểm | [./commands/sandbox/README.md](./commands/sandbox/README.md) |
+| `/voice` | Nói thay vì gõ (giữ Space để nói, thả để gửi) | [./commands/voice/README.md](./commands/voice/README.md) |
+| `/setup-bedrock` | Wizard cắm Claude Code vào AWS Bedrock | [./commands/setup-bedrock/README.md](./commands/setup-bedrock/README.md) |
+| `/setup-vertex` | Wizard cắm Claude Code vào Google Vertex AI | [./commands/setup-vertex/README.md](./commands/setup-vertex/README.md) |
 
 ---
 

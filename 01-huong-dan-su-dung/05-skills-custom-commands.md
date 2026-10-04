@@ -58,11 +58,16 @@ So sánh với các thứ khác (bài 00):
 ---
 name: deploy              # plugin skill: segment cuối của /plugin:name; skill thường: label hiển thị (command lấy từ tên thư mục)
 description: Deploy staging/prod với checklist migrate + smoke test. Dùng khi user nói deploy/release/ship.
+user-invocable: false     # false = CHỈ Claude tự gọi khi ngữ cảnh khớp, user gõ /deploy không thấy (mặc định true)
 disable-model-invocation: true   # true = chỉ chạy khi gõ tay /deploy (workflow muốn kiểm soát)
+argument-hint: <staging|prod>    # gợi ý hiện trong /skills menu + autocomplete
+arguments: staging prod          # danh sách args hợp lệ (validate trước khi chạy)
 allowed-tools: Bash, Read        # pre-approve tools trong lượt gọi skill (hết lượt tự thu hồi)
 context: fork                     # fork = chạy trong subagent cô lập (không thấy history)
+background: false                # false = chờ fork xong trong turn; bỏ qua = fork chạy background mặc định (từ v2.1.218)
 agent: Explore                    # (kèm fork) chọn agent type thực thi
 model: sonnet                     # ép model cho skill
+paths: ["apps/api/**", "db/migrations/**"]  # glob giới hạn kích hoạt: chỉ auto-trigger khi task chạm các path này
 ---
 
 # Deploy
@@ -80,10 +85,14 @@ Repo root: `${CLAUDE_PROJECT_DIR}`.
 ```
 
 Biến dùng được trong content + `allowed-tools`: `${CLAUDE_SKILL_DIR}`, `${CLAUDE_PROJECT_DIR}`.
+Nhận args: `$0`/`$1` (positional) hoặc `$ARGUMENTS[0]` — breaking từ v2.1.19 thay `$ARGUMENTS.0` cũ
+(vd `/deploy staging` → `$0` = `staging`). `argument-hint` + `arguments` hiện gợi ý trong `/skills` menu.
 
-Frontmatter đầy đủ: `name`, `description` (khuyến nghị — câu đầu là use-case chính; listing truncate ~1536 ký tự),
-`when_to_use`, `disable-model-invocation`, `allowed-tools`, `context: fork`, `agent:`, `model:`,
-`skillOverrides` (settings-level, tắt auto cho skill của người khác), `hooks` (plugin skill: bỏ qua).
+Frontmatter đầy đủ: `name`, `description` (khuyến nghị — câu đầu là use-case chính; listing truncate ~1536 ký tự;
+tổng budget descriptions ~1% context — giữ mỗi description 1-2 câu, chi tiết dồn vào body),
+`when_to_use`, `user-invocable`, `disable-model-invocation`, `argument-hint`, `arguments`, `paths`,
+`allowed-tools`, `context: fork`, `background: false`, `agent:`, `model:`,
+`disableBundledSkills` (settings-level, tắt skills bundled theo máy), `skillOverrides` (settings-level, tắt auto cho skill của người khác), `hooks` (plugin skill: bỏ qua).
 
 ### 2.1. Từng field frontmatter (khi nào dùng)
 
@@ -92,12 +101,30 @@ Frontmatter đầy đủ: `name`, `description` (khuyến nghị — câu đầu
 | `name` | Tên skill (hiện trong list) | `review-pr` |
 | `description` | **Quan trọng nhất** — câu đầu = khi nào trigger. Claude match ngữ cảnh qua đây | `"Review PR tìm bug + security. Dùng khi user nói review/pr..."` |
 | `disable-model-invocation` | `true` = chỉ gọi tay `/ten` | Deploy/ship (muốn kiểm soát tay) |
+| `user-invocable` | `false` = chỉ Claude tự gọi, user không gọi tay được | Skill nội bộ model dùng (ngược với disable-model-invocation) |
+| `argument-hint` / `arguments` | Gợi ý + whitelist args, nhận qua `$0`/`$1`/`$ARGUMENTS[0]` (v2.1.19+, thay `$ARGUMENTS.0`) | `/deploy <staging\|prod>` |
+| `paths` | Glob giới hạn kích hoạt (chỉ trigger khi task chạm path) | `["apps/api/**"]` cho skill API |
 | `allowed-tools` | Pre-approve tools trong lượt gọi | `Bash, Read` cho skill deploy |
 | `context: fork` | Chạy trong subagent cô lập | Skill research ồn |
 | `agent:` | (kèm fork) agent type thực thi | `Explore` cho read-only |
 | `model:` | Ép model | `haiku` cho skill rẻ, `opus` cho review sâu |
 | `when_to_use` | Bổ sung trigger conditions | `"khi diff >10 files"` |
 | `skillOverrides` | Tắt auto skill người khác (settings-level) | Team tắt skill ồn của plugin ngoài |
+| `disableBundledSkills` | Tắt skills bundled theo máy (settings-level) | Máy share, chỉ giữ skills team |
+| `background` | `false` = chờ fork xong trong turn (mặc định fork chạy background từ v2.1.218) | Skill research muốn kết quả ngay |
+
+### 2.2. Ma trận ai được gọi: `disable-model-invocation` × `user-invocable`
+
+|  | `user-invocable: true` (mặc định) | `user-invocable: false` |
+|---|---|---|
+| `disable-model-invocation: false` (mặc định) | Cả 2 được gọi (auto + tay) — mặc định mọi skill | Chỉ Claude gọi (skill nội bộ, user gõ `/ten` không thấy) |
+| `disable-model-invocation: true` | Chỉ user gọi tay `/ten` (ship/deploy) | Không ai gọi được (khóa hẳn — chỉ mở khi sửa frontmatter) |
+
+### 2.3. Arguments mới (breaking v2.1.19)
+
+- Trước v2.1.19: `$ARGUMENTS.0` (dot-index). Từ v2.1.19: `$ARGUMENTS[0]` + `$0`/`$1` positional.
+- `argument-hint: <staging|prod>` hiện trong `/skills` menu + autocomplete; `arguments:` whitelist để validate.
+- Skill cũ dùng `$ARGUMENTS.0` → sửa thành `$0` hoặc `$ARGUMENTS[0]`, test lại 3 inputs (mục 5 bước 5).
 
 ```bash
 # Cấu trúc folder skill chuẩn (copy-paste khung):
@@ -279,6 +306,9 @@ Endpoint list: !`cat docs/endpoints.md 2>/dev/null | head -30`
 
 ### 4.2. Fork skill (`context: fork`)
 
+> Từ v2.1.218 fork skill chạy **background mặc định** (không block turn). Muốn chờ kết quả
+> trong turn: thêm `background: false` vào frontmatter. Kill/check: `/tasks` + `Ctrl+X Ctrl+K ×2`.
+
 ```markdown
 ---
 name: deep-research
@@ -318,6 +348,15 @@ echo "SMOKE PASS: $ENV ($BASE_URL)"
 - **Quyền**: `allowed-tools` chỉ nới trong lượt gọi; baseline vẫn theo permission settings (bài 10).
 - Plugin subagents không hỗ trợ `hooks`/`mcpServers`/`permissionMode` (copy ra `.claude/agents/` nếu cần).
 - Plugin skill có `hooks` frontmatter sẽ bị bỏ qua — đừng trông vào đó.
+
+### 4.5. Nested discovery, budget descriptions, `/skills` menu
+
+- **Nested discovery (monorepo)**: `.claude/skills/` ở repo root + parent dirs tới repo root đều được quét;
+  nested `.claude/skills/` sâu trong monorepo load on-demand khi task chạm path đó (kèm `paths` glob ở mục 2).
+- **Budget 1% context cho descriptions**: startup chỉ load `name` + `description` mọi skill (~100 tokens/skill);
+  tổng descriptions giữ ~1% context — description dài/nhiều skill = mất chỗ implement. Giữ 1-2 câu, chi tiết vào body/support files.
+- **`/skills` menu + overrides**: gõ `/skills` xem list, `argument-hint` hiện gợi ý args; `skillOverrides`
+  (tắt auto skill người khác) và `disableBundledSkills` (tắt skills bundled theo máy) đặt ở settings-level.
 
 ---
 
@@ -360,6 +399,9 @@ Mẫu copy-paste: xem `templates/.claude/skills/deploy/SKILL.md` trong repo này
 ---
 
 ## 6. Bundled skills có sẵn (dùng ngay, khỏi viết)
+
+> Tắt skills bundled theo máy: `disableBundledSkills` ở settings. Xem/gọi: `/skills` menu
+> (hiện `argument-hint`, trigger tay hoặc để Claude auto-trigger theo `description` + `paths`).
 
 `/doctor` (khám setup), `/code-review` + `/ultrareview` (review), `/batch` (chia việc lớn),
 `/debug` (tìm root cause), `/loop` (lặp), `/claude-api [migrate|managed-agents-onboard]` (ref Claude API

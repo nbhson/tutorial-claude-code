@@ -2,8 +2,27 @@
 
 ## [Unreleased]
 
-- Giữ chỗ cho bài/tips/lệnh mới theo quy ước trong `CONTRIBUTING.md`.
-- Không sửa nội dung bài cũ trong PR thêm bài mới (chỉ thêm file mới).
+- `01/05-skills`: frontmatter mới (`user-invocable`, `argument-hint`/`arguments` + `$0`/`$1`/`$ARGUMENTS[0]`
+  breaking v2.1.19 thay `$ARGUMENTS.0`, `paths` glob, `background: false` — fork background mặc định từ v2.1.218),
+  `disableBundledSkills`, nested discovery monorepo, budget 1% context cho descriptions,
+  `/skills` menu + `skillOverrides`, ma trận `disable-model-invocation` × `user-invocable`.
+- `01/06-subagents`: nest depth 3 mặc định (`CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1` để về 1),
+  `--forward-subagent-text` + env, Agent Teams bật bằng `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` (≥2.1.32),
+  fork skill background mặc định (`background: false` để chờ).
+- `01/10-permissions`: deny-bypass fix v2.1.288/289 (compound, env-prefix, bare assignment, symlink realpath,
+  nested mod approval chỉ managed machines); phòng thủ (deny interpreter `Bash(bash -c:*)`, nghi allow rules,
+  negative test từ changelog); npm stable 2.1.285 vs latest 2.1.289 + `npm view dist-tags`;
+  mod-override Pro/Max không managed + mitigations (safe-mode/`disableAllHooks`/`--bare`).
+- Commands: `code-review` (`--max-findings all|default`, `ultra` = alias `/code-review ultra`);
+  `simplify` (từ v2.1.154 chỉ fix over-engineering, không tìm bugs);
+  `usage` (gộp từ `/cost`+`/stats` từ v2.1.118);
+  `model` (giá Opus 5.5 $4/$20, Sonnet 5.5 $2/$10, Fable $10/$50, Haiku $1/$5 + alias `opusplan` + Fable không default + IDs).
+- Indexes: thêm 14 slugs (`security-review`, `run`, `run-skill-generator`, `restart`, `background`, `voice`,
+  `recap`, `subtask`, `skill-doctor`, `setup-bedrock`, `setup-vertex`, `fewer-permission-prompts`,
+  `mcp-serve`, `plugin-validate`) vào `commands/README.md` (64→78), `04-slash-commands-toan-tap.md` (62→76),
+  `01/README.md` (14→17 bài, commands 64→78); gốc `README.md` (01: 17 bài, commands 78; 02: 11 bài);
+  `CHEATSHEET.md` (bảng giá model 5.5 + `/security-review` `/run` `/background`).
+- Không đụng `templates/.claude/hooks/bash-guard.sh` (người khác vừa tạo).
 
 ## [v1.0.0] — 2026-10-04
 

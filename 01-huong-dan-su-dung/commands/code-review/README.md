@@ -11,6 +11,8 @@
 | Cú pháp | Tham số | Ý nghĩa |
 |---|---|---|
 | `/code-review` | _(không có)_ | Review diff chưa commit bằng subagent mới |
+| `/code-review --max-findings <n\|all\|default>` | giới hạn findings | `default` = tối đa 10 (gọn), `all` = không giới hạn, số = trần cụ thể |
+| `/code-review ultra` | alias ultrareview | Deep multi-agent review trong cloud sandbox (= `/ultrareview`) |
 | `/code-review <PR>` | số PR / URL | Review pull request (VD `123`, `gh pr 123`) |
 | `/code-review <file>` | đường dẫn | Review 1 file / 1 thư mục |
 | `/code-review --fix` | (quy ước skill) | Review + đề xuất patch (không auto-apply trừ khi bạn duyệt) |
@@ -65,8 +67,11 @@ gh pr diff 123 | claude --print "Review diff: liệt kê critical/high/low + fil
    - Vòng 3 — Tests & Perf: thiếu test? N+1? p95 tăng? migration nặng không batch?
    - Vòng 4 — Style/Convention: có khớp CLAUDE.md + eslint không?
 3. **Output chuẩn:**
-   - Bảng `CRITICAL / HIGH / LOW` + `file:dòng` + mô tả + gợi ý fix + (tùy bản) patch đề xuất.
-   - Không tự sửa trừ khi bạn gọi `--fix` và duyệt.
+    - Bảng `CRITICAL / HIGH / LOW` + `file:dòng` + mô tả + gợi ý fix + (tùy bản) patch đề xuất.
+    - Mặc định tối đa 10 findings; `--max-findings all` để xem hết, `--max-findings <n>` để trần cụ thể.
+    - Không tự sửa trừ khi bạn gọi `--fix` và duyệt.
+4. **`/code-review ultra` = `/ultrareview`:** cùng 1 alias — deep multi-agent review trong cloud sandbox
+   (5–15 phút, chạy thật). PR thường dùng `/code-review`, release lớn/audit dùng `ultra`.
 4. **Sao fresh tốt hơn cùng-agent?**
    - Nghiên cứu nội bộ + kinh nghiệm: cùng-agent bỏ sót ~30–50% lỗi tư duy gốc (vì nó "tin" hướng cũ). Fresh agent không có niềm tin đó nên hỏi lại từ đầu.
    - Giá: tốn thêm 1 lần khởi tạo (~3–8K tokens đọc diff) + 30–90s. Đáng cho PR > 100 dòng hoặc chạm tiền/auth.

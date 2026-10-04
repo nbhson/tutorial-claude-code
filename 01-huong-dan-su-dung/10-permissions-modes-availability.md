@@ -78,6 +78,34 @@ Deny "Bash(rm:*)" nhưng agent chạy:
 → Việc critical (prod data, secrets, deploy): hook + sandbox + deny, không chỉ rules.
 ```
 
+### 2.3. Deny-bypass đã fix ở v2.1.288/289 (đừng dựa vào bản cũ)
+
+> Nếu bạn ở bản <2.1.288: update trước khi tin deny rules. Kiểm tra:
+> `claude --version` + `npm view @anthropic-ai/claude-code dist-tags`
+> (stable ~2.1.285, latest ~2.1.289 thời điểm viết — `latest` chứa fix, `stable` có thể chưa).
+
+Các kiểu lách đã vá (compound/env-prefix/bare-assign/symlink/nested-mod):
+
+```text
+1. Compound &&/||/|/; — chỉ check prefix allow:
+   allow "Bash(git status:*)" + deny "Bash(rm:*)" nhưng chạy
+   "git status && rm -rf /tmp/x" → bản cũ chỉ check prefix "git status" → LỌT.
+   Fix 2.1.288/289: tách từng segment compound rồi đối chiếu từng cái.
+2. Env-prefix: 'TZ="$HOME" rm -rf ...' / 'FOO=bar rm ...' → matcher cũ thấy "TZ=..." không phải "rm" → LỌT.
+3. Bare assignment: 'FOO=bar' đứng riêng / đầu lệnh để đánh lừa parser.
+4. Symlink: '/tmp/link-to-rm' (symlink → /bin/rm) → resolve realpath trước khi match.
+5. Nested mod approval: mod con xin approve lồng trong mod cha → chỉ giữ trên managed machines.
+```
+
+Quy tắc phòng thủ (áp dụng cả khi đã update):
+
+- **Deny interpreter, không chỉ deny binary**: thêm `Bash(bash -c:*)`, `Bash(sh -c:*)`,
+  `Bash(python3 -c:*)`, `Bash(node -e:*)` vào deny khi việc critical — kẻ lách đổi interpreter chứ không đổi lệnh.
+- **Nghi ngờ cả allow rules**: allow prefix rộng (`Bash(git:*)`, `Bash(npm:*)`) là mặt lách compound/env-prefix.
+  Giữ allow hẹp (`Bash(git diff:*)`), còn lại `ask`.
+- **Negative test từ changelog**: sau mỗi update đọc changelog, viết 1 prompt cố lách deny cũ
+  (compound, env-prefix, symlink) lên môi trường test + hook `bash-guard.sh` (templates) — phải BLOCK mới đạt.
+
 ---
 
 ## 3. Rule matcher deep-dive (prefix + regex + thứ tự thắng)
@@ -292,6 +320,9 @@ Bước 6: /permissions → review auto-denials (cái nào deny oan? pre-approve
 |---|---|---|
 | Allow `Bash(*)` cho tiện | Đưa chìa khóa nhà | Scope hẹp (`Bash(pnpm test:*)`), còn lại ask |
 | Tưởng rules chặn được mọi cách xóa | Rules prefix-only, lọt binary khác | Critical → hook + sandbox (bài 07) |
+| Tin deny bản cũ (<2.1.288) | Compound/env-prefix/symlink lọt | Update ≥2.1.289 (`npm view dist-tags` + `claude --version`); negative test mục 2.3 |
+| Chỉ deny `rm`, quên interpreter | Lách qua `bash -c`/`python3 -c` | Deny thêm `Bash(bash -c:*)`, `Bash(python3 -c:*)`... |
+| Tin mod Pro/Max không managed là an toàn | Mod có thể tự approve qua ask/PreToolUse-user/deny | Mitigations: safe-mode, `disableAllHooks`, `--bare` (mục 7.6) |
 | Hook allow không nới được deny | Thiết kế (chỉ siết) | Sửa deny rule gốc, đừng thêm hook allow |
 | `bypassPermissions` trên máy dev | Copy từ CI example | Chỉ CI sandbox; máy dev dùng auto + rules |
 | Cloud thiếu Manual/Bypass mà ngạc nhiên | Cloud policy | Cloud chỉ Accept/Plan(/Auto) — thiết kế an toàn |
@@ -335,6 +366,19 @@ hook test script (bài 07 mục 6.2). Sửa bằng hook intent-match.
 | Cloud sao không có Bypass? | Thiết kế an toàn — cloud chỉ Accept/Plan(/Auto tùy bản) |
 | Deny oan lệnh read-only? | `/permissions` → recent auto-denials → pre-approve lệnh đó |
 | Personal vs team settings xung đột? | Deny thắng allow; managed đè cả 2. Xem merged ở `/permissions`, đừng đoán |
+
+### 7.6. Mod-override (Pro/Max không managed — mod có thể tự approve)
+
+> Trên máy Pro/Max **không** managed policy: mod (in-process JS/TS, bài 16) có thể approve
+> request của chính nó qua `ask` / `PreToolUse`-user / `deny` passthrough — tức deny rules
+> không còn là chốt cuối với mod độc. Đây là thiết kế extensibility, không phải bug deny-bypass mục 2.3.
+
+Mitigations (chọn 1+ khi chạy mod lạ — chi tiết bài 16):
+
+- **safe-mode**: chỉ cho mod calls đọc (`$.fs.read`, `$.model.complete`), chặn `run/spawn/write/fetch`.
+- **`disableAllHooks`**: tắt hooks mod đăng ký khi nghi prompt.submit/ui.render giả mạo.
+- **`--bare`**: chạy CLI trần không load mod/plugin lạ để review code mod trước (`plugin-validate`).
+- Review bằng `claude plugin validate <mod>` trước khi cài: đỏ ở `hooks:` + `calls:` (đọc env + ghi file + gọi mạng + chạy shell cùng lúc) → không cài.
 
 ---
 

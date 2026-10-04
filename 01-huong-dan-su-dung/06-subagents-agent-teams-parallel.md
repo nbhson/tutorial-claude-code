@@ -44,7 +44,7 @@ tiết kiệm 100k trong main → lời.
 |---|---|---|---|
 | **Subagents** | Claude delegate + gom kết quả trong 1 conversation | Offload research/verify, giữ main sạch | "Research auth module, trả summary" |
 | **Agent view** | Bạn giao việc, check lại sau | Dispatch sessions, attach khi cần | 3 sessions song song 3 features |
-| **Agent teams** (experimental, tắt mặc định) | Lead agent plan + assign + supervise teammates | Feature mới, debug đa giả thuyết, review song song | Lead + 3 teammates (security/perf/tests) |
+| **Agent teams** (experimental, tắt mặc định — bật bằng `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`, ≥2.1.32) | Lead agent plan + assign + supervise teammates | Feature mới, debug đa giả thuyết, review song song | Lead + 3 teammates (security/perf/tests) |
 | **Dynamic workflows** (`/batch`...) | Script giữ plan, bung N subagents + verify chéo | Việc lớn chia nhỏ có kiểm chứng | Migrate 50 files → 10 PRs |
 
 Khác: `Bash` tool = 1 shell command non-blocking (không phải agent). Forked subagent = subagent kế thừa
@@ -262,8 +262,11 @@ Thêm: **isolation pattern** (test/log/doc fetching ồn → subagent giữ, mai
 reviewer fresh-context không mang định kiến của người viết — reviewer quá khắt thì dặn "chỉ flag lỗi thực sự, đừng over-engineer").
 
 Nâng cao: foreground/background subagents (`/agents` tab Running; kill switch Ctrl+X Ctrl+K ×2),
-output scanning, subagents spawn subagents (dùng tiết chế — token cộng dồn), concurrent limit.
-Xem `/agents`, worktrees (bài 11), `/batch`.
+output scanning, subagents spawn subagents — nest depth mặc định **3** (trước đây 1; về 1 bằng
+`CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1`), dùng tiết chế — token cộng dồn; concurrent limit.
+Fork skill chạy **background mặc định** (từ v2.1.218; `background: false` trong SKILL.md để chờ trong turn — bài 05).
+TEXT output forward: `--forward-subagent-text` (kèm env) để hiện text subagent trực tiếp ở main.
+Xem `/agents`, worktrees (bài 11), `/batch`, `/background`, `/subtask`.
 
 ### 5.2. Orchestration patterns (khi nào xếp thế nào)
 
@@ -373,7 +376,7 @@ Copy mục 3 vào `.claude/agents/`. Chạy `/agents` → Library phải thấy 
 | Description dài → startup warning 15k | Chi tiết dồn sai chỗ | Description 1-2 câu, chi tiết vào body |
 | Reviewer quá khắt (flag mọi thứ) | Không định nghĩa "finding" | Dặn "chỉ flag lỗi thực sự, đừng over-engineer" + calibration 3 diffs cũ |
 | Agent sửa lung tung ngoài scope | Allowlist quá rộng | `disallowedTools: Write, Edit` cho read-only agents |
-| Subagent spawn subagent vô hạn | Không giới hạn depth | Dặn "không spawn tiếp, tự làm"; kill switch Ctrl+X Ctrl+K |
+| Subagent spawn subagent vô hạn | Không giới hạn depth | Dặn "không spawn tiếp, tự làm"; trần depth mặc định 3, tắt về 1 bằng `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1`; kill switch Ctrl+X Ctrl+K |
 | Plugin agent hooks không chạy | Bị bỏ qua theo thiết kế | Copy ra `.claude/agents/` nếu cần hooks |
 
 ### 6.3. Bài tập thực hành

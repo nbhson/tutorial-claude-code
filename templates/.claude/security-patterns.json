@@ -1,0 +1,50 @@
+{
+  // Mẫu rules cho plugin security-guidance (bài 15, tầng 0 layer 1).
+  // Copy về .claude/security-patterns.json rồi chỉnh scope cho repo bạn.
+  // KHÔNG secrets thật trong file này — patterns chỉ là regex phát hiện.
+  // Giữ ≤50 rules — quá nhiều là noise, dev sẽ tắt plugin.
+  "rules": [
+    {
+      "id": "aws-key",
+      "pattern": "AKIA[0-9A-Z]{16}",
+      "message": "Nghi AWS access key hardcode — dùng env/secret manager, không paste key vào code.",
+      "severity": "high"
+    },
+    {
+      "id": "private-key-block",
+      "pattern": "-----BEGIN (RSA )?PRIVATE KEY-----",
+      "message": "Private key trong code — xóa ngay, rotate key, scan git history.",
+      "severity": "critical"
+    },
+    {
+      "id": "generic-secret-assign",
+      "pattern": "(?i)(password|passwd|secret|api[_-]?key)\\s*[:=]\\s*['\"][^'\"]{4,}['\"]",
+      "message": "Gán secret trực tiếp trong code — chuyển sang env/secret manager.",
+      "severity": "high"
+    },
+    {
+      "id": "stripe-live-key",
+      "pattern": "sk-live-[0-9a-zA-Z]{16,}",
+      "message": "Stripe live key trong code — thu hồi ngay nếu đã push, chuyển sang env.",
+      "severity": "critical"
+    },
+    {
+      "id": "todo-security",
+      "pattern": "TODO.*(secur|auth|sanitiz|inject|xss|csrf)",
+      "message": "TODO liên quan security — tạo issue theo dõi, đừng để TODO trôi.",
+      "severity": "medium"
+    },
+    {
+      "id": "eval-user-input",
+      "pattern": "eval\\s*\\(",
+      "message": "eval() rất dễ thành code injection — thay bằng parser/allowlist rõ ràng.",
+      "severity": "high"
+    },
+    {
+      "id": "pipe-to-shell",
+      "pattern": "curl[^\\n]*\\|\\s*(ba)?sh",
+      "message": "Pipe-to-shell (curl|sh) — pin checksum/version, không chạy script mù.",
+      "severity": "high"
+    }
+  ]
+}

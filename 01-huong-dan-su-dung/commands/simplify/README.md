@@ -33,6 +33,8 @@
 2. **4 chiêu chuẩn:** tách hàm (1 hàm >30 dòng → 3 hàm nhỏ), gộp nhánh (early-return thay lồng `if`), bỏ code chết (flag không ai bật, `except: pass`), đặt tên rõ (`x2` → `retry_count`).
 3. **Giữ hành vi:** sau mỗi bản gọn, chạy test file đó (hoặc so output trước/sau nếu chưa có test). Test đỏ → hoàn tác chiêu vừa làm, không cố.
 4. **Không làm gì?** Không đổi API public, không đổi framework, không "tối ưu performance" (gọn ≠ nhanh). Muốn nhanh thì nói rõ riêng.
+   Từ v2.1.154: `/simplify` **chỉ fix over-engineering** (phức tạp thừa) — **không tìm bugs**.
+   Muốn tìm bugs → `/review` hoặc `/code-review`.
 
 ---
 

@@ -1,8 +1,8 @@
-# Index 64 lệnh `/...` — tra cứu chi tiết từng lệnh
+# Index 78 lệnh `/...` — tra cứu chi tiết từng lệnh
 
 > Quy ước: mỗi dòng là `/slug` — 1 dòng mô tả — link tới `./<slug>/README.md`.
-> Tổng **64 slugs** = 64 thư mục con trong `commands/`
-> (`ls -F ... | grep -c '/$'`; `ls ... | wc -l` trả 65 vì tính cả file README.md này).
+> Tổng **78 slugs** = 78 thư mục con trong `commands/`
+> (`ls -F ... | grep -c '/$'`; `ls ... | wc -l` trả 79 vì tính cả file README.md này).
 
 ## Cách tra cứu
 
@@ -10,7 +10,7 @@
 - Không nhớ tên → tìm theo 1 trong 4 nhóm bên dưới.
 - Từ repo root: `01-huong-dan-su-dung/commands/<slug>/README.md`.
 
-## 1. Session & Context — phiên làm việc, ngữ cảnh, chi phí (21)
+## 1. Session & Context — phiên làm việc, ngữ cảnh, chi phí (24)
 
 | Lệnh | Mô tả | Link |
 |------|-------|------|
@@ -35,8 +35,11 @@
 | `/help` | Trợ giúp, liệt kê lệnh | [README](./help/README.md) |
 | `/exit` | Thoát phiên/CLI | [README](./exit/README.md) |
 | `/status` | Xem trạng thái phiên và môi trường | [README](./status/README.md) |
+| `/restart` | Khởi động lại CLI giữ nguyên session | [README](./restart/README.md) |
+| `/background` | Đẩy session thành agent nền, rảnh tay làm việc khác | [README](./background/README.md) |
+| `/recap` | Tóm tắt context khi quay lại session sau break | [README](./recap/README.md) |
 
-## 2. Model–Mode–Code — model, chế độ chạy, viết & kiểm chứng code (20)
+## 2. Model–Mode–Code — model, chế độ chạy, viết & kiểm chứng code (24)
 
 | Lệnh | Mô tả | Link |
 |------|-------|------|
@@ -60,8 +63,12 @@
 | `/claude-api` | Gọi Claude API trực tiếp | [README](./claude-api/README.md) |
 | `/radio` | Kênh/tín hiệu điều phối (theo provider) | [README](./radio/README.md) |
 | `/cd` | Đổi thư mục làm việc (≥2.1.169) | [README](./cd/README.md) |
+| `/security-review` | Quét bảo mật on-demand trên branch hiện tại | [README](./security-review/README.md) |
+| `/run` | Mở app thật và lái nó để thấy change chạy được | [README](./run/README.md) |
+| `/subtask` | Giao việc phụ cho subagent, báo về ngay trong session | [README](./subtask/README.md) |
+| `/fewer-permission-prompts` | Quét transcripts, đề xuất allowlist read-only cho đỡ hỏi | [README](./fewer-permission-prompts/README.md) |
 
-## 3. Tri thức & Hệ thống — agents, hooks, MCP, cấu hình (16)
+## 3. Tri thức & Hệ thống — agents, hooks, MCP, cấu hình (20)
 
 | Lệnh | Mô tả | Link |
 |------|-------|------|
@@ -81,8 +88,12 @@
 | `/vim` | Chế độ/chỉnh sửa kiểu Vim | [README](./vim/README.md) |
 | `/statusline` | Tùy biến dòng trạng thái | [README](./statusline/README.md) |
 | `/terminal-setup` | Thiết lập terminal tối ưu | [README](./terminal-setup/README.md) |
+| `/run-skill-generator` | Ghi recipe cách chạy app thành skill tái dùng | [README](./run-skill-generator/README.md) |
+| `/skill-doctor` | Báo cáo skill nào ngốn context, skill nào chết lâm sàng | [README](./skill-doctor/README.md) |
+| `/mcp-serve` | Biến Claude Code thành MCP server cho app khác gọi | [README](./mcp-serve/README.md) |
+| `/plugin-validate` | Audit plugin/mod trước khi cài | [README](./plugin-validate/README.md) |
 
-## 4. Auth–Remote–Settings — xác thực, thiết bị, thư mục (7)
+## 4. Auth–Remote–Settings — xác thực, thiết bị, thư mục (10)
 
 | Lệnh | Mô tả | Link |
 |------|-------|------|
@@ -93,6 +104,9 @@
 | `/teleport` | Chuyển phiên giữa máy/thiết bị | [README](./teleport/README.md) |
 | `/add-dir` | Thêm thư mục vào workspace (`--add-dir`) | [README](./add-dir/README.md) |
 | `/init` | Khởi tạo dự án (tạo CLAUDE.md, settings ban đầu) | [README](./init/README.md) |
+| `/voice` | Nói thay vì gõ (giữ Space để nói, thả để gửi) | [README](./voice/README.md) |
+| `/setup-bedrock` | Wizard cắm Claude Code vào AWS Bedrock | [README](./setup-bedrock/README.md) |
+| `/setup-vertex` | Wizard cắm Claude Code vào Google Vertex AI | [README](./setup-vertex/README.md) |
 
 ## Ghi chú version / provider
 

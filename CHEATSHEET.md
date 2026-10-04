@@ -6,15 +6,15 @@
 
 ## Session/context
 `/clear` (mỗi task) · `/compact [focus]` · `/context` · `/cost` · `/usage` · `/export` · `/resume /fork /branch /rename`
-`/rewind` (double-Esc menu) · `/todos` · `/tasks`
+`/rewind` (double-Esc menu) · `/todos` · `/tasks` · `/background` (đẩy session thành agent nền) · `/recap` (tóm tắt khi quay lại) · `/restart`
 
 ## Model/mode
-`/model opus|sonnet|haiku` · `/effort low|medium|high|xhigh|max|auto` · `/fast` (+`/extra-usage`)
+`/model opus-5.5|sonnet-5.5|fable|haiku` (Opus $4/$20, Sonnet $2/$10, Fable $10/$50, Haiku $1/$5 per 1M in/out; `opusplan` = plan Opus + chạy Sonnet; Fable không bao giờ default) · `/effort low|medium|high|xhigh|max|auto` · `/fast` (+`/extra-usage`)
 `Shift+Tab`: default→acceptEdits→plan→auto→bypass · `/plan` · `/goal <dk>` (`/goal clear`) · `/permissions`
 
 ## Code/repo
-`/init` · `/memory` · `/rules` · `/diff` · `/review` · `/code-review [PR|branch]` · `/ultrareview`
-`/verify` (≥2.1.145) · `/pr_comments` · `/batch` · `/loop` · `/cd` (≥2.1.169) · `/add-dir`
+`/init` · `/memory` · `/rules` · `/diff` · `/review` · `/code-review [PR|branch]` (`--max-findings all|default`, `ultra` = `/ultrareview`) · `/security-review` · `/ultrareview`
+`/verify` (≥2.1.145) · `/run` (mở app thật + lái) · `/pr_comments` · `/batch` · `/subtask` · `/loop` · `/cd` (≥2.1.169) · `/add-dir`
 
 ## System
 `/agents` · `/mcp [reconnect|enable|disable]` · `claude mcp list|get|remove|add|add-json|add-from-claude-desktop|serve`
@@ -35,7 +35,7 @@ GitHub · Playwright · Postgres/MySQL · Fetch/Brave Search · Linear/Notion (3
 Explore→Plan (duyệt)→Implement (phase-gate)→Verify (`/verify`+reviewer fresh). Rule miss 2 lần→hook.
 
 ## Tra cứu chi tiết từng lệnh
-Index đầy đủ 64 lệnh: [01-huong-dan-su-dung/commands/README.md](01-huong-dan-su-dung/commands/README.md)
+Index đầy đủ 78 lệnh: [01-huong-dan-su-dung/commands/README.md](01-huong-dan-su-dung/commands/README.md)
 - `/plan` → [commands/plan/README.md](01-huong-dan-su-dung/commands/plan/README.md)
 - `/permissions` → [commands/permissions/README.md](01-huong-dan-su-dung/commands/permissions/README.md)
 - `/compact` → [commands/compact/README.md](01-huong-dan-su-dung/commands/compact/README.md)

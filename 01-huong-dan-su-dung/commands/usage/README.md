@@ -4,6 +4,8 @@
 
 `/usage` là "camera giám sát chi tiết": không chỉ cho biết tốn bao nhiêu (như `/cost`), mà cho biết **tốn vào việc gì** — skill nào, subagent nào, plugin nào, MCP server nào — kèm rate limits / quota còn lại.
 
+> Từ v2.1.118: `/usage` gộp từ `/cost` + `/stats` — 1 lệnh xem cả tiền lẫn breakdown, khỏi gõ 3 lệnh.
+
 ---
 
 ## Cú pháp & tham số
