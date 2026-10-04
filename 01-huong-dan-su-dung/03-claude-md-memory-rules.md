@@ -1,6 +1,43 @@
 # 03 — CLAUDE.md, Memory & Rules (File Quan Trọng Nhất)
 
-## 1. CLAUDE.md là gì và đặt ở đâu
+> Bài 03 của series — file quyết định 50% chất lượng agent. Đọc xong bạn viết được
+> CLAUDE.md <200 dòng, tách rules theo path, dùng import đúng cách, và tương thích AGENTS.md.
+> Thời gian: ~35 phút.
+
+## Mục lục
+
+1. [Vì sao CLAUDE.md là file quan trọng nhất? (why)](#1-vì-sao-claudemd-là-file-quan-trọng-nhất-why)
+2. [CLAUDE.md là gì và đặt ở đâu](#2-claudemd-là-gì-và-đặt-ở-đâu)
+3. [3 CLAUDE.md mẫu hoàn chỉnh](#3-3-claudemd-mẫu-hoàn-chỉnh-copy-paste)
+4. [Rules patterns + paths frontmatter](#4-rules-patterns--paths-frontmatter)
+5. [AGENTS.md portability](#5-agentsmd-portability--viết-1-lần-chạy-mọi-agent)
+6. [Import & tách nhỏ](#6-import--tách-nhỏ-đừng-phình-file)
+7. [Auto-memory + /memory deep-dive](#7-auto-memory-claude-tự-học--memory)
+8. [Walkthrough step-by-step](#8-walkthrough-step-by-step-viết-claudemd-từ-0)
+9. [Anti-patterns + pitfalls + bài tập](#9-anti-patterns--pitfalls)
+10. [Link chéo](#10-link-chéo)
+
+---
+
+## 1. Vì sao CLAUDE.md là file quan trọng nhất? (why)
+
+Mọi session Claude Code đều nạp CLAUDE.md **đầu tiên, giữ suốt, nạp lại mỗi turn**.
+Nó là "bộ nhớ dài hạn" duy nhất bạn kiểm soát được. Skill/subagent/hook đều load có điều kiện;
+CLAUDE.md load **vô điều kiện**. Vì vậy:
+
+- Viết tốt → mọi task sau tự đúng (lệnh test đúng, style đúng, không đụng generated).
+- Viết tệ (500 dòng wiki) → mọi task sau đều trả tiền cho rác + agent vẫn sai chỗ quan trọng.
+
+Cơ chế sâu: CLAUDE.md được inject vào system prompt đầu session. Mỗi lần compact context,
+nó được nạp lại. Mỗi subagent **mặc định cũng đọc** project CLAUDE.md (trừ agent `Explore`/`Plan`
+skip để giữ context nhỏ — bài 06). Nghĩa là 1 dòng sai trong CLAUDE.md nhân bản ra mọi worker.
+
+> Quy tắc 200 dòng không phải thẩm mỹ — là token economics (bài 00 mục 4). 150 dòng ≈ 2.500 tokens
+> × N turns. Cắt 1 dòng thừa tiết kiệm N lần.
+
+---
+
+## 2. CLAUDE.md là gì và đặt ở đâu
 
 Markdown Claude đọc **đầu mỗi session**, giữ suốt session. Chứa: project là gì, build/test/lint
 lệnh nào, kiến trúc, code style, rules "luôn/không bao giờ".
@@ -10,6 +47,7 @@ Thứ tự load (merge từ ngoài vào trong):
 ```
 ~/.claude/CLAUDE.md          (personal, mọi project)
 → ./CLAUDE.md hoặc ./.claude/CLAUDE.md  (project, commit git cho team)
+→ /etc/claude-code/CLAUDE.md   (system, nếu có)
 /etc/claude-code/CLAUDE.md   (system, nếu có)
 → nested CLAUDE.md ở subdirs (lazy-load khi làm việc trong đó)
 → --add-dir dirs (CHỈ khi CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1)
@@ -17,51 +55,141 @@ Thứ tự load (merge từ ngoài vào trong):
 
 Xem thực tế đang load gì: `/memory`. Sửa: `/memory` (edit files, bật/tắt auto-memory, xem entries).
 
-## 2. Template chuẩn (<200 dòng!)
+### 2.1. Thứ tự thắng khi xung đột (precedence)
+
+```
+system < personal (~/.claude/) < project (./CLAUDE.md) < nested (subdirs) < rules (paths-scoped)
+```
+
+- Nested và rules thắng vì **cụ thể hơn** (gần code đang sửa hơn).
+- `/doctor` (≥2.1.206) phát hiện dedupe local vs checked-in: cùng 1 rule viết 2 nơi → giữ 1.
+- Quy tắc team: personal chỉ để preferences cá nhân (editor, ngôn ngữ trả lời); mọi thứ team
+  dùng chung phải vào project CLAUDE.md + commit.
+
+```bash
+# Kiểm tra đang load gì (copy-paste):
+# Trong session:
+/memory
+# → liệt kê từng file + entries. Nếu thấy rule trùng 2 files → xóa 1.
+
+# Đếm dòng (budget check):
+wc -l CLAUDE.md .claude/CLAUDE.md ~/.claude/CLAUDE.md 2>/dev/null
+# Mục tiêu: project file <200 dòng.
+```
+
+---
+
+## 3. 3 CLAUDE.md mẫu hoàn chỉnh (copy-paste)
+
+> Mỗi mẫu <100 dòng, verified-commands, rules check được. Thay `<...>` bằng project bạn.
+
+### 3.1. Mẫu A — Web app (Next.js + Postgres + pnpm)
 
 ```markdown
-# Project: <Name> — one-liner mô tả
+# Project: Acme Shop Web — Next.js 15 storefront + API routes
 
 ## Tech Stack
-- <Framework>, <Lang + version>, <DB>, <lib chính>
+- Next.js 15 (App Router), TypeScript strict, Tailwind, Prisma + Postgres 16
+- Auth: NextAuth v5 (credentials + Google). Tests: Vitest + Playwright
 
-## Commands (VERIFIED — chỉ ghi lệnh đã chạy thử)
-- Dev: `pnpm dev`
-- Build: `pnpm build`
-- Test (focused): `pnpm --filter @acme/auth test`
-- Full check: `pnpm lint && pnpm test && pnpm build`
+## Commands (VERIFIED 2026-09 — chạy lại nếu đổi toolchain)
+- Dev: `pnpm dev` (web :3000, cần `.env.local` từ 1Password "Acme dev")
+- DB migrate: `pnpm prisma migrate dev`
+- Test focused: `pnpm vitest run apps/web/src/app/login/`
+- Test full: `pnpm test` (không chạy khi chỉ sửa 1 file — dùng focused)
+- Lint: `pnpm eslint apps/web/src --max-warnings 0`
+- Full check trước PR: `pnpm lint && pnpm test && pnpm build`
 
 ## Architecture
-- `apps/api/` owns HTTP transport; `packages/domain/` không phụ thuộc framework
-- Routes ở ..., models/types ở ..., tests ở ...
+- `apps/web/src/app/` routes (server components mặc định; "use client" chỉ khi cần interactivity)
+- `apps/web/src/server/` owns DB access; client components KHÔNG import prisma trực tiếp
+- `packages/ui/` design system; `packages/contracts/` zod schemas dùng chung client/server
 
 ## Code Style (cụ thể, check được)
-- TypeScript strict, không `any` trừ khi ép kiểu có comment
-- API errors shape `{ code, message, requestId }`
-- File >300 dòng thì tách
+- API errors shape `{ code, message, requestId }`, HTTP status đúng (400/401/403/404/422/500)
+- Server actions validate bằng zod schema từ `packages/contracts/`, không validate tay
+- File >300 dòng thì tách; component >150 dòng thì tách
+- Không `any`; ép kiểu phải có comment `// why: ...`
 
-## Rules (ngắn, mệnh lệnh)
-- ALWAYS chạy focused tests sau khi sửa
-- NEVER commit trực tiếp main, NEVER sửa `src/generated/`
-- DB change → bắt buộc migration trong `db/migrations/`
+## Rules
+- ALWAYS chạy focused test sau khi sửa; paste output vào báo cáo
+- ALWAYS `pnpm prisma migrate dev --name <ten>` khi đổi schema, KHÔNG sửa SQL tay
+- NEVER commit trực tiếp main, NEVER sửa `src/generated/` và `prisma/migrations/*/migration.sql` đã merge
+- DB seed chỉ từ `prisma/seed.ts`, không insert tay rồi quên seed
 ```
 
-Nguyên tắc của official memory guide:
-
-- **<200 dòng** — đây là context budget, không phải target trang trí.
-- Xóa mọi thứ Claude tự suy ra được (directory layout, dependency list, architecture overview dài).
-- Giữ: **pitfalls, rationale, conventions khác default** của tool.
-- Viết cụ thể, check được. "Write clean code" = rác. "API errors dùng `{code,message,requestId}`" = vàng.
-- Commands phải **verified** (đã chạy thật), không ghi bừa.
-
-## 3. Import & tách nhỏ (đừng phình file)
+### 3.2. Mẫu B — Monorepo (pnpm workspaces + packages)
 
 ```markdown
-@path/to/architecture.md
-@docs/conventions.md
+# Project: Acme Platform — pnpm monorepo (apps/api, apps/worker, packages/*)
+
+## Tech Stack
+- Node 22, pnpm 9 workspaces, TypeScript project references
+- apps/api (Fastify), apps/worker (BullMQ), packages/domain (pure, không phụ thuộc framework)
+
+## Commands (VERIFIED)
+- Dev all: `pnpm dev` (turbo pipeline)
+- Test focused (QUAN TRỌNG — không chạy root test khi sửa 1 package):
+  - `pnpm --filter @acme/auth test`
+  - `pnpm --filter @acme/api test src/routes/login.test.ts`
+- Full check: `pnpm lint && pnpm test && pnpm build`
+- Thay đổi cross-package: `pnpm --filter @acme/api... test` (test dependents)
+
+## Architecture
+- `packages/domain/` KHÔNG import từ `apps/*` hay framework (fastify, prisma). Vi phạm → tách lại
+- `apps/api/` owns HTTP transport; logic nghiệp vụ nằm ở `packages/domain/`
+- Routes ở `apps/api/src/routes/`, types ở `packages/contracts/`, tests cạnh source `*.test.ts`
+
+## Code Style
+- Conventional commits: `feat|fix|test|chore(scope): mô tả`
+- Public function phải có JSDoc 1 dòng + example nếu nontrivial
+- Error shape `{ code, message, requestId }` xuyên suốt apps
+
+## Rules
+- ALWAYS chạy `--filter` focused trước, chỉ chạy full khi PR
+- NEVER import chéo `apps/*` vào `packages/domain/` (check bằng `pnpm deps:check`)
+- NEVER bump major dep mà không mở PR riêng + changelog entry
+- Migration DB nằm ở `db/migrations/`, 1 migration/PR, đặt tên `YYYYMMDD_<mo-ta>.sql`
 ```
 
-- Project lớn: tách thành `.claude/rules/*.md` với `paths` frontmatter (rule chỉ load khi chạm path đó):
+### 3.3. Mẫu C — Mobile (React Native / Expo)
+
+```markdown
+# Project: Acme Go — Expo React Native app (iOS + Android)
+
+## Tech Stack
+- Expo SDK 52, React Native 0.76, TypeScript strict, Zustand + React Query
+- E2E: Maestro (`maestro test flows/`), unit: Jest
+
+## Commands (VERIFIED)
+- Dev: `pnpm start` (Expo Go) hoặc `pnpm ios` / `pnpm android`
+- Unit focused: `pnpm jest src/screens/Login/`
+- E2E 1 flow: `maestro test flows/login.yaml`
+- Lint: `pnpm eslint src --max-warnings 0`
+- Full check: `pnpm lint && pnpm jest && maestro test flows/`
+
+## Architecture
+- `src/screens/` (1 folder/screen: `index.tsx`, `hooks.ts`, `*.test.tsx`)
+- `src/api/` owns network (React Query hooks); screens KHÔNG fetch trực tiếp
+- `src/store/` Zustand slices; `src/components/` presentational only
+
+## Code Style
+- Screens không chứa fetch logic — chuyển vào `src/api/` hooks
+- Mọi user-visible string qua `src/i18n/` (vi + en), không hardcode tiếng Việt trong JSX
+- Không `any`; navigation params typed qua `src/navigation/types.ts`
+
+## Rules
+- ALWAYS chạy Jest focused sau sửa; E2E chỉ chạy khi PR (chậm)
+- NEVER commit khi `maestro test flows/login.yaml` fail
+- NEVER thêm native module mà không ghi vào đây + update `app.json` plugin list
+- Ảnh/assets mới phải qua `pnpm assets:optimize` trước khi commit
+```
+
+---
+
+## 4. Rules patterns + paths frontmatter
+
+Project lớn: tách thành `.claude/rules/*.md` với `paths` frontmatter (rule chỉ load khi chạm path đó):
 
 ```markdown
 ---
@@ -70,28 +198,300 @@ paths: ["apps/mobile/**", "*.swift"]
 - UI dùng SwiftUI, không UIKit trừ khi cần perf...
 ```
 
+### 4.1. 5 patterns rules hay dùng (copy-paste khung)
+
+```markdown
+---
+paths: ["apps/api/**"]
+---
+# API rules (chỉ load khi sửa apps/api/)
+- Mọi route mới phải có: zod schema + test happy + test 401/422 + log requestId.
+- Không trả stack trace ra client (log server, trả { code, message, requestId }).
+```
+
+```markdown
+---
+paths: ["db/migrations/**", "*.sql"]
+---
+# DB rules
+- 1 migration/PR. Tên `YYYYMMDD_<mo-ta>.sql`. Không sửa migration đã merge (viết migration mới).
+- Mọi ALTER TABLE production phải có rollback note trong header file.
+```
+
+```markdown
+---
+paths: ["*.test.ts", "*.spec.ts"]
+---
+# Test rules
+- Test đặt cạnh source, không gom vào tests/ trung tâm.
+- Mock ở boundary (DB/HTTP), không mock logic đang test.
+```
+
+```markdown
+---
+paths: [".github/workflows/**"]
+---
+# CI rules
+- Workflow mới phải có `timeout-minutes`, không chạy `latest` floating cho action critical (pin SHA).
+- Secrets chỉ qua `secrets.*`, không hardcode, không echo ra log.
+```
+
+```markdown
+---
+paths: ["packages/domain/**"]
+---
+# Domain purity (monorepo)
+- File trong đây KHÔNG import fastify/express/prisma/react. Import vi phạm → build fail (`pnpm deps:check`).
+```
+
+### 4.2. So sánh CLAUDE.md vs rules vs skill (khi nào dùng gì)
+
+| Nhu cầu | Đặt ở | Vì sao |
+|---|---|---|
+| Lệnh build/test кислорода mọi task | CLAUDE.md root | Load luôn, dùng mọi session |
+| Quy ước chỉ đúng trong `apps/api/` | `.claude/rules/api.md` (paths) | Đỡ pollute task sửa mobile |
+| Checklist deploy 20 bước | Skill `/deploy` | Lazy-load khi deploy, không tốn token hàng ngày |
+| Rule "không push main" bị ignore hoài | Hook PreToolUse | Advisory → law (bài 07) |
+| Quy ước team dùng cả Cursor/Windsurf | `AGENTS.md` + CLAUDE.md trỏ sang | Portability (mục 5) |
+
 - Xem/quản lý: `/rules`. Cross-tool portability: giữ rules chung ở `AGENTS.md`, CLAUDE.md ngắn trỏ sang.
 
-## 4. Auto-memory (Claude tự học) + `/memory`
+---
+
+## 5. AGENTS.md portability — viết 1 lần, chạy mọi agent
+
+**AGENTS.md** là chuẩn mở (OpenAI khởi xướng, nhiều agent tools đọc: Cursor, Copilot, Codex, Windsurf...).
+Claude Code đọc CLAUDE.md; các tool khác đọc AGENTS.md. Team dùng nhiều tools → giữ 1 source of truth.
+
+### 5.1. Pattern khuyến nghị (3 options)
+
+```text
+Option 1 — AGENTS.md là chính, CLAUDE.md trỏ sang (khuyến nghị team multi-tool):
+  AGENTS.md         ← rules chung (commands, style, architecture)
+  CLAUDE.md         ← 10 dòng: "đọc AGENTS.md + thêm notes riêng Claude (hooks, skills...)"
+  .claude/rules/    ← path-scoped, Claude-specific
+
+Option 2 — CLAUDE.md là chính (team thuần Claude):
+  CLAUDE.md         ← tất cả
+  AGENTS.md         ← symlink hoặc 5 dòng trỏ sang CLAUDE.md
+
+Option 3 — Song sinh (tránh):
+  2 files copy nhau → drift sau 2 tuần → ĐỪNG.
+```
+
+### 5.2. Ví dụ copy-paste (Option 1)
+
+```markdown
+# File: AGENTS.md (repo root, commit)
+# Project conventions (tool-agnostic — mọi agent đọc)
+
+## Commands
+- Dev: `pnpm dev` · Test focused: `pnpm --filter @acme/api test` · Lint: `pnpm lint`
+
+## Style
+- TypeScript strict, no `any` without `// why:` comment
+- API errors `{ code, message, requestId }`
+
+## Boundaries
+- `packages/domain/` must not import frameworks
+- Never commit to main; migrations in `db/migrations/`, one per PR
+```
+
+```markdown
+# File: CLAUDE.md (repo root, commit — ngắn!)
+# Claude-specific pointer + extras
+
+@AGENTS.md
+
+## Claude-only notes
+- Skills: dùng `/deploy` khi deploy, `/review-pr` khi review (xem .claude/skills/)
+- Test reports: paste focused-test output vào báo cáo cuối task
+- Chi tiết path-scoped: xem `.claude/rules/` (`/rules` để browse)
+```
+
+```bash
+# Verify cả 2 tools đọc được (copy-paste):
+wc -l AGENTS.md CLAUDE.md   # AGENTS.md chi tiết, CLAUDE.md <30 dòng là đẹp
+# Hỏi Claude: "liệt kê rules mày load từ AGENTS.md + CLAUDE.md + .claude/rules/"
+```
+
+---
+
+## 6. Import & tách nhỏ (đừng phình file)
+
+```markdown
+@import path/to/architecture.md
+@docs/conventions.md
+```
+
+- Dùng `@path` để import file khác (Claude đọc lazy khi cần). Khác với copy-paste: source 1 nơi,
+  sửa 1 nơi.
+- Ngưỡng: CLAUDE.md root >100 dòng → bắt đầu tách. >200 dòng → bắt buộc tách (budget).
+
+```markdown
+# Ví dụ CLAUDE.md dùng import (root ngắn, chi tiết lazy):
+# Project: Acme — xem chi tiết khi cần
+
+## Commands (luôn giữ inline — dùng mọi task)
+- Dev: `pnpm dev` · Test: `pnpm --filter @acme/api test` · Lint: `pnpm lint`
+
+@docs/architecture.md
+@docs/api-conventions.md
+@docs/db-migrations.md
+```
+
+```bash
+# Cấu trúc file khuyến nghị cho repo vừa (copy-paste khung):
+# CLAUDE.md (root, <60 dòng: commands + rules nóng nhất)
+# docs/architecture.md (sơ đồ module, boundaries)
+# docs/api-conventions.md (error shape, validation, auth)
+# docs/db-migrations.md (quy trình migration)
+# .claude/rules/<domain>.md (path-scoped, có paths frontmatter)
+```
+
+---
+
+## 7. Auto-memory (Claude tự học) + `/memory`
 
 Claude tự save learnings (build commands, debugging insights) cross-session — bạn không cần viết tay.
 Dùng `/memory` để xem entries, xóa cái sai, tắt auto-memory nếu team không muốn drift.
 Định kỳ chạy `/doctor`: nó dedupe local vs checked-in CLAUDE.md và đề xuất migrate guidance
-always-loaded còn lại thành skills + nested CLAUDE.md load-on-demand.
+always-loaded còn lại thành skills + nested `CLAUDE.md` load-on-demand.
 
-## 5. Anti-patterns (lỗi phổ biến người Việt hay mắc)
+### 7.1. `/memory` deep-dive (3 tabs cần biết)
 
-| Sai | Đúng |
+```text
+Tab 1 — Files: liệt kê CLAUDE.md files đang load (personal/project/nested/add-dir).
+       Dùng để: phát hiện trùng lặp, biết rule nào từ file nào.
+Tab 2 — Entries: từng learning Claude tự save (vd "repo dùng pnpm, không dùng npm").
+       Dùng để: xóa entries sai (Claude học nhầm 1 lần rồi áp dụng mãi).
+Tab 3 — Settings: bật/tắt auto-memory, chọn scope (personal/project).
+```
+
+```text
+# Flow dọn memory định kỳ (2 tuần/lần, 10 phút):
+/memory
+# 1. Tab Entries → xóa learnings sai/lỗi thời (đổi toolchain mà memory còn lệnh cũ).
+# 2. Tab Files → nếu project CLAUDE.md >200 dòng → /doctor để trim.
+# 3. Nếu team drift (mỗi máy memory khác nhau) → tắt auto-memory project-scope,
+#    giữ rules trong committed CLAUDE.md + rules/ làm source of truth.
+```
+
+### 7.2. Khi nào TẮT auto-memory?
+
+| Tình huống | Quyết định |
 |---|---|
-| CLAUDE.md 500 dòng copy wiki | <200 dòng, front-load rule hay sai nhất lên đầu |
-| Ghi "chạy test" chung chung | Ghi lệnh focused test chính xác |
-| Ghi conventions của framework mặc định | Chỉ ghi cái **khác** default + lý do |
-| Nhét deployment checklist dài vào CLAUDE.md | Tách thành skill `/deploy` (load khi cần) |
-| Rule bị ignore hoài vẫn để trong CLAUDE.md | Nâng thành **hook** (Pre/PostToolUse) — xem bài 07 |
+| Solo dev, 1 repo | Bật — học preferences nhanh |
+| Team 3+ người, 1 repo | Tắt project-scope, giữ personal — tránh drift chéo |
+| Repo có committed CLAUDE.md chuẩn | Tắt — committed file là truth, memory chỉ gây nhiễu |
+| Sau khi đổi toolchain (npm→pnpm) | Xóa entries cũ + bật lại — không để memory cũ đầu độc |
 
-## 6. Bài tập
+---
 
-1. Chạy `/init` (hoặc `CLAUDE_CODE_NEW_INIT=1 /init` cho flow interactive), đọc file sinh ra, xóa 50%.
-2. Thêm 3 verified commands (dev/test/lint) đã chạy thử trên máy.
-3. Viết 5 rules ALWAYS/NEVER cụ thể của team bạn.
-4. Chạy `/doctor`, làm theo mục CLAUDE.md trim.
+## 8. Walkthrough step-by-step: viết CLAUDE.md từ 0
+
+> 20 phút, làm 1 lần cho mỗi repo. Yêu cầu: repo đã `git init`, có package.json/pyproject.
+
+**Bước 1 — Sinh nháp (3 phút):**
+
+```bash
+cd /path/to/repo
+# Interactive flow (hỏi skills/hooks/memory):
+CLAUDE_CODE_NEW_INIT=1 claude
+# Trong session:
+/init
+```
+
+**Bước 2 — Cắt 50% (5 phút):**
+Đọc file sinh ra, xóa mọi dòng thuộc 3 loại:
+
+- [ ] Directory layout ("repo có apps/, packages/...") — Claude tự `ls` được.
+- [ ] Dependency list copy từ package.json — Claude tự `Read` được.
+- [ ] Architecture overview dài không có rationale — giữ boundaries + pitfalls, xóa mô tả.
+
+**Bước 3 — Thêm verified commands (5 phút):**
+
+```bash
+# Chạy THẬT từng lệnh trên máy, chỉ ghi lệnh pass:
+pnpm dev          # có chạy được? port nào?
+pnpm --filter @acme/api test   # focused test lệnh nào?
+pnpm lint         # lint lệnh nào?
+# Ghi đúng lệnh đã pass + ghi chú (cần .env? cần DB chạy?) vào CLAUDE.md.
+```
+
+**Bước 4 — Viết 5 rules ALWAYS/NEVER (5 phút):**
+Mỗi rule phải cụ thể + check được. Mẫu:
+
+```markdown
+- ALWAYS chạy `pnpm --filter @acme/api test` sau khi sửa apps/api/
+- NEVER commit trực tiếp main (luôn branch feat/* + PR)
+- NEVER sửa `src/generated/` (sinh tự động từ prisma)
+- DB change → bắt buộc migration trong `db/migrations/`, 1 migration/PR
+- File >300 dòng → tách trước khi thêm code mới
+```
+
+**Bước 5 — Verify (2 phút):**
+
+```bash
+wc -l CLAUDE.md   # phải <200, lý tưởng <100
+# Trong session mới:
+/memory    # xác nhận file load
+# Giao task nhỏ, xem Claude có dùng đúng lệnh/rules không.
+```
+
+---
+
+## 9. Anti-patterns + pitfalls
+
+### 9.1. Anti-patterns (lỗi phổ biến người Việt hay mắc)
+
+| Sai | Đúng | Vì sao |
+|---|---|---|
+| CLAUDE.md 500 dòng copy wiki | <200 dòng, front-load rule hay sai nhất lên đầu | Token × turns; Claude skim đầu file kỹ hơn cuối |
+| Ghi "chạy test" chung chung | Ghi lệnh focused test chính xác | "Chạy test" → Claude chạy full 10 phút hoặc sai package |
+| Ghi conventions của framework mặc định | Chỉ ghi cái **khác** default + lý do | Default Claude đã biết; ghi thừa tốn token |
+| Nhét deployment checklist dài vào CLAUDE.md | Tách thành skill `/deploy` (load khi cần) | Checklist 20 bước × mọi turn = lãng phí |
+| Rule bị ignore hoài vẫn để trong CLAUDE.md | Nâng thành **hook** (Pre/PostToolUse) — xem bài 07 | Advisory bị quên; law enforce được |
+| Viết "Write clean code" | Viết "API errors dùng `{code,message,requestId}`" | Vague = rác; cụ thể + check được = vàng |
+| 2 files AGENTS.md + CLAUDE.md copy nhau | 1 source of truth + file kia trỏ sang | Drift sau 2 tuần, 2 truths mâu thuẫn |
+
+### 9.2. Checklist CLAUDE.md khỏe (paste vào PR review)
+
+- [ ] <200 dòng (`wc -l`).
+- [ ] Mọi command đã chạy thử (verified, có ngày verify nếu toolchain hay đổi).
+- [ ] Mọi rule bắt đầu bằng ALWAYS/NEVER + cụ thể + check được.
+- [ ] Không có directory layout/dependency list copy (Claude tự suy ra được).
+- [ ] Rules path-scoped đã tách ra `.claude/rules/` (có `paths`).
+- [ ] Checklist dài đã tách thành skill.
+- [ ] Rule hay bị miss đã nâng thành hook.
+- [ ] `/doctor` không báo dedupe/trim.
+
+### 9.3. Bài tập thực hành
+
+**Bài 1 (15 phút):** Chạy `/init` (hoặc `CLAUDE_CODE_NEW_INIT=1 /init`), đọc file sinh ra, xóa 50%
+theo checklist bước 2 (mục 8). Đếm dòng trước/sau.
+
+**Bài 2 (10 phút):** Thêm 3 verified commands (dev/test/lint) đã chạy thử trên máy. Mỗi lệnh ghi
+kèm ghi chú (cần .env? cần DB?).
+
+**Bài 3 (10 phút):** Viết 5 rules ALWAYS/NEVER cụ thể của team bạn. Test: giao task nhỏ, xem
+Claude có tuân thủ cả 5 không. Rule nào bị miss → viết lại cụ thể hơn.
+
+**Bài 4 (15 phút):** Chạy `/doctor`, làm theo mục CLAUDE.md trim. Tách 1 mục dài thành
+`.claude/rules/` hoặc skill. Verify `wc -l` giảm mà task vẫn pass.
+
+**Bài 5 (15 phút, nâng cao):** Setup AGENTS.md portability theo mẫu mục 5 (Option 1). Mở repo
+bằng 1 tool khác (Cursor/Copilot) kiểm tra nó đọc được AGENTS.md không.
+
+---
+
+## 10. Link chéo
+
+- **Bài 00 — Tổng quan**: token economics (vì sao <200 dòng), bảng chọn CLAUDE.md/skill/hook.
+- **Bài 01 — Cài đặt**: `/init`, `/memory`, `CLAUDE_CODE_NEW_INIT=1`, `..._ADDITIONAL_DIRECTORIES_CLAUDE_MD`.
+- **Bài 02 — Surfaces**: config nào lên cloud, cái nào ở local.
+- **Bài 04 — Slash commands**: `/memory`, `/rules`, `/doctor`, `/compact` khi context đầy.
+- **Bài 05 — Skills**: tách checklist dài thành skill lazy-load.
+- **Bài 06 — Subagents**: subagent đọc CLAUDE.md nào; Explore/Plan skip để tiết kiệm.
+- **Bài 07 — Hooks**: nâng rule hay miss thành law enforce thật.
+- **Bài 10 — Permissions**: rules allow/ask/deny khác memory rules thế nào.

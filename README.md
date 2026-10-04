@@ -13,10 +13,10 @@
 
 | Folder | Nội dung | Số bài |
 |---|---|---|
-| [`01-huong-dan-su-dung/`](./01-huong-dan-su-dung/) | **Hướng dẫn sử dụng**: cài đặt, surfaces, CLAUDE.md, slash commands, skills, subagents, hooks, MCP, plugins, permissions, worktrees, SDK/CI | 12 bài |
-| [`02-tips-thuc-chien/`](./02-tips-thuc-chien/) | **Tips thực chiến**: context hygiene, prompt engineering, plan-first, verification, parallel agents, hooks recipes, skills design, tiết kiệm cost, teamwork | 10 bài |
-| [`03-cau-hoi-thuong-gap/`](./03-cau-hoi-thuong-gap/) | **Q&A thường gặp**: tài khoản & pricing, model & context, permissions, MCP, hooks, skills, subagents, lỗi & troubleshooting, bảo mật | 10 bài |
-| [`templates/`](./templates/) | Template copy-paste: `CLAUDE.md`, `.claude/skills/`, `.claude/agents/`, `.claude/rules/`, `hooks`, `.mcp.json` | — |
+| [`01-huong-dan-su-dung/`](./01-huong-dan-su-dung/) | **Hướng dẫn sử dụng**: cài đặt, surfaces, CLAUDE.md, slash commands, skills, subagents, hooks, MCP, plugins, permissions, worktrees, SDK/CI | 13 bài + commands/ (62 folders, mỗi lệnh 1 folder chi tiết) |
+| [`02-tips-thuc-chien/`](./02-tips-thuc-chien/) | **Tips thực chiến**: context hygiene, prompt engineering, plan-first, verification, parallel agents, hooks recipes, skills design, tiết kiệm cost, teamwork | 10 bài deep-dive |
+| [`03-cau-hoi-thuong-gap/`](./03-cau-hoi-thuong-gap/) | **Q&A thường gặp**: tài khoản & pricing, model & context, permissions, MCP, hooks, skills, subagents, lỗi & troubleshooting, bảo mật | 10 bài deep-dive |
+| [`templates/`](./templates/) | Template copy-paste: `CLAUDE.md`, `.claude/skills/`, `.claude/agents/`, `.claude/rules/`, `hooks`, `.mcp.json` | templates copy-paste: CLAUDE.md, 3 skills, 3 agents, rules, settings, 5 hooks, .mcp.json |
 | [`CHEATSHEET.md`](./CHEATSHEET.md) | Bảng tra nhanh lệnh, phím tắt, hooks events, MCP | 1 trang |
 
 ## Lộ trình học đề xuất
@@ -28,6 +28,8 @@ Ngày 3: 01 bài 08 → 12 (MCP, plugins, permissions, worktrees, SDK/CI)
 Ngày 4: 02 tips 01 → 05 (context, prompt, plan, verify, parallel)
 Ngày 5: 02 tips 06 → 10 + 03 FAQ tra cứu khi gặp lỗi
 ```
+
+Tra cứu lệnh: 01-huong-dan-su-dung/commands/<tên-lệnh>/ (vd commands/plan/)
 
 Quy tắc vàng (nhớ 4 câu này là đủ 80% sức mạnh):
 
