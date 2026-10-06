@@ -6,10 +6,24 @@ Mỗi lỗi có triệu chứng → check → fix copy-paste + khi nào áp dụ
 
 ---
 
+## Sơ đồ nhanh (nhìn 30 giây là nhớ)
+
+```mermaid
+flowchart TD
+  A[Lỗi?] --> B[/status + claude update]
+  B --> C[claude doctor]
+  C --> D[/permissions merged?]
+  D --> E[/mcp + /hooks?]
+  E --> F[/debug -> /bug]
+```
+
 ## Bảng full: 14 lỗi hay gặp nhất
 
 | # | Triệu chứng | Check → Fix (1 dòng) | Chi tiết |
-|---|---|---|---|
+|---
+
+
+|---|---|---|
 | 1 | `Unknown command: /cd` (lệnh mới vắng) | `/status` version cũ → `claude update` | Câu 1 |
 | 2 | Hook không chạy | `/hooks`: event? matcher case? trusted? | Câu 2, FAQ 05 |
 | 3 | MCP disconnected | `/mcp reconnect <name>`; token/URL/OAuth | Câu 3, FAQ 04 |
@@ -28,8 +42,12 @@ Mỗi lỗi có triệu chứng → check → fix copy-paste + khi nào áp dụ
 ---
 
 ## 1. `Unknown command: /cd` (hoặc lệnh mới vắng)
+> **Hỏi ngắn gọn:** `Unknown command: /cd` (hoặc lệnh mới vắng)
+>
+> **Trả lời 1 câu:** 90% là version cũ.
 
-**Giải thích.** 90% là version cũ. `/cd` cần ≥2.1.169, `/verify` ≥2.1.145, `/goal` ≥2.1.139, trim ≥2.1.206 (bảng full FAQ 01 câu 7).
+
+**Giải thích chi tiết + ví dụ:** 90% là version cũ. `/cd` cần ≥2.1.169, `/verify` ≥2.1.145, `/goal` ≥2.1.139, trim ≥2.1.206 (bảng full FAQ 01 câu 7).
 
 ```bash
 # Trong session:
@@ -43,9 +61,14 @@ claude update && claude --version
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 2. Hook không chạy
+> **Hỏi ngắn gọn:** Hook không chạy
+>
+> **Trả lời 1 câu:** Đi đúng 5 check FAQ 05: (1) event Pre vs Post vs Stop, (2) matcher case (`Edit` ≠ `edit`), (3) folder trusted, (4) headless có prompt không, (5) version drift.
 
-**Giải thích.** Đi đúng 5 check FAQ 05: (1) event Pre vs Post vs Stop, (2) matcher case (`Edit` ≠ `edit`), (3) folder trusted, (4) headless có prompt không, (5) version drift.
+
+**Giải thích chi tiết + ví dụ:** Đi đúng 5 check FAQ 05: (1) event Pre vs Post vs Stop, (2) matcher case (`Edit` ≠ `edit`), (3) folder trusted, (4) headless có prompt không, (5) version drift.
 
 ```bash
 /hooks
@@ -59,9 +82,14 @@ echo '{"tool_name":"Bash","tool_input":{"command":"git push origin main"}}' | ./
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 3. MCP disconnected
+> **Hỏi ngắn gọn:** MCP disconnected
+>
+> **Trả lời 1 câu:** Thứ tự: token hết hạn → URL sai → OAuth chưa xong → sleep kill stdio (FAQ 04 câu 5).
 
-**Giải thích.** Thứ tự: token hết hạn → URL sai → OAuth chưa xong → sleep kill stdio (FAQ 04 câu 5).
+
+**Giải thích chi tiết + ví dụ:** Thứ tự: token hết hạn → URL sai → OAuth chưa xong → sleep kill stdio (FAQ 04 câu 5).
 
 ```bash
 echo ${GITHUB_TOKEN:+token-set}
@@ -76,9 +104,14 @@ claude mcp get github
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 4. Permission deny liên tục
+> **Hỏi ngắn gọn:** Permission deny liên tục
+>
+> **Trả lời 1 câu:** 3 thủ phạm: (a) deny ẩn trong merged (managed thắng local), (b) auto-mode denials (headless `ask` = deny), (c) thiếu pre-approve read-only hay dùng.
 
-**Giải thích.** 3 thủ phạm: (a) deny ẩn trong merged (managed thắng local), (b) auto-mode denials (headless `ask` = deny), (c) thiếu pre-approve read-only hay dùng.
+
+**Giải thích chi tiết + ví dụ:** 3 thủ phạm: (a) deny ẩn trong merged (managed thắng local), (b) auto-mode denials (headless `ask` = deny), (c) thiếu pre-approve read-only hay dùng.
 
 ```bash
 /permissions    # XEM MERGED, đừng đoán
@@ -93,9 +126,14 @@ claude mcp get github
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 5. Context đầy, Claude quên rule / lan man / sửa A hỏng B
+> **Hỏi ngắn gọn:** Context đầy, Claude quên rule / lan man / sửa A hỏng B
+>
+> **Trả lời 1 câu:** Dấu hiệu context đầy (FAQ 02 câu 3).
 
-**Giải thích.** Dấu hiệu context đầy (FAQ 02 câu 3). 4 cách cứu nhẹ → nặng: `/compact [focus]` → `/clear` + paste plan → rewind → đẩy research sang subagent.
+
+**Giải thích chi tiết + ví dụ:** Dấu hiệu context đầy (FAQ 02 câu 3). 4 cách cứu nhẹ → nặng: `/compact [focus]` → `/clear` + paste plan → rewind → đẩy research sang subagent.
 
 ```bash
 /context            # xác nhận đầy bao nhiêu %
@@ -108,9 +146,14 @@ claude mcp get github
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 6. Claude đọc hàng trăm file (quét loãng)
+> **Hỏi ngắn gọn:** Claude đọc hàng trăm file (quét loãng)
+>
+> **Trả lời 1 câu:** Prompt quá rộng ("xem giúp codebase") → model quét hết.
 
-**Giải thích.** Prompt quá rộng ("xem giúp codebase") → model quét hết. Fix: scope hẹp + dặn rõ + ném sang subagent.
+
+**Giải thích chi tiết + ví dụ:** Prompt quá rộng ("xem giúp codebase") → model quét hết. Fix: scope hẹp + dặn rõ + ném sang subagent.
 
 ```text
 ❌ "xem giúp codebase có vấn đề gì"
@@ -122,9 +165,14 @@ claude mcp get github
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 7. Sửa 2 lần vẫn sai (argue loop)
+> **Hỏi ngắn gọn:** Sửa 2 lần vẫn sai (argue loop)
+>
+> **Trả lời 1 câu:** Quy tắc: **sửa 2 lần không xong thì dừng argue**.
 
-**Giải thích.** Quy tắc: **sửa 2 lần không xong thì dừng argue**. Càng argue trong context bẩn càng lún. Double-Esc rewind về checkpoint sạch → re-prompt gọn (mô tả đúng + sai + mong muốn + 1 ví dụ).
+
+**Giải thích chi tiết + ví dụ:** Quy tắc: **sửa 2 lần không xong thì dừng argue**. Càng argue trong context bẩn càng lún. Double-Esc rewind về checkpoint sạch → re-prompt gọn (mô tả đúng + sai + mong muốn + 1 ví dụ).
 
 ```bash
 # Bấm Esc 2 lần → chọn checkpoint trước khi sai
@@ -136,9 +184,14 @@ claude mcp get github
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 8. Reviewer dễ dãi / khắt khe (calibration)
+> **Hỏi ngắn gọn:** Reviewer dễ dãi / khắt khe (calibration)
+>
+> **Trả lời 1 câu:** Reviewer AI mặc định theo "gu chung", không theo gu team.
 
-**Giải thích.** Reviewer AI mặc định theo "gu chung", không theo gu team. Fix: calibration — đưa 3 diffs lịch sử (1 approve, 1 request-changes, 1 borderline) + định nghĩa finding explicit (bỏ qua style, chỉ security/correctness/perf...).
+
+**Giải thích chi tiết + ví dụ:** Reviewer AI mặc định theo "gu chung", không theo gu team. Fix: calibration — đưa 3 diffs lịch sử (1 approve, 1 request-changes, 1 borderline) + định nghĩa finding explicit (bỏ qua style, chỉ security/correctness/perf...).
 
 ```text
 "Review theo chuẩn này: [paste 3 diffs + quyết định của team].
@@ -149,9 +202,14 @@ Chỉ báo: security, sai logic, perf >2x. Bỏ qua: style, naming trừ khi gâ
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 9. Flaky test đoán sai (model đoán thay vì ghi flaky)
+> **Hỏi ngắn gọn:** Flaky test đoán sai (model đoán thay vì ghi flaky)
+>
+> **Trả lời 1 câu:** Model ghét "không biết" nên hay đoán nguyên nhân cho test đỏ dù là flaky.
 
-**Giải thích.** Model ghét "không biết" nên hay đoán nguyên nhân cho test đỏ dù là flaky. Dặn rõ + human verify failures thật.
+
+**Giải thích chi tiết + ví dụ:** Model ghét "không biết" nên hay đoán nguyên nhân cho test đỏ dù là flaky. Dặn rõ + human verify failures thật.
 
 ```text
 "Test đỏ: chạy lại 3 lần. Vẫn đỏ cả 3 → mới debug. Đỏ 1/3 → ghi FLAKY + tên test, DỪNG đoán nguyên nhân."
@@ -165,9 +223,14 @@ npm test -- --retries 3  # hoặc loop tay 3 lần
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 10. 2 bản Claude / PATH lỗi / settings parse lỗi
+> **Hỏi ngắn gọn:** 2 bản Claude / PATH lỗi / settings parse lỗi
+>
+> **Trả lời 1 câu:** Triệu chứng: update không lên, version báo khác nhau, settings sửa hoài không ăn.
 
-**Giải thích.** Triệu chứng: update không lên, version báo khác nhau, settings sửa hoài không ăn. Chạy `claude doctor` — nó phát hiện duplicate install + JSON parse lỗi + PATH.
+
+**Giải thích chi tiết + ví dụ:** Triệu chứng: update không lên, version báo khác nhau, settings sửa hoài không ăn. Chạy `claude doctor` — nó phát hiện duplicate install + JSON parse lỗi + PATH.
 
 ```bash
 which -a claude
@@ -180,9 +243,14 @@ python3 -c "import json; json.load(open('.claude/settings.json'))"  # check JSON
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 11. Cloud thiếu config local (MCP/vars/setup mất)
+> **Hỏi ngắn gọn:** Cloud thiếu config local (MCP/vars/setup mất)
+>
+> **Trả lời 1 câu:** Cloud không thấy local (FAQ 04 câu 9, FAQ 10).
 
-**Giải thích.** Cloud không thấy local (FAQ 04 câu 9, FAQ 10). Phải cấu hình lại trong environment: servers + vars + setup script.
+
+**Giải thích chi tiết + ví dụ:** Cloud không thấy local (FAQ 04 câu 9, FAQ 10). Phải cấu hình lại trong environment: servers + vars + setup script.
 
 ```bash
 /web-setup    # dựng environment từ repo
@@ -193,9 +261,14 @@ claude --cloud "task thử"   # chạy thử trước task thật
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 12. Rate limit / usage trần
+> **Hỏi ngắn gọn:** Rate limit / usage trần
+>
+> **Trả lời 1 câu:** `/usage` hiện rate limits + breakdown.
 
-**Giải thích.** `/usage` hiện rate limits + breakdown. Gặp trần thì: (a) đợi reset, (b) đổi key/provider, (c) chuyển việc rẻ sang Haiku, (d) cắt MCP/subagents ngốn.
+
+**Giải thích chi tiết + ví dụ:** `/usage` hiện rate limits + breakdown. Gặp trần thì: (a) đợi reset, (b) đổi key/provider, (c) chuyển việc rẻ sang Haiku, (d) cắt MCP/subagents ngốn.
 
 ```bash
 /usage     # xem trần gì + cái gì ngốn
@@ -206,9 +279,14 @@ claude --cloud "task thử"   # chạy thử trước task thật
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 13. Session treo / chậm lạ
+> **Hỏi ngắn gọn:** Session treo / chậm lạ
+>
+> **Trả lời 1 câu:** Checklist: context đầy?
 
-**Giải thích.** Checklist: context đầy? hook treo (>5s)? MCP treo? Hỏi `/debug` — nó chẩn đoán session hiện tại (khác `/doctor` khám config).
+
+**Giải thích chi tiết + ví dụ:** Checklist: context đầy? hook treo (>5s)? MCP treo? Hỏi `/debug` — nó chẩn đoán session hiện tại (khác `/doctor` khám config).
 
 ```bash
 /debug
@@ -219,9 +297,14 @@ claude --cloud "task thử"   # chạy thử trước task thật
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 14. Muốn gửi bug cho Anthropic (`/bug` + kèm gì)
+> **Hỏi ngắn gọn:** Muốn gửi bug cho Anthropic (`/bug` + kèm gì)
+>
+> **Trả lời 1 câu:** `/bug` gói conversation.
 
-**Giải thích.** `/bug` gói conversation. Kèm thêm `/status` (version/provider/model) + `claude doctor` output để tái hiện được.
+
+**Giải thích chi tiết + ví dụ:** `/bug` gói conversation. Kèm thêm `/status` (version/provider/model) + `claude doctor` output để tái hiện được.
 
 ```bash
 /status
@@ -252,6 +335,8 @@ claude doctor
 ```
 
 > Quy tắc ngón tay cái: **lệnh lạ → update; hook im → 5 check; deny → merged; loãng → compact; sai 2 lần → rewind; hết cách → /bug.**
+
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 
 ---
 

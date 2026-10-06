@@ -409,6 +409,68 @@ Skill-rot = skills đống thành rác: không ai gọi, gọi sai lúc, descrip
 
 ---
 
+### 11.5. Thuật ngữ mới (nôm na + analogie + ví dụ + verify)
+
+| Thuật ngữ | Nôm na 1 câu | Analogie | Ví dụ kỹ thuật thật | Cách verify |
+|---|---|---|---|---|
+| Skill (SOP 30s) | Tờ hướng dẫn ai đọc 30s cũng làm được. | Như công thức nấu ăn: nguyên liệu + steps + thành phẩm mẫu. | `skills/deploy/SKILL.md` + `scripts/migrate-dry-run.sh` + `examples/output.md` | Người mới `/deploy staging` làm được không hỏi thêm. |
+| Description trigger | Câu giới thiệu quyết định skill có được gọi đúng lúc. | Như tiêu đề sách trong thư viện: sai tiêu đề là không ai mượn. | `Deploy staging/prod... Dùng khi deploy/release/ship. Không dùng local` | Nói `ship bản này` fire; nói `chạy local` không fire. |
+| Skill-rot | Đống skill thành rác: không ai gọi hoặc gọi sai. | Như tủ thuốc hết hạn: giữ chỉ chật tủ. | Skill 1 tháng không gọi, description lỗi thời | `/usage` + `/doctor` flag unused; xóa/gộp/hẹp lại. |
+
+### 11.6. Mermaid: từ ghi chép tới skill sống
+
+```mermaid
+flowchart TD
+    A[Ghi chép 80 dòng] --> B[Tách 4 mảnh: khi nào/steps/check/output]
+    B --> C[Viết SKILL.md + references + scripts + examples]
+    C --> D[Description: use case + trigger + loại trừ]
+    D --> E[Test 3 ca: fire đúng / đồng nghĩa / không fire]
+    E --> F{Đạt?}
+    F -->|Không| G[Hẹp description + thêm loại trừ]
+    F -->|Có| H[Plugin phân phối + /doctor định kỳ]
+```
+
+Giải thích:
+
+1. **A→B:** highlight khi nào/steps/constraints/output từ docs cũ.
+2. **B→C:** SKILL.md giữ khung, chi tiết dài → `references/`, máy làm → `scripts/` + `${CLAUDE_SKILL_DIR}`.
+3. **C→D:** câu đầu use case + trigger words, nguy hiểm thì `disable-model-invocation: true`.
+4. **D→E:** test fire đúng, từ đồng nghĩa, và KHÔNG fire khi loại trừ.
+5. **→H:** phân phối plugin, monthly prune skill-rot.
+
+### 11.7. Bảng so sánh có cột Hiểu nôm na + Ví dụ
+
+| Cơ chế | Hiểu nôm na | Ví dụ |
+|---|---|---|
+| CLAUDE.md | Nội quy dán tường, ngày nào cũng đọc (thuế mọi turn) | <200 dòng + `@import`, front-load rule hay sai |
+| Skill | Sổ tay lấy ra khi cần, xong cất (trả khi dùng) | `/deploy` chỉ load body khi nói deploy |
+| Hook | Chuông báo cháy tự kêu, không cần gọi | Lint sau edit, cấm push main |
+| Subagent | Nhờ người khác làm hộ việc hẹp | Explorer đọc hộ 30 files trả summary |
+
+**Kỳ vọng thấy gì:**
+
+```bash
+# Ca 1: "/deploy staging" -> skill fire, steps đủ lệnh+check
+# Ca 2: "ship bản này" -> vẫn fire (trigger word)
+# Ca 3: "chạy local" -> KHÔNG fire
+```
+
+> Kỳ vọng thấy gì: 2 fire đúng + 1 không fire; output có checklist tick + link release như `examples/output.md`. Fire sai → hẹp description.
+
+### 11.8. Before/After
+
+**Before:** Skill ghi chép prose 80 dòng `deploy-notes.md`, description `Hỗ trợ nhiều việc` → Kết quả dở: không ai gọi, mỗi lần deploy 1 kiểu, Claude không trigger.
+
+**After:** `name: deploy` + `Deploy staging/prod với checklist... Dùng khi deploy/release/ship. Không dùng local` + steps numbered + NEVER/ALWAYS + example thật → Kết quả tốt + Kỳ vọng: `/deploy staging` chạy preflight → dry-run `DRY-RUN OK` → smoke 5 checks pass, fail thì rollback.
+
+### 11.9. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật |
+|---|---|
+| Body càng dài càng xịn | Body phình 200 dòng không ai đọc; tách references/scripts, SKILL.md giữ khung |
+| Gộp 5 skills thành super-skill cho gọn | Trigger loạn; tách 5 skills (`/plan/review/deploy/ship/issues`) mỗi cái 1 việc |
+| Skill nguy hiểm để auto-fire cho tiện | Deploy/ship phải `disable-model-invocation: true`, gọi tay |
+
 ## 12. Tham khảo chéo
 
 - Lệnh skills/plugins:

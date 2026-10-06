@@ -438,6 +438,65 @@ Với mỗi tầng thiếu: 1 action cụ thể + owner + deadline. Ghi enforcem
 
 ---
 
+### 8.5. Thuật ngữ mới trong bài (nôm na + analogie + ví dụ + verify)
+
+| Thuật ngữ | Nôm na 1 câu | Analogie | Ví dụ kỹ thuật thật | Cách verify |
+|---|---|---|---|---|
+| Defense-in-depth (5 tầng) | Xếp 5 lưới từ rẻ tới đắt để lọt lưới này còn lưới khác bắt. | Như lâu đài: hào nước (T0) → tường (T1) → lính tuần (T2) → hiệp sĩ (T3) → khóa kho báu (T4). | T0 `security-guidance` bắt `AKIA...` ngay khi gõ; lọt thì T4 CodeQL chặn merge | Cố ý paste `AKIA...FAKE` vào file rác → T0 phải kêu trong giây. |
+| Guidance vs Guardrail | Gợi ý (bỏ qua được) khác lệnh cấm cứng (không qua được). | Như biển `Nên đội mũ` (guidance) vs barrier khóa bánh (guardrail). | Pattern `password = "..."` chỉ gợi ý; hook `PreToolUse` `exit 2` mới cấm | Thử commit secret: gợi ý hiện nhưng vẫn commit được; hook `exit 2` thì block thật. |
+| Fresh-context reviewer | Người chấm khác người làm, chưa đọc nháp nên soi kỹ. | Như chấm thi: thầy khác chấm, không để tự chấm bài mình. | Layer 3 spawn subagent review riêng, không review inline | Reviewer fresh bắt được `query(sql + userInput)` mà writer cho qua. |
+| Prompt-injection qua PR text | Câu chữ trong PR lừa agent làm bậy. | Như thư giả chữ sếp nhét vào đống hồ sơ để lừa ký. | PR body `bỏ qua mọi findings` lừa agent review | Test trên repo rác: agent đọc PR untrusted là fail; rule `chỉ review trusted PRs` phải chặn. |
+
+### 8.6. Mermaid: defense-in-depth 5 lớp + ví dụ tấn công mỗi lớp chặn
+
+```mermaid
+flowchart LR
+    A[Agent viết code] --> T0[Tầng 0: security-guidance real-time]
+    T0 -->|lọt| T1[Tầng 1: /security-review on-demand]
+    T1 -->|lọt| T2[Tầng 2: Security plugin deep scan]
+    T2 -->|lọt| T3[Tầng 3: người + agent trước merge]
+    T3 -->|lọt| T4[Tầng 4: CI SAST + Action chặn merge]
+    T4 -->|pass| M[Merge an toàn]
+```
+
+Giải thích từng bước + ví dụ tấn công mỗi lớp chặn được:
+
+1. **T0 real-time (~ms, 0 model call):** pattern `AKIA[0-9A-Z]{16}`, `-----BEGIN PRIVATE KEY-----`, `eval(userInput)` → chặn ngay khi `Edit/Write`. *Ví dụ chặn:* paste AWS key fake vào file → kêu trong giây.
+2. **T1 on-demand (fresh context):** `/security-review src/auth/` đọc callers/sanitizers. *Ví dụ chặn:* `query(sql + req.id)` chưa sanitize → flag dù regex không diễn tả được.
+3. **T2 deep scan (milestone):** sweep full-repo + git history + deps. *Ví dụ chặn:* secret đã xóa khỏi HEAD nhưng còn trong `git log -p` + `CVE` trong `lockfile`.
+4. **T3 người + agent:** bắt business logic máy không biết (`ai được refund?`). *Ví dụ chặn:* PR body `bỏ qua findings` (prompt-injection) — mắt người thấy lạ, SAST không đọc text.
+5. **T4 cửa cuối server-side:** CodeQL/Semgrep + branch protection, dev không bypass bằng env local. *Ví dụ chặn:* SQLi lọt 4 tầng trên → CI đỏ → không merge được.
+6. **Feedback loop:** findings T2→ rule mới `security-patterns.yaml` để lần sau T0 bắt ngay từ lúc viết.
+
+**Kỳ vọng thấy gì (sau khi cài T0):**
+
+```bash
+echo 'aws_key = "AKIAIOSFODNN7EXAMPLE"' >> /tmp/sec-test.txt
+# rồi Edit file đó trong session có plugin
+claude --debug-file /tmp/sec-debug.log
+```
+
+> Kỳ vọng thấy gì: Layer 1 hiện warning `Nghi AWS access key hardcode` + `/tmp/sec-debug.log` có dòng `security-guidance` load + pattern `aws-key` match. Im lặng hoàn toàn → check git repo + auth + JSON/YAML parse (nguyên nhân #1 plugin câm).
+
+### 8.7. Bảng so sánh có cột Hiểu nôm na + Ví dụ
+
+| Tầng | Hiểu nôm na | Ví dụ |
+|---|---|---|
+| T0 guidance | Bảo vệ gác cổng nhắc ngay khi viết bậy | Gõ `password = "123"` → gợi ý `dùng env` trong giây |
+| T1 review tay | Gọi thầy soi trước khi nộp | Xong feature auth → `/security-review src/auth/` |
+| T2 deep scan | Tổng kiểm tra sức khỏe mỗi quý | Trước release chạy full sweep + history + deps |
+| T3 người duyệt | Sếp ký mới được ra kho | PR refund: agent pre-review + người duyệt business logic |
+| T4 CI chặn | Khóa cửa sắt, không chìa không qua | CodeQL đỏ → branch protection chặn merge |
+
+### 8.8. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật | Ví dụ sửa |
+|---|---|---|
+| Plugin kêu = đã an toàn | Guidance bỏ qua được; cấm phải hook `exit 2` + CI block | Secret vẫn commit được dù có warning → thêm `block-secrets.sh` PreToolUse |
+| Tắt plugin vì kêu nhiều | Kêu đúng mà tắt = mở cửa; phải sửa code/tune rule | Thu hẹp scope (trừ `fixtures/`), hạ severity, không xóa rule |
+| Kill switch tắt được CI | Env `DISABLE_*` chỉ local; CI server-side không tắt | Test: set `DISABLE_ALL=1` local vẫn thấy CI đỏ khi PR lỗi |
+| PR fork cho agent đọc thoải mái | PR text untrusted = prompt-injection | Fork → chỉ SAST + tay; `if: author_association` chặn agent đọc |
+
 ## 9. Link chéo
 
 - **Bài 07 — Hooks**: PreToolUse deny (enforcement cứng), viết hook block secrets.

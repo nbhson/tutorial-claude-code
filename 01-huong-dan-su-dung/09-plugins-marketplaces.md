@@ -17,6 +17,43 @@
 
 ## 1. Plugin là gì
 
+**Nôm na 1 câu:** Plugin là *combo cơm trưa văn phòng* — thay vì mỗi người tự đi chợ mua skills/hooks/agents/MCP lẻ tẻ, bếp nấu sẵn 1 khay (1 lệnh cài) ai cũng ăn giống nhau.
+
+**Analogie đời thường:** như bộ đồ nghề sửa xe: lẻ thì tua-vít chỗ này, cờ-lê chỗ kia; plugin là vali đồ nghề đóng sẵn — thợ mới vào chỉ xách 1 vali (`/plugin install acme-standard`) là có đủ `/acme:deploy`, `/acme:review`, hooks guard, agents.
+
+**Ví dụ kỹ thuật copy-paste (nhìn cấu trúc là hiểu):**
+
+```text
+acme-standard/
+  .claude-plugin/plugin.json   # manifest: khai skills/agents/hooks/mcpServers
+  skills/deploy/SKILL.md       # → /acme-standard:deploy (namespaced)
+  agents/explorer.md           # subagent kèm
+  hooks/block-main-push.sh     # guard kèm, dùng ${CLAUDE_PLUGIN_DIR}
+  .mcp.json                    # MCP kèm, dùng ${VAR} không secrets
+# Verify: /plugin → Install from path ./acme-standard → mở session mới → gõ "/" thấy /acme-standard:deploy.
+# Kỳ vọng: /hooks + /mcp cũng thấy hooks/MCP của plugin đã load.
+```
+
+> **Ai dùng lúc nào:** team ≥3 repos hoặc onboarding ≥1 người/tháng (ngưỡng build plugin). Dưới ngưỡng → commit `.claude/skills/` thẳng rẻ hơn.
+
+```mermaid
+flowchart LR
+  P[Plugin acme-standard<br/>1 unit cài] --> S[skills/deploy, review-pr]
+  P --> A[agents/explorer, reviewer]
+  P --> H[hooks/block-push, lint]
+  P --> M[MCP github, fetch]
+  S --> U[Teammate mới<br/>/plugin install 1 phát]
+  A --> U
+  H --> U
+  M --> U
+```
+
+**Giải thích từng bước:**
+1. **1 unit đóng gói:** plugin.json liệt kê 4 loại tài sản (skills + agents + hooks + MCP/LSP). Version riêng, repo riêng.
+2. **Namespaced:** skills gọi `/plugin:skill` nên 2 plugins cùng tên skill không đè nhau.
+3. **1 phát đồng bộ:** teammate mới cài 1 lần, 5 repos đều có cùng workflow. Update bump version 1 nơi, cả team `/plugin → Update`.
+4. **Trust:** hooks chạy shell trên máy bạn nên phải review plugin.json + `.sh` trước (checklist mục 6.1) — như kiểm đồ ăn trước khi ăn.
+
 1 unit cài được, bundle: **skills + hooks + subagents + MCP servers (+ LSP/code-intelligence servers)**
 → thay vì mỗi teammate setup tay 4 thứ, cài 1 phát đồng bộ.
 
@@ -235,6 +272,16 @@ EOF
 | Update plugin giữa sprint gãy workflow | Breaking change | Pin version, update cuối sprint, đọc CHANGELOG hooks |
 | `.claude/skills/` cần trust dialog | Workspace chưa trust | Accept trust dialog 1 lần; CI `-p` không trusted → test riêng |
 | Plugin phình (20 skills) → context nặng | Bundle quá nhiều | Tách plugin nhỏ theo domain (frontend/backend/security) |
+
+### 6.2b. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật | Ai cần nhớ |
+|---|---|---|
+| "Plugin = marketplace" | Plugin là 1 món ăn; marketplace là cái kệ/chợ chứa nhiều món (`marketplace.json` liệt kê). | Người mới |
+| "Update plugin tự động" | Không — vào Manage → Update tay + mở session mới. Sợ breaking thì pin version. | Mọi dev |
+| "Plugin 1 skill cũng nên đóng gói" | Không đáng — overhead repo riêng/version/publish. 1-2 skills thì commit `.claude/skills/` thẳng. Ngưỡng: ≥3 repos dùng chung. | Team lead |
+| "Agent plugin chạy hooks bình thường" | Bị bỏ qua `hooks/mcpServers/permissionMode` theo thiết kế — cần thì copy ra `.claude/agents/`. | Người viết plugin |
+| "Cài plugin là tin luôn" | Hooks chạy shell + MCP gọi ra ngoài — phải qua checklist 6.1 + test sandbox (mục 6.5) trước khi tin. | Mọi người |
 
 ### 6.3. Bài tập thực hành
 

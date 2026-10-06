@@ -377,6 +377,71 @@ Mỗi lý do kèm 2 quotes nguyên văn + số lượng. Output table markdown.
 
 ---
 
+### 10.5. Thuật ngữ mới (nôm na + analogie + ví dụ + verify)
+
+| Thuật ngữ | Nôm na 1 câu | Analogie | Ví dụ kỹ thuật thật | Cách verify |
+|---|---|---|---|---|
+| Scope (files nào) | Khoanh vùng cho model, càng hẹp càng rẻ. | Như khoanh bản đồ tìm kho báu: khoanh 1 phường thay vì cả thành phố. | `Chỉ đọc src/auth/login.ts + __tests__/login.test.ts` | `git diff --stat` chỉ chạm scope; không đọc 100 files. |
+| End-state | Trạng thái xong trông thế nào, không phải đang làm gì. | Như đặt món: `cơm gà xối mỡ` thay vì `nấu gì đó cho ngon`. | `Top 5 complaints, mỗi dòng quote+count+segment, markdown table` | Output có đủ 5 dòng + table, không phải prose dài. |
+| Verify + NEVER | Câu bắt tự chạy check + vùng cấm không được đụng. | Như hợp đồng: nghiệm thu (verify) + điều cấm (NEVER). | `Chạy pnpm test auth và dán log. Đừng đụng generated/` | Log xanh dán kèm + `diff` không chạm cấm địa. |
+
+### 10.6. Mermaid: từ prompt tới done
+
+```mermaid
+flowchart LR
+    A[Viết prompt] --> B{Đủ 4 mảnh?}
+    B -->|Thiếu| C[Thêm scope/end-state/chi tiết/format]
+    C --> D[+ success criteria + verify + NEVER]
+    B -->|Đủ| D
+    D --> E[Chạy + iterate trong message]
+    E --> F{Log xanh + diff gọn?}
+    F -->|Không| G[Sửa tiếp, max 3 lần]
+    F -->|Có| H[Done]
+```
+
+Giải thích:
+
+1. **A→B:** check 4 mảnh (files/end-state/chi tiết/format).
+2. **B→C:** thiếu 1 là lệch 1 hướng → bổ sung.
+3. **→D:** thêm criteria check được + verify + NEVER.
+4. **D→E:** dặn iterate trong message để tự retry.
+5. **E→F:** log xanh + diff gọn mới done.
+
+### 10.7. Bảng so sánh có cột Hiểu nôm na + Ví dụ
+
+| Kiểu prompt | Hiểu nôm na | Ví dụ |
+|---|---|---|
+| Activity (tệ) | Nói đang làm gì, không nói xong ra sao | `Xem giúp auth` → đọc 40 files, đổi luôn API |
+| End-state (tốt) | Nói xong nhận được gì cụ thể | `Tách auth.ts thành 3 modules, giữ API, test xanh` → 15 phút xong |
+
+**Kỳ vọng thấy gì:**
+
+```text
+"Refactor src/auth.ts (~800 dòng) thành login/session/types. Giữ API. Sau mỗi bước chạy pnpm --filter auth test và dán log. Đừng đụng generated/."
+```
+
+> Kỳ vọng thấy gì: 1 turn plan 5 bullet + 3 turns implement + log xanh + `diff --stat` gọn. Nếu vẫn hỏi `test gì?` là prompt thiếu verify.
+
+### 10.8. Before/After
+
+**Before (dở):** `"Refactor auth cho sạch"` → Kết quả dở: đọc 40 files, đổi API, test đỏ 5 chỗ, mất 45 phút rewind.
+
+**After (tốt):**
+
+```text
+"Refactor src/auth.ts (800 dòng) thành src/auth/login.ts, session.ts, types.ts. Giữ API (re-export). Sau mỗi bước chạy pnpm --filter auth test và dán log. Đỏ thì dừng. Đừng đụng generated/, đừng thêm dep. Trước khi code trình outline 5 bullet chờ duyệt."
+```
+
+> Kết quả tốt + Kỳ vọng: plan duyệt trước, test xanh từng bước, tổng 15 phút, không rewind.
+
+### 10.9. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật |
+|---|---|
+| Prompt 1 dòng cho task 5 bước là nhanh | Viết 2 phút tiết kiệm 20 phút sửa; task lớn phải plan mode |
+| Mô tả solution chi tiết là tốt | Ép sai hướng từ đầu; mô tả problem + constraints, để plan đề xuất solution |
+| `Làm cho nhanh` là tối ưu | Model cắt test/verify; phải `tối thiểu nhưng test xanh, dán log` |
+
 ## 11. Tham khảo chéo
 
 - Lệnh hay kèm prompt:

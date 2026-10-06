@@ -331,6 +331,81 @@ grep -ri "sk-\|Bearer\|password" artifact.html; echo "secrets=$?"
 
 ---
 
+### 11.5. Thuật ngữ mới (nôm na + analogie + ví dụ + verify)
+
+| Thuật ngữ | Nôm na 1 câu | Analogie | Ví dụ kỹ thuật thật | Cách verify |
+|---|---|---|---|---|
+| Chrome extension nối tab | Cho Claude đọc tab đang mở thay vì copy-paste. | Như mời thợ tới tận bếp xem nồi thay vì tả bằng miệng. | `Đọc tab staging orders, liệt kê 5 fail: id + lỗi. Chỉ đọc, không bấm` | Đối chiếu 2 orders đầu bằng mắt; tab focus đúng, profile dev riêng. |
+| Computer use (bấm hộ) | Claude nhìn màn hình + bấm chuột hộ việc không API. | Như nhờ người bấm thang máy hộ khi tay xách đồ — phải đứng nhìn. | Staging-only, allowlist Chrome-dev + Terminal-staging, ngồi nhìn từng bước | Screenshots đủ 3 bước + audit log staging không có click lạ. |
+| Artifacts private + Remote/Web | Biến output thành trang share riêng; remote là khiển máy mình, web là máy cloud. | Như in báo cáo (artifacts) + điều khiển TV từ xa (remote) vs xem TV ở quán (web). | Publish private expiry 7 ngày; `/teleport` lên cloud vs Remote Control về máy công ty | Mở link ẩn danh phải private; web thiếu hooks/MCP → cần local thì dùng Remote. |
+
+### 11.6. Mermaid: chọn tính năng desktop/web
+
+```mermaid
+flowchart TD
+    A[Việc nằm ở đâu?] --> B{Trên web/GUI hay cần share?}
+    B -->|Trang staging dài| C[Extension: chỉ đọc, profile dev]
+    B -->|Flow GUI không API| D{Prod hay staging?}
+    D -->|Prod| E[Không computer use - người bấm]
+    D -->|Staging + có người nhìn| F[Computer use allowlist 2-3 apps]
+    B -->|Share người không code| G[Artifacts private + expiry + grep secrets]
+    B -->|Về nhà làm tiếp| H{Cần hooks/MCP local?}
+    H -->|Có| I[Remote Control về máy công ty]
+    H -->|Không| J["/teleport Web session"]
+    C --> K[Verify mắt + screenshots + audit log]
+    F --> K
+    G --> K
+```
+
+Giải thích:
+
+1. **A→B:** việc trên web/GUI/share/xa nhà thì mới cần desktop/web.
+2. **B→C:** đọc/tóm tắt/so sánh UI → extension, cấm tab banking/mail + nút thanh toán/xóa.
+3. **D→F:** computer use chỉ staging, allowlist, giám sát, steps theo intent + screenshot mỗi bước.
+4. **B→G:** timeline/report → artifacts private + expiry 7 ngày + `grep sk-/Bearer/password` trước publish.
+5. **H→I/J:** cần local → Remote; việc nhẹ → Web; test cloud trước vì cloud ≠ local.
+
+### 11.7. Bảng so sánh có cột Hiểu nôm na + Ví dụ
+
+| Tính năng | Hiểu nôm na | Ví dụ |
+|---|---|---|
+| Extension | Kính lúp đọc trang hộ | Đọc staging orders dài → 5 bullets id+lỗi |
+| Computer use | Tay giả bấm hộ khi không còn API/CLI | Chụp 3 screenshots checkout staging, không bấm Pay thật |
+| Artifacts | In poster share cho người không code | Timeline 14:00-16:00 filter service, data tới 16:05 |
+| Remote vs Web | Điều khiển bếp nhà mình từ xa vs nấu bếp quán | Remote giữ hooks/MCP; Web nhẹ + share link |
+
+**Kỳ vọng thấy gì:**
+
+```bash
+grep -h "ERROR\|FAIL\|5xx\|rollback\|deploy" deploy.log alerts.txt | head -50
+grep -ri "sk-\|Bearer\|password" artifact.html; echo "secrets=$?"
+```
+
+> Kỳ vọng thấy gì: 50 dòng core thay vì 2000 dòng; `secrets=1` (không match, an toàn publish); mở link ẩn danh phải private + ghi `data tới 16:05 + expiry 7 ngày`.
+
+### 11.8. Before/After
+
+**Before:** `Copy-paste log 2000 dòng vào chat + bấm prod trực tiếp + share link public chứa token` → Kết quả dở: context nổ, bấm nhầm không undo, lộ secrets.
+
+**After:**
+
+```bash
+# 1. Extension chỉ đọc:
+"Đọc tab staging orders, liệt kê 5 fail: id + lỗi. Không bấm gì."
+# 2. Render + publish:
+"Render timeline 5 orders (giờ+id+lỗi+link), publish private expiry 7 ngày, không secrets."
+```
+
+> Kết quả tốt + Kỳ vọng: PM mở link 2 phút hiểu (deploy 14:32 → 5xx 14:35 → rollback 15:50); voice nói thì transcript check 3s, tên file gõ tay.
+
+### 11.9. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật |
+|---|---|
+| Extension thay được `curl`/Playwright pipeline | Extension cho việc tay; scrape định kỳ phải MCP/CI |
+| Computer use tin screenshots là đủ | Bấm thiếu bước không biết; phải screenshot mỗi bước + audit log |
+| Cloud = local | Hooks/MCP/secrets local không lên cloud; cấu hình cloud-scope + test trước |
+
 ## 12. Tham khảo chéo
 
 - Lệnh & bài liên quan:

@@ -6,10 +6,26 @@ Mỗi câu có giải thích + lệnh/config copy-paste + ví dụ + khi nào á
 
 ---
 
+## Sơ đồ nhanh (nhìn 30 giây là nhớ)
+
+```mermaid
+flowchart TD
+  A[Context đầy?] -->|Cùng task| B[/compact + focus]
+  A -->|Khác task| C[/clear]
+  A -->|Sai hướng| D[Double-Esc rewind]
+  B --> E[/context kiểm tra %]
+  C --> E
+  E -->|Vẫn nặng| F[Đổi Haiku + /effort low<br/>chia subagent / batch]
+  E -->|Nhẹ| G[Tiếp tục task]
+```
+
 ## Bảng tổng hợp: con số phải nhớ
 
 | Hạng mục | Con số | Ý nghĩa thực tế |
-|---|---|---|
+|---
+
+
+|---|---|
 | Spawn 1 subagent | ~20k tokens overhead | Đừng spawn cho việc 1 bước |
 | Tổng subagent descriptions | 15k tokens trần | Vượt → warning startup, phải rút gọn |
 | MCP tools visible | >~10 → accuracy giảm | Sweet spot 3–6 servers thực dùng |
@@ -22,10 +38,14 @@ Mỗi câu có giải thích + lệnh/config copy-paste + ví dụ + khi nào á
 ---
 
 ## 1. Đổi model giữa session thế nào (`/model`, `/effort`, `/fast`)?
+> **Hỏi ngắn gọn:** Đổi model giữa session thế nào (`/model`, `/effort`, `/fast`)?
+>
+> **Trả lời 1 câu:** Không cần thoát session để đổi model.
 
-**Giải thích.** Không cần thoát session để đổi model. `/model` đổi họ model, `/effort` chỉnh độ "suy nghĩ sâu", `/fast` ép nhanh-rẻ khi việc đơn giản.
 
-**Lệnh copy-paste:**
+**Giải thích chi tiết + ví dụ:** Không cần thoát session để đổi model. `/model` đổi họ model, `/effort` chỉnh độ "suy nghĩ sâu", `/fast` ép nhanh-rẻ khi việc đơn giản.
+
+**Làm thế nào (steps copy-paste):**
 
 ```bash
 /model              # xem model hiện tại
@@ -42,15 +62,20 @@ Mỗi câu có giải thích + lệnh/config copy-paste + ví dụ + khi nào á
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 2. Route model chuẩn: Haiku / Sonnet / Opus khi nào?
+> **Hỏi ngắn gọn:** Route model chuẩn: Haiku / Sonnet / Opus khi nào?
+>
+> **Trả lời 1 câu:** Mỗi họ sinh ra cho 1 việc khác nhau.
 
-**Giải thích.** Mỗi họ sinh ra cho 1 việc khác nhau. Dùng sai = vừa đắt vừa dở:
+
+**Giải thích chi tiết + ví dụ:** Mỗi họ sinh ra cho 1 việc khác nhau. Dùng sai = vừa đắt vừa dở:
 
 - **Haiku:** research, rewrite, tóm tắt, quét file ồn, việc song song số lượng lớn. Rẻ, nhanh, đủ tốt cho việc "đọc rồi nhả lại gọn".
 - **Sonnet:** implement thường, refactor, viết test, CRUD, glue code. Cân bằng giá/chất lượng — model mặc định 80% thời gian.
 - **Opus:** kiến trúc, security review, bug hiểm (race, memory, crypto), quyết định khó đảo ngược. Đắt nhưng đáng cho việc sai 1 ly đi 1 dặm.
 
-**Lệnh copy-paste:**
+**Làm thế nào (steps copy-paste):**
 
 ```bash
 # Phase research (rẻ): Haiku quét
@@ -73,9 +98,14 @@ Opus:   review security + race condition (đắt, xứng đáng)
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 3. Context đầy thì cứu thế nào? (4 cách cứu chuẩn)
+> **Hỏi ngắn gọn:** Context đầy thì cứu thế nào? (4 cách cứu chuẩn)
+>
+> **Trả lời 1 câu:** Dấu hiệu context đầy: Claude quên rule đầu session, trả lời lan man, sửa A hỏng B, đọc lại file vừa đọc.
 
-**Giải thích.** Dấu hiệu context đầy: Claude quên rule đầu session, trả lời lan man, sửa A hỏng B, đọc lại file vừa đọc. Có 4 cách cứu theo thứ tự nhẹ → nặng:
+
+**Giải thích chi tiết + ví dụ:** Dấu hiệu context đầy: Claude quên rule đầu session, trả lời lan man, sửa A hỏng B, đọc lại file vừa đọc. Có 4 cách cứu theo thứ tự nhẹ → nặng:
 
 **Cách 1 — `/compact [focus]` (nhẹ nhất, giữ session):**
 
@@ -112,9 +142,14 @@ Opus:   review security + race condition (đắt, xứng đáng)
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 4. Giới hạn subagent descriptions 15k tokens là gì?
+> **Hỏi ngắn gọn:** Giới hạn subagent descriptions 15k tokens là gì?
+>
+> **Trả lời 1 câu:** Mỗi subagent có `description` (lúc nào thì gọi nó).
 
-**Giải thích.** Mỗi subagent có `description` (lúc nào thì gọi nó). Tổng description của TẤT CẢ custom subagents (trừ built-in) vượt ~15k tokens → warning lúc startup. Vì descriptions luôn load vào context khởi động.
+
+**Giải thích chi tiết + ví dụ:** Mỗi subagent có `description` (lúc nào thì gọi nó). Tổng description của TẤT CẢ custom subagents (trừ built-in) vượt ~15k tokens → warning lúc startup. Vì descriptions luôn load vào context khởi động.
 
 **Fix copy-paste:**
 
@@ -140,9 +175,14 @@ description: Review security + performance cho PR. Dùng khi cần reviewer th�
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 5. Multi-agent tốn bao nhiêu token? (overhead ~20k, ~3–4x)
+> **Hỏi ngắn gọn:** Multi-agent tốn bao nhiêu token? (overhead ~20k, ~3–4x)
+>
+> **Trả lời 1 câu:** Mỗi lần spawn subagent tốn ~20k tokens overhead (system prompt riêng + context fork + tools).
 
-**Giải thích.** Mỗi lần spawn subagent tốn ~20k tokens overhead (system prompt riêng + context fork + tools). Multi-agent song song tốn ~3–4x so với làm tuần tự 1 luồng. Trần thực tế: 3–5 concurrent — hơn nữa thì tiền tăng mà tốc độ không tăng (model + API limits).
+
+**Giải thích chi tiết + ví dụ:** Mỗi lần spawn subagent tốn ~20k tokens overhead (system prompt riêng + context fork + tools). Multi-agent song song tốn ~3–4x so với làm tuần tự 1 luồng. Trần thực tế: 3–5 concurrent — hơn nữa thì tiền tăng mà tốc độ không tăng (model + API limits).
 
 **Tính nhẩm:**
 
@@ -164,13 +204,18 @@ Single-thread đọc 10 files gọn = ~10-15k (RẺ HƠN NHIỀU)
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 6. MCP nhiều có sao không? (trần ~10 tools, sweet spot 3–6 servers)
+> **Hỏi ngắn gọn:** MCP nhiều có sao không? (trần ~10 tools, sweet spot 3–6 servers)
+>
+> **Trả lời 1 câu:** Mỗi MCP server expose tools vào context.
 
-**Giải thích.** Mỗi MCP server expose tools vào context. Quá ~10 tools visible → model chọn sai tool, bỏ sót tool, gọi thừa. Không phải "càng nhiều càng mạnh" mà là "càng nhiều càng loãng".
+
+**Giải thích chi tiết + ví dụ:** Mỗi MCP server expose tools vào context. Quá ~10 tools visible → model chọn sai tool, bỏ sót tool, gọi thừa. Không phải "càng nhiều càng mạnh" mà là "càng nhiều càng loãng".
 
 Sweet spot: **3–6 servers thực dùng** (VD: GitHub + Playwright + DB + search + tickets). Server nào 30+ tools mà tuần dùng 1 lần → disable khi không cần.
 
-**Lệnh copy-paste:**
+**Làm thế nào (steps copy-paste):**
 
 ```bash
 /mcp                # list servers + tools count
@@ -184,16 +229,21 @@ Sweet spot: **3–6 servers thực dùng** (VD: GitHub + Playwright + DB + searc
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 7. CLAUDE.md bao nhiêu dòng là đủ? (<200 dòng)
+> **Hỏi ngắn gọn:** CLAUDE.md bao nhiêu dòng là đủ? (<200 dòng)
+>
+> **Trả lời 1 câu:** CLAUDE.md load MỌI turn → mỗi dòng thừa là tiền trả mãi mãi.
 
-**Giải thích.** CLAUDE.md load MỌI turn → mỗi dòng thừa là tiền trả mãi mãi. >200 dòng = loãng signal + tốn token/session. Quy tắc tách:
+
+**Giải thích chi tiết + ví dụ:** CLAUDE.md load MỌI turn → mỗi dòng thừa là tiền trả mãi mãi. >200 dòng = loãng signal + tốn token/session. Quy tắc tách:
 
 - **Giữ trong CLAUDE.md (<200 dòng):** always-on facts — stack, lệnh test/lint/build, cấu trúc thư mục, 5-10 quy ước bất di bất dịch.
 - **Procedures/reference → skills:** quy trình dài, load-khi-cần (deploy, migrate, release...).
 - **Rules theo path → `.claude/rules/` + `paths`:** luật chỉ áp dụng cho `api/**`, `web/**`...
 - **Rule hay bị miss → hook:** cái gì nói 3 lần model vẫn quên → viết hook bắt buộc.
 
-**Lệnh copy-paste:**
+**Làm thế nào (steps copy-paste):**
 
 ```bash
 wc -l CLAUDE.md
@@ -206,9 +256,14 @@ wc -l CLAUDE.md
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 8. Skills tốn bao nhiêu token? (~100 tokens, rẻ nhất)
+> **Hỏi ngắn gọn:** Skills tốn bao nhiêu token? (~100 tokens, rẻ nhất)
+>
+> **Trả lời 1 câu:** Skill chưa trigger chỉ tốn tên + description (~100 tokens lúc start).
 
-**Giải thích.** Skill chưa trigger chỉ tốn tên + description (~100 tokens lúc start). Body chỉ load khi model quyết định gọi. Nên skills là extension RẺ NHẤT — rẻ hơn MCP (tools luôn visible), rẻ hơn subagents (20k/spawn), rẻ hơn CLAUDE.md dài (load mọi turn).
+
+**Giải thích chi tiết + ví dụ:** Skill chưa trigger chỉ tốn tên + description (~100 tokens lúc start). Body chỉ load khi model quyết định gọi. Nên skills là extension RẺ NHẤT — rẻ hơn MCP (tools luôn visible), rẻ hơn subagents (20k/spawn), rẻ hơn CLAUDE.md dài (load mọi turn).
 
 ```text
 30 skills không dùng  = ~3k tokens startup (nhẹ)
@@ -220,9 +275,14 @@ wc -l CLAUDE.md
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 9. Hooks tốn tokens không? (0 model tokens + bắt buộc thực thi)
+> **Hỏi ngắn gọn:** Hooks tốn tokens không? (0 model tokens + bắt buộc thực thi)
+>
+> **Trả lời 1 câu:** Hook shell chạy NGOÀI model → 0 model tokens.
 
-**Giải thích.** Hook shell chạy NGOÀI model → 0 model tokens. Và nó là thứ DUY NHẤT vừa miễn phí vừa bắt buộc (model không thể "quên" như rule trong CLAUDE.md). Luật nào quan trọng + check được bằng script → viết hook thay vì gõ chữ.
+
+**Giải thích chi tiết + ví dụ:** Hook shell chạy NGOÀI model → 0 model tokens. Và nó là thứ DUY NHẤT vừa miễn phí vừa bắt buộc (model không thể "quên" như rule trong CLAUDE.md). Luật nào quan trọng + check được bằng script → viết hook thay vì gõ chữ.
 
 **Ví dụ:**
 
@@ -240,9 +300,14 @@ wc -l CLAUDE.md
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 10. `/usage` vs `/cost` vs `/context` — xem cái nào khi nào?
+> **Hỏi ngắn gọn:** `/usage` vs `/cost` vs `/context` — xem cái nào khi nào?
+>
+> **Trả lời 1 câu:** 3 lệnh đo 3 thứ khác nhau, đừng xem 1 mà đoán 3:
 
-**Giải thích.** 3 lệnh đo 3 thứ khác nhau, đừng xem 1 mà đoán 3:
+
+**Giải thích chi tiết + ví dụ:** 3 lệnh đo 3 thứ khác nhau, đừng xem 1 mà đoán 3:
 
 | Lệnh | Trả lời câu hỏi | Dùng khi nào |
 |---|---|---|
@@ -250,7 +315,7 @@ wc -l CLAUDE.md
 | `/cost` | Session này tốn bao nhiêu tiền? | Cuối session, muốn biết bill |
 | `/usage` | Breakdown theo skills/subagents/plugins/MCP + rate limits? | Cuối tuần, tìm chỗ tốn để cắt |
 
-**Lệnh copy-paste:**
+**Làm thế nào (steps copy-paste):**
 
 ```bash
 /context    # đầy >70% → compact ngay
@@ -261,6 +326,8 @@ wc -l CLAUDE.md
 **Ví dụ:** `/cost` thấy session 4$ → `/usage` thấy MCP ngốn 60% → tắt 5 servers thừa → tuần sau còn 1.5$/session.
 
 **Khi nào áp dụng:** `/context` xem trong session (khi loãng), `/cost` xem cuối session, `/usage` xem cuối tuần.
+
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 
 ---
 

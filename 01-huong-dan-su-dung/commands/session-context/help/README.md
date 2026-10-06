@@ -2,64 +2,26 @@
 
 > Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (chỉ hiển thị tài liệu, không thay đổi gì)
 
-`/help` là "bảng chỉ dẫn dán tường": liệt kê slash commands khả dụng, cú pháp ngắn, phím tắt (như double-Esc), để tra ngay trong terminal mà không cần mở docs web.
+> Nói nôm na: `/help` là "bảng chỉ dẫn dán tường": liệt kê slash commands khả dụng, cú pháp ngắn, phím tắt (như double-Esc), để tra ngay trong terminal mà không cần mở docs web.
 
----
+## Khi nào dùng
 
-## Cú pháp & tham số
+- Dùng /help khi bạn muốn quản lý phiên/context (mở, dọn, lưu, chia nhánh) mà không đụng tới code trên đĩa.
+- Dùng /help **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
+- Không dùng /help thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
 
-| Cú pháp | Tham số | Ý nghĩa |
-|---|---|---|
-| `/help` | _(không có)_ | Hiện danh sách lệnh + mô tả ngắn |
-| `/help <lệnh>` | tên lệnh (tùy bản) | Hiện chi tiết lệnh đó (nếu bản bạn hỗ trợ) |
-
-Ví dụ gọi từng dạng:
+## Cách gọi (copy-paste)
 
 ```bash
-# Dạng 1: mở bảng tổng
-/help
+`/help`
+`/help <lệnh>`
 ```
 
-```bash
-# Dạng 2: hỏi chi tiết 1 lệnh (nếu hỗ trợ, không thì hỏi trực tiếp)
-/help rewind
-# → nếu không ra, hỏi: "Giải thích /rewind và khác gì /clear?"
-```
+> Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-```bash
-# Dạng 3: tra phím tắt
-/help
-# → tìm dòng "Esc Esc: mở checkpoint picker (rewind)"
-```
+## Ví dụ prompt thật + kết quả mong đợi + verify
 
-```bash
-# Dạng 4: người mới — đọc help rồi thử 3 lệnh an toàn
-/help
-/context
-/todos
-/cost
-```
-
----
-
-## Cách nó hoạt động
-
-1. **Đọc registry local:** `/help` liệt kê lệnh built-in + skills/custom commands + plugins đang active trong session này (mỗi project/list khác nhau chút).
-2. **Không gọi model:** render local, ~0 token, hiện ngay.
-3. **Nội dung rút gọn:** mỗi lệnh 1-2 dòng. Muốn deep-dive thì đọc thư mục `commands/<slug>/README.md` này hoặc bài tổng quan.
-4. **Phím tắt đi kèm:** các bản mới kèm `Esc Esc (rewind)`, `Ctrl+C (ngắt)`, `/` (gợi ý lệnh) trong cùng bảng.
-
-| Kênh tra cứu | Khi nào dùng |
-|---|---|
-| `/help` | Tra nhanh trong lúc làm (5 giây) |
-| `commands/<slug>/README.md` | Deep-dive từng lệnh (bộ này) |
-| Bài `04-slash-commands-toan-tap.md` | Bản đồ toàn bộ + so sánh |
-
----
-
-## Ví dụ thực tế
-
-### Kịch bản 1: Người mới ngày đầu — biết 3 nút sinh tử trong 1 phút
+Prompt thật (paste vào Claude Code):
 
 ```bash
 /help
@@ -69,66 +31,31 @@ Ví dụ gọi từng dạng:
 # → hiểu % RAM, tự tin làm tiếp
 ```
 
-### Kịch bản 2: Quên cú pháp resume/fork giữa ca
+Kết quả mong đợi:
+
+- Claude trả đúng việc của /help (không lan man), nêu rõ bước tiếp theo.
+- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+
+Verify (30 giây):
 
 ```bash
-/help
-# → thấy /resume, /fork, /branch trong list
-# → khỏi mở browser, gõ tiếp luôn:
-/resume payments-fix
+# trong session: /status hoặc /context để chắc mode/context còn sạch
 ```
 
----
+## Lỗi thường gặp
 
-## Rủi ro & lưu ý
-
-- **Mất gì:** không có. An toàn tuyệt đối.
-- **Tốn token:** 0.
-- **Version:** mọi bản đều có, nhưng list trên bản cũ thiếu lệnh mới (rewind/branch/fork). Thấy thiếu → update CLI.
-- **Hiểu nhầm:** `/help` chỉ vắn tắt — đừng dùng 2 dòng mô tả để quyết định ca risky (rewind/clear). Đọc deep-dive trước khi bấm.
-
----
-
-## Kết hợp trong workflow
-
-| Combo | Cách dùng |
-|---|---|
-| `/help` → `/context` | Mới vào: đọc help rồi đo RAM |
-| `/help` → deep-dive | Tra nhanh rồi mở `commands/<slug>/README.md` khi cần chắc |
-| Onboarding team | Ngày 1: `/help` + đọc 3 file clear/compact/rewind |
-
-```bash
-/help
-# → rồi đọc:
-/clear  → commands/session-context/clear/README.md
-/compact → commands/session-context/compact/README.md
-/rewind  → commands/session-context/rewind/README.md
-```
-
----
-
-## Lỗi hay gặp
-
-| Triệu chứng | Nguyên nhân | Fix |
+| Triệu chứng | Vì sao | Cách fix |
 |---|---|---|
 | `/help` thiếu lệnh mới (branch/fork) | CLI cũ | `npm i -g @anthropic-ai/claude-code` rồi `/help` lại |
 | `/help <lệnh>` không ra chi tiết | Bản bạn chỉ hỗ trợ `/help` tổng | Hỏi trực tiếp: "Giải thích /<lệnh> + ví dụ" hoặc mở file deep-dive |
 | Lệnh trong help gõ báo unknown | Lệnh của plugin/MCP đã tắt | Bật lại plugin/MCP hoặc xem bài plugins/MCP |
-| Muốn docs tiếng Việt | Help built-in tiếng Anh | Đọc bộ `commands/*/README.md` (bộ này, tiếng Việt) |
-
----
 
 ## Tham khảo
 
-- Lệnh liên quan (mở deep-dive sau khi tra help):
-  - [../clear/README.md](../../session-context/clear/README.md) — xóa trắng
-  - [../compact/README.md](../../session-context/compact/README.md) — nén giữ đà
-  - [../rewind/README.md](../../session-context/rewind/README.md) — quay checkpoint (Esc Esc)
-  - [../resume/README.md](../../session-context/resume/README.md) — mở lại phiên cũ
-  - [../context/README.md](../../session-context/context/README.md) — đo RAM
-- Bài tổng quan:
-  - `../04-slash-commands-toan-tap.md` — bản đồ đầy đủ (đọc sau help)
-  - `../10-permissions-modes-availability.md` — quyền/modes cũng tra trong help
-  - `../11-git-worktrees-checkpoints.md` — checkpoints mà help chỉ nhắc 1 dòng
+- [../clear/README.md](../../session-context/clear/README.md)
+- [../compact/README.md](../../session-context/compact/README.md)
+- [../rewind/README.md](../../session-context/rewind/README.md)
+- [../resume/README.md](../../session-context/resume/README.md)
+- Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
-> Mẹo 1 dòng: _quên gì gõ `/help` trước, Google sau — đáp án nằm sẵn trong terminal._
+> Mẹo 1 dòng: _chưa chắc thì gọi /help sớm — 1 lệnh đúng lúc rẻ hơn 10 prompt sửa sai._

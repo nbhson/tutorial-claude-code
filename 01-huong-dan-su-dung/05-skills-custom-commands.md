@@ -18,6 +18,46 @@
 
 ## 1. Skill là gì (định nghĩa sạch)
 
+**Nôm na 1 câu:** Skill là *công thức nấu ăn dán trên tủ lạnh* — thay vì mỗi lần nấu lại gọi điện hỏi mẹ (paste checklist dài), bạn dán sẵn 1 tờ, ai vào bếp cũng nấu đúng vị.
+
+**Analogie đời thường:** như preset máy giặt: thay vì mỗi lần giặt phải nhớ "đồ trắng 40 độ + vắt 800 + 2 lần xả", bạn lưu preset `Giặt trắng`. Lần sau chỉ bấm 1 nút (gõ `/deploy` hoặc nói "deploy" là Claude tự load).
+
+**Ví dụ kỹ thuật copy-paste (khung tối thiểu chạy được):**
+
+```bash
+mkdir -p .claude/skills/deploy
+cat > .claude/skills/deploy/SKILL.md <<'EOF'
+---
+name: deploy
+description: Deploy staging/prod với checklist migrate + smoke test. Dùng khi user nói deploy/release/ship.
+---
+# Deploy
+Nhận `$ARGUMENTS` (vd `/deploy staging`).
+1. `git status --short` phải sạch.
+2. Chạy `${CLAUDE_SKILL_DIR}/scripts/migrate.sh --dry-run $ARGUMENTS`
+EOF
+# Verify: mở session gõ `/deploy` → phải hiện trong dropdown.
+# Kỳ vọng: startup chỉ tốn ~100 tokens (tên + description); body full chỉ load khi trigger.
+```
+
+> **Ai dùng lúc nào:** dev/team có workflow lặp lại ≥3 lần/tháng (deploy, review PR, thêm table, ship). Việc 1 lần thì prompt thường rẻ hơn.
+
+```mermaid
+flowchart TD
+  U[Bạn nói deploy / gõ /deploy] --> M{Description khớp?}
+  M -->|khớp| L[Claude load SKILL.md full body]
+  M -->|không| N[Không load - 0 tốn tokens]
+  L --> E[Chạy steps + support files]
+  E --> O[Output theo examples/output.md]
+```
+
+**Giải thích từng bước:**
+1. **Bạn nói từ khóa:** "deploy", "review PR", "thêm bảng" — tiếng tự nhiên, không cần nhớ cú pháp.
+2. **Match description:** Claude so ngữ cảnh với `description` (câu đầu là use-case chính). Khớp → load; không khớp → bỏ qua (rẻ).
+3. **Load full body:** chỉ lúc này mới tốn tokens (steps + references). Startup trước đó chỉ ~100 tokens/skill.
+4. **Chạy steps + support files:** checklist + templates/scripts/examples đã trỏ từ SKILL.md.
+5. **Output chuẩn:** theo `examples/output.md` nên team đọc report nào cũng cùng format.
+
 Skill = **know-how đóng gói**: 1 file `SKILL.md` (frontmatter YAML + markdown hướng dẫn) + file hỗ trợ
 tùy chọn (templates, examples, scripts, reference docs). Claude load khi liên quan, hoặc bạn gọi `/ten-skill`.
 
@@ -395,6 +435,21 @@ Ví dụ team: `/issues` (biến ý tưởng thành issue chuẩn), `/plan` (sin
 `/review` (multi-layer review), `/ship` (merge base → test → review diff → bump version → changelog → commit → push → PR).
 
 Mẫu copy-paste: xem `templates/.claude/skills/deploy/SKILL.md` trong repo này.
+
+**Bài 4 (15 phút, nâng cao):** Thêm dynamic injection (`` !`git branch --show-current` ``)
+vào 1 skill có sẵn. Thêm `context: fork` vào 1 skill research, so sánh context main trước/sau.
+
+---
+
+## 6.5. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật | Ai cần nhớ |
+|---|---|---|
+| "Skill tự chạy như cron" | Skill bị động — phải gọi tay `/ten` hoặc Claude auto-trigger khi ngữ cảnh khớp. Muốn chạy lịch → Routines `/schedule` (bài 12). | Người mới |
+| "Nhét hết 300 dòng vào SKILL.md cho chắc" | SKILL.md là index (<100 dòng); checklist/template/script ra files riêng + trỏ từ SKILL.md, không là Claude không load hết. | Người viết skill |
+| "`allowed-tools: Bash` là cho phép mọi lệnh" | Chỉ nới trong lượt gọi skill, baseline vẫn theo permission settings (bài 10). Muốn chặn thật → hook + deny rules. | Team lead |
+| "Skill thay MCP/hook được" | Skill dạy *cách làm*, MCP cho *tay vươn ra*, hook là *luật bắt tuân thủ*. Thiếu hook là rule vẫn bị quên. | Mọi dev |
+| "Description viết dài cho chi tiết" | Tổng budget descriptions ~1% context. Description 1-2 câu mở đầu bằng "Dùng khi...", chi tiết dồn vào body. | Người viết skill |
 
 ---
 

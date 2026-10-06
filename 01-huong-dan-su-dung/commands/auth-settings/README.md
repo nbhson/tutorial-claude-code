@@ -1,6 +1,18 @@
-# Nhóm: Auth, Remote & Settings
+# Nhóm: Auth, Remote & Settings (20 lệnh)
 
-Đăng nhập, remote/mobile, thư mục làm việc, cài đặt, giao diện.
+> Tài khoản, môi trường, cài đặt: login, IDE, config, remote, sandbox.
+
+## Bộ 3 phải nhớ
+
+> /login cắm chìa khóa 1 lần dùng nhiều tháng | /status soi account/provider/version | /sandbox thử đồ lạ trong cát
+
+## Sơ đồ quyết định (30 giây)
+
+```text
+Cần gì? -> Nhóm này cho gì? -> Lệnh nào?
+Đọc 3 lệnh trong "Bộ 3" trước, còn lại tra khi cần.
+Gõ / trong session để xem lệnh nào hiện ở máy bạn.
+```
 
 ## Các lệnh (20)
 
@@ -24,5 +36,13 @@
 - [/theme](./theme/README.md)
 - [/vim](./vim/README.md)
 - [/voice](./voice/README.md)
+
+## Cách dùng nhóm này cho đúng
+
+```bash
+# 1. Học 3 lệnh trụ trước (xem "Bộ 3 phải nhớ" ở trên)
+# 2. Còn lại tra khi gặp việc thật, đừng học hết 1 lúc
+# 3. Lỗi lạ trong nhóm này -> /status -> /doctor -> đọc lệnh tương ứng
+```
 
 [← Về index tất cả lệnh](../README.md)

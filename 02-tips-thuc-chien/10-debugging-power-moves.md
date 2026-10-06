@@ -350,6 +350,83 @@ TEST_SCOPE=auth ./hooks/test-gate.sh
 
 ---
 
+### 11.5. Thuật ngữ mới (nôm na + analogie + ví dụ + verify)
+
+| Thuật ngữ | Nôm na 1 câu | Analogie | Ví dụ kỹ thuật thật | Cách verify |
+|---|---|---|---|---|
+| Debug theo lớp L1→L4 | Khám từ ngoài vào trong, rẻ trước đắt sau. | Như khám bệnh: hỏi triệu chứng (L1) → đo huyết áp (L2) → X-quang (L3) → hội chẩn (L4). | L1 `/status//doctor`, L2 `/context//cost//usage`, L3 `/hooks//mcp//permissions`, L4 `/debug//bug` | 80% ca xong ở L1-L3 trong 10p, chưa cần `/bug`. |
+| Kill switch subagents | Nút ngắt điện khi fan-out chập. | Như aptomat: chập là sập cả dàn, rồi bật lại từng cái. | `Ctrl+X Ctrl+K ×2 trong 3s` | `/agents` hết job nền; `/usage` ngừng vọt. |
+| Statusline + `/btw` | Bảng đồng hồ + hỏi thầm không ghi sổ. | Như đồng hồ xăng (statusline) + hỏi đường không ghi biên bản (`/btw`). | `/statusline` hiện `sonnet · 42%`; `/btw hàm X làm gì?` | Không cần `/context` mỗi lần; history không dài thêm. |
+
+### 11.6. Mermaid: debug L1→L4 trong 10 phút
+
+```mermaid
+flowchart TD
+    A["Claude bỗng dở?"] --> L1["L1: /status + /doctor (version/model/cwd)"]
+    L1 --> L2["L2: /context + /cost + /usage (RAM/tiền/ai ngốn)"]
+    L2 --> L3["L3: /hooks + /mcp + /permissions (ai chặn?)"]
+    L3 --> L4["L4: /debug -> terminal mới -> /export + /bug"]
+    L1 --> F1{Nhầm model/version/branch?}
+    L2 --> F2{>70% / bill vọt?}
+    L3 --> F3{Hook substring / MCP đỏ / rule chặn?}
+    F1 -->|Có| G1["/model + update + pwd/branch"]
+    F2 -->|Có| G2["/compact focus / /clear + plan"]
+    F3 -->|Có| G3["Sửa regex + disable MCP đỏ"]
+    G1 --> D[Done + ghi team log 1 dòng]
+    G2 --> D
+    G3 --> D
+```
+
+Giải thích:
+
+1. **A→L1:** version cũ (`unknown command`), nhầm model, nhầm cwd/branch.
+2. **L1→L2:** RAM còn bao nhiêu, ai ngốn (explorer 45K, log 800 dòng).
+3. **L2→L3:** tool lặng lẽ không chạy → hook/MCP/permissions (90% ở đây).
+4. **L3→L4:** trông đúng mà vẫn fail → `/debug`, thử session mới loại trừ context bẩn.
+5. **→D:** ghi 1 dòng log để lần sau 2 phút.
+
+### 11.7. Bảng so sánh có cột Hiểu nôm na + Ví dụ
+
+| Lớp | Hiểu nôm na | Ví dụ |
+|---|---|---|
+| L1 setup | Coi giấy tờ xe trước khi chê xe yếu | `/status` phát hiện đang haiku tưởng opus → `/model sonnet` |
+| L2 context/tiền | Coi xăng + hành lý có quá tải không | `/context` 82% toàn log cũ → `/compact` giữ plan, bỏ log |
+| L3 chặn | Coi có ai kéo thắng tay không | `feat/my-main-fix` bị block → hook substring `main` → sửa regex intent |
+
+**Kỳ vọng thấy gì:**
+
+```bash
+/status
+/context
+/hooks
+echo '{"tool_input":{"command":"git push origin feat/my-main-fix"}}' | ./hooks/branch-protect.sh; echo "exit=$?"
+```
+
+> Kỳ vọng thấy gì: `/status` đúng model/branch; `/context` <70% sau compact; hook test `exit=0` (cho qua). `exit=2` là chặn oan → sửa theo Tips 06.
+
+### 11.8. Before/After
+
+**Before:** `"Sao Claude ngu đi?" → đoán mò đổi model, cãi 5 turns` → Kết quả dở: context 82% + hook chặn nhầm + MCP đỏ vẫn y nguyên, bill vọt.
+
+**After:**
+
+```bash
+/status        # phát hiện haiku -> /model sonnet
+/context       # 76% -> /compact giữ plan, bỏ 2 logs
+/hooks         # test-gate full 4p -> TEST_SCOPE=auth
+/mcp           # github đỏ -> disable tạm
+```
+
+> Kết quả tốt + Kỳ vọng: 10 phút xong 80% ca, session nhẹ, hết treo; còn fail mới `/debug` + session mới + `/export + /bug` kèm repro tối thiểu.
+
+### 11.9. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật |
+|---|---|
+| Chưa qua L1-L3 đã kết luận model dở | 80% là context bẩn/hook chặn/nhầm model; phải đi lớp rẻ trước |
+| `--dangerously-skip-permissions` trên dev cho nhanh | Tiện 10s, rủi xóa/push bừa; chỉ CI sandbox, dev dùng `/permissions` duyệt |
+| Thêm MCP khi data đã local là xịn | Nặng context + chậm; `Read/Grep` local trước, thiếu mới bật MCP |
+
 ## 12. Tham khảo chéo
 
 - Lệnh debug & sessions:

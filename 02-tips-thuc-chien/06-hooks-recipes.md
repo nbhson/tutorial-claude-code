@@ -482,6 +482,71 @@ Pitfalls triển khai (không chạy, chặn oan, treo CI, chậm, hardcode path
 
 ---
 
+### 9.5. Thuật ngữ mới (nôm na + analogie + ví dụ + verify)
+
+| Thuật ngữ | Nôm na 1 câu | Analogie | Ví dụ kỹ thuật thật | Cách verify |
+|---|---|---|---|---|
+| Hook (Pre/Post/Stop/Start) | Luật tự chạy ngoài model, 0 tokens, không cãi được. | Như cửa tự động + chuông báo cháy: người quên nhưng máy không quên. | `PostToolUse Edit\|Write` chạy `lint-on-write.sh` | Sửa `src/a.ts` sai lint → hook báo ngay turn sau. |
+| Matcher + exit code | Địa chỉ áp luật + tín hiệu cho/chặn. | Như ghi `chỉ kiểm xe tải` (matcher) + đèn xanh/đỏ (exit 0/2). | `matcher Bash` + `branch-protect.sh` `exit 2` khi `push -f` | `feat/my-main-fix` exit 0; `push -f` + `HEAD:main` exit 2. |
+| Stop test-gate | Người gác cổng cuối: test đỏ không cho kết thúc turn. | Như bảo vệ không cho xe ra khi chưa có giấy. | `hooks/test-gate.sh` chạy `pnpm --filter payments test` | Làm đỏ 1 test → Stop exit 2; sửa xanh → exit 0. |
+
+### 9.6. Mermaid: hook chạy khi nào
+
+```mermaid
+sequenceDiagram
+    participant U as Bạn/Claude
+    participant Pre as PreToolUse
+    participant T as Tool (Bash/Edit)
+    participant Post as PostToolUse
+    participant S as Stop/Session
+    U->>Pre: định chạy lệnh?
+    Pre-->>U: BLOCK exit 2 / cho qua exit 0
+    U->>T: chạy tool
+    T->>Post: xong
+    Post->>U: lint/format/log (không chặn chính)
+    U->>S: định kết thúc turn?
+    S-->>U: test-gate đỏ → block max 8 lần
+```
+
+Giải thích từng bước:
+
+1. **U→Pre:** trước tool → `branch-protect/guard-paths` check intent (không substring).
+2. **Pre→U:** `exit 2` block + lý do; `exit 0` cho qua.
+3. **T→Post:** sau Edit/Write → lint đúng file vừa đổi.
+4. **U→S:** turn-end → `test-gate/cost-cap` chạy; đỏ thì block, tối đa 8 lần.
+
+### 9.7. Bảng so sánh có cột Hiểu nôm na + Ví dụ
+
+| Cơ chế | Hiểu nôm na | Ví dụ |
+|---|---|---|
+| Prompt nhắc | Nhắc miệng, vội là quên | `Nhớ chạy lint` → cuối tuần dồn 40 files |
+| Skill | Quy trình cần người quyết, gọi khi cần | `/deploy` checklist migrate/smoke/rollback |
+| Hook | Luật sắt máy check được 100% | Lint sau edit, cấm push main, cost-cap |
+
+**Kỳ vọng thấy gì:**
+
+```bash
+run() { echo "{\"tool_input\":{\"command\":\"$1\"}}" | ./hooks/branch-protect.sh; echo "[$1] exit=$?"; }
+run "git push origin feat/my-main-fix"
+run "git push origin HEAD:main"
+```
+
+> Kỳ vọng thấy gì: dòng 1 `exit=0` (cho qua, chứng minh không substring bừa), dòng 2 `exit=2 BLOCKED`. Cả 4 ca force/push-main đều `exit=2`.
+
+### 9.8. Before/After
+
+**Before:** Nhắc miệng `nhớ đừng push main` → Kết quả dở: máy B push thẳng main sập prod, cãi nhau `tưởng...`.
+
+**After (hook):** `PreToolUse Bash → branch-protect.sh` match intent + test 4 ca → Kết quả tốt + Kỳ vọng: push main/force auto `BLOCKED` kèm lý do `Push lên feature + mở PR`; branch thường vẫn pass.
+
+### 9.9. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật |
+|---|---|
+| Matcher viết thường cũng match | Case-sensitive: `edit\|write` không match `Edit\|Write`; Pre/Post ngược là chạy sai lúc |
+| Hook chậm không sao | `test-gate` full suite 5 phút mỗi turn = tự DDoS; phải `TEST_SCOPE` + cache + timeout |
+| Hooks review qua loa được | Hooks chạy với quyền bạn (xóa/push/webhook được); review như production code |
+
 ## 10. Tham khảo chéo
 
 - Lệnh hooks:

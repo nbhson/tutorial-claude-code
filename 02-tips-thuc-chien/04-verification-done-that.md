@@ -411,6 +411,75 @@ Luôn có 3 guard:
 
 ---
 
+### 12.5. Thuật ngữ mới (nôm na + analogie + ví dụ + verify)
+
+| Thuật ngữ | Nôm na 1 câu | Analogie | Ví dụ kỹ thuật thật | Cách verify |
+|---|---|---|---|---|
+| Done criteria check được | Định nghĩa xong bằng lệnh+số, không bằng cảm giác. | Như nghiệm thu nhà: đo điện/nước chạy thật thay vì nghe thợ hứa. | `Done = pnpm test auth xanh + lint 0 error + diff chỉ chạm apps/auth/**` | Chạy 4 checks mỗi cái 10s biết pass/fail. |
+| Fresh reviewer | Người chấm khác người làm để chống thiên vị. | Như thi đấu có trọng tài ngoài, không để cầu thủ tự thổi còi. | Spawn subagent chưa thấy reasoning writer, trả `[SEVERITY] file:line` | Bắt thêm 30-50% HIGH so với self-review. |
+| Flaky test | Test lúc xanh lúc đỏ, đoán bừa càng bẩn. | Như xe lúc nổ lúc tắt: ghi lại lúc nào tắt, đừng đoán mò thay máy. | Chạy 3 lần pass/fail khác nhau → ghi `FLAKY` + dừng | Log 3 lần + dòng khác nhau, không vá code. |
+
+### 12.6. Mermaid: thang verify 6 levels
+
+```mermaid
+flowchart TD
+    A[Code xong?] --> L1[L1 Prompt: chạy test + dán log]
+    L1 --> L2[L2 /goal: evaluator mỗi turn]
+    L2 --> L3[L3 Stop hook: script gate max 8 blocks]
+    L3 --> L4[L4 Fresh reviewer: SEVERITY + verdict]
+    L4 --> L5[L5 /verify: chạy app thật]
+    L5 --> L6[L6 Multi-agent: tester+reviewer+security]
+    L6 --> D{Pass hết?}
+    D -->|Không| F[Fix HIGH trước, re-review]
+    D -->|Có| M[Merge + ghi Done vào PR]
+```
+
+Giải thích:
+
+1. **A→L1:** mọi task thêm 1 câu verify + iterate 3 lần.
+2. **L2→L3:** session dài không canh → `/goal` + `maxTurns` + Stop gate ngoài model.
+3. **L3→L4:** gate đảm bảo xanh, reviewer đảm bảo đúng (fresh, bỏ style).
+4. **L4→L5:** user-visible (UI/API/refund) phải chạy thật, không chỉ test.
+5. **L6→D:** tiền/auth/migrate → 3 agents verify chéo + human.
+
+### 12.7. Bảng so sánh có cột Hiểu nôm na + Ví dụ
+
+| Level | Hiểu nôm na | Ví dụ |
+|---|---|---|
+| L1 Prompt | Bắt thợ tự chạy thử trước khi gọi xong | `Chạy pnpm test payments và dán log, đỏ thì fix tiếp` |
+| L3 Stop hook | Khóa cửa sắt: chưa xanh không cho về | `hooks/test-gate.sh` block turn-end tới khi xanh |
+| L5 `/verify` | Lái thử xe thật thay vì đọc thông số | Gọi refund thật 2 lần cùng key, chỉ trừ 1 lần |
+
+**Kỳ vọng thấy gì:**
+
+```bash
+/goal Done khi pnpm --filter payments test xanh + diff chỉ chạm src/payments/**, tối đa 15 turns.
+# + reviewer:
+# "Review diff với plan.md. Finding = bug/correctness/security/test-gap. [SEVERITY] file:line — fix. Verdict PASS/NEEDS-FIX."
+```
+
+> Kỳ vọng thấy gì: evaluator check mỗi turn; reviewer trả 1 HIGH (thiếu idempotency) + 2 MED + verdict; PR có 5 dòng Done tick + log xanh đính kèm.
+
+### 12.8. Before/After
+
+**Before:** `"Fix xong chưa?" → "Xong rồi (chắc vậy)"` → Kết quả dở: merge xong QA bắt 3 bugs, cãi nhau thế nào là xong.
+
+**After:**
+
+```text
+"Done = pnpm --filter payments test xanh (dán 10 dòng cuối) + diff chỉ chạm src/payments/** + demo log refund idempotent + /verify pass. Spawn reviewer fresh 1 vòng."
+```
+
+> Kết quả tốt + Kỳ vọng: log xanh + diff gọn + demo log + reviewer PASS mới merge; flaky thì `FLAKY` + dừng đoán.
+
+### 12.9. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật |
+|---|---|
+| `Should work` là xong | Phải log/diff/`/verify`, không nhận lời hứa |
+| Loop càng lâu càng kỹ | Loop không maxTurns đốt 50 turns; phải maxTurns + reviewer cuối |
+| Test xanh là chạy thật | Test xanh mà prod gãy env/webhook; user-visible phải `/verify` |
+
 ## 13. Tham khảo chéo
 
 - Lệnh verify:

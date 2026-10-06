@@ -6,10 +6,24 @@ Mỗi câu có giải thích + config/lệnh copy-paste + ví dụ + khi nào á
 
 ---
 
+## Sơ đồ nhanh (nhìn 30 giây là nhớ)
+
+```mermaid
+flowchart TD
+  E[Event: PreToolUse / PostToolUse / Stop ...] --> M{Matcher khớp?}
+  M -->|Không| X[Bỏ qua]
+  M -->|Có| H[Chạy hook shell]
+  H -->|exit 0| OK[Cho qua]
+  H -->|exit 2| BLOCK[Chặn + báo lỗi]
+```
+
 ## Bảng tổng hợp: 4 loại hook + debug nhanh
 
 | Loại hook | Chạy ở đâu | Tốn gì | Dùng khi nào |
-|---|---|---|---|
+|---
+
+
+|---|---|---|
 | Command (shell script) | Máy bạn, deterministic | 0 model tokens, vài ms–s | Production ưu tiên (lint, guard, format) |
 | Prompt (LLM 1-turn, Haiku default) | Model chấm 1 lượt | Ít tokens (Haiku) | Cần judgment từ input (prompt có risky?) |
 | Agent (experimental, 60s/50 turns) | Subagent verify | Nhiều tokens | Verify cần đọc code/chạy lệnh |
@@ -26,8 +40,12 @@ Mỗi câu có giải thích + config/lệnh copy-paste + ví dụ + khi nào á
 ---
 
 ## 1. Xem hooks đang có ở đâu? (`/hooks` theo tool events)
+> **Hỏi ngắn gọn:** Xem hooks đang có ở đâu? (`/hooks` theo tool events)
+>
+> **Trả lời 1 câu:** `/hooks` liệt kê hooks theo từng tool event (PreToolUse, PostToolUse, Stop, SessionStart, UserPromptSubmit...), kèm matcher + command.
 
-**Giải thích.** `/hooks` liệt kê hooks theo từng tool event (PreToolUse, PostToolUse, Stop, SessionStart, UserPromptSubmit...), kèm matcher + command. Đây là "bảng điện" — hook không lửa thì nhìn đây đầu tiên.
+
+**Giải thích chi tiết + ví dụ:** `/hooks` liệt kê hooks theo từng tool event (PreToolUse, PostToolUse, Stop, SessionStart, UserPromptSubmit...), kèm matcher + command. Đây là "bảng điện" — hook không lửa thì nhìn đây đầu tiên.
 
 ```bash
 /hooks    # xem tất cả hooks theo events
@@ -39,9 +57,14 @@ Mỗi câu có giải thích + config/lệnh copy-paste + ví dụ + khi nào á
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 2. Hook không lửa — check event đúng chưa? (Pre vs Post vs Stop...)
+> **Hỏi ngắn gọn:** Hook không lửa — check event đúng chưa? (Pre vs Post vs Stop...)
+>
+> **Trả lời 1 câu:** Bệnh #1: gắn nhầm event.
 
-**Giải thích.** Bệnh #1: gắn nhầm event. Bản đồ nhanh:
+
+**Giải thích chi tiết + ví dụ:** Bệnh #1: gắn nhầm event. Bản đồ nhanh:
 
 | Muốn | Event đúng | Gắn nhầm hay gặp |
 |---|---|---|
@@ -65,9 +88,14 @@ Mỗi câu có giải thích + config/lệnh copy-paste + ví dụ + khi nào á
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 3. Matcher đúng case chưa? (`Edit` ≠ `edit`, `Bash` ≠ `bash`)
+> **Hỏi ngắn gọn:** Matcher đúng case chưa? (`Edit` ≠ `edit`, `Bash` ≠ `bash`)
+>
+> **Trả lời 1 câu:** Bệnh #2, nhỏ mà hay gặp nhất.
 
-**Giải thích.** Bệnh #2, nhỏ mà hay gặp nhất. Matcher phải đúng tên tool viết hoa: `Edit`, `Write`, `Bash`, `Read`... Ghi `edit`, `bash` thường → không khớp → im re, không báo lỗi.
+
+**Giải thích chi tiết + ví dụ:** Bệnh #2, nhỏ mà hay gặp nhất. Matcher phải đúng tên tool viết hoa: `Edit`, `Write`, `Bash`, `Read`... Ghi `edit`, `bash` thường → không khớp → im re, không báo lỗi.
 
 ```json
 {
@@ -92,9 +120,14 @@ echo '{"tool_name":"Bash","tool_input":{"command":"git push origin main"}}' | ./
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 4. Folder trusted chưa? (frontmatter hooks cần trust dialog)
+> **Hỏi ngắn gọn:** Folder trusted chưa? (frontmatter hooks cần trust dialog)
+>
+> **Trả lời 1 câu:** Bệnh #3.
 
-**Giải thích.** Bệnh #3. Hooks kèm trong project files (frontmatter của subagent/skill) chỉ chạy khi workspace được **trust** (dialog lúc mở folder). Chưa trust → skip + log mờ, dễ tưởng hỏng. `-p` headless không tính trusted (xem FAQ 03 câu 7).
+
+**Giải thích chi tiết + ví dụ:** Bệnh #3. Hooks kèm trong project files (frontmatter của subagent/skill) chỉ chạy khi workspace được **trust** (dialog lúc mở folder). Chưa trust → skip + log mờ, dễ tưởng hỏng. `-p` headless không tính trusted (xem FAQ 03 câu 7).
 
 ```bash
 /agents    # xem agents + hooks kèm
@@ -107,9 +140,14 @@ echo '{"tool_name":"Bash","tool_input":{"command":"git push origin main"}}' | ./
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 5. Chạy headless (`-p`/background) có gì cần prompt không?
+> **Hỏi ngắn gọn:** Chạy headless (`-p`/background) có gì cần prompt không?
+>
+> **Trả lời 1 câu:** Bệnh #4.
 
-**Giải thích.** Bệnh #4. Headless không có người bấm Yes/No. Hook nào `read -p`, mở editor, gọi OAuth browser → treo tới timeout rồi fail mờ.
+
+**Giải thích chi tiết + ví dụ:** Bệnh #4. Headless không có người bấm Yes/No. Hook nào `read -p`, mở editor, gọi OAuth browser → treo tới timeout rồi fail mờ.
 
 Quy tắc hook headless-safe:
 
@@ -129,9 +167,14 @@ echo '{"decision":"approve"}'
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 6. 2 hooks cùng sửa `updatedInput` — ai thắng? (thằng finish cuối, non-deterministic)
+> **Hỏi ngắn gọn:** 2 hooks cùng sửa `updatedInput` — ai thắng? (thằng finish cuối, non-deterministic)
+>
+> **Trả lời 1 câu:** Bệnh #5.
 
-**Giải thích.** Bệnh #5. `PreToolUse` hooks có thể trả `updatedInput` (sửa input tool trước khi chạy). 2 hooks cùng sửa → thằng finish CUỐI thắng, mà thứ tự finish không đảm bảo → non-deterministic. Hôm nay sửa đúng, mai sửa sai.
+
+**Giải thích chi tiết + ví dụ:** Bệnh #5. `PreToolUse` hooks có thể trả `updatedInput` (sửa input tool trước khi chạy). 2 hooks cùng sửa → thằng finish CUỐI thắng, mà thứ tự finish không đảm bảo → non-deterministic. Hôm nay sửa đúng, mai sửa sai.
 
 **Fix:** đừng để overlap. 1 matcher → 1 hook sửa input. Các hooks còn lại chỉ approve/block, không sửa.
 
@@ -154,9 +197,14 @@ echo '{"decision":"approve"}'
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 7. Stop hook có lửa khi user interrupt? (Không — interrupt không lửa, API error lửa `StopFailure`)
+> **Hỏi ngắn gọn:** Stop hook có lửa khi user interrupt? (Không — interrupt không lửa, API error lửa `StopFailure`)
+>
+> **Trả lời 1 câu:** Bệnh #6 (hiểu nhầm lifecycle):
 
-**Giải thích.** Bệnh #6 (hiểu nhầm lifecycle):
+
+**Giải thích chi tiết + ví dụ:** Bệnh #6 (hiểu nhầm lifecycle):
 
 - `Stop` = Claude tự xong response → lửa.
 - User bấm Esc/Ctrl-C (interrupt) → **không lửa** Stop. Muốn bắt interrupt thì dùng cơ chế khác (session-end/cleanup ngoài).
@@ -177,9 +225,14 @@ echo '{"decision":"approve"}'
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 8. Stop-gate bị override sau 8 blocks liên tiếp — thiết kế sao cho hội tụ?
+> **Hỏi ngắn gọn:** Stop-gate bị override sau 8 blocks liên tiếp — thiết kế sao cho hội tụ?
+>
+> **Trả lời 1 câu:** Bệnh #7.
 
-**Giải thích.** Bệnh #7. Sau **8 blocks liên tiếp**, Claude được override để thoát (chống treo vô hạn). Nên gate "không bao giờ cho dừng trừ khi X" mà X không bao giờ đạt được → tới block thứ 8 là tuột.
+
+**Giải thích chi tiết + ví dụ:** Bệnh #7. Sau **8 blocks liên tiếp**, Claude được override để thoát (chống treo vô hạn). Nên gate "không bao giờ cho dừng trừ khi X" mà X không bao giờ đạt được → tới block thứ 8 là tuột.
 
 Thiết kế gate HỘI TỤ (fix được) thay vì gate VÔ HẠN:
 
@@ -199,9 +252,14 @@ Thiết kế gate HỘI TỤ (fix được) thay vì gate VÔ HẠN:
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 9. Prompt-hook vs agent-hook vs command-hook — chọn sao? (command trước)
+> **Hỏi ngắn gọn:** Prompt-hook vs agent-hook vs command-hook — chọn sao? (command trước)
+>
+> **Trả lời 1 câu:** 4 loại, thứ tự ưu tiên production:
 
-**Giải thích.** 4 loại, thứ tự ưu tiên production:
+
+**Giải thích chi tiết + ví dụ:** 4 loại, thứ tự ưu tiên production:
 
 1. **Command (shell) — ưu tiên #1:** deterministic, nhanh, 0 tokens, test được bằng pipe. Mọi guard/lint/format dùng loại này.
 2. **Prompt (LLM 1-turn, Haiku default):** khi cần *judgment* từ input mà regex không viết nổi (VD: "prompt này có ý định xóa DB không?"). Tốn ít tokens.
@@ -221,9 +279,14 @@ Thiết kế gate HỘI TỤ (fix được) thay vì gate VÔ HẠN:
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 10. Hook chạy với quyền gì? (quyền của bạn — review như production code)
+> **Hỏi ngắn gọn:** Hook chạy với quyền gì? (quyền của bạn — review như production code)
+>
+> **Trả lời 1 câu:** Hook shell chạy với quyền user của bạn: đọc FS, gọi network, ghi disk.
 
-**Giải thích.** Hook shell chạy với quyền user của bạn: đọc FS, gọi network, ghi disk. Hook độc = RCE trá hình. Chỉ cài từ nguồn tin cậy, đọc script trước khi enable, nhất là plugin community (bundle cả hooks + MCP + skills).
+
+**Giải thích chi tiết + ví dụ:** Hook shell chạy với quyền user của bạn: đọc FS, gọi network, ghi disk. Hook độc = RCE trá hình. Chỉ cài từ nguồn tin cậy, đọc script trước khi enable, nhất là plugin community (bundle cả hooks + MCP + skills).
 
 ```bash
 # Trước khi cài plugin/skill lạ có hooks:
@@ -238,9 +301,14 @@ git grep -E 'curl|rm -rf|sudo|chmod \+x' -- .claude/hooks/
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 11. Hook API đổi theo version (2025–2026) — chống drift sao?
+> **Hỏi ngắn gọn:** Hook API đổi theo version (2025–2026) — chống drift sao?
+>
+> **Trả lời 1 câu:** Hook API từng đổi: `tools` frontmatter, PreToolUse stdin schema...
 
-**Giải thích.** Hook API từng đổi: `tools` frontmatter, PreToolUse stdin schema... Hook chặn CI push mà viết theo schema cũ → fail mờ sau update. Quy tắc: trước khi đặt hook chặn việc quan trọng, đối chiếu release notes với version đang chạy.
+
+**Giải thích chi tiết + ví dụ:** Hook API từng đổi: `tools` frontmatter, PreToolUse stdin schema... Hook chặn CI push mà viết theo schema cũ → fail mờ sau update. Quy tắc: trước khi đặt hook chặn việc quan trọng, đối chiếu release notes với version đang chạy.
 
 ```bash
 # Trong session:
@@ -257,6 +325,8 @@ echo '{"tool_name":"Bash","tool_input":{"command":"ls"}}' | ./scripts/guard-shel
 **Ví dụ:** update lên bản đổi stdin schema → guard cũ parse sai → approve hết (mở toang) hoặc block hết (kẹt). Test dry-run sau update bắt được ngay.
 
 **Khi nào áp dụng:** sau MỖI `claude update` + trước khi gắn hook vào CI gate.
+
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 
 ---
 

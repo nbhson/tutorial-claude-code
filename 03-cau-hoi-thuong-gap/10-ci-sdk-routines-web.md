@@ -6,10 +6,22 @@ Mỗi câu có giải thích + lệnh/config copy-paste (kèm YAML ví dụ) + k
 
 ---
 
+## Sơ đồ nhanh (nhìn 30 giây là nhớ)
+
+```mermaid
+flowchart TD
+  L[Local session] -->|/web-setup| C[Cloud environment<br/>servers + vars + setup]
+  C --> R[Routines / --cloud / teleport]
+  L -->|CI headless| P[claude -p + guardrails]
+```
+
 ## Bảng tổng hợp: chọn đường automation nào?
 
 | Đường | Chạy ở đâu | Cần gì | Dùng khi nào |
-|---|---|---|---|
+|---
+
+
+|---|---|---|
 | `claude -p` CI (dontAsk + allowlist) | Runner CI | Sub/Console/Bedrock/AWS/GCP (Foundry ✗) | Review, migrate, triage tự động |
 | `Setup` hook event | CI/scripts 1 lần | `--init-only` / `--init` / `--maintenance` | Chuẩn bị môi trường trước task |
 | Routines (`/schedule`) | Cloud Anthropic | Subscription (sign-in) | Digest sáng, dep audit, docs sync |
@@ -22,10 +34,14 @@ Mỗi câu có giải thích + lệnh/config copy-paste (kèm YAML ví dụ) + k
 ---
 
 ## 1. Dùng Claude trong CI thế nào mà vẫn an toàn? (pattern + YAML)
+> **Hỏi ngắn gọn:** Dùng Claude trong CI thế nào mà vẫn an toàn? (pattern + YAML)
+>
+> **Trả lời 1 câu:** Pattern an toàn 5 điểm: `-p` + `--output-format json` + `--permission-mode dontAsk` + `--allowedTools` hẹp + secrets từ runner env.
 
-**Giải thích.** Pattern an toàn 5 điểm: `-p` + `--output-format json` + `--permission-mode dontAsk` + `--allowedTools` hẹp + secrets từ runner env. Không `--dangerously-skip-permissions` ngoài sandbox. Provider hỗ trợ: Sub/Console/Bedrock/AWS/GCP — **Foundry ✗**.
 
-**Lệnh copy-paste:**
+**Giải thích chi tiết + ví dụ:** Pattern an toàn 5 điểm: `-p` + `--output-format json` + `--permission-mode dontAsk` + `--allowedTools` hẹp + secrets từ runner env. Không `--dangerously-skip-permissions` ngoài sandbox. Provider hỗ trợ: Sub/Console/Bedrock/AWS/GCP — **Foundry ✗**.
+
+**Làm thế nào (steps copy-paste):**
 
 ```bash
 claude -p "review diff" \
@@ -61,9 +77,14 @@ jobs:
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 2. `Setup` hook event để làm gì? (`--init-only` / `--init` / `--maintenance`)
+> **Hỏi ngắn gọn:** `Setup` hook event để làm gì? (`--init-only` / `--init` / `--maintenance`)
+>
+> **Trả lời 1 câu:** `Setup` chạy 1 lần để chuẩn bị môi trường cho CI/scripts — trước cả task chính.
 
-**Giải thích.** `Setup` chạy 1 lần để chuẩn bị môi trường cho CI/scripts — trước cả task chính. 3 flags trong `-p`:
+
+**Giải thích chi tiết + ví dụ:** `Setup` chạy 1 lần để chuẩn bị môi trường cho CI/scripts — trước cả task chính. 3 flags trong `-p`:
 
 | Flag | Việc | Dùng khi nào |
 |---|---|---|
@@ -86,9 +107,14 @@ claude -p "" --init-only
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 3. Routines (`/schedule`) là gì? (task định kỳ trên cloud + verify)
+> **Hỏi ngắn gọn:** Routines (`/schedule`) là gì? (task định kỳ trên cloud + verify)
+>
+> **Trả lời 1 câu:** Routines = task chạy định kỳ / gọi API / GitHub-event **trên cloud**: morning digest, CI analysis, dep audit, docs sync.
 
-**Giải thích.** Routines = task chạy định kỳ / gọi API / GitHub-event **trên cloud**: morning digest, CI analysis, dep audit, docs sync. Cần **subscription** (sign-in, không API-key-only). Viết prompt như skill + gắn verify (không thì nó "xong" mà không ai check).
+
+**Giải thích chi tiết + ví dụ:** Routines = task chạy định kỳ / gọi API / GitHub-event **trên cloud**: morning digest, CI analysis, dep audit, docs sync. Cần **subscription** (sign-in, không API-key-only). Viết prompt như skill + gắn verify (không thì nó "xong" mà không ai check).
 
 ```bash
 # Trong session đã login Sub:
@@ -109,9 +135,14 @@ Verify: mỗi mục kèm link. Không tự merge. Gửi digest về Slack #dev.
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 4. Bắt đầu cloud session từ terminal? (`/web-setup` + `claude --cloud`)
+> **Hỏi ngắn gọn:** Bắt đầu cloud session từ terminal? (`/web-setup` + `claude --cloud`)
+>
+> **Trả lời 1 câu:** 2 bước: `/web-setup` (cần `gh` CLI: sync token, tạo environment) rồi `claude --cloud "<task>"`.
 
-**Giải thích.** 2 bước: `/web-setup` (cần `gh` CLI: sync token, tạo environment) rồi `claude --cloud "<task>"`. Mode cloud: **Accept edits** (tự sửa + push branch) / **Plan** (chờ duyệt). Không có Bypass (xem FAQ 03 câu 3).
+
+**Giải thích chi tiết + ví dụ:** 2 bước: `/web-setup` (cần `gh` CLI: sync token, tạo environment) rồi `claude --cloud "<task>"`. Mode cloud: **Accept edits** (tự sửa + push branch) / **Plan** (chờ duyệt). Không có Bypass (xem FAQ 03 câu 3).
 
 ```bash
 # 1. Chuẩn bị (1 lần/repo):
@@ -129,9 +160,14 @@ claude --cloud "migrate endpoint X sang v2, mở PR"
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 5. Teleport là gì? (chuyển session terminal ↔ cloud, persist cross-device)
+> **Hỏi ngắn gọn:** Teleport là gì? (chuyển session terminal ↔ cloud, persist cross-device)
+>
+> **Trả lời 1 câu:** `/teleport` chuyển session đang làm dở giữa terminal ↔ cloud (`/teleport` resume remote từ claude.ai).
 
-**Giải thích.** `/teleport` chuyển session đang làm dở giữa terminal ↔ cloud (`/teleport` resume remote từ claude.ai). Sessions **persist cross-device** — bắt đầu ở công ty, tối về nhà resume tiếp.
+
+**Giải thích chi tiết + ví dụ:** `/teleport` chuyển session đang làm dở giữa terminal ↔ cloud (`/teleport` resume remote từ claude.ai). Sessions **persist cross-device** — bắt đầu ở công ty, tối về nhà resume tiếp.
 
 ```bash
 # Đang làm ở terminal, muốn lên cloud:
@@ -148,9 +184,14 @@ claude --cloud "migrate endpoint X sang v2, mở PR"
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 6. Agent SDK khi nào? (quy trình đặc thù / UI riêng / nhúng internal)
+> **Hỏi ngắn gọn:** Agent SDK khi nào? (quy trình đặc thù / UI riêng / nhúng internal)
+>
+> **Trả lời 1 câu:** Mặc định Claude Code đã đủ (load `.claude/` + `~/.claude/`).
 
-**Giải thích.** Mặc định Claude Code đã đủ (load `.claude/` + `~/.claude/`). Chỉ build SDK khi: quy trình quá đặc thù (pipeline riêng), cần UI riêng (dashboard nội bộ), nhúng internal (bot Slack/Teams riêng). Thu hẹp scope bằng `setting_sources` (không load hết config user).
+
+**Giải thích chi tiết + ví dụ:** Mặc định Claude Code đã đủ (load `.claude/` + `~/.claude/`). Chỉ build SDK khi: quy trình quá đặc thù (pipeline riêng), cần UI riêng (dashboard nội bộ), nhúng internal (bot Slack/Teams riêng). Thu hẹp scope bằng `setting_sources` (không load hết config user).
 
 ```python
 # Ý tưởng (pseudocode, đọc SDK docs cho API thật):
@@ -168,9 +209,14 @@ result = agent.run("triage ticket X")
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 7. `claude mcp serve` là gì? (biến Claude thành MCP server)
+> **Hỏi ngắn gọn:** `claude mcp serve` là gì? (biến Claude thành MCP server)
+>
+> **Trả lời 1 câu:** `claude mcp serve` expose chính Claude Code thành **1 MCP stdio server** cho hệ khác gọi — đảo vai: thường Claude gọi MCP, giờ hệ khác gọi Claude như tool.
 
-**Giải thích.** `claude mcp serve` expose chính Claude Code thành **1 MCP stdio server** cho hệ khác gọi — đảo vai: thường Claude gọi MCP, giờ hệ khác gọi Claude như tool.
+
+**Giải thích chi tiết + ví dụ:** `claude mcp serve` expose chính Claude Code thành **1 MCP stdio server** cho hệ khác gọi — đảo vai: thường Claude gọi MCP, giờ hệ khác gọi Claude như tool.
 
 ```bash
 # Expose Claude cho hệ khác (VD: IDE lạ, bot nội bộ):
@@ -184,9 +230,14 @@ claude mcp serve --transport stdio
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 8. Analytics cho team? (`/insights`, `/stats`, dashboard, API theo plan)
+> **Hỏi ngắn gọn:** Analytics cho team? (`/insights`, `/stats`, dashboard, API theo plan)
+>
+> **Trả lời 1 câu:** Đo theo plan (càng cao càng sâu):
 
-**Giải thích.** Đo theo plan (càng cao càng sâu):
+
+**Giải thích chi tiết + ví dụ:** Đo theo plan (càng cao càng sâu):
 
 | Công cụ | Ra gì | Plan |
 |---|---|---|
@@ -206,9 +257,14 @@ claude mcp serve --transport stdio
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 9. CI YAML hoàn chỉnh: doctor-gate + secret-check + review?
+> **Hỏi ngắn gọn:** CI YAML hoàn chỉnh: doctor-gate + secret-check + review?
+>
+> **Trả lời 1 câu:** Gộp 3 jobs vào 1 workflow: (1) secret-check (rẻ, chạy trước), (2) doctor-gate (điểm <70 chặn merge), (3) review (đắt nhất, chạy sau cùng).
 
-**Giải thích.** Gộp 3 jobs vào 1 workflow: (1) secret-check (rẻ, chạy trước), (2) doctor-gate (điểm <70 chặn merge), (3) review (đắt nhất, chạy sau cùng).
+
+**Giải thích chi tiết + ví dụ:** Gộp 3 jobs vào 1 workflow: (1) secret-check (rẻ, chạy trước), (2) doctor-gate (điểm <70 chặn merge), (3) review (đắt nhất, chạy sau cùng).
 
 ```yaml
 name: claude-ci
@@ -246,9 +302,14 @@ jobs:
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 10. Checklist automation mới (CI/routine/cloud) trước khi bật?
+> **Hỏi ngắn gọn:** Checklist automation mới (CI/routine/cloud) trước khi bật?
+>
+> **Trả lời 1 câu:** Chạy checklist này trước khi schedule/bật bất kỳ automation nào:
 
-**Giải thích.** Chạy checklist này trước khi schedule/bật bất kỳ automation nào:
+
+**Giải thích chi tiết + ví dụ:** Chạy checklist này trước khi schedule/bật bất kỳ automation nào:
 
 ```bash
 # 1. Allowlist hẹp? (không bypass ngoài sandbox)
@@ -264,6 +325,8 @@ claude -p "<task>" --output-format json --permission-mode dontAsk --allowedTools
 ```
 
 **Khi nào áp dụng:** mọi routine/CI/cloud mới + mỗi quý rà lại automation cũ.
+
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 
 ---
 

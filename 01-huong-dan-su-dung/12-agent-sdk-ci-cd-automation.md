@@ -374,6 +374,64 @@ Viết 1 trang retro: khóa này thay đổi workflow team bạn thế nào?
 
 ---
 
+### 5.4. Thuật ngữ mới trong bài (nôm na + analogie + ví dụ + verify)
+
+| Thuật ngữ | Nôm na 1 câu | Analogie | Ví dụ kỹ thuật thật | Cách verify |
+|---|---|---|---|---|
+| Print mode (`claude -p`) | Chạy Claude 1 câu không hỏi lại, in kết quả cho script đọc. | Như máy bán hàng tự động: nhét lệnh vào → nhả JSON ra, không trò chuyện. | `claude -p "review diff" --output-format json --permission-mode dontAsk --allowedTools "Read, Grep, Glob, Bash"` | Thấy JSON in ra stdout; `echo $?` = 0; pipe qua `jq '.findings'` đọc được. |
+| Agent SDK | Thư viện nhúng vòng lặp Claude vào app riêng (bot, backend). | Như mua động cơ rời về lắp vào xe tự chế thay vì mua xe nguyên chiếc. | `query({prompt, options:{model:"sonnet", canUseTool}})` trong `examples/agent-review.ts` | Chạy `npx tsx examples/agent-review.ts` → findings in ra; thử lệnh `rm -rf` phải bị `deny`. |
+| Routine (`/schedule`) | Việc Claude tự chạy theo giờ trên cloud, vắng người. | Như hẹn giờ nồi cơm: tới giờ tự nấu, bạn chỉ về ăn. | `/schedule "7:30 weekdays"` digest 10 PRs mới nhất | Sáng hôm sau check Slack `#eng-standup` có digest đúng giờ + format skill. |
+
+### 5.5. Mermaid: flow từ prompt tới CI tới routine
+
+```mermaid
+flowchart LR
+    A[Task lặp lại?] --> B{Có người ngồi không?}
+    B -->|Có người| C["claude REPL / -p thử tay"]
+    B -->|Không người - CI| D["claude -p + dontAsk + allowlist hẹp"]
+    B -->|Không người - định kỳ cloud| E["Routine /schedule"]
+    B -->|Nhúng app riêng| F[Agent SDK + canUseTool]
+    D --> G[Parse JSON + post comment / mở issue]
+    E --> H[Digest / audit chỉ báo cáo, không tự deploy]
+    F --> I[UI riêng + settingSources project]
+```
+
+Giải thích từng bước:
+
+1. **A→B:** hỏi task có cần người ngồi canh không.
+2. **B→C:** thử tay trước bằng REPL/`-p` cho chắc prompt.
+3. **B→D:** chạy CI → `-p` + `dontAsk` + allowlist `Read,Grep,Glob,Bash`, secrets qua env runner.
+4. **B→E:** việc theo lịch (digest/audit) → routine, prompt viết như skill (steps + verify + output format).
+5. **B→F:** cần UI/orchestration riêng → SDK với `canUseTool` + `settingSources: ["project"]`.
+6. **D→G:** step sau parse JSON (`jq`) rồi post PR comment / mở issue.
+7. **E→H:** routine chỉ báo cáo, deploy luôn cần người (kèm `disable-model-invocation`).
+
+### 5.6. Bảng so sánh có cột Hiểu nôm na + Ví dụ
+
+| Lựa chọn | Hiểu nôm na | Ví dụ |
+|---|---|---|
+| `claude -p` | Sai vặt 1 lần cho script đọc | `claude -p "summarize diff" --output-format text` trong job review |
+| Agent SDK | Thuê đầu bếp riêng về nấu theo thực đơn nhà | Slack bot gọi `query()` với `canUseTool` chỉ cho `git diff/log` |
+| Routine | Báo thức tự kêu mỗi sáng | `/schedule` digest PRs 7:30 gửi Slack |
+| GitHub Actions | Người gác cổng tự động ở cửa PR | Workflow `claude-review.yml` chạy mỗi `pull_request: [opened, synchronize]` |
+
+**Kỳ vọng thấy gì (sau lệnh `-p` JSON):**
+
+```bash
+claude -p "review git diff main...HEAD, output JSON: {findings: []}" --output-format json --permission-mode dontAsk --allowedTools "Read, Grep, Glob, Bash" | jq '.findings | length'
+```
+
+> Kỳ vọng thấy gì: in ra số như `3` (số findings) + `review.json` có keys `severity,file,line,msg,fix`. Nếu `jq` báo `null` là prompt chưa ép đúng schema JSON.
+
+### 5.7. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật | Ví dụ sửa |
+|---|---|---|
+| CI dùng `bypassPermissions` cho nhanh | `bypass` chỉ sandbox ephemeral; runner thường phải `dontAsk` + allowlist | Đổi `--permission-mode dontAsk --allowedTools "Read, Grep, Glob, Bash"` |
+| `PermissionRequest` sẽ hỏi người trong CI | `-p` plain không prompt; automate bằng `PreToolUse` hoặc `canUseTool` | Viết `PreToolUse` hook / `canUseTool` callback deny `rm -rf` |
+| Routine tự deploy đêm cho tiện | Routine vắng người → chỉ báo cáo/digest, deploy cần người duyệt | Prompt routine ghi rõ `Không tự update — chỉ báo cáo` |
+| SDK tự load đúng config team | Mặc định load cả `~/.claude/` personal → CI phải `settingSources: ["project"]` | Set `settingSources: ["project"]` trong `Options` |
+
 ## 6. Link chéo
 
 - **Bài 00 — Tổng quan**: agentic loop + token economics (CI cũng trả token như session).

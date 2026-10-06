@@ -323,6 +323,77 @@ Kết quả điển hình team 3 người: **-40–60% input tokens**, retry gi�
 
 ---
 
+### 10.5. Thuật ngữ mới (nôm na + analogie + ví dụ + verify)
+
+| Thuật ngữ | Nôm na 1 câu | Analogie | Ví dụ kỹ thuật thật | Cách verify |
+|---|---|---|---|---|
+| `/cost` vs `/usage` | Hóa đơn bữa này vs sao kê ai ăn nhiều. | Như bill quán (tổng) + bill chi tiết (ai gọi gì). | `/cost` tổng session; `/usage` breakdown explorer 45K/github-mcp 30K | Top 2 ngốn lộ mặt → tắt/scope lại, mai đo giảm. |
+| Route model | Việc nào não nấy: rẻ khi đủ, đắt khi đáng. | Như đi xe: đi chợ xe máy (Haiku), đi tỉnh ô tô (Sonnet), cứu thương xe ưu tiên (Opus). | Explore Haiku, implement Sonnet, security Opus + reviewer fresh | Bill explore giảm 50-70% mà retry không tăng. |
+| Cost-cap hook | Bảo hiểm tự kêu khi tiêu quá mức ngày. | Như hạn mức thẻ: quá là tin nhắn báo ngay. | `Stop → cost-cap.sh → ledger + Slack khi >DAILY_CAP_USD` | `DAILY_CAP_USD=0.01` test → ledger append + Slack ping. |
+
+### 10.6. Mermaid: giảm 50% bill 1 tuần
+
+```mermaid
+flowchart TD
+    A["Thứ 2: /usage + /doctor + /cost baseline"] --> B[Top 3 ngốn là ai?]
+    B --> C["Thứ 3: cắt nhanh: tắt MCP thừa + khóa skill auto + gọn CLAUDE.md"]
+    C --> D["Thứ 4-6: discipline: subagent explore + /clear + /compact 70% + verify"]
+    D --> E["Chủ nhật: đo lại + ghi docs/cost-log.md"]
+    E --> F{Giảm 30-50% mà retry không tăng?}
+    F -->|Chưa| G[Giữ thói quen + thêm 2 chiêu prune]
+    F -->|Rồi| H[Chuẩn hóa team]
+```
+
+Giải thích:
+
+1. **A→B:** ghi tổng + top 3 (thường explorer rộng + MCP nặng + skill auto-fire).
+2. **B→C:** 30 phút cắt 3 nhát (disable MCP, `skillOverrides`, CLAUDE.md 450→150).
+3. **C→D:** đổi thói quen 0 setup (Haiku explore, 1 task 1 session, maxTurns).
+4. **D→E:** đo lại, ghi log team.
+5. **F→H:** retry không tăng mới là tiết kiệm đúng chỗ.
+
+### 10.7. Bảng so sánh có cột Hiểu nôm na + Ví dụ
+
+| Thói quen | Hiểu nôm na | Ví dụ |
+|---|---|---|
+| Tốn (Opus mọi thứ) | Thuê giáo sư trông xe | Explore rộng bằng Opus → bill vọt |
+| Rẻ (route đúng) | Việc nào người nấy | Haiku explore, Sonnet implement, Opus review khó → tiết kiệm 50-70% explore |
+| Tốn (nuôi session) | Ăn 1 nồi lẩu 5 bữa liền | 1 session 200 turns 5 việc → rác 95% |
+| Rẻ (1 task 1 session) | Ăn bữa nào nấu bữa đó | `/clear` giữa việc + `plan.md` |
+
+**Kỳ vọng thấy gì:**
+
+```bash
+/cost
+/usage
+# sau cắt MCP + gọn CLAUDE.md, chạy lại:
+/cost
+```
+
+> Kỳ vọng thấy gì: `/usage` top ngốn đổi chủ (không còn github-mcp 30K khi local-only); `/cost`/ngày giảm 30-50% sau 3 ngày discipline. Bill giảm mà rewind tăng là cắt nhầm verify.
+
+### 10.8. Before/After
+
+**Before:** `Default Opus, main đọc 40 files, 1 session 5 việc, 12 MCP bật sẵn` → Kết quả dở: 180K input (explorer 45K + mcp 30K + skill 20K), bill vọt, trả lời chậm.
+
+**After:**
+
+```bash
+/model sonnet
+# explorer/tester frontmatter model: haiku, reviewer: opus
+"Dùng haiku explorer đọc src/utils/*.ts trả 10 bullet. Main sonnet quyết định."
+```
+
+> Kết quả tốt + Kỳ vọng: input giảm ~50%, retry giảm nửa, tốc độ nhanh hơn vì context gọn; tiền hiểm (security/migrate) vẫn Opus + `/verify`, không cắt.
+
+### 10.9. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật |
+|---|---|
+| Rẻ = chọn model rẻ là xong | Phải đánh 3 thuế: input (context sạch) + retry (prompt có verify) + overhead (MCP/agents) |
+| Tắt verify để đỡ tốn | Test-gate 0 tokens LLM + `/verify` runtime thật; cắt là mù, sự cố gấp 100 lần |
+| Prune MCP xóa hẳn cho gọn | Tắt tạm (disable), không xóa; cần bật lại 10s |
+
 ## 11. Tham khảo chéo
 
 - Lệnh cost/model:

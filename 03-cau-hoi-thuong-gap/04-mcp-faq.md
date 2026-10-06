@@ -6,6 +6,22 @@ Mỗi câu có giải thích + lệnh/config copy-paste + ví dụ + khi nào á
 
 ---
 
+## Sơ đồ nhanh (nhìn 30 giây là nhớ)
+
+```mermaid
+flowchart TD
+  S[MCP server] --> T[Tools<br/>hàm gọi được]
+  S --> R[Resources<br/>dữ liệu đọc URI]
+  S --> P[Prompts<br/>template /mcp__srv__prompt]
+  T --> C[Claude gọi như tool built-in]
+  R --> C
+  P --> U[Bạn gõ / để discover]
+  C --> SC{Scope?}
+  SC -->|project| P1[.mcp.json commit team]
+  SC -->|local| P2[Chỉ máy bạn]
+  SC -->|user| P3[Mọi project của bạn]
+```
+
 ## Bảng tổng hợp: vòng đời 1 MCP server
 
 | Bước | Lệnh | Ghi chú |
@@ -19,16 +35,57 @@ Mỗi câu có giải thích + lệnh/config copy-paste + ví dụ + khi nào á
 | Prompts | `/mcp__<server>__<prompt>` | Gõ `/` để discover |
 | Cloud | Cấu hình lại servers/vars/setup trong environment | Local không tự lên cloud |
 
+
+## 0. MCP server có 3 thành phần gì? (đồng bộ với bài 08)
+
+> **Hỏi ngắn gọn:** Tools / Resources / Prompts khác nhau thế nào?
+>
+> **Trả lời 1 câu:** Tools là hàm gọi được, Resources là dữ liệu đọc theo URI, Prompts là template hiện thành lệnh `/mcp__...` — cả 3 đều do 1 MCP server phơi ra.
+
+**Giải thích chi tiết + ví dụ:**
+
+| Thành phần | Là gì (theo bài 08) | Ví dụ cụ thể | Thấy ở đâu |
+|---|---|---|---|
+| **Tools** | Hàm Claude gọi được (có input/output schema) | `github.create_pr(title, body, base)` · `postgres.query("SELECT * FROM users LIMIT 5")` · `playwright.navigate(url)` | `/mcp` hiện tools count; Claude tự gọi khi cần |
+| **Resources** | Dữ liệu chỉ-đọc, địa chỉ bằng URI | `github://repos/acme/api/issues/123` · `postgres://db/users/schema` · `notion://pages/abc123` | Claude đọc như file, không tốn 1 call chạy |
+| **Prompts** | Template việc chuẩn team, hiện thành slash command động | `/mcp__github__review_pr` · `/mcp__linear__create-issue` · `/mcp__db__query-template` | Gõ `/` trong session để discover, không cần nhớ tên |
+
+```bash
+# Thử ngay trong session để phân biệt 3 loại:
+/mcp                        # xem server nào có bao nhiêu tools
+# gõ "/" rồi tìm mcp__ : đó là Prompts
+# hỏi "Resources của server github là gì?" : Claude liệt kê URI đọc được
+```
+
+Scopes quyết định server lưu ở đâu (chọn sai là lộ token):
+
+| Scope | Lưu ở đâu | Ai thấy | Khi nào dùng |
+|---|---|---|---|
+| `--scope project` | `.mcp.json` (commit git) | Cả team | Server team dùng chung (tickets, docs); secrets qua `${VAR}` |
+| `--scope local` | máy bạn (không commit) | Chỉ bạn | Token cá nhân, thử nghiệm |
+| `--scope user` | `~/.claude/` | Mọi project của bạn | Server cá nhân đa project (fetch, search, browser) |
+
+```bash
+claude mcp add --scope project --transport http linear --url https://mcp.linear.app/mcp --headers "Authorization: Bearer ${LINEAR_TOKEN}"
+claude mcp add --scope local --transport stdio db -- npx -y @db/mcp
+```
+
+**Nếu vẫn lỗi thì:** `/mcp` xem tools count có hiện không → `claude mcp get <name>` soi transport/scope → đọc bài 08 mục scope precedence.
+
 ---
 
 ## 1. Thêm server thế nào? (`add --transport stdio|sse|http`)
+> **Hỏi ngắn gọn:** Thêm server thế nào? (`add --transport stdio|sse|http`)
+>
+> **Trả lời 1 câu:** 3 transports:
 
-**Giải thích.** 3 transports:
+
+**Giải thích chi tiết + ví dụ:** 3 transports:
 
 - **stdio:** server chạy local (npx/uvx/binary). Nhanh, hợp DB local, CLI tools, browser.
 - **sse (legacy) / http (streamable):** server remote (URL + token). Hợp GitHub, tickets, docs SaaS.
 
-**Lệnh copy-paste:**
+**Làm thế nào (steps copy-paste):**
 
 ```bash
 # stdio (chạy local):
@@ -47,9 +104,14 @@ claude mcp add --transport sse docs --url https://docs.internal/sse
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 2. Scope project / local / user — chọn sao cho đúng?
+> **Hỏi ngắn gọn:** Scope project / local / user — chọn sao cho đúng?
+>
+> **Trả lời 1 câu:** Scope quyết định server lưu ở đâu và ai thấy:
 
-**Giải thích.** Scope quyết định server lưu ở đâu và ai thấy:
+
+**Giải thích chi tiết + ví dụ:** Scope quyết định server lưu ở đâu và ai thấy:
 
 | Scope | Lưu ở | Ai thấy | Dùng khi nào |
 |---|---|---|---|
@@ -57,7 +119,7 @@ claude mcp add --transport sse docs --url https://docs.internal/sse
 | `--scope local` | máy bạn | Chỉ bạn | Token cá nhân, thử nghiệm |
 | `--scope user` | `~/.claude/` | Mọi project của bạn | Server cá nhân đa project (search, browser) |
 
-**Lệnh copy-paste:**
+**Làm thế nào (steps copy-paste):**
 
 ```bash
 claude mcp add --scope project --transport stdio db -- npx -y @db/mcp
@@ -71,11 +133,16 @@ claude mcp add --scope user --transport stdio fetch -- npx -y @fetch/mcp
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 3. Secrets trong MCP: env vars, không commit token
+> **Hỏi ngắn gọn:** Secrets trong MCP: env vars, không commit token
+>
+> **Trả lời 1 câu:** `.mcp.json` commit git → hardcode token trong đó là lộ cho cả thế giới (doctor báo đỏ).
 
-**Giải thích.** `.mcp.json` commit git → hardcode token trong đó là lộ cho cả thế giới (doctor báo đỏ). Chuẩn: dùng `${VAR}` + export từ shell/env manager.
 
-**Config copy-paste:**
+**Giải thích chi tiết + ví dụ:** `.mcp.json` commit git → hardcode token trong đó là lộ cho cả thế giới (doctor báo đỏ). Chuẩn: dùng `${VAR}` + export từ shell/env manager.
+
+**Làm thế nào (steps copy-paste):**
 
 ```json
 {
@@ -98,9 +165,14 @@ claude mcp list   # check connected
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 4. Xem / sửa connections (`/mcp`, `reconnect`, `enable/disable`, CLI)
+> **Hỏi ngắn gọn:** Xem / sửa connections (`/mcp`, `reconnect`, `enable/disable`, CLI)
+>
+> **Trả lời 1 câu:** Bộ lệnh quản lý hàng ngày:
 
-**Giải thích.** Bộ lệnh quản lý hàng ngày:
+
+**Giải thích chi tiết + ví dụ:** Bộ lệnh quản lý hàng ngày:
 
 ```bash
 /mcp                        # list + trạng thái + tools count
@@ -126,15 +198,20 @@ Lưu ý version: `-p` ≥2.1.205 mới có `/mcp` no-arg in text (headless). Cũ
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 5. Server disconnected — check gì? (token / URL / OAuth)
+> **Hỏi ngắn gọn:** Server disconnected — check gì? (token / URL / OAuth)
+>
+> **Trả lời 1 câu:** 3 nguyên nhân theo thứ tự hay gặp:
 
-**Giải thích.** 3 nguyên nhân theo thứ tự hay gặp:
+
+**Giải thích chi tiết + ví dụ:** 3 nguyên nhân theo thứ tự hay gặp:
 
 1. **Token hết hạn / sai env:** `echo ${GITHUB_TOKEN:+set}` — rỗng là mất env (mở terminal mới quên export).
 2. **URL sai / server chết:** curl thử URL remote; stdio thì check binary còn không (`npx -y ... --help`).
 3. **OAuth chưa xong:** 1 số servers (Google, Notion...) cần hoàn OAuth trong browser — `/mcp` hiện `auth required` → bấm hoàn tất rồi reconnect.
 
-**Lệnh copy-paste:**
+**Làm thế nào (steps copy-paste):**
 
 ```bash
 echo ${GITHUB_TOKEN:+token-set}
@@ -149,9 +226,14 @@ claude mcp get linear   # soi config sai chỗ nào
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 6. MCP prompts là gì? (`/mcp__<server>__<prompt>`)
+> **Hỏi ngắn gọn:** MCP prompts là gì? (`/mcp__<server>__<prompt>`)
+>
+> **Trả lời 1 câu:** 1 số servers expose **prompts** (template tác vụ) bên cạnh tools.
 
-**Giải thích.** 1 số servers expose **prompts** (template tác vụ) bên cạnh tools. Chúng hiện thành slash commands động: `/mcp__<server>__<prompt>`. Gõ `/` trong session để discover — không cần nhớ tên.
+
+**Giải thích chi tiết + ví dụ:** 1 số servers expose **prompts** (template tác vụ) bên cạnh tools. Chúng hiện thành slash commands động: `/mcp__<server>__<prompt>`. Gõ `/` trong session để discover — không cần nhớ tên.
 
 ```bash
 # Gõ / rồi tìm:
@@ -166,9 +248,14 @@ claude mcp get linear   # soi config sai chỗ nào
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 7. Khi nào cần MCP vs đọc repo trực tiếp?
+> **Hỏi ngắn gọn:** Khi nào cần MCP vs đọc repo trực tiếp?
+>
+> **Trả lời 1 câu:** Quy tắc vàng:
 
-**Giải thích.** Quy tắc vàng:
+
+**Giải thích chi tiết + ví dụ:** Quy tắc vàng:
 
 - **Data NGOÀI repo → MCP:** DB, tickets, docs SaaS, browser, API internal, CI logs. Không có MCP là mù.
 - **Data ĐÃ TRONG repo → đọc trực tiếp:** code, README, migrations. Thêm MCP vào chỉ tốn maintenance + context.
@@ -184,9 +271,14 @@ Cần biết hàm login viết sao? → Read trực tiếp (trong repo)
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 8. Bao nhiêu server là đủ? (3–6 thực dùng, >10 tools visible thì loãng)
+> **Hỏi ngắn gọn:** Bao nhiêu server là đủ? (3–6 thực dùng, >10 tools visible thì loãng)
+>
+> **Trả lời 1 câu:** Mỗi server thêm tools vào context.
 
-**Giải thích.** Mỗi server thêm tools vào context. Quá ~10 tools visible → model chọn sai/bỏ sót (xem số liệu FAQ 02). Sweet spot team thực tế:
+
+**Giải thích chi tiết + ví dụ:** Mỗi server thêm tools vào context. Quá ~10 tools visible → model chọn sai/bỏ sót (xem số liệu FAQ 02). Sweet spot team thực tế:
 
 ```text
 3–6 servers: GitHub + Playwright + DB + search + tickets (+ docs)
@@ -194,7 +286,7 @@ Cần biết hàm login viết sao? → Read trực tiếp (trong repo)
 
 Server 30+ tools mà tuần dùng 1 lần → disable平时, enable khi cần.
 
-**Lệnh copy-paste:**
+**Làm thế nào (steps copy-paste):**
 
 ```bash
 /mcp                    # đếm servers + tools
@@ -208,11 +300,16 @@ Server 30+ tools mà tuần dùng 1 lần → disable平时, enable khi cần.
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 9. Lên cloud mất MCP local — xử lý sao? (`/web-setup` + environment)
+> **Hỏi ngắn gọn:** Lên cloud mất MCP local — xử lý sao? (`/web-setup` + environment)
+>
+> **Trả lời 1 câu:** Đúng: cloud session chỉ thấy repo + cloud environment, KHÔNG thấy MCP local của laptop (stdio chết, env local mất).
 
-**Giải thích.** Đúng: cloud session chỉ thấy repo + cloud environment, KHÔNG thấy MCP local của laptop (stdio chết, env local mất). Phải cấu hình lại servers/vars/setup script trong environment.
 
-**Lệnh copy-paste:**
+**Giải thích chi tiết + ví dụ:** Đúng: cloud session chỉ thấy repo + cloud environment, KHÔNG thấy MCP local của laptop (stdio chết, env local mất). Phải cấu hình lại servers/vars/setup script trong environment.
+
+**Làm thế nào (steps copy-paste):**
 
 ```bash
 # Trong terminal đã login Sub:
@@ -227,9 +324,14 @@ claude --cloud "task"   # chạy thử trên cloud
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 10. Skill vs MCP — khi nào viết skill kèm? (MCP = kết nối, skill = cách dùng đúng)
+> **Hỏi ngắn gọn:** Skill vs MCP — khi nào viết skill kèm? (MCP = kết nối, skill = cách dùng đúng)
+>
+> **Trả lời 1 câu:** MCP cho bạn *kết nối* (gọi được API).
 
-**Giải thích.** MCP cho bạn *kết nối* (gọi được API). Skill dạy model *dùng đúng* (schema nào, format nào, limit nào, lỗi nào bỏ qua). Team dùng sâu 1 MCP → viết skill kèm, không thì mỗi người gọi 1 kiểu, sai schema liên tục.
+
+**Giải thích chi tiết + ví dụ:** MCP cho bạn *kết nối* (gọi được API). Skill dạy model *dùng đúng* (schema nào, format nào, limit nào, lỗi nào bỏ qua). Team dùng sâu 1 MCP → viết skill kèm, không thì mỗi người gọi 1 kiểu, sai schema liên tục.
 
 **Ví dụ skill `linear-triage` (kèm MCP Linear):**
 
@@ -244,6 +346,8 @@ description: Lấy ticket Linear về tóm tắt + tạo branch đúng chuẩn. 
 ```
 
 **Khi nào áp dụng:** MCP nào team gọi >5 lần/tuần + hay sai schema → viết skill. MCP dùng 1 lần/tháng → khỏi.
+
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 
 ---
 

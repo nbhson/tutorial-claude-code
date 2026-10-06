@@ -342,6 +342,77 @@ Tối đa 15 bullet. Nếu không đủ info thì ghi BLOCKED + thiếu gì, đ�
 
 ---
 
+### 11.5. Thuật ngữ mới (nôm na + analogie + ví dụ + verify)
+
+| Thuật ngữ | Nôm na 1 câu | Analogie | Ví dụ kỹ thuật thật | Cách verify |
+|---|---|---|---|---|
+| Fan-out | 1 lệnh nở ra 3-5 agents làm song song. | Như 1 quản đốc gọi 3 tổ đi 3 xưởng cùng lúc. | 3 explorers đọc api/service/webhook cùng lúc | 3 summaries ~1500 tokens về main thay vì 30K raw. |
+| Output contract | Giao kèo trả về gọn: quyết định + evidence, không dump rác. | Như dặn shipper chỉ giao hóa đơn + hàng, không chở cả kho. | `Trả ≤15 bullet + file:line, không dump 200 dòng log` | Main không nhiễm log; `/context` tăng <2K. |
+| Writer/Reviewer tách context | Người làm và người chấm khác nhau để khỏi bao biện. | Như cầu thủ và trọng tài phải khác người. | Writer xong → `git diff` → reviewer fresh chưa thấy reasoning | Reviewer bắt thêm HIGH (thiếu idempotency). |
+
+### 11.6. Mermaid: fan-out đúng vs chain
+
+```mermaid
+flowchart TD
+    A[Task lớn?] --> B{Việc độc lập?}
+    B -->|Có: 3 modules khác nhau| C[Fan-out 3 explorers song song]
+    B -->|Không: cần kết quả nhau| D[Chain: explore -> plan -> implement]
+    C --> E[Main tổng hợp 3 summaries]
+    E --> D
+    D --> F{2 writers cùng repo?}
+    F -->|Có| G[Mỗi stream 1 worktree]
+    F -->|Không| H[1 writer + tester + reviewer fresh]
+    G --> I[Merge + remove worktree]
+    H --> I
+```
+
+Giải thích:
+
+1. **A→B:** độc lập thật mới fan-out; nối tiếp thì chain.
+2. **B→C:** 3 explorers hẹp + contract ≤15 bullet.
+3. **C→E:** main chỉ gom summaries, không đọc raw.
+4. **D→F:** tới implement chỉ 1 writer/branch (trừ worktrees).
+5. **F→G:** 2 streams cùng repo → 2 worktrees + 2 sessions.
+
+### 11.7. Bảng so sánh có cột Hiểu nôm na + Ví dụ
+
+| Kiểu | Hiểu nôm na | Ví dụ |
+|---|---|---|
+| Một mình | Tự làm việc vặt 1 file | Fix typo, đổi text |
+| Fan-out | 3 người đi chợ 3 sạp cùng lúc | 3 explorers api/service/webhook |
+| Chain | Nấu ăn theo thứ tự: sơ chế → nấu → nếm | Explorer xong mới planner, planner xong mới implement |
+| Scale worktree/batch | Mỗi đội 1 bếp riêng, không giành nồi | 2 features 2 worktrees; migrate 20 files bằng `/batch` mỗi file 1 PR |
+
+**Kỳ vọng thấy gì:**
+
+```bash
+/agents
+/tasks
+# kill khi loạn: Ctrl+X Ctrl+K x2 trong 3s
+```
+
+> Kỳ vọng thấy gì: `/agents` hiện Running 3 explorers tên rõ (`explorer-payments-api`); sau kill không còn job nền đốt tiền.
+
+### 11.8. Before/After
+
+**Before:** `"Nhờ QA agent check giúp"` → Kết quả dở: agent chung chung trả chung chung, dump 200 dòng log, main nhiễm rác.
+
+**After:**
+
+```text
+"Explorer payments: chỉ đọc src/payments/*.ts (không sửa). Trả: 8 files + vai trò 1 dòng, flow 5-8 bullet, 2 phương án pros/cons 3 bullet. ≤15 bullet, không dump log."
+```
+
+> Kết quả tốt + Kỳ vọng: summary gọn đủ viết plan; tester `pnpm --filter cart test` trả `PASS/FAIL + 10 dòng log`; reviewer trả `[SEVERITY] file:line — fix + PASS/NEEDS-FIX`.
+
+### 11.9. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật |
+|---|---|
+| Càng nhiều agents càng nhanh | Overhead ~20K/con; trần 3-5, hơn thì worktrees/batch |
+| Chain mà fan-out cho nhanh | Planner thiếu summary explorers → plan sai; độc lập mới parallel |
+| Dùng subagent cho việc skill làm được | Tốn 20K cho việc 500 tokens; skill trước, subagent sau |
+
 ## 12. Tham khảo chéo
 
 - Lệnh agents & scale:

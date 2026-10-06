@@ -341,6 +341,65 @@ git submodule update --init --recursive
 
 ---
 
+### 6.7. Thuật ngữ mới trong bài (nôm na + analogie + ví dụ + verify)
+
+| Thuật ngữ | Nôm na 1 câu | Analogie | Ví dụ kỹ thuật thật | Cách verify |
+|---|---|---|---|---|
+| Git worktree | 1 repo, nhiều thư mục checkout song song, mỗi cái 1 branch. | 1 căn nhà (repo `.git`) có nhiều phòng (worktree), mỗi phòng bày đồ khác nhau mà không lẫn. | `git worktree add ../myrepo-worktrees/feat-login -b feat/login` → sinh folder `feat-login/` checkout branch mới. | `git worktree list` phải thấy 2+ entries; `git -C ../myrepo-worktrees/feat-login branch --show-current` ra `feat/login`. |
+| Checkpoint / Rewind | Điểm lưu cả code + hội thoại để quay lại khi làm hỏng. | Như save-game: chết thì load lại đúng chỗ save, không chơi lại từ đầu. | Nhấn `Esc Esc` lúc prompt rỗng → chọn checkpoint trước turn 1 bị sai. | Sau rewind: `git diff --stat` gọn lại + turns sai biến mất khỏi history. |
+| `/branch` (conversation branch) | Rẽ 1 bản copy hội thoại để thử hướng khác, giữ bản chính. | Như rẽ nhánh sông: nhánh mới chảy thử, sông chính vẫn còn. | `/branch thu-y-mao-hiem` → thử refactor mạo hiểm; không ưng thì `/resume` về mạch chính. | `/resume` vẫn thấy mạch chính cũ; branch mới có tên riêng. |
+
+### 6.8. Mermaid: flow chọn worktree vs rewind vs branch
+
+```mermaid
+flowchart TD
+    A[Task mới / session lỗi?] --> B{Song song hay sai đường?}
+    B -->|2 việc song song| C[Tạo worktree riêng + branch riêng]
+    B -->|Sai đường 2-3 turns| D{Nghiêm trọng?}
+    D -->|Sai 1 dòng| E[Sửa trực tiếp, không rewind]
+    D -->|Sai hướng / lan scope| F[Rewind về trước khi sai + re-prompt sạch]
+    D -->|Muốn thử what-if| G["/branch giữ mạch chính"]
+    C --> H[Merge thắng + remove worktree thua]
+    F --> I[Chạy focused test verify]
+    G --> I
+```
+
+Giải thích từng bước ngay dưới mermaid:
+
+1. **A→B:** xác định bạn cần song song (2 việc cùng lúc) hay cứu session lỗi.
+2. **B→C:** song song thật → mỗi việc 1 worktree + 1 branch, không share working dir.
+3. **D→E:** sai 1 dòng trong 9 steps đúng → sửa tay, rewind là phí.
+4. **D→F:** sai hướng/lan scope → rewind + viết lại prompt đủ scope/verify/non-goals.
+5. **D→G:** muốn thử mà không mất mạch đang đúng 50% → `/branch`, không rewind.
+6. **C→H:** so sánh PR từng worktree → merge thắng, `remove + branch -D` thua.
+7. **F/G→I:** sau cứu/thử → chạy focused test, `git diff --stat` gọn mới tính xong.
+
+### 6.9. Bảng so sánh có cột Hiểu nôm na + Ví dụ
+
+| Khái niệm | Hiểu nôm na | Ví dụ |
+|---|---|---|
+| Worktree | Phòng riêng để 2 người làm không giẫm chân | `git worktree add ../w/feat-a -b feat/a` rồi mở 2 terminal `claude` riêng |
+| Checkpoint | Save-game của session | Double-Esc → chọn save trước khi agent sửa nát 15 turns |
+| `/branch` | Photocopy hội thoại để thử bậy mà còn bản gốc | `/branch thu-y-mao-hiem`, hỏng thì về mạch chính |
+| Git commit/PR | Sổ đỏ thật, checkpoints chỉ là nháp | Đã push → `git revert`, không rewind |
+
+**Kỳ vọng thấy gì (sau lệnh worktree):**
+
+```bash
+git worktree list
+```
+
+> Kỳ vọng thấy gì: 3 dòng — 1 dòng repo chính + 2 dòng `../myrepo-worktrees/feat-a|b` kèm branch + commit hash. Nếu chỉ thấy 1 dòng là tạo worktree chưa thành công.
+
+### 6.10. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật | Ví dụ sửa |
+|---|---|---|
+| Rewind thay được git revert sau khi push | Checkpoint chỉ local; đã push phải git | Đã merge PR lỗi → mở PR `revert` mới, không Double-Esc |
+| Worktree tự share `node_modules/.env` | Mỗi worktree là folder riêng, phải cài/copy lại | `pnpm install` lại + `cp ../main/.env ./.env` + đổi `PORT` |
+| Xóa worktree = xóa branch | 2 thứ khác nhau, phải xóa cả 2 | `git worktree remove ...` + `git branch -d feat/a` + `git worktree prune` |
+| `/branch` giống rewind | Rewind mất mạch cũ; branch giữ cả 2 | Muốn giữ mạch đúng 50% thì `/branch`, không rewind |
+
 ## 7. Link chéo
 
 - **Bài 02 — Surfaces**: `--add-dir`, agent view dispatch, teleport giữa sessions.

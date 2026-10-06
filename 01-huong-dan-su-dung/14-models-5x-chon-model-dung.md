@@ -440,6 +440,73 @@ Bước 4: Spawn 3 haiku explore song song 1 câu hỏi codebase (bài 06). So t
 
 ---
 
+### 9.5. Thuật ngữ mới trong bài (nôm na + analogie + ví dụ + verify)
+
+| Thuật ngữ | Nôm na 1 câu | Analogie | Ví dụ kỹ thuật thật | Cách verify |
+|---|---|---|---|---|
+| Opus / Sonnet / Haiku / Fable | 4 cỡ não: siêu sâu, hàng ngày, việc vặt, siêu khó dài hơi. | Như đội thợ: kiến trúc sư (Opus), thợ chính (Sonnet), phụ việc nhanh (Haiku), giáo sư giải bài khó (Fable). | `/model opusplan` = plan Opus + execute Sonnet; `model: haiku` cho explorer | `/model` hiện đúng tên; `/cost` task vặt bằng Haiku rẻ hơn Opus 4-10x. |
+| Effort / Fast mode | Vặn não nghĩ sâu hay nghĩ nhanh; fast là trả thêm lấy tốc độ. | Như vặn bếp: lửa nhỏ (low) xào rau, lửa to (high) hầm xương; fast là bật tăng áp. | `/effort low` cho rename; `/fast` cho demo live Opus $8/$40 | Task cơ học + `low` vẫn xanh mà nhanh; `/cost` fast cao gấp đôi normal. |
+| Cache reads | Phần context trùng được tính giá rẻ, không tính giá đầy. | Như photo lại bài cũ được giảm giá, chỉ trang mới tính giá gốc. | Session 50 steps × 100K: cache 90% hit ≈ $3 thay vì $20 | `/cost` hiện `cache read` chiếm đa số; đổi model liên tục làm hit tụt. |
+| `opusplan` | Plan bằng Opus, làm bằng Sonnet cho rẻ mà vẫn đúng. | Như kiến trúc sư vẽ bản vẽ, thợ chính thi công — không thuê kiến trúc sư trộn vữa. | `claude --model opusplan` cho task 3+ files | Tokens plan (Opus 10%) + execute (Sonnet 90%) rẻ hơn full-Opus ~40%. |
+
+### 9.6. Mermaid: chọn model trong 30 giây
+
+```mermaid
+flowchart TD
+    A[Task mới?] --> B{Khó + mơ hồ + hậu quả lớn?}
+    B -->|Có: kiến trúc, bug hiểm, tiền/auth| C[Opus medium]
+    B -->|Không rõ| D{Việc lặp, rõ ràng, số lượng lớn?}
+    D -->|Có: CRUD, test, docs, explore| E{Explore / việc vặt?}
+    E -->|Có| F[Haiku low - rẻ nhất]
+    E -->|Không| G[Sonnet - default hàng ngày]
+    C --> H{Opus stuck 2 lần?}
+    H -->|Có + hardest/long-horizon| I[Fable đích danh]
+    H -->|Không| J[Giữ Opus, compact giữa phase]
+    G --> K{Task >3 files?}
+    K -->|Có| L[opusplan: plan Opus + execute Sonnet]
+    K -->|Không| M[Full Sonnet]
+    F --> N[Verify: /cost + quality đủ?]
+    G --> N
+    C --> N
+```
+
+Giải thích từng bước (đọc 30s từ trên xuống):
+
+1. **A→B:** hỏi hậu quả sai có lớn không (tiền/auth/migrate/thiết kế). Có → Opus ngay.
+2. **B→D:** không hiểm → hỏi có rõ ràng + lặp lại không. Có → nhóm rẻ (Haiku/Sonnet).
+3. **D→E:** explore/classify/format/rename → Haiku `low`; implement/test/CRUD → Sonnet.
+4. **C→H:** Opus thử 2 lần vẫn stuck + đủ 3 điều kiện (nhiều giờ, coherence dài, hậu quả cao) → mới gọi Fable.
+5. **G→K:** task >3 files → `opusplan` (plan 10% Opus + execute 90% Sonnet ≈ rẻ hơn 40%).
+6. **→N:** sau mỗi run `/cost`: Haiku phải rẻ 4-10x Opus mà quality vẫn đủ; không đủ thì leo thang (sonnet→opus→fable).
+
+### 9.7. Bảng so sánh Opus/Sonnet/Haiku (+Fable) có cột Hiểu nôm na + Ví dụ
+
+| Model (giá input/output, context) | Mạnh ở gì | Tốn token/cost thế nào | Hiểu nôm na | Ví dụ task nên dùng |
+|---|---|---|---|---|
+| **Fable 5.1** ($10/$50, 1M, high) | Hardest, long-horizon nhiều giờ, coherence dài | Đắt nhất, gấp 2.5x Opus; chỉ đích danh | Giáo sư giải đề khó nhất, không mời chấm bài vặt | Migration prod + research codebase lớn sau khi Opus stuck 2 lần |
+| **Opus 5.5** ($4/$20, 1M, medium) | Suy luận sâu mặc định, thiết kế/debug khó | Default paid; fast mode $8/$40 gấp đôi lấy latency | Kiến trúc sư vẽ bản vẽ | Thiết kế refund idempotent, debug race 30p+, review security |
+| **Sonnet 5.5** ($2/$10, 1M) | Daily coding nhanh + đủ tốt | Rẻ bằng nửa Opus, vòng lặp ngắn | Thợ chính làm theo bản vẽ | Implement theo plan đã duyệt, viết test, CRUD, docs |
+| **Haiku 4.5** ($1/$5, 200K, light) | Việc nhỏ + fan-out rộng, nhanh nhất | Rẻ nhất (1/4 Opus) nhưng context 200K | Phụ việc chạy vặt nhanh | Format/rename, grep/explore, 5 Haiku song song mỗi đứa 5 files |
+
+**Kỳ vọng thấy gì (sau khi đổi model):**
+
+```bash
+/model sonnet
+/cost
+```
+
+> Kỳ vọng thấy gì: `/model` hiện `sonnet (claude-sonnet-5-5)` + context giữ nguyên; `/cost` session explore bằng Haiku chỉ ~1/4-1/10 so với cùng task bằng Opus. Nếu báo `model not found` là thiếu date suffix Haiku (`claude-haiku-4-5-20251001`).
+
+### 9.8. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật | Ví dụ sửa |
+|---|---|---|
+| Model mạnh nhất luôn đúng | Fable/Opus sửa typo cũng như Haiku mà đắt 5-10x | Typo/format → Haiku `low` |
+| Haiku làm được kiến trúc | Thiếu depth → refactor 3 lần, tổng đắt hơn 1 lần Opus | Plan Opus, execute Sonnet (opusplan) |
+| Fast mode là model khác | Vẫn Opus 5.5, chỉ ưu tiên latency, giá $8/$40 | Overnight batch không bật fast (phí) |
+| Nhìn giá input/output là đủ | Cache reads ($0.20) mới là đa số bill agentic | Đừng `/model` qua lại phá cache; gom phase |
+| Prompt `đừng suy nghĩ` tắt thinking Opus 5.5 | Opus 5.5 luôn thinking, tokens vẫn tính | Route việc nhỏ sang Haiku/Sonnet `low` |
+
 ## 10. Link chéo
 
 - **Bài 04 — Slash commands**: `/model`, `/cost`, `/effort`, `/fast` chi tiết.

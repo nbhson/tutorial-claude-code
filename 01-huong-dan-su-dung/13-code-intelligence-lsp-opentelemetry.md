@@ -390,6 +390,68 @@ export OTEL_TRACES_EXPORTER="console" OTEL_METRICS_EXPORTER="console"
 
 ---
 
+### 8.4. Thuật ngữ mới trong bài (nôm na + analogie + ví dụ + verify)
+
+| Thuật ngữ | Nôm na 1 câu | Analogie | Ví dụ kỹ thuật thật | Cách verify |
+|---|---|---|---|---|
+| LSP (Language Server Protocol) | Từ điển sống của code: hỏi hàm ở đâu là chỉ đúng file:dòng. | Như Google Maps cho code: gõ tên hàm → chỉ đường tới định nghĩa + ai đang gọi nó. | `npm i -g typescript typescript-language-server`, hỏi Claude `jump to definition hàm login trong src/auth.ts` | Trả về 1 `file:dòng` chính xác thay vì 20 kết quả grep; rename không sót refs. |
+| Diagnostics (live type errors) | Máy soi lỗi type ngay khi gõ, chưa cần chạy test. | Như chính tả đỏ ngoằn ngoèo trong Word, sai đâu đỏ đó. | Hỏi `get live type errors file apps/api/auth.ts` sau khi sửa | Liệt kê đúng dòng lỗi mới; sửa xong hỏi lại phải hết đỏ. |
+| OpenTelemetry (OTel) | Hộp đen ghi ai chậm, ai ngốn tokens mỗi turn. | Như đồng hồ điện từng phòng: phòng nào (hook/skill/MCP) tốn điện nhất nhìn là biết. | `export OTEL_TRACES_EXPORTER="console"` rồi grep `hook.*duration` | Thấy `hook test-gate p99 240s`; fix focused scope xong p99 còn ~20s. |
+
+### 8.5. Mermaid: flow LSP + OTel debug
+
+```mermaid
+flowchart TD
+    A[Task typed / session chậm?] --> B{Thiếu hiểu code hay thiếu số liệu?}
+    B -->|Không biết hàm ở đâu| C[Bật LSP + jump definition/references]
+    B -->|Không biết ai chậm| D[Bật OTel console/collector]
+    C --> E[Plan files sẽ sửa + rename an toàn + diagnostics]
+    D --> F{Top ngốn là ai?}
+    F -->|hook chậm| G[Focused scope TEST_SCOPE]
+    F -->|skill ngốn| H[Hẹp description + skillOverrides]
+    F -->|MCP treo| I["/mcp reconnect / disable"]
+    E --> J[Focused test + verify]
+    G --> J
+    H --> J
+```
+
+Giải thích từng bước:
+
+1. **A→B:** phân biệt mù code (cần LSP) hay mù số liệu (cần OTel).
+2. **B→C:** cài server (`typescript-language-server/pyright/gopls`) + `/plugin` enable + có `tsconfig.json`.
+3. **B→D:** bật exporter `console` (debug 1 session) hoặc OTLP collector team.
+4. **C→E:** dùng `find references`, `rename symbol`, `diagnostics` thay grep mù + `tsc` full repo.
+5. **D→F:** grep/console hoặc Grafana 3 panels (hook p99, skill tokens, spawn depth) để tìm top 1.
+6. **F→G/H/I:** hook chậm → focused scope; skill ngốn → hẹp trigger; MCP treo → disable.
+7. **→J:** làm lại task, so metrics trước/sau phải giảm rõ + test xanh.
+
+### 8.6. Bảng so sánh có cột Hiểu nôm na + Ví dụ
+
+| Cách | Hiểu nôm na | Ví dụ |
+|---|---|---|
+| Grep text | Tìm chữ bằng mắt thường, trúng cả comment/log | `grep -r "login"` ra 200 dòng nhiễu |
+| LSP jump | Hỏi đường đi thẳng tới nhà + ai đang tới nhà đó | `find references refreshToken` chỉ ra 8 call sites thật trong `src/` |
+| Console exporter | Ghi sổ tay xem ai chậm | `OTEL_TRACES_EXPORTER=console ... \| grep hook.*duration` |
+| Collector + Grafana | Camera an ninh cả team cùng xem | 3 panels: hook p99, skill tokens, spawn depth |
+
+**Kỳ vọng thấy gì (sau khi bật LSP):**
+
+```bash
+ls tsconfig.json && /plugin
+# rồi hỏi: "jump to definition hàm login trong src/auth.ts"
+```
+
+> Kỳ vọng thấy gì: Claude trả về 1 dòng `src/auth.ts:42` (file:dòng chính xác) + `/doctor` mục code-intelligence hiện `enabled`. Nếu trả 20 kết quả grep là LSP chưa nhận project (thiếu `tsconfig.json`).
+
+### 8.7. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật | Ví dụ sửa |
+|---|---|---|
+| LSP thay được test | Diagnostics chỉ bắt lỗi type; runtime sai vẫn xanh | Luôn `diagnostics + focused test + /verify` (3 lớp) |
+| Repo JS thuần cũng cần LSP | Không type info thì LSP mù, grep đủ | Chỉ bật cho TS/Python-typed/Go/Rust/Java |
+| Có metrics là tự nhanh | Dashboard đẹp mà không fix top 1 thì vẫn chậm | Mỗi tuần fix top 1 hook + top 1 skill, đo lại % giảm |
+| Hardcode OTel token trong config | Lộ credential; phải qua env | `authorization=Bearer ${OTEL_TOKEN}`, file config không chứa secret |
+
 ## 11. Link chéo
 
 - **Bài 04 — Slash commands**: `/plugin` (bật code-intel), `/doctor` (khám servers + skills pile-up), `/mcp` (MCP treo).

@@ -18,6 +18,43 @@
 
 ## 1. Permission rules: allow / ask / deny (why)
 
+**Nôm na 1 câu:** Permissions là *bảo vệ cổng chung cư* — chủ (bạn) dặn trước: shipper quen (Read, git diff) cho lên thẳng; khách lạ (Edit, push) phải gọi hỏi; trộm (rm -rf, push main) cấm cửa luôn.
+
+**Analogie đời thường:** như dạy con cầm dao: dao nhựa (Read/Glob/Grep) chơi tự do; dao bếp (Edit/Write/docker) phải hỏi mẹ; dao chặt xương + ổ điện (sudo, rm -rf, đọc .env) cấm tuyệt đối. Modes (Shift+Tab) là mức "mẹ đang bận hay đang rảnh để hỏi".
+
+**Ví dụ kỹ thuật copy-paste (rule hẹp tốt vs rộng xấu):**
+
+```json
+// settings.json — hẹp (tốt): chỉ cho test/lint chạy luôn, còn lại hỏi
+{ "permissions": {
+  "allow": ["Read", "Bash(pnpm test:*)", "Bash(git diff:*)"],
+  "ask": ["Edit", "Write", "Bash(pnpm:*)", "Bash(git push:*)"],
+  "deny": ["Bash(rm -rf:*)", "Bash(git push origin main:*)", "Write(.env*)"]
+} }
+# Verify: trong session /permissions → thấy 3 tabs Allow/Ask/Deny đã merge.
+# Kỳ vọng: "git diff --stat" chạy luôn; "sửa file" hỏi; "đọc .env" block.
+```
+
+> **Ai dùng lúc nào:** mọi dev từ ngày 1 (kể cả solo) — vì prompt-injection từ issue text độc có thể dụ agent chạy lệnh xóa/exfiltrate nếu không có gate.
+
+```mermaid
+flowchart TD
+  R[Claude xin chạy tool<br/>vd Bash git push origin main] --> H{PreToolUse hook?}
+  H -->|deny| B1[BLOCK ngay<br/>thắng cả bypass]
+  H -->|qua| G{Rules: deny ask allow?}
+  G -->|deny| B2[Cấm luôn]
+  G -->|ask| Q{Hỏi bạn / theo mode?}
+  G -->|allow| A[Chạy luôn]
+  Q -->|đồng ý| A
+  Q -->|từ chối| B2
+```
+
+**Giải thích từng bước:**
+1. **Hook trước:** `PreToolUse` deny thắng TẤT CẢ (kể cả `--dangerously-skip-permissions`). Đây là chốt chặn cuối cho việc critical.
+2. **Rules:** `deny > ask > allow` trong cùng scope; `managed (org) > local > team settings > defaults` giữa các scope.
+3. **Ask theo mode:** `default` hỏi nhiều; `acceptEdits` tự sửa file; `plan` read-only; `auto` tự tiến xa; `bypass` chỉ CI sandbox. Cloud chỉ Accept/Plan(/Auto).
+4. **Hook allow không nới:** thiết kế chỉ siết — muốn nới phải sửa deny gốc, đừng thêm hook allow.
+
 Agent có quyền chạy shell + sửa file = sức mạnh + rủi ro. Permissions là harness gate giữa
 model và máy bạn: model xin → harness đối chiếu rules → cho/hỏi/cấm. Không có gate này,
 1 prompt-injection (issue text độc) có thể khiến agent chạy `rm -rf` hay exfiltrate `.env`.
@@ -328,6 +365,16 @@ Bước 6: /permissions → review auto-denials (cái nào deny oan? pre-approve
 | Cloud thiếu Manual/Bypass mà ngạc nhiên | Cloud policy | Cloud chỉ Accept/Plan(/Auto) — thiết kế an toàn |
 | "Lệnh không tồn tại" → kết luận bug | Quên check provider/plan | Tra bảng mục 6 + `/status` trước |
 | Deny oan lệnh read-only lặp lại | Chưa pre-approve | `/permissions` → review denials → allow read-only đó |
+
+### 7.2b. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật | Ai cần nhớ |
+|---|---|---|
+| "Deny trong settings là chặn tuyệt đối" | Vẫn lọt qua interpreter khác (`python3 -c`), symlink, compound `&&` ở bản cũ. Việc critical cần hook + sandbox, không chỉ rules. | Mọi dev |
+| "`bypassPermissions` cho nhanh trên máy dev" | Chỉ CI ephemeral sandbox. Máy dev dùng `default/auto` + rules hẹp, không là 1 prompt độc xóa sạch. | Người thích tốc độ |
+| "Hook allow mở được deny của org" | Không — hooks chỉ siết. Org `ask`/deny luôn thắng hook allow. | Người debug org policy |
+| "Cloud modes giống local" | Cloud (Web) chỉ Accept edits / Plan (/Auto tùy bản) — không Manual/Bypass. Ngạc nhiên là do chưa đọc mục 5. | Người dùng Web/cloud |
+| "Provider nào features cũng như nhau" | Bedrock mất web search/fast mode/`/design-sync`; Foundry mất GH CI; Code Review chỉ Team/Ent. "Lệnh không tồn tại" → tra bảng mục 6 trước. | Team multi-provider |
 
 ### 7.3. Bài tập thực hành
 

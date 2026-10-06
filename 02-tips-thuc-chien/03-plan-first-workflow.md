@@ -387,6 +387,74 @@ Thiếu 1 trong 3 → quay lại plan.
 
 ---
 
+### 11.5. Thuật ngữ mới (nôm na + analogie + ví dụ + verify)
+
+| Thuật ngữ | Nôm na 1 câu | Analogie | Ví dụ kỹ thuật thật | Cách verify |
+|---|---|---|---|---|
+| Plan mode (read-only) | Chế độ chỉ đo đạc, cấm cầm búa. | Như kiến trúc sư đi đo đất: được đo, cấm đổ bê tông. | `Shift+Tab` tới `plan` rồi `Đọc src/auth/ trình plan, không code` | `git status` sạch sau plan (không diff 5 files lén). |
+| Phase-gate | Cửa kiểm tra: xanh mới qua phase tiếp. | Như thi học kỳ: đậu kỳ 1 mới học kỳ 2. | `Phase 1 verify: pnpm --filter payments test types xanh mới sang Phase 2` | Mỗi phase có log xanh dán kèm; đỏ thì dừng. |
+| Plan-then-execute 2 sessions | Chia 2 buổi: buổi vẽ bản vẽ, buổi thi công. | Như nấu cỗ: sáng đi chợ lên món, chiều mới nấu. | Session A save `plan.md`, Session B fresh `Đọc plan.md chỉ làm Phase 1` | Session B <50% context thay vì 95% rác 3 ngày. |
+
+### 11.6. Mermaid: Explore → Plan → Implement có gate
+
+```mermaid
+flowchart TD
+    A[Explore read-only + subagents] --> B[Plan 7 mục + risks + verify]
+    B --> C{Bạn duyệt?}
+    C -->|Chưa| D[Sửa chữ 2-3 vòng, rẻ]
+    D --> B
+    C -->|Duyệt| E[Save plan.md + /clear]
+    E --> F[Implement Phase 1 + verify gate]
+    F --> G{Xanh?}
+    G -->|Đỏ| H[Dừng, rewind 1 phase]
+    G -->|Xanh| I[Phase tiếp]
+    I --> J[Reviewer fresh + /verify]
+```
+
+Giải thích:
+
+1. **A→B:** explore rẻ, plan đủ 7 checklist (đọc gì/sửa gì/steps/không đụng/risks/verify/gate).
+2. **B→D:** refine bằng chữ, mỗi vòng vài trăm tokens.
+3. **C→E:** chốt → lưu file, session implement fresh.
+4. **F→G:** mỗi phase có lệnh verify + log.
+5. **G→H:** đỏ dừng ngay, không vá lén sang phase khác.
+
+### 11.7. Bảng so sánh có cột Hiểu nôm na + Ví dụ
+
+| Cách | Hiểu nôm na | Ví dụ |
+|---|---|---|
+| Code ngay | Thợ xây không bản vẽ, xây tới đâu sửa tới đó | Task 5 files không plan → 60% phải rewind |
+| Plan-first | Vẽ bản vẽ 2 phút, đỡ đập nhà 2 ngày | Plan 1 turn 500-2000 tokens → rewind còn ~15% |
+| Skip plan | Đi chợ mua rau không cần bản vẽ | Đổi text/thêm log 1 file, verify 1 dòng |
+
+**Kỳ vọng thấy gì:**
+
+```text
+"Vào plan mode. Trình plan 3 phases refund, mỗi phase có verify gate. Chờ duyệt. Không code."
+```
+
+> Kỳ vọng thấy gì: plan markdown có table files/steps/risks/verify + `plan.md` lưu được. Nếu kèm luôn diff là code lén → dặn lại + check `git status`.
+
+### 11.8. Before/After
+
+**Before:** `"Thêm refund cho payments"` (code ngay) → Kết quả dở: sửa 5 files sai, lan scope, test đỏ, rewind 1 lần.
+
+**After:**
+
+```text
+"Tôi muốn thêm refund POST /api/payments. Trước khi code trình plan: files đọc/sửa, steps, risks (idempotency/partial/webhook), KHÔNG đụng gì, verify từng phase. Chờ duyệt. Lưu plan.md."
+```
+
+> Kết quả tốt + Kỳ vọng: plan 3 phases (types/service/endpoint+webhook) + refine 2 vòng (thêm edge, tách phase) → implement mỗi phase 1 session fresh, xanh từng gate.
+
+### 11.9. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật |
+|---|---|
+| Plan là đúng tuyệt đối | Plan là giả thuyết; phase 1 là cách rẻ nhất kiểm chứng, sai thì sửa plan |
+| Plan 15 steps không gate cho oai | Drift, hỏng step 3 tới step 9 mới biết; chia ≤4 phases có gate |
+| Plan trong session bẩn 70% rác vẫn được | Plan quên constraints; phải `/clear` rồi mới plan |
+
 ## 12. Tham khảo chéo
 
 - Lệnh plan & sessions:

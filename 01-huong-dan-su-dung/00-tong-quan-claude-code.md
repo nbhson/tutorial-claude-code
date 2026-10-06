@@ -2,6 +2,10 @@
 
 > Bài mở đầu của series `01-huong-dan-su-dung/`. Đọc xong bạn sẽ hiểu vòng lặp agentic,
 > các nhóm tool, kinh tế token, và bản đồ toàn bộ khóa học. Thời gian đọc: ~25 phút.
+>
+> **Cách đọc file này (để không bị ngợp):** mỗi khái niệm mới đều có 3 dòng: **Định nghĩa 1 câu**
+> → **Ví dụ đời thường** → **Ví dụ kỹ thuật copy-paste được**. Gặp code block nào cũng nhìn
+> dòng **Kỳ vọng / Verify** ngay dưới để biết làm xong thấy gì.
 
 ## Mục lục
 
@@ -13,9 +17,23 @@
 6. [Các bề mặt sử dụng — chọn cái nào?](#6-các-bề-mặt-sử-dụng-surfaces--chọn-cái-nào)
 7. [Bản đồ extension](#7-bản-đồ-extension-claudemd--skills--subagents--hooks--mcp--plugins)
 8. [Walkthrough step-by-step cho người mới](#8-walkthrough-step-by-step-cho-người-mới-từ-0-tới-task-đầu-tiên)
-9. [Pitfalls + cách fix](#9-pitfalls--cách-fix)
-10. [Bài tập thực hành](#10-bài-tập-thực-hành)
-11. [Đi tiếp tới đâu?](#11-đi-tiếp-tới-đâu-link-chéo)
+9. [Bảng thuật ngữ](#9-bảng-thuật-ngữ)
+10. [Hiểu nhầm thường gặp](#10-hiểu-nhầm-thường-gặp)
+11. [Pitfalls + cách fix](#11-pitfalls--cách-fix)
+12. [Bài tập thực hành](#12-bài-tập-thực-hành)
+13. [Đi tiếp tới đâu?](#13-đi-tiếp-tới-đâu-link-chéo)
+
+### Khái niệm mở đầu (đọc 2 phút, nhớ cả bài)
+
+- **Claude Code là gì?** 1 câu: công cụ lập trình chạy trong terminal, tự đọc/sửa/chạy code giúp bạn.
+  - Ví dụ đời thường: như thợ sửa điện nước tới tận nhà — không chỉ gọi điện chỉ cách (chatbot), mà tự mở tủ điện, đo, thay dây, bật thử.
+  - Ví dụ kỹ thuật copy-paste: mở terminal trong repo rồi gõ `claude`, sau đó gõ `Đọc README và tóm tắt cách chạy dev, không sửa gì`.
+- **Agentic loop là gì?** 1 câu: vòng lặp "nghĩ → làm → xem kết quả → nghĩ tiếp" cho tới khi xong việc.
+  - Ví dụ đời thường: như nấu ăn nếm thử — nêm → nếm → thấy mặn → thêm nước → nếm lại.
+  - Ví dụ kỹ thuật copy-paste: bạn giao `Fix test login đang đỏ trong apps/api`, Claude tự `Read` file → `Edit` → `Bash(pnpm test)` → thấy còn đỏ → sửa tiếp.
+- **Tool là gì?** 1 câu: cái tay để Claude chạm vào máy bạn (đọc file, sửa file, chạy lệnh, lên mạng).
+  - Ví dụ đời thường: như bộ đồ nghề — tua-vít (Read), kìm (Edit), máy khoan (Bash).
+  - Ví dụ kỹ thuật copy-paste: trong session gõ `liệt kê tất cả tools mày đang có + 1 câu mô tả mỗi tool` để thấy danh sách tay nghề của nó.
 
 ---
 
@@ -37,6 +55,30 @@ Vòng lặp agentic cốt lõi (giống nhau trên mọi surface — terminal, I
 Bạn prompt → Claude reasoning → gọi tools (đọc/sửa/chạy) → đọc kết quả trả về
 → reasoning tiếp → ... → khi đạt mục tiêu thì dừng, báo cáo + diff
 ```
+
+> **Kỳ vọng / Verify:** đọc xong đoạn này bạn hình dung được 1 task = nhiều vòng, không phải 1 câu trả lời. Chưa cần chạy gì.
+
+```mermaid
+flowchart LR
+    A[Bạn gõ prompt<br/>VD: fix test login] --> B[Claude reasoning<br/>Cần đọc file nào?]
+    B --> C[Claude gọi tools<br/>Read/Edit/Bash]
+    C --> D[Harness thực thi<br/>trên máy bạn]
+    D --> E[Observation trả về<br/>nội dung file / log lỗi]
+    E --> F{Đạt mục tiêu chưa?}
+    F -- Chưa --> B
+    F -- Rồi --> G[Báo cáo + diff<br/>cho bạn duyệt]
+```
+
+Giải thích từng bước ngay dưới diagram:
+
+- **A — Bạn gõ prompt:** giao mục tiêu + phạm vi + cách kiểm tra xong. Ví dụ: `Fix 2 tests đỏ trong apps/api, chỉ sửa source, chạy focused test xác nhận`.
+- **B — Claude reasoning:** model nghĩ thầm "cần đọc file nào trước, lệnh gì kiểm chứng?". Bạn không thấy bước này trừ khi bật verbose.
+- **C — Claude gọi tools:** model sinh lệnh gọi tool, ví dụ `Read(login.ts)` + `Grep(customerId)`. Có thể gọi nhiều tools song song.
+- **D — Harness thực thi:** CLI binary trên máy bạn mới là thứ chạm disk/terminal, kiểm tra quyền, chạy hooks. Model không chạm disk trực tiếp.
+- **E — Observation trả về:** kết quả (nội dung file, stdout/stderr) được nhét lại vào context cho vòng sau.
+- **F/G — Kiểm tra dừng:** model tự đánh giá xong chưa. Chưa thì quay lại B. Rồi thì in báo cáo + diff.
+
+> **Kỳ vọng / Verify:** bạn đọc được diagram từ trái sang phải, kể lại được 6 bước cho đồng nghiệp trong 1 phút.
 
 ### 1.1. Vì sao "agent" khác "autocomplete"?
 
@@ -62,6 +104,8 @@ Ví dụ prompt tệ vs tốt:
 Tìm root cause, fix, thêm regression test, chạy pnpm --filter @acme/api test.
 Đừng sửa gì ngoài scope này."
 ```
+
+> **Kỳ vọng / Verify:** bạn phân biệt được prompt chatbot (hỏi nghĩa lỗi) vs prompt agent (giao việc có phạm vi + lệnh kiểm tra). Thử copy prompt TỐT vào repo thật, Claude phải tự tìm file thay vì hỏi lại bạn "file nào?".
 
 ---
 
@@ -111,6 +155,8 @@ Turn 6: Bash(pnpm test) → FAIL (import sai) → reasoning đọc lỗi → Edi
 Turn 7: Bash(pnpm test) → PASS → báo cáo diff + lệnh đã chạy
 ```
 
+> **Kỳ vọng / Verify:** bạn đếm được 7 turns, thấy pattern lặp lại Read → Edit → Bash → đọc lỗi → sửa. Sau task thật, hỏi Claude `liệt kê từng turn mày đã làm` và đối chiếu, số turns phải khớp logic này.
+
 Tổng 7 turns, ~5 tool calls song song mỗi turn. Bạn chỉ gõ 1 prompt + 1 lần duyệt.
 
 ### 2.3. Khi nào loop thất bại? (3 nguyên nhân gốc)
@@ -131,6 +177,8 @@ Agentic loop  = model tự quyết định bước tiếp theo (linh hoạt, t�
 Workflow      = script/skeleton cố định bước (vd skill /ship: merge→test→review→changelog),
                 model chỉ điền nội dung từng bước (ổn định, rẻ, hợp việc lặp lại).
 ```
+
+> **Kỳ vọng / Verify:** bạn trả lời được "việc mới lạ dùng gì, việc lặp >3 lần dùng gì?" — đáp án: mới/lạ → để agent tự explore; lặp lại → đóng thành skill `/ship` để chạy ổn định. Chi tiết bài 05.
 
 Kinh nghiệm: việc mới/lạ → để agent tự explore. Việc lặp >3 lần → đóng thành skill/workflow
 để lần sau chạy deterministic (bài 05).
@@ -192,6 +240,8 @@ Càng nhiều MCP tools visible → model càng dễ chọn nhầm → giữ 3�
 claude mcp list
 ```
 
+> **Kỳ vọng / Verify:** trong session Claude trả về danh sách Read/Edit/Write/Glob/Grep/Bash... mỗi cái 1 dòng. Ngoài session `claude mcp list` in ra tên servers (ví dụ `github`, `postgres`) hoặc báo `No MCP servers configured` nếu chưa cài — cả hai đều là thành công.
+
 ```bash
 # Test Glob vs Grep — tự cảm nhận chi phí:
 # Trong session prompt:
@@ -199,12 +249,16 @@ claude mcp list
 # >  Giải thích vì sao thứ tự này rẻ hơn Grep toàn repo trước."
 ```
 
+> **Kỳ vọng / Verify:** Claude làm đúng thứ tự Glob trước (tìm tên file, rẻ) rồi Grep sau (đọc nội dung, đắt), và giải thích được "tìm tên file rẻ hơn đọc nội dung cả repo".
+
 ```bash
 # Test BashOutput với task nền:
 # > "Chạy pnpm build ở background, báo tao khi xong"
 # Claude sẽ dùng Bash (run_in_background) + BashOutput để poll.
 # Kill nếu kẹt: Ctrl+X Ctrl+K hai lần trong 3 giây.
 ```
+
+> **Kỳ vọng / Verify:** bạn thấy Claude báo `Task running in background`, rồi dùng `BashOutput` để đọc log. Nếu kẹt, bấm Ctrl+X Ctrl+K 2 lần trong 3 giây để kill — thấy báo `Background tasks killed`.
 
 ---
 
@@ -245,6 +299,8 @@ Kiểm chứng thực tế: /cost (session hiện tại), /usage (breakdown theo
 /context (grid visualize ai ngốn context).
 ```
 
+> **Kỳ vọng / Verify:** bạn nhẩm được file 600 dòng tốn gấp 4 lần file 150 dòng. Chạy `/cost` sau 1 task, thấy con số tokens và tự hỏi "CLAUDE.md mình bao nhiêu dòng?" (`wc -l CLAUDE.md`).
+
 ```bash
 # Trong session, sau 1 task dài, chạy tuần tự:
 # > /context     # xem ai ngốn context nhất
@@ -252,6 +308,8 @@ Kiểm chứng thực tế: /cost (session hiện tại), /usage (breakdown theo
 # > /cost        # tiền session này
 # Rồi hỏi: "đề xuất 3 thứ cắt giảm context mà không mất chất lượng"
 ```
+
+> **Kỳ vọng / Verify:** `/context` hiện grid % context (ví dụ `CLAUDE.md 18%, history 45%...`), `/cost` hiện số tokens + tiền ước tính. Claude đề xuất được 3 thứ cắt giảm cụ thể, ví dụ "chuyển deploy checklist thành skill".
 
 ### 4.4. Checklist tiết kiệm token (dán vào team wiki)
 
@@ -284,6 +342,8 @@ Tìm root cause, fix source (không sửa test để cho pass ảo), chạy lạ
 rồi báo cáo: file nào đổi, vì sao, còn rủi ro gì."
 ```
 
+> **Kỳ vọng / Verify:** Claude tự tìm 2 test đỏ, sửa source (không sửa test), chạy lại và báo `2 passed`. Bạn thấy diff chỉ trong `packages/auth/src`, không lan sang package khác.
+
 ```text
 # Ví dụ 2 — Việc nhàm chán (viết test thiếu):
 "Trong apps/api/src/routes/, file nào chưa có test tương ứng thì viết test mới
@@ -291,12 +351,16 @@ theo mẫu của login.test.ts. Chạy pnpm --filter @acme/api test sau mỗi fi
 Dừng lại báo cáo sau 5 files đầu để tao review trước khi làm tiếp."
 ```
 
+> **Kỳ vọng / Verify:** sau 5 files đầu Claude dừng, báo danh sách 5 file test mới + kết quả `pnpm test` pass. Bạn review trước khi cho làm tiếp, tránh nó viết 50 file sai mẫu.
+
 ```text
 # Ví dụ 3 — Git/GitHub:
 "Review git diff hiện tại, stage từng hunk hợp lý, viết commit message theo
 conventional commits (feat/fix/test), push branch feat/x và mở PR với mô tả +
 checklist test đã chạy. Không merge."
 ```
+
+> **Kỳ vọng / Verify:** bạn thấy branch `feat/x` mới, PR mở với mô tả + checklist test, không bị merge. Kiểm tra bằng `git log --oneline -3` và link PR.
 
 ---
 
@@ -312,6 +376,29 @@ checklist test đã chạy. Không merge."
 | **Slack, CI/CD** | Cloud/CI runner | Tùy cấu hình | Team workflow, auto-fix PR |
 
 > Hành vi agent **giống nhau mọi nơi** — chỉ khác nơi code chạy và config nào được dùng.
+
+```mermaid
+flowchart TB
+    P[Bạn + cùng 1 prompt<br/>VD: thêm rate-limit POST /login] --> CLI[Terminal CLI<br/>code chạy: máy bạn<br/>mạnh nhất, đủ flags]
+    P --> IDE[VS Code / JetBrains<br/>code chạy: máy bạn<br/>thắng ở inline diff + @mention]
+    P --> DESK[Desktop app<br/>code chạy: máy bạn hoặc cloud VM<br/>thắng ở multi-session + lên lịch]
+    P --> WEB[Web claude.ai/code<br/>code chạy: cloud VM<br/>thắng ở task dài, gập laptop vẫn chạy]
+    CLI --> L[Local config<br/>~/.claude/ + .claude/repo]
+    IDE --> L
+    DESK --> L
+    DESK -. cloud session .-> C[Cloud env<br/>repo + env vars + setup script]
+    WEB --> C
+```
+
+Giải thích từng nhánh:
+
+- **Terminal CLI:** gõ `claude` trong repo. Code chạy trên máy bạn, dùng hết config local. Dùng mặc định hàng ngày.
+- **IDE:** cũng chạy trên máy bạn, dùng chung config với CLI. Thắng khi cần nhìn diff từng hunk, `@` đúng file/selection, duyệt plan bằng UI.
+- **Desktop:** 2 chế độ. Local thì như CLI. Cloud thì như Web. Thắng khi mở 2-3 sessions cạnh nhau, review trực quan, tạo `/schedule` bằng UI.
+- **Web:** code chạy trên máy ảo của Anthropic, chỉ thấy repo + cloud env. Thắng khi task 30 phút–2 giờ, không cần giữ máy mở.
+- **Local config vs Cloud env:** local dùng `~/.claude/` + `.claude/` + biến môi trường máy bạn. Cloud chỉ dùng thứ đã commit + env vars đặt trên web. Chi tiết bài 02.
+
+> **Kỳ vọng / Verify:** bạn chỉ vào diagram và trả lời được "task fix typo 2 phút dùng gì? task refactor 1 giờ dùng gì?" — đáp án: typo → Terminal, refactor dài → Web. Xem thêm bài 02.
 
 So sánh nhanh Web vs Remote vs CLI vs Desktop:
 
@@ -374,7 +461,7 @@ claude
 # Lần đầu: Claude hỏi onboarding (theme, permissions) → chọn defaults.
 ```
 
-**Bước 2 — Sinh CLAUDE.md nháp (5 phút):**
+> **Kỳ vọng / Verify:** terminal mở session `claude`, thấy prompt `>` và câu chào. Lần đầu thấy màn hình onboarding (chọn theme, permissions) — cứ chọn defaults, bấm Enter.
 
 ```text
 Trong session gõ:
@@ -383,7 +470,7 @@ Trong session gõ:
 # Chỉ giữ lệnh verified + rules khác default (chi tiết bài 03).
 ```
 
-**Bước 3 — Giao task nhỏ đầu tiên (10 phút):**
+> **Kỳ vọng / Verify:** file `CLAUDE.md` xuất hiện ở repo root (`ls CLAUDE.md` thấy file). Mở ra thấy các mục Commands/Architecture/Rules nháp — bạn xóa bớt câu chung chung, giữ lại lệnh đã chạy thử.
 
 ```text
 Prompt mẫu:
@@ -392,7 +479,7 @@ test bằng lệnh nào. Không sửa gì, chỉ trả lời."
 # Mục đích: kiểm tra Claude đọc đúng repo, bạn học cách nó explore.
 ```
 
-**Bước 4 — Task sửa thật có verify (10 phút):**
+> **Kỳ vọng / Verify:** Claude trả lời 3 dòng (là gì + lệnh dev + lệnh test) mà không sửa file nào. Chạy `git status` thấy cây sạch — chứng tỏ task read-only thật.
 
 ```text
 "Chạy linter của repo, fix 3 lỗi đầu tiên, chạy lại lint để xác nhận.
@@ -400,13 +487,15 @@ Chỉ sửa files liên quan, không đụng config."
 # Quan sát: nó đọc file → sửa → chạy lệnh → đọc output → sửa tiếp (agentic loop).
 ```
 
-**Bước 5 — Đóng session sạch (3 phút):**
+> **Kỳ vọng / Verify:** linter chạy lần 2 báo `0 errors` (hoặc giảm đúng 3 lỗi), `git diff` chỉ hiện files liên quan, không thấy sửa `eslint.config.*` hay `package.json`.
 
 ```text
 /cost     # xem tốn bao nhiêu
 /export session-01.txt   # lưu lại nếu cần
 # Rồi /clear nếu làm task mới, hoặc gõ exit để thoát.
 ```
+
+> **Kỳ vọng / Verify:** `/cost` hiện tokens + tiền session, `/export` tạo file `session-01.txt` (`ls session-01.txt` thấy file). `/clear` xóa history nhưng giữ CLAUDE.md — gõ task mới không bị lẫn context cũ.
 
 Checklist bạn đã hiểu bài 00 khi:
 
@@ -417,7 +506,36 @@ Checklist bạn đã hiểu bài 00 khi:
 
 ---
 
-## 9. Pitfalls + cách fix
+## 9. Bảng thuật ngữ
+
+| Thuật ngữ | Là gì (hiểu nôm na) | Ví dụ cụ thể | Khi nào dùng |
+|---|---|---|---|
+| Claude Code | Thợ code tới tận nhà, tự đọc/sửa/chạy giúp bạn | Gõ `claude` trong repo, giao `fix 2 tests đỏ trong apps/api` | Khi muốn giao cả task, không chỉ hỏi đáp |
+| Agentic loop | Vòng nấu-ăn-nếm-thử: làm → xem kết quả → sửa tiếp | Turn 1 `Read(login.ts)` → Turn 2 `Edit` → Turn 3 `Bash(pnpm test)` | Mọi task; hiểu để biết khi nào nên dừng/chia nhỏ |
+| Tool (Read/Edit/Bash...) | Bộ đồ nghề của Claude | `Read` = đọc file, `Edit` = sửa đúng chuỗi, `Bash` = chạy `pnpm test` | Đọc log thấy tool nào chạy để đoán lỗi |
+| Harness | Người giám sát cầm chìa khóa nhà, quyết cho Claude chạm gì | Enforce permissions, chạy hooks, chặn `rm -rf` dù model muốn | Khi thắc mắc "sao nó không được chạy lệnh X?" |
+| Surface (CLI/IDE/Web/Desktop) | Cửa vào nhà: cửa chính, cửa sổ, camera từ xa | Typo 2 phút → CLI; refactor 1 giờ → Web cloud | Chọn trước mỗi task để đỡ lag/tốn tiền |
+| Token/context | Tiền điện tính theo chữ nạp vào mỗi vòng | CLAUDE.md 150 dòng ≈ 2.500 tokens × 10 turns = 25k tokens | Khi thấy `/cost` cao, quay lại dọn CLAUDE.md |
+| CLAUDE.md | Tờ dặn dò dán trên tủ lạnh, đọc mỗi ngày | `ALWAYS chạy pnpm --filter @acme/api test sau khi sửa` | Quy ước team dùng mọi session |
+| Skill | Công thức nấu ăn lấy ra khi cần | `/deploy` checklist 20 bước, chỉ load khi gõ `/deploy` | Việc lặp >3 lần, không muốn nhét vào CLAUDE.md |
+| Subagent | Đệ tử chạy việc ồn, chỉ báo kết quả gọn | Explorer đọc 50 file, trả về 10 dòng tóm tắt | Research rộng, việc song song |
+| Hook | Luật tự động như aptomat nhảy khi quá tải | Sau mỗi Edit tự chạy `eslint` | Rule quan trọng hay bị quên |
+| MCP | Phích cắm ra thiết bị ngoài | `mcp__github__create_pr` mở PR, `mcp__postgres__query` query DB | Cần dữ liệu/hành động ngoài repo |
+
+## 10. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật | Ví dụ sửa |
+|---|---|---|
+| Claude Code = chatbot hỏi đáp thông minh hơn | Là agent có tay (tools) tự làm nhiều bước, bạn chỉ duyệt | Đừng hỏi `lỗi X nghĩa là gì?`, hãy giao `tìm root cause lỗi X trong apps/api, fix + chạy test xác nhận` |
+| Càng nhiều CLAUDE.md càng tốt | Mỗi dòng tốn tiền N lần (mỗi turn nạp lại). >200 dòng là rác | `wc -l CLAUDE.md` >200 → cắt layout/dependency list, chuyển checklist thành skill |
+| Subagent/MCP càng nhiều càng mạnh | Mỗi subagent ~20k overhead, mỗi MCP tool làm model dễ chọn nhầm | Giữ 3–6 MCP servers, trần 3–5 subagents song song; task 1 bước làm trực tiếp |
+| Agent báo xong là xong | Model tự tin sai nếu thiếu verify | Mọi task code phải có lệnh verify chạy thật: `pnpm test`, `pnpm lint`, `pnpm build` |
+| Surface nào cũng như nhau | Khác nơi chạy + config đi kèm; cloud mất MCP/hook local | Local mất điện là dừng; cloud cần setup script + env vars riêng (bài 02) |
+| Loop càng dài càng gần xong | Sau turn 15+ context đầy rác, càng sửa càng nát | Quy tắc vàng: >15 turns không tiến triển → `/clear`, chia nhỏ, giao lại |
+
+---
+
+## 11. Pitfalls + cách fix
 
 | Pitfall | Vì sao xảy ra | Fix |
 |---|---|---|
@@ -432,7 +550,7 @@ Checklist bạn đã hiểu bài 00 khi:
 
 ---
 
-## 10. Bài tập thực hành
+## 12. Bài tập thực hành
 
 **Bài 1 (15 phút) — Trace agentic loop:**
 Giao 1 task nhỏ, sau khi xong hỏi Claude: *"liệt kê từng turn mày đã làm: reasoning gì,
@@ -452,7 +570,7 @@ hiểu sai trước khi đọc bài này.
 
 ---
 
-## 11. Đi tiếp tới đâu? (link chéo)
+## 13. Đi tiếp tới đâu? (link chéo)
 
 - **Bài 01 — Cài đặt + xác thực + `claude doctor`**: nếu bạn chưa cài được hoặc setup báo đỏ.
 - **Bài 02 — Từng surface dùng sao cho đúng**: CLI flags, IDE inline diff, cloud env, mobile.

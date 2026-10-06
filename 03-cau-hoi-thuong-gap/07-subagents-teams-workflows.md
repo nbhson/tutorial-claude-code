@@ -6,10 +6,25 @@ Mỗi câu có giải thích + lệnh/config copy-paste + ví dụ + khi nào á
 
 ---
 
+## Sơ đồ nhanh (nhìn 30 giây là nhớ)
+
+```mermaid
+flowchart TD
+  M[Main thread<br/>giữ quyết định] --> E[Explorer<br/>chỉ đọc]
+  M --> T[Tester<br/>chạy test focused]
+  M --> S[Security reviewer<br/>soi auth/input]
+  E --> M
+  T --> M
+  S --> M
+```
+
 ## Bảng tổng hợp: gọi trực tiếp vs subagent vs teams vs batch
 
 | Cách | Thấy history? | Overhead | Dùng khi nào |
-|---|---|---|---|
+|---
+
+
+|---|---|---|
 | Làm trực tiếp (main) | Có (full) | 0 | Việc 1-3 files, 1-2 bước |
 | Subagent fresh (mặc định) | Không (context mới + system prompt + tools riêng) | ~20k/spawn | Task phụ ồn, không cần nhớ |
 | Forked subagent | Có (kế thừa full conversation) | ~20k + history | Tiếp mạch mà muốn cô lập rủi ro |
@@ -23,8 +38,12 @@ Mỗi câu có giải thích + lệnh/config copy-paste + ví dụ + khi nào á
 ---
 
 ## 1. Khi nào dùng subagent vs làm trực tiếp? (~20k đáng không?)
+> **Hỏi ngắn gọn:** Khi nào dùng subagent vs làm trực tiếp? (~20k đáng không?)
+>
+> **Trả lời 1 câu:** Hỏi 2 câu: (1) Việc có ỒN không (đọc >10 files mà chỉ cần tóm tắt)?
 
-**Giải thích.** Hỏi 2 câu: (1) Việc có ỒN không (đọc >10 files mà chỉ cần tóm tắt)? (2) Có ĐỘC LẬP không (xong việc là xong, main không cần chi tiết)? Cả 2 Yes → subagent. Việc 1 bước ít file → trực tiếp (đỡ ~20k). Chuẩn "làm theo từng bước" → **skill**, không phải worker.
+
+**Giải thích chi tiết + ví dụ:** Hỏi 2 câu: (1) Việc có ỒN không (đọc >10 files mà chỉ cần tóm tắt)? (2) Có ĐỘC LẬP không (xong việc là xong, main không cần chi tiết)? Cả 2 Yes → subagent. Việc 1 bước ít file → trực tiếp (đỡ ~20k). Chuẩn "làm theo từng bước" → **skill**, không phải worker.
 
 ```text
 ✅ Subagent: "quét 50 files auth, trả 10 dòng + 5 file chính"
@@ -43,9 +62,14 @@ Mỗi câu có giải thích + lệnh/config copy-paste + ví dụ + khi nào á
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 2. Subagent có thấy history không? (fresh mặc định vs forked)
+> **Hỏi ngắn gọn:** Subagent có thấy history không? (fresh mặc định vs forked)
+>
+> **Trả lời 1 câu:** Mặc định **fresh**: context mới + system prompt + tools riêng, KHÔNG thấy history main.
 
-**Giải thích.** Mặc định **fresh**: context mới + system prompt + tools riêng, KHÔNG thấy history main. Muốn nó thấy → **forked**: kế thừa full conversation (đây là *cách spawn*, không phải surface riêng — đừng tìm nút "fork" trong UI).
+
+**Giải thích chi tiết + ví dụ:** Mặc định **fresh**: context mới + system prompt + tools riêng, KHÔNG thấy history main. Muốn nó thấy → **forked**: kế thừa full conversation (đây là *cách spawn*, không phải surface riêng — đừng tìm nút "fork" trong UI).
 
 ```text
 Fresh (mặc định):  main 100 turns → subagent thấy 0 (sạch, rẻ, an toàn)
@@ -57,9 +81,14 @@ Skill fork:       Explore/Plan khi fork còn skip CLAUDE.md + git status (gọn 
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 3. Skill `context: fork` là gì? (research ồn → cô lập)
+> **Hỏi ngắn gọn:** Skill `context: fork` là gì? (research ồn → cô lập)
+>
+> **Trả lời 1 câu:** Skill gắn `context: fork` chạy trong subagent cô lập (không thấy history).
 
-**Giải thích.** Skill gắn `context: fork` chạy trong subagent cô lập (không thấy history). Agent `Explore`/`Plan` khi fork còn skip CLAUDE.md + git status để gọn tối đa. Hợp cho skill đọc nhiều-trả ít.
+
+**Giải thích chi tiết + ví dụ:** Skill gắn `context: fork` chạy trong subagent cô lập (không thấy history). Agent `Explore`/`Plan` khi fork còn skip CLAUDE.md + git status để gọn tối đa. Hợp cho skill đọc nhiều-trả ít.
 
 ```markdown
 ---
@@ -79,15 +108,20 @@ model: haiku
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 4. 3 cách gọi subagent: auto / explicit / flags (`--agent`, `--agents`)?
+> **Hỏi ngắn gọn:** 3 cách gọi subagent: auto / explicit / flags (`--agent`, `--agents`)?
+>
+> **Trả lời 1 câu:** 1.
 
-**Giải thích.**
+
+**Giải thích chi tiết + ví dụ:**
 
 1. **Tự động (auto):** description khớp task → model tự spawn. Cần description rõ (xem FAQ 02 câu 4).
 2. **Explicit:** bạn chỉ tên trong prompt — "dùng subagent X làm Y". Chắc ăn nhất.
 3. **Flags:** `--agent <tên>` (ép cả session dùng agent đó) và `--agents '{...}'` (inline JSON định nghĩa agent tại chỗ, khỏi tạo file).
 
-**Lệnh copy-paste:**
+**Làm thế nào (steps copy-paste):**
 
 ```bash
 # 1. Auto: chỉ mô tả việc, model tự chọn
@@ -105,9 +139,14 @@ claude --agents '{"reviewer":{"description":"review PR","tools":["Read","Grep","
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 5. Subagent spawn subagent (nested) — giới hạn sao?
+> **Hỏi ngắn gọn:** Subagent spawn subagent (nested) — giới hạn sao?
+>
+> **Trả lời 1 câu:** Được, nhưng token CỘNG DỒN (cháu 20k + con 20k + main...).
 
-**Giải thích.** Được, nhưng token CỘNG DỒN (cháu 20k + con 20k + main...). Không giới hạn → cháy bill + loãng. Quy tắc: nested tối đa 1 tầng, luôn đặt `maxTurns`, dặn con "không tự đẻ thêm".
+
+**Giải thích chi tiết + ví dụ:** Được, nhưng token CỘNG DỒN (cháu 20k + con 20k + main...). Không giới hạn → cháy bill + loãng. Quy tắc: nested tối đa 1 tầng, luôn đặt `maxTurns`, dặn con "không tự đẻ thêm".
 
 ```text
 main → con (Explore, maxTurns 10) → hết. Con không đẻ cháu.
@@ -132,9 +171,14 @@ maxTurns: 10
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 6. Agent teams là gì? (lead + teammates, experimental, tắt mặc định)
+> **Hỏi ngắn gọn:** Agent teams là gì? (lead + teammates, experimental, tắt mặc định)
+>
+> **Trả lời 1 câu:** Agent teams: **lead plan + assign + supervise teammates** (experimental, tắt mặc định — phải bật mới có).
 
-**Giải thích.** Agent teams: **lead plan + assign + supervise teammates** (experimental, tắt mặc định — phải bật mới có). Hợp cho: feature lớn đa mảng, debug đa giả thuyết song song, review song song (security/perf/tests mỗi đứa 1 góc).
+
+**Giải thích chi tiết + ví dụ:** Agent teams: **lead plan + assign + supervise teammates** (experimental, tắt mặc định — phải bật mới có). Hợp cho: feature lớn đa mảng, debug đa giả thuyết song song, review song song (security/perf/tests mỗi đứa 1 góc).
 
 ```text
 Lead: chia feature auth thành 3 mảnh → assign 3 teammates
@@ -150,9 +194,14 @@ Lead: gộp + verify cuối
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 7. Teams vs `/batch` — khác nhau gì? (supervise vs script giữ plan + verify chéo)
+> **Hỏi ngắn gọn:** Teams vs `/batch` — khác nhau gì? (supervise vs script giữ plan + verify chéo)
+>
+> **Trả lời 1 câu:** Dễ nhầm vì cả 2 đều "nhiều agents".
 
-**Giải thích.** Dễ nhầm vì cả 2 đều "nhiều agents". Khác ở cơ chế giữ mạch:
+
+**Giải thích chi tiết + ví dụ:** Dễ nhầm vì cả 2 đều "nhiều agents". Khác ở cơ chế giữ mạch:
 
 | | Agent teams | `/batch` |
 |---|---|---|
@@ -174,9 +223,14 @@ Lead: gộp + verify cuối
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 8. Theo dõi / kill background agents (`/agents`, `/tasks`, kill switch)?
+> **Hỏi ngắn gọn:** Theo dõi / kill background agents (`/agents`, `/tasks`, kill switch)?
+>
+> **Trả lời 1 câu:** Agents chạy nền cần quản lý như process:
 
-**Giải thích.** Agents chạy nền cần quản lý như process:
+
+**Giải thích chi tiết + ví dụ:** Agents chạy nền cần quản lý như process:
 
 ```bash
 /agents    # Running (đang chạy) + Library (có gì)
@@ -194,9 +248,14 @@ Dấu hiệu kill: 3 agents cùng sửa 1 file / bill tăng mà không ra gì / 
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 9. Worktrees để làm gì? (mỗi session 1 checkout, song song không giẫm)
+> **Hỏi ngắn gọn:** Worktrees để làm gì? (mỗi session 1 checkout, song song không giẫm)
+>
+> **Trả lời 1 câu:** Vấn đề: 3 agents cùng sửa 1 checkout → conflict/giẫm file.
 
-**Giải thích.** Vấn đề: 3 agents cùng sửa 1 checkout → conflict/giẫm file. Fix: mỗi session 1 worktree (checkout riêng). Agent view/`/batch` tự tạo; làm tay thì:
+
+**Giải thích chi tiết + ví dụ:** Vấn đề: 3 agents cùng sửa 1 checkout → conflict/giẫm file. Fix: mỗi session 1 worktree (checkout riêng). Agent view/`/batch` tự tạo; làm tay thì:
 
 ```bash
 git worktree add ../myrepo-worktrees/feat-auth -b feat/auth
@@ -211,9 +270,14 @@ git worktree remove ../myrepo-worktrees/feat-auth
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 10. Workflow chuẩn: research song song → implement → verify?
+> **Hỏi ngắn gọn:** Workflow chuẩn: research song song → implement → verify?
+>
+> **Trả lời 1 câu:** Công thức team hay dùng (rẻ + an toàn):
 
-**Giải thích.** Công thức team hay dùng (rẻ + an toàn):
+
+**Giải thích chi tiết + ví dụ:** Công thức team hay dùng (rẻ + an toàn):
 
 ```text
 Phase 1 — Research song song (Haiku, fresh, worktree riêng nếu cần):
@@ -236,6 +300,8 @@ Phase 3 — Verify: fresh-reviewer + /verify (chạy app thật) + tests xanh
 Chi tiết verify xem [../02-tips-thuc-chien/04-verification-done-that.md](../02-tips-thuc-chien/04-verification-done-that.md).
 
 **Khi nào áp dụng:** mọi feature vừa-trở-lên. Task 5 phút thì khỏi (overhead không đáng).
+
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 
 ---
 

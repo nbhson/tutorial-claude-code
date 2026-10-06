@@ -1,8 +1,62 @@
 # 04 — Slash Commands Toàn Tập (Built-in + Bundled Skills)
 
-> Bài 04 là INDEX tra cứu 76 slash commands v2.1.x. Mỗi lệnh có 1 folder riêng trong `commands/` (vd `commands/model-mode/plan/`), chứa README chi tiết: cú pháp, ví dụ, pitfalls, version floor.
-> Cách dùng file này: tìm nhóm của bạn → đọc dòng mô tả 1 dòng → click link sang folder chi tiết.
-> Gõ `/` trong session để xem lệnh khả dụng **ở môi trường của bạn** (khác plan/provider/version sẽ khác).
+> Bài 04 là INDEX tra cứu 76 slash commands v2.1.x + hướng dẫn dùng đúng từng nhóm.
+> Đọc xong bạn thuộc công thức 5 lệnh session đầu, biết mỗi nhóm dùng khi nào,
+> và tra được folder chi tiết trong `commands/` khi cần. Thời gian: ~40 phút.
+>
+> **Cách đọc file này (để không bị ngợp):** mỗi khái niệm mới đều có 3 dòng:
+> **Nôm na 1 câu** → **Ví dụ đời thường** → **Ví dụ kỹ thuật copy-paste được**.
+> Mỗi code block đều có dòng **Kỳ vọng / Verify** ngay dưới để biết làm xong thấy gì.
+> Chi tiết từng lệnh nằm ở `commands/<nhóm>/<slug>/README.md` (mỗi file ~60 dòng:
+> nôm na → khi nào dùng → cách gọi → prompt thật + verify → lỗi hay gặp).
+
+## Mục lục
+
+1. [Slash command là gì? (khái niệm mở đầu)](#1-slash-command-là-gì)
+2. [Nhóm 1 — Session & Context (18)](#nhóm-1--session--context-18)
+3. [Nhóm 2 — Model & Mode + Code (20)](#nhóm-2--model--mode--code-20)
+4. [Nhóm 3 — Tri thức & Hệ thống (18)](#nhóm-3--tri-thức--hệ-thống-18)
+5. [Nhóm 4 — Auth/Remote/Settings (20)](#nhóm-4--authremotesettings-20)
+6. [Công thức 5 lệnh session đầu](#công-thức-5-lệnh-session-đầu-giữ-nguyên-làm-1-lầnrepo)
+7. [Bảng thuật ngữ](#bảng-thuật-ngữ)
+8. [Hiểu nhầm thường gặp](#hiểu-nhầm-thường-gặp)
+9. [Bài tập thực hành](#bài-tập-thực-hành)
+10. [Lưu ý version/provider + Link chéo](#lưu-ý-versionprovider-giữ-nguyên)
+
+### Khái niệm mở đầu (đọc 2 phút, nhớ cả bài)
+
+- **Slash command là gì?** 1 câu: phím tắt có tên, gõ `/tên` là Claude làm đúng 1 việc đã đóng gói.
+  - Ví dụ đời thường: như nút preset máy giặt — thay vì nhớ "đồ trắng 40 độ + vắt 800", chỉ bấm nút `Giặt trắng`.
+  - Ví dụ copy-paste: trong session gõ `/cost` là xem tiền session này; gõ `/clear` là reset não bắt task mới.
+- **Built-in vs skill (bundled) là gì?** 1 câu: built-in là nút cứng của máy (luôn có), skill là miếng dán thêm (cài mới có, gọi như lệnh).
+  - Ví dụ đời thường: như còi xe (built-in, xe nào cũng có) vs giá đỡ điện thoại dán thêm (skill, ai cần thì gắn).
+  - Ví dụ copy-paste: `/clear`, `/model` là built-in (máy nào cũng có); `/deploy` của team bạn là skill (nằm ở `.claude/skills/deploy/SKILL.md`, gõ `/deploy` mới chạy).
+- **4 nhóm slash là gì?** 1 câu: 4 ngăn tủ đựng 76 nút cho gọn — session, code, tri thức, cài đặt.
+  - Ví dụ đời thường: như siêu thị chia quầy rau/thịt/đồ khô/gia vị — cần gì tới đúng quầy.
+  - Ví dụ copy-paste: quản lý context → Nhóm 1 (`/clear`, `/compact`); đổi model/review code → Nhóm 2 (`/model`, `/review`); memory/MCP/hooks → Nhóm 3 (`/memory`, `/mcp`); login/IDE/mobile → Nhóm 4 (`/login`, `/ide`).
+
+```mermaid
+flowchart LR
+    A[Bạn gõ / + tên<br/>VD: /review] --> B{Built-in hay skill?}
+    B -- Built-in<br/>luôn có --> C[Harness chạy luôn<br/>VD: /cost in tiền]
+    B -- Skill<br/>có SKILL.md --> D[Claude load SKILL.md<br/>full body khi trigger]
+    C --> E[Trả kết quả + bước tiếp theo]
+    D --> E
+    E --> F{Đúng ý chưa?}
+    F -- Chưa --> G[Xem commands/&lt;slug&gt;/README<br/>sửa prompt, gọi lại]
+    F -- Rồi --> H[Xong, verify bằng /status /context]
+```
+
+Giải thích từng bước ngay dưới diagram:
+
+- **A — Bạn gõ `/`:** trong session gõ `/` hiện dropdown lệnh khả dụng **ở máy bạn** (khác plan/provider/version hiện khác nhau). Gõ tiếp tên, ví dụ `/review`.
+- **B — Phân loại:** built-in (`/clear`, `/cost`, `/model`...) luôn có; skill (`/deploy`, `/review-pr` team tự viết) chỉ có khi đã cài ở `.claude/skills/` hoặc plugin.
+- **C — Built-in chạy luôn:** harness thực thi ngay (đọc context, đổi model, in tiền...). Không tốn lượt load skill.
+- **D — Skill load khi trigger:** startup chỉ tốn ~100 tokens (tên + description); full body chỉ load khi bạn gọi hoặc ngữ cảnh khớp (chi tiết bài 05).
+- **E — Kết quả + bước tiếp:** lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước (chuẩn từng file trong `commands/`).
+- **F/G/H — Verify:** chưa đúng → mở `commands/<nhóm>/<slug>/README.md` xem prompt mẫu + lỗi hay gặp, gọi lại. Rồi thì `/status` hoặc `/context` xác nhận.
+
+> **Kỳ vọng / Verify:** bạn gõ `/` trong session thấy dropdown, phân biệt được built-in vs skill, và biết file chi tiết của 1 lệnh nằm ở đâu (ví dụ `/clear` → `commands/session-context/clear/README.md`).
 
 ## Cách đọc index này
 
@@ -35,6 +89,33 @@
 | `/background` | Đẩy session thành agent nền, rảnh tay làm việc khác | [./commands/session-context/background/README.md](./commands/session-context/background/README.md) |
 | `/recap` | Tóm tắt context khi quay lại session sau break | [./commands/session-context/recap/README.md](./commands/session-context/recap/README.md) |
 
+### Prompt thật Nhóm 1 (copy-paste 3 tình huống hay gặp nhất)
+
+```text
+# Tình huống 1 — Task mới sau khi fix CSS 45 phút (context đầy chuyện cũ):
+/clear
+Hãy đọc docs/payment-spec.md và triển khai POST /api/payments theo spec.
+```
+
+> **Kỳ vọng / Verify:** `/clear` xóa history (giữ CLAUDE.md), task mới không lẫn chuyện CSS cũ. Verify: `/context` hiện % thấp sau clear; Claude triển khai đúng spec mới. Chi tiết: [clear](./commands/session-context/clear/README.md).
+
+```text
+# Tình huống 2 — Context ~75%, vẫn muốn giữ mạch (đừng để tới 95% mới nén):
+/compact tập trung vào auth refactor, giữ quyết định về error shape {code,message,requestId}
+```
+
+> **Kỳ vọng / Verify:** context % giảm (ví dụ 75% → 30%), quyết định error shape còn nguyên (hỏi lại `error shape mình chốt là gì?` phải trả lời đúng). Chi tiết: [compact](./commands/session-context/compact/README.md).
+
+```text
+# Tình huống 3 — Cuối ngày, xem hôm nay tốn bao nhiêu + ai ngốn nhất:
+/context
+/usage
+/cost
+"đề xuất 3 thứ cắt giảm context mà không mất chất lượng"
+```
+
+> **Kỳ vọng / Verify:** `/context` hiện grid % (ví dụ `CLAUDE.md 18%, history 45%...`), `/usage` breakdown skills/subagents/MCP, `/cost` hiện tokens + tiền. Claude đề xuất được 3 thứ cụ thể (ví dụ "chuyển deploy checklist thành skill").
+
 ## Nhóm 2 — Model & Mode + Code (20)
 
 | Lệnh | Mô tả 1 dòng | Chi tiết |
@@ -60,6 +141,38 @@
 | `/subtask` | Giao việc phụ cho subagent, báo về ngay trong session | [./commands/code-repo/subtask/README.md](./commands/code-repo/subtask/README.md) |
 | `/fewer-permission-prompts` | Quét transcripts, đề xuất allowlist read-only cho đỡ hỏi | [./commands/code-repo/fewer-permission-prompts/README.md](./commands/code-repo/fewer-permission-prompts/README.md) |
 
+### Prompt thật Nhóm 2 (copy-paste 3 tình huống hay gặp nhất)
+
+```text
+# Tình huống 1 — Task khó, muốn model giỏi nhất + suy kỹ nhất (≥2.1.205):
+/model opus
+/effort max
+"Fix 2 tests đỏ trong apps/api, tìm root cause, không sửa test cho pass ảo.
+Chạy pnpm --filter @acme/api test xác nhận."
+```
+
+> **Kỳ vọng / Verify:** `/model` báo đã đổi sang opus, `/effort` báo `max`. Claude sửa source (không sửa test), chạy focused test báo `2 passed`. `/model` đổi giữa session không mất history.
+
+```text
+# Tình huống 2 — Việc nguy hiểm, muốn duyệt plan trước khi cho sờ code:
+/plan
+"Thêm rate-limit cho POST /login: tìm files liên quan, đề xuất giải pháp + files sẽ sửa.
+Chưa sửa gì, chờ tao duyệt."
+```
+
+> **Kỳ vọng / Verify:** Claude chỉ đọc + trình plan (files sẽ sửa, giải pháp, rủi ro), `git status` sạch (không file nào đổi). Duyệt xong mới cho code. Chi tiết: [plan](./commands/model-mode/plan/README.md).
+
+```text
+# Tình huống 3 — Vừa refactor xong, muốn 2 mắt soi (nhanh + sâu):
+/review src/auth/login.ts
+# rồi:
+/code-review --focus security,tests
+# rồi build + chạy app thật:
+/verify
+```
+
+> **Kỳ vọng / Verify:** `/review` (cùng agent, nhanh) chỉ ra lỗi nông; `/code-review` (mắt mới, sâu) chỉ thêm lỗi security/thiếu test; `/verify` build + chạy app thật, quan sát hành vi (không chỉ đọc code). Từ ≥2.1.215 cả hai chỉ chạy khi gọi tay — không tự trigger tốn token.
+
 ## Nhóm 3 — Tri thức & Hệ thống (18)
 
 | Lệnh | Mô tả 1 dòng | Chi tiết |
@@ -82,6 +195,38 @@
 | `/skill-doctor` | Báo cáo skill nào ngốn context, skill nào chết lâm sàng | [./commands/knowledge-system/skill-doctor/README.md](./commands/knowledge-system/skill-doctor/README.md) |
 | `/mcp-serve` | Biến Claude Code thành MCP server cho app khác gọi | [./commands/knowledge-system/mcp-serve/README.md](./commands/knowledge-system/mcp-serve/README.md) |
 | `/plugin-validate` | Audit plugin/mod trước khi cài | [./commands/knowledge-system/plugin-validate/README.md](./commands/knowledge-system/plugin-validate/README.md) |
+
+### Prompt thật Nhóm 3 (copy-paste 3 tình huống hay gặp nhất)
+
+```text
+# Tình huống 1 — Repo mới, sinh memory + dọn ngay (đừng để 500 dòng):
+/init
+# Đọc file sinh ra, xóa 50% câu chung chung, rồi:
+/memory
+# Xem entries nào load, xóa learning sai, tắt auto-memory project-scope nếu team 3+ người.
+```
+
+> **Kỳ vọng / Verify:** `CLAUDE.md` xuất hiện ở root (`ls CLAUDE.md` thấy file), `wc -l CLAUDE.md` <200 sau khi cắt. `/memory` liệt kê files + entries đang load. Chi tiết: [init](./commands/code-repo/init/README.md), [memory](./commands/knowledge-system/memory/README.md).
+
+```text
+# Tình huống 2 — MCP Postgres mất kết nối (token hết hạn):
+/mcp
+# → thấy postgres: disconnected → chọn reconnect, nhập lại password qua env.
+# Test: "query 5 rows mới nhất của bảng orders, chỉ đọc không ghi."
+```
+
+> **Kỳ vọng / Verify:** `/mcp` hiện `postgres: connected` sau reconnect. Query test trả 5 rows, không báo lỗi auth. Secrets qua env, không hardcode vào `.mcp.json` (chi tiết bài 08).
+
+```text
+# Tình huống 3 — Setup lạ, không biết lỗi ở đâu (khám tổng quát):
+/doctor
+# /doctor: chẩn đoán + hỏi trước khi sửa (dedupe, trim CLAUDE.md, duplicate install).
+# Xong nếu còn lỗi lạ về tools/session, gọi tiếp:
+/debug
+# /debug: troubleshoot session/tools khi lỗi lạ.
+```
+
+> **Kỳ vọng / Verify:** `/doctor` hỏi từng fix `remove duplicate? [y/N]`, duyệt hunk trim CLAUDE.md 342 → ~178 dòng. `/debug` chỉ ra nguyên nhân (hook/MCP/version) thay vì đoán mò.
 
 ## Nhóm 4 — Auth/Remote/Settings (20)
 
@@ -108,6 +253,37 @@
 | `/setup-bedrock` | Wizard cắm Claude Code vào AWS Bedrock | [./commands/auth-settings/setup-bedrock/README.md](./commands/auth-settings/setup-bedrock/README.md) |
 | `/setup-vertex` | Wizard cắm Claude Code vào Google Vertex AI | [./commands/auth-settings/setup-vertex/README.md](./commands/auth-settings/setup-vertex/README.md) |
 
+### Prompt thật Nhóm 4 (copy-paste 3 tình huống hay gặp nhất)
+
+```text
+# Tình huống 1 — Đổi account cá nhân ↔ công ty (re-auth):
+/login
+# → chọn account mới → kiểm tra:
+/status
+# Phải thấy account mới + model + version đúng.
+```
+
+> **Kỳ vọng / Verify:** `/status` hiện đúng account mới (không còn account cũ). Vòng lặp OAuth không dứt → `claude logout` rồi login lại, đổi browser.
+
+```text
+# Tình huống 2 — Làm việc với repo khác ngoài CWD (monorepo tách folder):
+/add-dir ../shared-contracts
+# Rồi: "Đọc types trong ../shared-contracts, đối chiếu apps/api usage, báo mismatch."
+# Muốn load CLAUDE.md của dir thêm: export CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1 (bài 01).
+```
+
+> **Kỳ vọng / Verify:** Claude đọc được file ngoài CWD (không báo `outside working directory`). Không `/add-dir` thì báo không thấy đường dẫn — đó là tín hiệu thiếu lệnh, không phải bug.
+
+```text
+# Tình huống 3 — Ra ngoài vẫn muốn theo dõi session + IDE chưa nối:
+/ide
+# Phải thấy "VS Code connected". Rồi pair điện thoại:
+/mobile
+# → QR hiện → quét bằng app → sessions sync.
+```
+
+> **Kỳ vọng / Verify:** `/ide` báo connected (không phải `not connected`). `/mobile` hiện QR, quét xong chat từ điện thoại mà code vẫn chạy máy dev (Remote), khác cloud VM.
+
 ---
 
 ## Công thức 5 lệnh session đầu (giữ nguyên, làm 1 lần/repo)
@@ -122,9 +298,85 @@
 - Bước 4 tạo subagents — prompt "tạo 2 subagents: explorer (read-only) và tester (chạy pnpm test)", duyệt bằng `/agents` ([./commands/knowledge-system/agents/README.md](./commands/knowledge-system/agents/README.md)).
 - Bước 5 `/permissions` — đặt allow/ask/deny, test 1 task nhỏ end-to-end ([./commands/model-mode/permissions/README.md](./commands/model-mode/permissions/README.md)).
 
+```text
+# Chạy đủ 5 bước trong 1 session mới (copy-paste thứ tự):
+/init
+/memory
+/mcp
+# Prompt tạo subagents: "tạo 2 subagents: explorer (read-only) và tester (chạy pnpm test)"
+/agents
+/permissions
+# Cuối: giao 1 task nhỏ end-to-end "chạy linter, fix 3 lỗi đầu, chạy lại xác nhận"
+```
+
+> **Kỳ vọng / Verify:** sau 5 bước, `ls CLAUDE.md` thấy file <200 dòng, `/memory` liệt kê entries, `/mcp` hiện GitHub connected (test `liệt kê 5 PRs mở gần nhất` trả kết quả), `/agents` thấy 2 subagents, `/permissions` hiện allow/ask/deny đã đặt. Task cuối pass với diff đúng scope.
+
+---
+
+## Bảng thuật ngữ
+
+| Thuật ngữ | Là gì (hiểu nôm na) | Ví dụ cụ thể | Khi nào dùng |
+|---|---|---|---|
+| Slash command | Nút preset có tên, gõ `/tên` là làm đúng 1 việc | `/cost` xem tiền, `/clear` reset não, `/review` soi code | Mọi session — thay vì gõ prompt dài, gọi nút có sẵn |
+| Built-in | Nút cứng của máy, xe nào cũng có | `/clear`, `/model`, `/compact`, `/doctor` | Luôn có, không cần cài |
+| Bundled skill | Miếng dán thêm, ai cần thì gắn | `/deploy` team tự viết ở `.claude/skills/deploy/SKILL.md` | Việc lặp >3 lần, gọi bằng `/tên` hoặc Claude tự load |
+| Session & Context (Nhóm 1) | Ngăn quản lý não: mở/dọn/nén/xem tiền | `/clear` task mới, `/compact` khi 75%, `/cost` xem tiền | Đầu/cuối mỗi task, khi context đầy |
+| Model & Mode + Code (Nhóm 2) | Ngăn đổi não + soi code | `/model opus` việc khó, `/plan` duyệt trước, `/review` + `/verify` sau code | Đổi model/effort, review/verify, chia batch |
+| Tri thức & Hệ thống (Nhóm 3) | Ngăn trí nhớ + đồ nghề ngoài | `/memory` sửa CLAUDE.md, `/mcp` nối DB, `/doctor` khám tổng | Setup repo, nối tools, lỗi lạ |
+| Auth/Remote/Settings (Nhóm 4) | Ngăn tài khoản + cửa ra vào | `/login` đổi account, `/add-dir` thêm folder, `/ide` nối VS Code | Đổi account, thêm dir, pair mobile/IDE |
+| `commands/<slug>/README.md` | Tờ hướng dẫn chi tiết từng nút | `/clear` → `commands/session-context/clear/README.md` | Khi quên cú pháp, gặp lỗi lệnh — mở file này trước |
+| Version floor | Đời máy tối thiểu để có nút mới | `/cd` ≥2.1.169, `/effort` ≥2.1.205, `/goal` ≥2.1.139 | Không thấy lệnh → check version trước khi kết luận mất |
+
+## Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật | Ví dụ sửa |
+|---|---|---|
+| 76 lệnh phải thuộc hết mới dùng được | Thuộc 5 lệnh session đầu (`/init /memory /mcp /agents /permissions`) + 5 lệnh hàng ngày (`/clear /compact /model /review /cost`) là đủ 90% | Dán công thức 5 lệnh lên team wiki; còn lại tra index khi cần |
+| `/review` khen là code xong | `/review` là cùng agent tự chấm (mù cùng chỗ). Muốn mắt mới phải `/code-review`, muốn chắc phải `/verify` chạy thật | Sau refactor: `/review` → `/code-review --focus security,tests` → `/verify` build + chạy app |
+| `/clear` xóa hết kể cả CLAUDE.md | `/clear` chỉ xóa conversation, giữ CLAUDE.md + memory files. Muốn quên hẳn thì không `/resume` session đó | Clear xong task mới không lẫn chuyện cũ, nhưng rules CLAUDE.md vẫn còn — đó là đúng |
+| Không thấy lệnh = bug | 90% là version floor hoặc provider cắt feature (Bedrock/Vertex mất fast mode, web search, vài skills) | Checklist: `/status` → `claude --version` → đối chiếu floor → đối chiếu provider (bài 10) → gõ `/` xem list thực tế |
+| `/verify` + `/code-review` tự chạy sau mỗi task | Từ ≥2.1.215 cả hai chỉ chạy khi gọi tay (đỡ tốn token) | Muốn review/verify thì gọi tường minh, đừng chờ tự trigger |
+| Skill `user-invocable: false` là hỏng | Là cố ý: chỉ Claude tự gọi khi ngữ cảnh khớp, user gõ không thấy | Muốn gọi tay thì để `user-invocable: true` (mặc định); `false` cho skill nền (chi tiết bài 05) |
+
+## Bài tập thực hành
+
+**Bài 1 (10 phút) — Dropdown drill:**
+Trong session gõ `/`, chụp list lệnh ở máy bạn. Đối chiếu với 4 bảng index: lệnh nào có trong bài mà máy bạn không có? Check version floor + provider (mục dưới) và ghi lý do.
+
+**Bài 2 (15 phút) — Công thức 5 lệnh:**
+Trên 1 repo thật, chạy đủ `/init → /memory → /mcp → /agents → /permissions` + 1 task end-to-end nhỏ. Lưu output `/cost` + `/export`. Liệt kê 3 rules bạn đã đặt trong `/permissions`.
+
+**Bài 3 (15 phút) — Review 3 tầng:**
+Lấy 1 diff thật, chạy `/review` rồi `/code-review --focus security,tests` rồi `/verify`. So sánh 3 outputs: cái nào bắt được gì? Ghi 3 dòng kết luận "tầng nào đáng tiền nhất cho team mình?".
+
+**Bài 4 (10 phút) — Context drill:**
+Giao 1 task dài tới ~70% context, chạy `/context` → `/compact [focus]` → hỏi lại quyết định quan trọng còn nhớ không. Ghi % trước/sau + có mất gì không.
+
 ## Lưu ý version/provider (giữ nguyên)
 
 - Không thấy lệnh nào → check `/status` + plan/provider trước khi kết luận lệnh không tồn tại.
 - Version floor hay gặp: `/cd` ≥2.1.169, `/goal` ≥2.1.139, `/verify` ≥2.1.145, `/effort` ≥2.1.205, `/mcp` text-mode ≥2.1.205, `/verify`+`/code-review` không auto-trigger từ ≥2.1.215.
 - Provider cắt feature: `/design-sync`, `/radio` và một số bundled skills vắng mặt trên Bedrock/AWS Platform/GCP Agent Platform — gõ `/` để xem list thực tế ở máy bạn.
 - Checklist khi "lệnh không tồn tại": `/status` → `claude --version` → đối chiếu version floor → đối chiếu provider → gõ `/` xem list thực tế.
+
+```bash
+# Checklist copy-paste khi lệnh vắng mặt:
+/status            # xem model/account hiện tại
+claude --version   # xem version, đối chiếu floor ở trên
+# Rồi trong session gõ / (xem dropdown thực tế ở máy bạn)
+```
+
+> **Kỳ vọng / Verify:** `/status` hiện model + account; `claude --version` ra số ≥ floor của lệnh cần (ví dụ `/effort` cần ≥2.1.205). Gõ `/` thấy/không thấy lệnh — nếu không thấy mà version đủ → do provider cắt (bài 10), không phải bug.
+
+---
+
+## Link chéo
+
+- **Bài 00 — Tổng quan**: token economics (vì sao `/compact` khi 70-80%, `/clear` task mới).
+- **Bài 01 — Cài đặt**: `claude doctor` ngoài terminal vs `/doctor` trong session; version floor.
+- **Bài 02 — Surfaces**: `/ide /mobile /teleport /add-dir /web-setup /schedule` theo surface nào.
+- **Bài 03 — CLAUDE.md**: `/init /memory /rules /doctor` (trim), `@AGENTS.md` portability.
+- **Bài 05 — Skills**: `user-invocable`, `disable-model-invocation`, `fork` — khi nào skill thành slash.
+- **Bài 06 — Subagents**: `/agents /subtask /tasks /background /batch` — spawn và quản lý workers.
+- **Bài 10 — Permissions**: `/permissions` allow/ask/deny + availability theo plan/provider.
+- **Tra cứu chi tiết**: mỗi lệnh 1 file ở `commands/<nhóm>/<slug>/README.md` (ví dụ [plan](./commands/model-mode/plan/README.md), [compact](./commands/session-context/compact/README.md), [mcp](./commands/knowledge-system/mcp/README.md)).

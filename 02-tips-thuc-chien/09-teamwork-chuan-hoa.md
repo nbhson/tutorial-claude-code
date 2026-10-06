@@ -363,6 +363,79 @@ Tổng human meetings: 0. Async comments: ~5. Rewind: 0 (phase-gate bắt sớm)
 
 ---
 
+### 11.5. Thuật ngữ mới (nôm na + analogie + ví dụ + verify)
+
+| Thuật ngữ | Nôm na 1 câu | Analogie | Ví dụ kỹ thuật thật | Cách verify |
+|---|---|---|---|---|
+| Chuẩn hóa 3 lớp | Repo giống nhau + plugin đồng bộ + org khóa cái cấm. | Như đồng phục (repo) + vali đồ nghề chung (plugin) + nội quy trường (org policy). | `settings.json/.claude/.mcp.json` commit + `team-claude-standard` plugin + managed settings khóa bypass | Pull về máy mới chạy `/doctor` xanh, không `máy tao chạy được`. |
+| Plugin phân phối | Gói đồ nghề cài 1 phát cho ≥2 repo. | Như combo bếp: mua 1 thùng có đủ dao/thớt/gia vị cho mọi bếp. | `team-claude-standard/commands/agents/skills/hooks/.mcp.json` version `v1.4.0` | Teammate `/plugin` Browse audit rồi cài, mọi repo cùng bộ. |
+| Reviewer fresh bắt buộc | Mọi PR nontrivial phải qua mắt ngoài trước mắt trong. | Như kiểm toán: kế toán làm sổ, kiểm toán độc lập soi trước sếp ký. | Fresh subagent opus + human, `HIGH=0` mới merge | PR có `Review: fresh opus + @an, 1 HIGH fixed, /verify log`. |
+
+### 11.6. Mermaid: PR flow team 3 người
+
+```mermaid
+flowchart TD
+    A[An plan mode -> plan.md 3 phases] --> B[Bình implement worktree feat/refund từng phase]
+    B --> C[Tester haiku focused test xanh?]
+    C -->|Đỏ| B
+    C -->|Xanh| D["/diff tự đọc + reviewer opus fresh"]
+    D --> E{HIGH=0?}
+    E -->|Còn| F[Fix HIGH + re-review]
+    E -->|Hết| G["Chi /verify chạy thật + demo log"]
+    G --> H[An human 10p + squash merge + remove worktree]
+    H --> I[Routine sync docs + changelog]
+```
+
+Giải thích:
+
+1. **A→B:** senior plan async, commit plan, không họp.
+2. **B→C:** mỗi phase 1 session fresh + tester haiku.
+3. **C→D:** tự đọc diff bắt lỗi hiển nhiên trước khi nhờ review.
+4. **D→F:** reviewer fresh SEVERITY + verdict; HIGH fix hết.
+5. **G→I:** QA chạy thật, human chốt nhanh, routine sync docs.
+
+### 11.7. Bảng so sánh có cột Hiểu nôm na + Ví dụ
+
+| Cách | Hiểu nôm na | Ví dụ |
+|---|---|---|
+| Copy dotfiles | Photo tài liệu chuyền tay, mỗi bản 1 kiểu | Skills `/deploy` 3 bản khác nhau → deploy 3 kiểu |
+| Plugin | Phát sách giáo khoa cả trường học 1 bản | `/plugin` cài `team-claude-standard v1.4.0` + changelog |
+| Không chuẩn | Mỗi nhà nấu 1 vị, cãi nhau nhà ai đúng | A 50 dòng CLAUDE.md, B 600 dòng → cùng prompt khác output |
+
+**Kỳ vọng thấy gì:**
+
+```bash
+git ls-files | grep -E 'settings|CLAUDE|mcp|hooks'
+/doctor
+```
+
+> Kỳ vọng thấy gì: `settings.json/.claude/hooks/*.sh/.mcp.json/CLAUDE.md` đều tracked; `/doctor` không báo lệch setup giữa 2 máy. Thiếu file chuẩn là chưa commit.
+
+### 11.8. Before/After
+
+**Before:** `Mỗi máy 1 config, hook chỉ máy A, token hardcode, PR tự review` → Kết quả dở: máy B push main sập prod, deploy 3 kiểu, HIGH lọt.
+
+**After:**
+
+```bash
+/plan
+# implement từng phase fresh + tester haiku
+/diff
+# reviewer fresh opus + fix HIGH
+/verify
+/ship
+```
+
+> Kết quả tốt + Kỳ vọng: checklist PR 7 ticks (plan/test/diff/HIGH=0/verify/changelog/worktree removed) + human review <15p + merge 0 meeting.
+
+### 11.9. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật |
+|---|---|
+| Commit secret cho tiện pull là chạy | Token vào history là lộ; env vars + prompt hook check secret |
+| PR 50 files review 1 lượt cho nhanh | Không ai review kỹ được; chia PR nhỏ, PR lớn dùng `/ultrareview` |
+| Pin model cứng mọi task là chuẩn | Task nhỏ cũng opus là bill vọt; route theo việc, pin chỉ CI |
+
 ## 12. Tham khảo chéo
 
 - Lệnh team/plugin/review:

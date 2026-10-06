@@ -14,8 +14,44 @@
 6. [Import & tách nhỏ](#6-import--tách-nhỏ-đừng-phình-file)
 7. [Auto-memory + /memory deep-dive](#7-auto-memory-claude-tự-học--memory)
 8. [Walkthrough step-by-step](#8-walkthrough-step-by-step-viết-claudemd-từ-0)
-9. [Anti-patterns + pitfalls + bài tập](#9-anti-patterns--pitfalls)
-10. [Link chéo](#10-link-chéo)
+9. [Bảng thuật ngữ](#9-bảng-thuật-ngữ)
+10. [Hiểu nhầm thường gặp](#10-hiểu-nhầm-thường-gặp)
+11. [Anti-patterns + pitfalls + bài tập](#11-anti-patterns--pitfalls--bài-tập)
+12. [Link chéo](#12-link-chéo)
+
+### Khái niệm mở đầu (đọc 2 phút, nhớ cả bài)
+
+- **CLAUDE.md là gì?** 1 câu: tờ dặn dò dán trên tủ lạnh, Claude đọc đầu mỗi session và nhớ suốt.
+  - Ví dụ đời thường: như nội quy nhà dán cửa — ai vào cũng đọc: "đi giày để ngoài, mèo ăn lúc 7h".
+  - Ví dụ copy-paste: tạo `./CLAUDE.md` với 1 dòng `ALWAYS chạy pnpm --filter @acme/api test sau khi sửa apps/api/`, mở session mới hỏi `rules mày đang nhớ là gì?`.
+- **`.claude/rules/*.md` là gì?** 1 câu: nội quy từng phòng, chỉ áp dụng khi bước vào phòng đó.
+  - Ví dụ đời thường: như bảng "phòng bếp: rửa tay trước khi nấu" — không vào bếp thì không cần đọc.
+  - Ví dụ copy-paste: tạo `.claude/rules/api.md` với frontmatter `paths: ["apps/api/**"]` + dòng `Mọi route mới phải có zod schema + test 401/422`.
+- **`settings.json` là gì?** 1 câu: ổ khóa cửa — quyết định cái gì được chạy luôn, cái gì phải hỏi, cái gì cấm.
+  - Ví dụ đời thường: như remote cổng chung cư: shipper quen (Read) cho lên, khách lạ (Edit) gọi hỏi, trộm (rm -rf) cấm.
+  - Ví dụ copy-paste: trong `.claude/settings.json` đặt `"permissions": { "allow": ["Bash(pnpm test:*)"], "deny": ["Bash(rm -rf:*)"] }`, kiểm tra bằng `/permissions`.
+
+```mermaid
+flowchart LR
+    A[Bạn viết 3 loại config] --> B[CLAUDE.md<br/>gốc repo: dặn dò chung<br/>VD: pnpm, test focused]
+    A --> C[.claude/rules/*.md<br/>theo phòng: paths frontmatter<br/>VD: chỉ apps/api]
+    A --> D[settings.json<br/>ổ khóa: allow/ask/deny<br/>VD: deny rm -rf]
+    B --> E[Load đầu session<br/>giữ suốt, nạp lại mỗi turn]
+    C --> F[Lazy-load khi chạm path đó<br/>sửa mobile không đọc api rules]
+    D --> G[Harness enforce<br/>model muốn lách cũng không được]
+    E --> H[Session chạy đúng ý team]
+    F --> H
+    G --> H
+```
+
+Giải thích từng bước:
+
+- **A — Bạn viết 3 loại:** đừng nhét tất cả vào 1 file. Dặn chung → CLAUDE.md; dặn từng phòng → rules; khóa cửa → settings.json.
+- **B — CLAUDE.md gốc repo:** nằm ở `./CLAUDE.md`, commit git. Load vô điều kiện mỗi session. Giữ <200 dòng.
+- **C — rules theo path:** nằm ở `.claude/rules/*.md`, có `paths: [...]`. Chỉ load khi task chạm path đó → rẻ token.
+- **D — settings.json:** nằm ở `.claude/settings.json` (team) + `.claude/settings.local.json` (personal). Harness đọc để cho/hỏi/cấm tools.
+- **E/F/G — 3 cơ chế load khác nhau:** CLAUDE.md = luôn nhớ; rules = nhớ khi cần; settings = luật cấm (0 token, enforce thật).
+- **H — Kết quả:** session nào cũng đúng lệnh test, đúng style từng folder, không chạy lệnh cấm.
 
 ---
 
@@ -76,6 +112,25 @@ system < personal (~/.claude/) < project (./CLAUDE.md) < nested (subdirs) < rule
 wc -l CLAUDE.md .claude/CLAUDE.md ~/.claude/CLAUDE.md 2>/dev/null
 # Mục tiêu: project file <200 dòng.
 ```
+
+> **Kỳ vọng / Verify:** `/memory` liệt kê được từng file đang load (personal/project/nested). `wc -l` in số dòng mỗi file — project file phải <200. Thấy rule trùng 2 nơi → xóa 1 rồi chạy `/doctor` xác nhận hết báo dedupe.
+
+### 2.2. Phân biệt rõ: CLAUDE.md vs .claude/rules vs settings.json (đọc kỹ — hay nhầm nhất)
+
+| Loại | Nằm ở đâu | Ví dụ nội dung 1 dòng | Khi nào dùng |
+|---|---|---|---|
+| **CLAUDE.md (gốc repo)** | `./CLAUDE.md` hoặc `./.claude/CLAUDE.md`, commit git | `ALWAYS chạy pnpm --filter @acme/api test sau khi sửa apps/api/` | Dặn chung mọi task: lệnh build/test/lint, kiến trúc, style toàn repo. Load luôn → giữ <200 dòng |
+| **`.claude/rules/*.md` (theo path)** | `.claude/rules/api.md`, `.claude/rules/db.md`..., commit git, có `paths:` frontmatter | `paths: ["apps/api/**"]` + `Mọi route mới phải có zod schema + test 401/422` | Dặn riêng từng phòng: chỉ load khi task chạm path đó. Sửa mobile không tốn token đọc api rules |
+| **`settings.json` (ổ khóa quyền)** | `.claude/settings.json` (team, commit) + `.claude/settings.local.json` (personal, không commit) + `~/.claude/settings.json` | `"deny": ["Bash(rm -rf:*)", "Write(.env*)"]` | Khóa allow/ask/deny cho tools. Harness enforce (model muốn lách cũng không được). Xem bằng `/permissions` |
+
+```bash
+# Tạo 3 loại trong 1 phút (copy-paste khung):
+ls CLAUDE.md .claude/rules/ .claude/settings.json 2>/dev/null
+# Kỳ vọng: thấy cả 3. Thiếu cái nào → tạo theo mẫu mục 3 (CLAUDE.md),
+# mục 4 (rules), bài 10 (settings.json).
+```
+
+> **Kỳ vọng / Verify:** `ls` thấy cả 3 paths. Mở `/memory` thấy CLAUDE.md + rules entries; mở `/permissions` thấy allow/ask/deny từ settings.json; mở `/rules` thấy list rules theo path. Ba lệnh ba góc nhìn khác nhau — không thay thế nhau.
 
 ---
 
@@ -297,6 +352,8 @@ Option 3 — Song sinh (tránh):
 - Never commit to main; migrations in `db/migrations/`, one per PR
 ```
 
+> **Kỳ vọng / Verify:** file `AGENTS.md` ở repo root, tool khác (Cursor/Copilot) mở repo cũng đọc được. Không copy nguyên sang CLAUDE.md — CLAUDE.md chỉ trỏ sang (mẫu dưới).
+
 ```markdown
 # File: CLAUDE.md (repo root, commit — ngắn!)
 # Claude-specific pointer + extras
@@ -315,6 +372,8 @@ wc -l AGENTS.md CLAUDE.md   # AGENTS.md chi tiết, CLAUDE.md <30 dòng là đ�
 # Hỏi Claude: "liệt kê rules mày load từ AGENTS.md + CLAUDE.md + .claude/rules/"
 ```
 
+> **Kỳ vọng / Verify:** `wc -l` cho thấy AGENTS.md dài (chi tiết), CLAUDE.md <30 dòng (chỉ trỏ + notes riêng). Hỏi Claude liệt kê rules → nó kể được cả 3 nguồn, không báo "không thấy file".
+
 ---
 
 ## 6. Import & tách nhỏ (đừng phình file)
@@ -323,6 +382,8 @@ wc -l AGENTS.md CLAUDE.md   # AGENTS.md chi tiết, CLAUDE.md <30 dòng là đ�
 @import path/to/architecture.md
 @docs/conventions.md
 ```
+
+> **Kỳ vọng / Verify:** `@path` là trỏ (lazy-load khi cần), không phải copy. Sửa `docs/architecture.md` 1 nơi, mọi session sau thấy ngay. Hỏi Claude `rules mày load từ import nào?` → nó kể được tên file đã import.
 
 - Dùng `@path` để import file khác (Claude đọc lazy khi cần). Khác với copy-paste: source 1 nơi,
   sửa 1 nơi.
@@ -339,6 +400,8 @@ wc -l AGENTS.md CLAUDE.md   # AGENTS.md chi tiết, CLAUDE.md <30 dòng là đ�
 @docs/api-conventions.md
 @docs/db-migrations.md
 ```
+
+> **Kỳ vọng / Verify:** root CLAUDE.md <60 dòng (chỉ commands + rules nóng). Chi tiết nằm ở `docs/*.md`. `wc -l CLAUDE.md` phải <60 sau khi tách.
 
 ```bash
 # Cấu trúc file khuyến nghị cho repo vừa (copy-paste khung):
@@ -441,9 +504,33 @@ wc -l CLAUDE.md   # phải <200, lý tưởng <100
 
 ---
 
-## 9. Anti-patterns + pitfalls
+## 9. Bảng thuật ngữ
 
-### 9.1. Anti-patterns (lỗi phổ biến người Việt hay mắc)
+| Thuật ngữ | Là gì (hiểu nôm na) | Ví dụ cụ thể | Khi nào dùng |
+|---|---|---|---|
+| CLAUDE.md (gốc repo) | Tờ dặn dò dán tủ lạnh, đọc mỗi session | `./CLAUDE.md`: `ALWAYS chạy pnpm --filter @acme/api test sau khi sửa` | Dặn chung team, mọi task. Giữ <200 dòng, commit git |
+| Nested CLAUDE.md | Giấy note dán từng phòng | `apps/mobile/CLAUDE.md` chỉ đọc khi sửa mobile | Repo lớn, mỗi subtree 1 conventions riêng |
+| `.claude/rules/*.md` | Nội quy từng phòng, có chìa khóa paths | `paths: ["apps/api/**"]` + `route mới phải có zod + test 401` | Quy ước chỉ đúng 1 folder. Xem bằng `/rules` |
+| `settings.json` | Ổ khóa cửa: allow/ask/deny | `"deny": ["Bash(rm -rf:*)"]` trong `.claude/settings.json` | Khóa quyền tools. Xem merged bằng `/permissions` |
+| Import `@path` | Trỏ tới tờ khác thay vì photo copy | `@docs/architecture.md` trong CLAUDE.md root | Root >100 dòng → tách, giữ root <60 dòng |
+| AGENTS.md | Nội quy chung cho mọi hãng agent | `AGENTS.md` chi tiết + `CLAUDE.md` 10 dòng trỏ sang | Team dùng nhiều tools (Claude + Cursor + Copilot) |
+| Auto-memory | Claude tự ghi nhớ sau mỗi task | Entry `repo dùng pnpm, không dùng npm` tự save | Solo dev bật; team có file chuẩn thì tắt project-scope |
+| `/memory` | Sổ xem/sửa trí nhớ | `/memory` → tab Entries xóa learning sai | Dọn 2 tuần/lần, sau đổi toolchain |
+
+## 10. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật | Ví dụ sửa |
+|---|---|---|
+| CLAUDE.md càng dài càng tốt | Mỗi dòng tốn tiền N lần (mỗi turn nạp lại). 600 dòng ≈ 10k tokens × 10 turns = 100k tokens | `wc -l CLAUDE.md` >200 → cắt layout/dependency list, chuyển checklist thành skill (mục 8 Bước 2) |
+| Nhét mọi thứ vào CLAUDE.md root cho chắc | Rules path-scoped vào `rules/`, checklist dài thành skill, luật cấm thành hook/settings | API rules chỉ đúng `apps/api/` → `.claude/rules/api.md`; deploy 20 bước → skill `/deploy`; "không push main" hay bị lờ → hook |
+| `rules/` và `settings.json` là một | Rules = dặn dò (advisory, tốn token khi load); settings = ổ khóa (enforce, 0 token) | "Route phải có test" → rules; "cấm rm -rf" → settings deny + hook |
+| AGENTS.md + CLAUDE.md copy nhau cho chắc | Drift sau 2 tuần thành 2 sự thật mâu thuẫn | Chọn Option 1: AGENTS.md chính, CLAUDE.md `@AGENTS.md` + 10 dòng riêng (mục 5.2) |
+| Auto-memory bật là xong, khỏi viết file | Memory mỗi máy drift khác nhau; committed file mới là truth team | Team 3+ người → tắt project-scope memory, giữ rules trong git (bảng mục 7.2) |
+| Ghi "Write clean code" là đủ | Vague = rác; phải cụ thể + check được | Viết `API errors dùng {code,message,requestId}` thay vì `clean code` |
+
+## 11. Anti-patterns + pitfalls
+
+### 11.1. Anti-patterns (lỗi phổ biến người Việt hay mắc)
 
 | Sai | Đúng | Vì sao |
 |---|---|---|
@@ -455,7 +542,7 @@ wc -l CLAUDE.md   # phải <200, lý tưởng <100
 | Viết "Write clean code" | Viết "API errors dùng `{code,message,requestId}`" | Vague = rác; cụ thể + check được = vàng |
 | 2 files AGENTS.md + CLAUDE.md copy nhau | 1 source of truth + file kia trỏ sang | Drift sau 2 tuần, 2 truths mâu thuẫn |
 
-### 9.2. Checklist CLAUDE.md khỏe (paste vào PR review)
+### 11.2. Checklist CLAUDE.md khỏe (paste vào PR review)
 
 - [ ] <200 dòng (`wc -l`).
 - [ ] Mọi command đã chạy thử (verified, có ngày verify nếu toolchain hay đổi).
@@ -466,7 +553,7 @@ wc -l CLAUDE.md   # phải <200, lý tưởng <100
 - [ ] Rule hay bị miss đã nâng thành hook.
 - [ ] `/doctor` không báo dedupe/trim.
 
-### 9.3. Bài tập thực hành
+### 11.3. Bài tập thực hành
 
 **Bài 1 (15 phút):** Chạy `/init` (hoặc `CLAUDE_CODE_NEW_INIT=1 /init`), đọc file sinh ra, xóa 50%
 theo checklist bước 2 (mục 8). Đếm dòng trước/sau.
@@ -485,7 +572,7 @@ bằng 1 tool khác (Cursor/Copilot) kiểm tra nó đọc được AGENTS.md kh
 
 ---
 
-## 10. Link chéo
+## 12. Link chéo
 
 - **Bài 00 — Tổng quan**: token economics (vì sao <200 dòng), bảng chọn CLAUDE.md/skill/hook.
 - **Bài 01 — Cài đặt**: `/init`, `/memory`, `CLAUDE_CODE_NEW_INIT=1`, `..._ADDITIONAL_DIRECTORIES_CLAUDE_MD`.

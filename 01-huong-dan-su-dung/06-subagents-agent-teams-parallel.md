@@ -18,6 +18,35 @@
 
 ## 1. Vì sao cần subagent? (1 câu)
 
+**Nôm na 1 câu:** Subagent là *đệ tử đi chợ hộ* — việc đọc nhiều ồn nhiều (50 files, 2000 dòng log) thì sai đệ đi, bạn ở nhà chỉ nhận tờ giấy tóm tắt 10 dòng.
+
+**Analogie đời thường:** như thuê 3 thực tập sinh mỗi đứa đọc 1 chồng hồ sơ rồi báo cáo 15 dòng/đứa. Bạn không đọc 3 chồng hồ sơ, chỉ đọc 45 dòng tổng hợp — main thread sạch để quyết định.
+
+**Ví dụ kỹ thuật copy-paste (gọi nhanh không cần file):**
+
+```text
+"dùng subagent explorer tìm mọi file liên quan tới POST /login rate-limit, trả summary ≤30 dòng"
+# Verify: main chỉ nhận summary gọn (files sẽ sửa + files tham khảo + rủi ro).
+# Kỳ vọng: transcript ồn (đọc 20-50 files) ở lại bên subagent, main không pollute.
+```
+
+> **Ai dùng lúc nào:** khi task phụ đọc nhiều/ồn nhiều/không cần nhớ lâu (research module, review fresh-context, chạy test, đọc log CI). Task 1-2 bước thì làm trực tiếp (đỡ overhead ~20k tokens).
+
+```mermaid
+flowchart TD
+  M[Main agent<br/>giữ history sạch] -->|spawn + prompt hẹp + tools riêng| S1[Explorer<br/>read-only]
+  M --> S2[Tester<br/>haiku rẻ]
+  M --> S3[Reviewer<br/>opus sâu]
+  S1 -->|trả summary 15-30 dòng| M
+  S2 -->|PASS/FAIL + guess| M
+  S3 -->|10 findings max| M
+```
+
+**Giải thích từng bước:**
+1. **Main spawn:** kèm system prompt riêng + tool allowlist riêng + permissions riêng (mỗi subagent 1 context window riêng).
+2. **Worker chạy cô lập:** đọc ồn bao nhiêu cũng không pollute main. Route việc dễ sang Haiku (tester), việc khó sang Opus (reviewer).
+3. **Trả summary:** transcript ồn ở lại, main chỉ nhận tóm tắt → còn chỗ implement. Giá ~20k overhead/lần spawn nên task <10k tokens thì đừng spawn.
+
 > Task phụ **đọc nhiều, ồn nhiều, không cần nhớ lâu** → ném sang subagent để main thread sạch.
 
 Mỗi subagent: context window riêng + system prompt riêng + tool allowlist riêng + permissions riêng.
@@ -378,6 +407,16 @@ Copy mục 3 vào `.claude/agents/`. Chạy `/agents` → Library phải thấy 
 | Agent sửa lung tung ngoài scope | Allowlist quá rộng | `disallowedTools: Write, Edit` cho read-only agents |
 | Subagent spawn subagent vô hạn | Không giới hạn depth | Dặn "không spawn tiếp, tự làm"; trần depth mặc định 3, tắt về 1 bằng `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1`; kill switch Ctrl+X Ctrl+K |
 | Plugin agent hooks không chạy | Bị bỏ qua theo thiết kế | Copy ra `.claude/agents/` nếu cần hooks |
+
+### 6.2b. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật | Ai cần nhớ |
+|---|---|---|
+| "Subagent nhớ mọi thứ main biết" | Mỗi subagent 1 context riêng; fork skill còn cô lập hẳn history. Muốn nó biết gì phải ghi rõ trong prompt giao việc. | Người mới delegate |
+| "Càng nhiều agents càng nhanh" | Overhead ~20k/spawn, multi-agent tốn 3–4x single-thread. Trần 3–5 concurrent, quá là main gom không nổi + bill nổ. | Mọi dev |
+| "Agent Teams bật mặc định" | Experimental, tắt mặc định — bật bằng `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` (≥2.1.32). | Người thử teams |
+| "Bash tool là 1 agent" | Bash = 1 shell non-blocking, không phải agent. Forked subagent = cách spawn kế thừa full conversation. | Người mới |
+| "Việc gì cũng nên spawn" | "Làm theo chuẩn X" → Skill; hỏi nhanh → `/btw`; đọc 1 file → trực tiếp. Chỉ spawn khi ồn và cần cô lập. | Mọi dev |
 
 ### 6.3. Bài tập thực hành
 

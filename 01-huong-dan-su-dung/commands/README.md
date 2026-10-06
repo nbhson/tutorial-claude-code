@@ -1,7 +1,9 @@
 # Index 78 Lệnh Claude Code (theo nhóm)
 
-Mỗi lệnh có 1 folder riêng với tài liệu 8 mục: cú pháp, cách hoạt động, ví dụ, rủi ro, workflow, lỗi hay gặp.
-Tra cứu: `commands/<nhóm>/<lệnh>/` — ví dụ `commands/model-mode/plan/`.
+> Cách tra cứu 10 giây: biết tên lệnh → `Ctrl+F` tìm `/tên` trong file này → mở `commands/<nhóm>/<lệnh>/`.
+> Chưa biết tên → đọc 5 dòng mô tả nhóm bên dưới → vào group README → chọn lệnh.
+> Mỗi lệnh 1 file ~60 dòng theo format 7 mục: nói nôm na → khi nào dùng → cách gọi → ví dụ thật + verify → lỗi hay gặp → tham khảo.
+> Trong session gõ `/` để xem lệnh nào hiện ở môi trường của bạn (version/provider khác nhau hiện khác nhau).
 
 ## Phiên làm việc & Context (18 lệnh) — `session-context/`
 

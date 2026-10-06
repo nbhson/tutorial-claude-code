@@ -473,6 +473,80 @@ Kết quả: 5–6 sessions gọn (<50% context mỗi cái) thay vì 1 session 9
 
 ---
 
+### 11.5. Thuật ngữ mới (nôm na + analogie + ví dụ + verify)
+
+| Thuật ngữ | Nôm na 1 câu | Analogie | Ví dụ kỹ thuật thật | Cách verify |
+|---|---|---|---|---|
+| Context window | RAM làm việc của model, đầy thì dở. | Như bàn làm việc: bày 200 tờ thì không thấy tờ quan trọng. | Session 140K tokens sau 90 phút lan man | `/context` hiện 70%+ → `/compact` hoặc `/clear`. |
+| Auto-compact | Model tự tóm tắt khi đầy 80-90%, hay mất ý quan trọng. | Như dọn bàn lúc đang họp: vứt luôn tài liệu cần. | Mất plan/decisions sau auto-compact | Compact tay có focus trước khi chạm 80%. |
+| `/btw` | Hỏi phụ không lưu history, không tốn tools. | Như hỏi thầm bên lề, không ghi biên bản. | `/btw hàm retryWithBackoff làm gì, 3 dòng?` | History không dài thêm; `/context` không tăng. |
+
+### 11.6. Mermaid: vòng đời context sạch
+
+```mermaid
+flowchart TD
+    A[Session 0%] --> B[Làm việc + /context mỗi 30p]
+    B --> C{>70%?}
+    C -->|Không| B
+    C -->|Có, cùng task| D["/compact giữ plan/decisions, bỏ log"]
+    C -->|Có, khác task| E["/export + /clear + nạp plan gọn"]
+    D --> F{>60% sau compact?}
+    F -->|Có| E
+    F -->|Không| B
+```
+
+Giải thích từng bước:
+
+1. **A→B:** bắt đầu sạch, `/context` định kỳ.
+2. **B→C:** chạm 70% đèn vàng, không đợi 90%.
+3. **C→D:** cùng task → compact có focus.
+4. **C→E:** khác task → export decisions ra file rồi clear.
+5. **F→E:** compact xong vẫn nặng → clear luôn.
+
+### 11.7. Bảng so sánh có cột Hiểu nôm na + Ví dụ
+
+| Cách | Hiểu nôm na | Ví dụ |
+|---|---|---|
+| `/clear` | Dọn bàn trắng, giữ đồ trong tủ (file) | Xong bug CSS → `/clear` rồi đọc `payment-spec.md` làm tiếp |
+| `/compact` | Gấp gọn giấy tờ, giữ giấy quan trọng | `/compact Giữ decisions 1-5, bỏ log test` |
+| Subagent explore | Nhờ trợ lý đọc hộ, chỉ báo tóm tắt | Subagent đọc `src/auth/` trả 10 bullet, main chỉ nhận 1.5K tokens |
+
+**Kỳ vọng thấy gì:**
+
+```bash
+/context
+/compact Giữ plan.md + decisions 1-5, bỏ log test cũ.
+/context
+```
+
+> Kỳ vọng thấy gì: lần 1 hiện ~70%+, lần 2 còn <40% + decisions vẫn còn. Nếu mất decisions là compact không focus.
+
+### 11.8. Before/After (prompt dở vs tốt)
+
+**Before (dở):**
+
+```text
+"investigate auth"
+```
+
+> Kết quả dở: đọc 300 files, 30K tokens, trả lời lan man, quên rule CLAUDE.md.
+
+**After (tốt):**
+
+```text
+"Chỉ explore src/auth/login*.ts, trả 5 files liên quan nhất + flow 5 bullet + file:line. Không đọc legacy/, không dump log."
+```
+
+> Kết quả tốt + Kỳ vọng: 5 files + 5 bullet + file:line, main chỉ nhận ~1.5K tokens, đủ viết plan tiếp.
+
+### 11.9. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật |
+|---|---|
+| Nuôi 1 conversation 200 turns cho tiện | Rác turn 10 gánh tới turn 200; 1 task 1 session rẻ hơn 95% |
+| Compact không focus cũng được | Auto-compact giữ vụn bỏ lõi; phải compact tay + decisions đã lưu file |
+| Reviewer = writer cho nhanh | Tự chấm luôn PASS mù; phải reviewer fresh chưa thấy reasoning |
+
 ## 12. Tham khảo chéo
 
 - Lệnh session & context:

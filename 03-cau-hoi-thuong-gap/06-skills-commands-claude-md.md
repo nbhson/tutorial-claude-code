@@ -6,10 +6,23 @@ Mỗi câu có giải thích + config/lệnh copy-paste + ví dụ + khi nào á
 
 ---
 
+## Sơ đồ nhanh (nhìn 30 giây là nhớ)
+
+```mermaid
+flowchart TD
+  A[CLAUDE.md<br/>luật gợi ý] --> S[Skill<br/>procedure gọi khi cần]
+  S --> C[Slash command<br/>phím tắt /...]
+  C --> H[Hook<br/>luật cứng bắt buộc]
+  A -.->|hay bị quên 2 lần| H
+```
+
 ## Bảng tổng hợp: CLAUDE.md vs rules vs skills vs commands vs hooks
 
 | Nơi | Load khi nào | Tốn bao nhiêu | Chứa gì |
-|---|---|---|---|
+|---
+
+
+|---|---|---|
 | CLAUDE.md (<200 dòng) | Mọi turn | Đắt nhất (trả mãi mãi) | Always-on facts: stack, lệnh, cấu trúc, quy ước bất di bất dịch |
 | `.claude/rules/` + `paths` | Khi chạm path khớp | Rẻ (chỉ khi cần) | Luật theo thư mục (`api/**`, `web/**`) |
 | Skills (auto-trigger) | Khi description khớp task | ~100 tokens idle, body khi gọi | Procedures/reference dài |
@@ -22,8 +35,12 @@ Quy tắc 1 dòng: **facts → CLAUDE.md, path hẹp → rules, procedures → s
 ---
 
 ## 1. Custom command vs skill — nay là một?
+> **Hỏi ngắn gọn:** Custom command vs skill — nay là một?
+>
+> **Trả lời 1 câu:** Đúng: `.claude/commands/x.md` ≡ `.claude/skills/x/SKILL.md` → cùng ra `/x`.
 
-**Giải thích.** Đúng: `.claude/commands/x.md` ≡ `.claude/skills/x/SKILL.md` → cùng ra `/x`. File commands cũ vẫn chạy (không vỡ), nhưng viết mới thì viết **skills** vì skills thêm được: frontmatter giàu, support files (scripts/references), **auto-trigger** (model tự gọi khi description khớp, không cần bạn gõ).
+
+**Giải thích chi tiết + ví dụ:** Đúng: `.claude/commands/x.md` ≡ `.claude/skills/x/SKILL.md` → cùng ra `/x`. File commands cũ vẫn chạy (không vỡ), nhưng viết mới thì viết **skills** vì skills thêm được: frontmatter giàu, support files (scripts/references), **auto-trigger** (model tự gọi khi description khớp, không cần bạn gõ).
 
 ```text
 .claude/commands/deploy.md       → /deploy (gọi tay, cũ, vẫn chạy)
@@ -34,9 +51,14 @@ Quy tắc 1 dòng: **facts → CLAUDE.md, path hẹp → rules, procedures → s
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 2. Skill đặt ở đâu? (3 vị trí: personal / project / plugin)
+> **Hỏi ngắn gọn:** Skill đặt ở đâu? (3 vị trí: personal / project / plugin)
+>
+> **Trả lời 1 câu:** 3 vị trí, scope khác nhau:
 
-**Giải thích.** 3 vị trí, scope khác nhau:
+
+**Giải thích chi tiết + ví dụ:** 3 vị trí, scope khác nhau:
 
 | Vị trí | Đường dẫn | Ai thấy | Dùng khi nào |
 |---|---|---|---|
@@ -55,9 +77,14 @@ ls .claude/skills/
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 3. Frontmatter skill gồm gì? (full table)
+> **Hỏi ngắn gọn:** Frontmatter skill gồm gì? (full table)
+>
+> **Trả lời 1 câu:** Frontmatter là "mặt tiền" model đọc để quyết định gọi.
 
-**Giải thích.** Frontmatter là "mặt tiền" model đọc để quyết định gọi. Full bảng:
+
+**Giải thích chi tiết + ví dụ:** Frontmatter là "mặt tiền" model đọc để quyết định gọi. Full bảng:
 
 | Field | Ý nghĩa | Ví dụ |
 |---|---|---|
@@ -87,9 +114,14 @@ allowed-tools: Bash(npm run deploy:*), Bash(npm run migrate:*), Read
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 4. `$ARGUMENTS`, `!cmd` (dynamic inject), `${VARS} dùng sao?
+> **Hỏi ngắn gọn:** `$ARGUMENTS`, `!cmd` (dynamic inject), `${VARS} dùng sao?
+>
+> **Trả lời 1 câu:** 3 cơ chế đưa input động vào skill:
 
-**Giải thích.** 3 cơ chế đưa input động vào skill:
+
+**Giải thích chi tiết + ví dụ:** 3 cơ chế đưa input động vào skill:
 
 - **`$ARGUMENTS`:** input khi gọi (`/deploy staging` → `$ARGUMENTS` = `staging`).
 - **`` !`cmd` ``:** chạy shell TRƯỚC, thay output thật vào prompt (dynamic inject). VD: nhét `git status` hiện tại vào.
@@ -117,9 +149,14 @@ Script: ${CLAUDE_SKILL_DIR}/scripts/smoke.sh
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 5. Skill không auto-trigger — debug sao? (description / disable / overrides)
+> **Hỏi ngắn gọn:** Skill không auto-trigger — debug sao? (description / disable / overrides)
+>
+> **Trả lời 1 câu:** 3 nguyên nhân theo thứ tự:
 
-**Giải thích.** 3 nguyên nhân theo thứ tự:
+
+**Giải thích chi tiết + ví dụ:** 3 nguyên nhân theo thứ tự:
 
 1. **`description`/`when_to_use` không khớp cách bạn diễn đạt:** model match theo ngữ nghĩa. Bạn nói "lên hàng staging" mà description ghi "production release orchestration" → không khớp.
 2. **`disable-model-invocation: true`:** bạn (hoặc ai đó) chặn model tự gọi → chỉ gọi tay được.
@@ -149,9 +186,14 @@ git grep -n 'skillOverrides' -- .claude/settings*.json
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 6. Bundled skills nào đáng dùng? (list + khi nào)
+> **Hỏi ngắn gọn:** Bundled skills nào đáng dùng? (list + khi nào)
+>
+> **Trả lời 1 câu:** Skills đi kèm (bundled), khỏi cài:
 
-**Giải thích.** Skills đi kèm (bundled), khỏi cài:
+
+**Giải thích chi tiết + ví dụ:** Skills đi kèm (bundled), khỏi cài:
 
 | Skill | Việc | Khi nào gọi |
 |---|---|---|
@@ -176,9 +218,14 @@ git grep -n 'skillOverrides' -- .claude/settings*.json
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 7. CLAUDE.md vs skill — ranh giới ở đâu? (<200 dòng)
+> **Hỏi ngắn gọn:** CLAUDE.md vs skill — ranh giới ở đâu? (<200 dòng)
+>
+> **Trả lời 1 câu:** CLAUDE.md load mọi turn → chỉ giữ always-on facts (<200 dòng).
 
-**Giải thích.** CLAUDE.md load mọi turn → chỉ giữ always-on facts (<200 dòng). Còn lại:
+
+**Giải thích chi tiết + ví dụ:** CLAUDE.md load mọi turn → chỉ giữ always-on facts (<200 dòng). Còn lại:
 
 - Procedures dài, reference, checklist → **skill** (load khi cần).
 - Luật chỉ đúng cho 1 thư mục → **`.claude/rules/` + `paths`** (VD: `api/**` dùng ESM, `migrations/**` không sửa tay).
@@ -197,9 +244,14 @@ wc -l CLAUDE.md
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 8. `/init` vs viết tay CLAUDE.md? (có code → init, trống → template)
+> **Hỏi ngắn gọn:** `/init` vs viết tay CLAUDE.md? (có code → init, trống → template)
+>
+> **Trả lời 1 câu:** - **Có sẵn codebase → `/init`:** quét code thật, sinh CLAUDE.md từ thực tế.
 
-**Giải thích.**
+
+**Giải thích chi tiết + ví dụ:**
 
 - **Có sẵn codebase → `/init`:** quét code thật, sinh CLAUDE.md từ thực tế. Thử `CLAUDE_CODE_NEW_INIT=1` cho flow interactive (hỏi từng phần). Xong → **xóa 50%** (nó sinh thừa) + thêm verified commands (lệnh đã chạy thật).
 - **Project mới (trống) → template:** copy `templates/CLAUDE.md` rồi sửa (xem FAQ 01 câu 9). Không có gì để init quét.
@@ -217,9 +269,14 @@ cp templates/CLAUDE.md ./CLAUDE.md
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 9. `context: fork` là gì? (skill chạy cô lập, khi nào dùng)
+> **Hỏi ngắn gọn:** `context: fork` là gì? (skill chạy cô lập, khi nào dùng)
+>
+> **Trả lời 1 câu:** Skill `context: fork` chạy trong subagent cô lập — không thấy history main.
 
-**Giải thích.** Skill `context: fork` chạy trong subagent cô lập — không thấy history main. Agent `Explore`/`Plan` khi fork còn skip CLAUDE.md + git status để gọn. Hợp cho skill research ồn (quét 50 files, chỉ trả tóm tắt). Không hợp cho skill cần history (VD: tiếp tục implement đang dở).
+
+**Giải thích chi tiết + ví dụ:** Skill `context: fork` chạy trong subagent cô lập — không thấy history main. Agent `Explore`/`Plan` khi fork còn skip CLAUDE.md + git status để gọn. Hợp cho skill research ồn (quét 50 files, chỉ trả tóm tắt). Không hợp cho skill cần history (VD: tiếp tục implement đang dở).
 
 ```markdown
 ---
@@ -235,9 +292,14 @@ model: haiku
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 10. `allowed-tools` trong skill để làm gì? (pre-approve trong lượt gọi)
+> **Hỏi ngắn gọn:** `allowed-tools` trong skill để làm gì? (pre-approve trong lượt gọi)
+>
+> **Trả lời 1 câu:** `allowed-tools` pre-approve sẵn tools skill cần → trong lượt gọi skill, model đỡ bị hỏi/deny.
 
-**Giải thích.** `allowed-tools` pre-approve sẵn tools skill cần → trong lượt gọi skill, model đỡ bị hỏi/deny. Không phải bypass org — deny/managed vẫn thắng.
+
+**Giải thích chi tiết + ví dụ:** `allowed-tools` pre-approve sẵn tools skill cần → trong lượt gọi skill, model đỡ bị hỏi/deny. Không phải bypass org — deny/managed vẫn thắng.
 
 ```markdown
 ---
@@ -253,9 +315,14 @@ allowed-tools: Read, Glob, Grep, Bash(git checkout:*), Bash(gh issue:*)
 
 ---
 
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 11. `${CLAUDE_SKILL_DIR}` để làm gì? (skill mang theo scripts)
+> **Hỏi ngắn gọn:** `${CLAUDE_SKILL_DIR}` để làm gì? (skill mang theo scripts)
+>
+> **Trả lời 1 câu:** Skill có thể mang support files: `scripts/`, `references/`, `templates/`.
 
-**Giải thích.** Skill có thể mang support files: `scripts/`, `references/`, `templates/`. `${CLAUDE_SKILL_DIR}` trỏ đúng folder skill dù nó đặt ở personal/project/plugin → scripts chạy đúng chỗ.
+
+**Giải thích chi tiết + ví dụ:** Skill có thể mang support files: `scripts/`, `references/`, `templates/`. `${CLAUDE_SKILL_DIR}` trỏ đúng folder skill dù nó đặt ở personal/project/plugin → scripts chạy đúng chỗ.
 
 ```text
 .claude/skills/deploy/
@@ -270,6 +337,8 @@ Chi tiết: xem `${CLAUDE_SKILL_DIR}/references/runbook.md`
 ```
 
 **Khi nào áp dụng:** skill có script/checklist dùng lại → đóng gói chung, đừng để script lang thang ngoài repo.
+
+**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 
 ---
 

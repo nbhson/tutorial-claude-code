@@ -18,6 +18,48 @@
 
 ## 1. Hook là gì
 
+**Nôm na 1 câu:** Hook là *khóa cửa tự động* — tới giờ là khóa, không cần hỏi chủ nhà (LLM) có muốn khóa không.
+
+**Analogie đời thường:** như cảm biến đèn cầu thang: có người đi qua (event PreToolUse) là đèn sáng (chạy shell check), không cần ai bấm công tắc. CLAUDE.md giống tờ giấy "nhớ tắt đèn" dán tường — có thể quên; hook là cảm biến — quên cũng vẫn sáng.
+
+**Ví dụ kỹ thuật copy-paste (block push main tối thiểu):**
+
+```bash
+mkdir -p .claude/hooks
+cat > .claude/hooks/block-main-push.sh <<'EOS'
+#!/bin/bash
+set -euo pipefail
+INPUT="$(cat)"
+CMD="$(echo "$INPUT" | jq -r '.input.command // empty')"
+if echo "$CMD" | grep -Eq 'git[[:space:]]+push.*(main|master)'; then
+  echo '{"permissionDecision":"deny","reason":"BLOCKED: không push trực tiếp main. Mở PR."}'
+  exit 2
+fi
+exit 0
+EOS
+chmod +x .claude/hooks/block-main-push.sh
+# Verify: echo '{"input":{"command":"git push origin main"}}' | .claude/hooks/block-main-push.sh; echo "exit=$?"
+# Kỳ vọng: JSON deny + exit=2. Lệnh feat/x → exit=0 (cho qua).
+```
+
+> **Ai dùng lúc nào:** khi rule bị miss ≥2 lần (Claude quên) → nâng thành hook. Mọi team đều cần ít nhất hook block-push-main + lint-on-write.
+
+```mermaid
+flowchart TD
+  E[Event tới: PreToolUse Bash] --> H[Harness chạy hook .sh<br/>đọc JSON stdin]
+  H --> D{Quyết định?}
+  D -->|exit 0| A[allow - cho tool chạy]
+  D -->|exit 2 / deny| B[block - trả reason cho Claude + user]
+  D -->|updatedInput| R[rewrite input - thêm flags]
+  B --> C[Claude phải làm cách khác]
+```
+
+**Giải thích từng bước:**
+1. **Event tới:** vd Claude định chạy `git push origin main` → harness pause trước khi chạy (PreToolUse là điểm duy nhất block được).
+2. **Harness chạy shell:** gửi event JSON qua STDIN (`{"tool":"Bash","input":{"command":"..."}}`), không qua LLM → 0 model tokens, không bị prompt-injection thuyết phục.
+3. **Hook quyết định:** exit 0 = cho qua; exit 2 + `permissionDecision: deny` = block; `updatedInput` = sửa lệnh (vd thêm `--dry-run`).
+4. **Claude nhận reason:** thấy "BLOCKED: ..." thì đổi hướng (mở PR thay vì push thẳng). Chạy trước cả `bypassPermissions` nên chắc chắn nhất hệ sinh thái.
+
 Shell command (hoặc http/mcp_tool/prompt/agent) Claude Code **tự chạy khi tới lifecycle event** —
 không qua LLM quyết định → **deterministic, 0 model tokens, Claude không override được**.
 Dùng để: format sau edit, block lệnh nguy hiểm, gửi notification, inject context đầu session, enforce rules.
@@ -379,6 +421,16 @@ Claude sửa `.claude/settings.json` trực tiếp; bạn `/hooks` duyệt lại
 ---
 
 ## 7. Pitfalls + bài tập
+
+### 7.0. Hiểu nhầm thường gặp
+
+| Hiểu nhầm | Sự thật | Ai cần nhớ |
+|---|---|---|
+| "Hook tốn nhiều tokens như gọi LLM" | `command` hooks chạy shell ngoài model → 0 model tokens. Chỉ `prompt`/`agent` hooks mới tốn (Haiku 1-turn / subagent multi-turn). | Mọi dev lo bill |
+| "Hook allow nới được deny" | Không — hook allow KHÔNG thắng deny rules hay `ask` của org. Hooks chỉ siết, không nới (sửa deny gốc). | Người debug permissions |
+| "Rules settings.json đủ chặn, khỏi hook" | Rules prefix-match, lọt `HEAD:main`, `-f` chen giữa, binary khác (`python3 -c rm`). Chặn chắc → hook match theo intent. | Team lead security |
+| "Matcher không phân biệt hoa thường" | Có phân biệt: `Edit` ≠ `edit`, `Bash` ≠ `bash`. Sai case là hook im lặng không chạy. | Người mới viết hook |
+| "Hook thay được OS sandbox" | Hook là shell vẫn bypass được qua binary lạ. Việc critical → hook + sandbox + deny rules (bài 10). | Người làm prod |
 
 | Pitfall | Vì sao | Fix |
 |---|---|---|
