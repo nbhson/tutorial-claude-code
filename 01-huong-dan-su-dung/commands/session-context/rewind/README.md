@@ -1,16 +1,15 @@
 # /rewind — Quay ngược conversation + code về checkpoint an toàn (nút undo của cả não lẫn tay)
 
-> Loại Built-in · Nhóm Session & Context · Nguy hiểm Có — có thể xóa đoạn hội thoại sau checkpoint và revert file code về trạng thái checkpoint (mất việc sau checkpoint nếu không sao lưu; checkpoint sau bị bỏ)
-
-> Nói nôm na: `/rewind` (kết hợp phím **Esc × 2 / double-Esc** mở checkpoint picker) là "cỗ máy thời gian toàn diện": quay cả **trí nhớ hội thoại** lẫn **file code** về 1 điểm checkpoint trước đó, khi bạn nhận ra 30 phút vừa rồi đi sai hướng.
+> Loại Built-in · Nhóm Session & Context · Mức rủi ro Có — có thể xóa đoạn hội thoại sau checkpoint và revert file code về trạng thái checkpoint (mất việc sau checkpoint nếu không sao lưu; checkpoint sau bị bỏ)
+> **Nói nôm na:** `/rewind` (kết hợp phím **Esc × 2 / double-Esc** mở checkpoint picker) là "cỗ máy thời gian toàn diện": quay cả **trí nhớ hội thoại** lẫn **file code** về 1 điểm checkpoint trước đó, khi bạn nhận ra 30 phút vừa rồi đi sai hướng.
 
 ## Khi nào dùng
 
-- Dùng /rewind khi bạn muốn quản lý phiên/context (mở, dọn, lưu, chia nhánh) mà không đụng tới code trên đĩa.
-- Dùng /rewind **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /rewind thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/rewind` khi bạn nhận ra 30 phút vừa rồi đi sai hướng và muốn quay lại checkpoint trước.
+- Dùng `/rewind` (hoặc Esc ×2) **trước khi** cố sửa tiếp một hướng đã rối — lui sớm rẻ hơn đập đi làm lại.
+- Không dùng `/rewind` thay cho `git commit`/stash — file untracked/rename ngoài tầm backup có thể không về như cũ.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/rewind`
@@ -20,7 +19,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -48,7 +47,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Picker checkpoints trống / ít | Session mới, chưa có edit rủi ro nào; hoặc project không git nên ít snapshot | Làm tiếp để có checkpoints; `git init + commit` để snapshot tin cậy hơn |
 | Rewind xong file không về như cũ | File untracked/rename ngoài tầm backup; hoặc edits sau checkpoint có bước manual ngoài Claude | Kiểm tra `git status`/`git stash list`, phục hồi tay; lần sau stash trước |

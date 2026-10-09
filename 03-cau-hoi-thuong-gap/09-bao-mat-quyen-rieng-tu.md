@@ -1,12 +1,51 @@
-# FAQ 09 — Bảo Mật & Quyền Riêng Tư
+# FAQ 09 — Bảo mật & quyền riêng tư
 
-> Nhóm Security & Privacy · 10 câu hỏi deep-dive · Đọc xong khóa working dirs, giấu secrets, hiểu ZDR, review supply-chain, không bao giờ bypass trên máy dev
+> **Bài này cho ai:** bạn lo lộ code/secret, muốn chặn Claude chạm quá giới hạn đã cho phép, hoặc phải trả lời câu hỏi bảo mật/compliance (ZDR, telemetry, supply-chain).
+> **Cần gì trước:** đã cài và đăng nhập Claude Code; hiểu sơ qua `/permissions`; chưa rõ deny/hook thì đọc [FAQ 03](03-permissions-modes.md) trước.
+> **Đọc xong bạn làm được:**
+> - Khóa working dirs và dựng các lớp chặn mà `--dangerously-skip-permissions` không vô hiệu hóa được.
+> - Khai secret qua env vars, rà và xử lý secret bị lộ trong git đúng thứ tự.
+> - Biết gói nào có ZDR, telemetry tắt ở đâu theo provider, và cách soát skill/plugin/hook trước khi cài.
+> - Review code AI viết bằng 4 lớp, rồi chạy checklist bảo mật repo mới trong 5 phút.
+> **Thời gian:** ~15 phút
 
-Mỗi câu có giải thích + lệnh/config copy-paste + ví dụ + khi nào áp dụng.
+## Thuật ngữ dùng trong bài này
+
+Đọc bảng này trước khi vào mục 1 — mọi thuật ngữ Anh trong bài đều được giải thích ở đây.
+
+| Thuật ngữ | Hiểu nôm na là gì | Ví dụ thấy ngay |
+|---|---|---|
+| Working dirs | Các thư mục Claude được phép đọc; nằm ngoài danh sách này nó không chạm tới | `/permissions` xem danh sách dirs hiện tại |
+| Deny rule | Quy tắc chặn sẵn một lệnh hay file nguy hiểm trong settings | `deny: ["Bash(rm -rf:*)"]` |
+| Hook | Script tự chạy trước/sau tool, nằm ngoài model nên bắt buộc thực thi | `PreToolUse` chặn lệnh critical ngay cả khi bypass |
+| Bypass | Cờ bỏ qua mọi câu hỏi quyền, chỉ dùng trong sandbox cô lập | `--dangerously-skip-permissions` |
+| ZDR | Cam kết không lưu giữ data của bạn sau khi xử lý | hợp đồng Enterprise qualified |
+| Telemetry | Dữ liệu sử dụng và lỗi tự gửi về vendor | crash log gửi về Anthropic |
+| Supply-chain | Rủi ro khi cài code từ bên ngoài vào máy mình | skill, plugin, hook từ cộng đồng |
+| Secret | Chuỗi bí mật dùng để xác thực, phải giấu | API key, GitHub token, Slack token |
+
+## Mục lục
+
+- [Sơ đồ nhanh (nhìn 30 giây là nhớ)](#sơ-đồ-nhanh-nhìn-30-giây-là-nhớ)
+- [Bảng tổng hợp: 7 lớp phòng thủ](#bảng-tổng-hợp-7-lớp-phòng-thủ)
+- [1. Claude Code có đọc hết máy tôi không? (working dirs + --add-dir)](#1-claude-code-có-đọc-hết-máy-tôi-không-working-dirs---add-dir)
+- [2. Deny nào không bypass được? (hook deny + deny rules + org ask)](#2-deny-nào-không-bypass-được-hook-deny-deny-rules-org-ask)
+- [3. Secrets trong MCP/settings: env vars + reset-project-choices?](#3-secrets-trong-mcpsettings-env-vars-reset-project-choices)
+- [4. Zero Data Retention (ZDR) — ai được, hỏi ai?](#4-zero-data-retention-zdr-ai-được-hỏi-ai)
+- [5. Skill, plugin, hook có nguy hiểm không? (rủi ro supply-chain)](#5-skill-plugin-hook-có-nguy-hiểm-không-rủi-ro-supply-chain)
+- [6. Review code AI viết thế nào? (fresh-reviewer + /code-review + human + tests)](#6-review-code-ai-viết-thế-nào-fresh-reviewer-code-review-human-tests)
+- [7. Chỉ được dùng --dangerously-skip-permissions khi nào? (sandbox CI cô lập)](#7-chỉ-được-dùng---dangerously-skip-permissions-khi-nào-sandbox-ci-cô-lập)
+- [8. Telemetry và error-reporting tắt ở đâu? (theo provider)](#8-telemetry-và-error-reporting-tắt-ở-đâu-theo-provider)
+- [9. Lộ secret rồi — xử lý sao? (rotate + reset + rà git history)](#9-lộ-secret-rồi-xử-lý-sao-rotate-reset-rà-git-history)
+- [10. Checklist bảo mật repo mới (5 phút)](#10-checklist-bảo-mật-repo-mới-5-phút)
+- [Vẫn lỗi thì sao? (bảo mật)](#vẫn-lỗi-thì-sao-bảo-mật)
+- [Tham khảo chéo](#tham-khảo-chéo)
 
 ---
 
 ## Sơ đồ nhanh (nhìn 30 giây là nhớ)
+
+Sơ đồ này tóm tắt thứ tự ưu tiên các lớp phòng thủ khi gặp việc nguy hiểm — nhìn xong rồi mới vào từng câu hỏi.
 
 ```mermaid
 flowchart TD
@@ -18,11 +57,10 @@ flowchart TD
 
 ## Bảng tổng hợp: 7 lớp phòng thủ
 
+Đọc bảng này khi cần biết mỗi lớp phòng thủ chặn gì, cấu hình ở đâu, và có bị bypass vô hiệu hóa được không:
+
 | Lớp | Chặn gì | Lệnh/config | Bypass được? |
-|---
-
-
-|---|---|---|
+|---|---|---|---|
 | Working dirs (`--add-dir`) | Đọc ngoài thư mục cho phép | `/permissions` xem dirs | Không (không add thì không chạm) |
 | Permission deny rules | Lệnh/file nguy hiểm | `deny` trong settings | Bypass bỏ qua (trừ org) |
 | `PreToolUse` hook deny | Việc critical | Script guard | **KHÔNG — thắng cả bypass** |
@@ -35,12 +73,15 @@ flowchart TD
 ---
 
 ## 1. Claude Code có đọc hết máy tôi không? (working dirs + `--add-dir`)
-> **Hỏi ngắn gọn:** Claude Code có đọc hết máy tôi không? (working dirs + `--add-dir`)
->
-> **Trả lời 1 câu:** Không — nó chỉ chạm **working dirs được phép** (+ thêm bằng `--add-dir`).
 
+> **Câu hỏi:** Claude Code có thấy và đọc được mọi file trên máy tôi không, hay nó bị giới hạn ở đâu đó?
+> **Trả lời 1 câu:** Không — nó chỉ chạm được các thư mục nằm trong working dirs; ngoài danh sách đó nó không đọc được, muốn mở rộng thì phải thêm bằng `--add-dir`.
 
-**Giải thích chi tiết + ví dụ:** Không — nó chỉ chạm **working dirs được phép** (+ thêm bằng `--add-dir`). Quản lý ở `/permissions` (mục working directories). Đừng `bypassPermissions` trên máy dev, đừng `add-dir` cả home khi không cần.
+**Giải thích:** Danh sách working dirs được quản lý ở `/permissions` (mục working directories). Nguyên tắc an toàn là giữ danh sách hẹp nhất có thể: đừng `--add-dir` cả home chỉ để phục vụ một task nhỏ, và đừng `bypassPermissions` trên máy dev. Thêm dir thừa đúng bằng mở rộng vùng nổ (blast radius) khi có lệnh ngáo chạy trong session.
+
+**Khi nào áp dụng:** mỗi khi mở session lạ hoặc repo lạ — mở `/permissions` kiểm tra dirs trước khi cho Claude chạy lệnh.
+
+**Ví dụ:**
 
 ```bash
 /permissions    # xem working dirs hiện tại
@@ -52,24 +93,26 @@ claude --add-dir ../shared-contracts
 # ❌ claude --add-dir ~   (mở cả home cho 1 task nhỏ)
 ```
 
-**Ví dụ:** task chỉ cần `api/` mà mở cả repo + home → 1 lệnh ngáo `grep -r` quét secrets khắp máy. Hẹp dirs = giảm blast radius.
+Task chỉ cần `api/` mà bạn mở cả repo + home → chỉ cần 1 lệnh ngáo `grep -r` là nó quét secrets khắp máy. Giữ dirs hẹp = giảm blast radius (vùng nổ khi có sự cố).
 
-**Khi nào áp dụng:** mỗi session lạ/repo lạ → `/permissions` check dirs trước khi cho chạy.
+**Đào sâu:** [FAQ 03 — permissions & modes](03-permissions-modes.md) · [lệnh `permissions`](../01-huong-dan-su-dung/commands/model-mode/permissions/README.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-bảo-mật)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 2. Deny nào không bypass được? (hook deny + deny rules + org ask)
-> **Hỏi ngắn gọn:** Deny nào không bypass được? (hook deny + deny rules + org ask)
->
-> **Trả lời 1 câu:** 3 thứ sống sót qua `--dangerously-skip-permissions`:
 
+> **Câu hỏi:** Tôi muốn chạy CI không có ai ngồi bấm phím, mà dùng bypass thì mấy phanh allow/ask có bị vô hiệu hóa hết không?
+> **Trả lời 1 câu:** Không phải hết — đúng 3 thứ sống sót qua `--dangerously-skip-permissions`: `PreToolUse` hook deny, deny rules + org `ask` cho connector/MCP nhạy cảm, và managed policy của org.
 
-**Giải thích chi tiết + ví dụ:** 3 thứ sống sót qua `--dangerously-skip-permissions`:
+**Giải thích:** Deny rule thường trong settings vẫn bị bypass bỏ qua, nên đừng trông cậy vào nó khi đã bật bypass.
 
-1. **`PreToolUse` hook deny** — thắng cả bypass (FAQ 03 câu 4).
-2. **Deny rules + org `ask` cho connectors/MCP nhạy cảm** — hooks/rules siết thêm, không nới được.
-3. Managed policy của org — local không gỡ.
+1. **`PreToolUse` hook deny** — thắng cả bypass (chi tiết FAQ 03 câu 4).
+2. **Deny rules + org `ask` cho connectors/MCP nhạy cảm** — hooks/rules chỉ siết thêm, không nới được.
+3. **Managed policy của org** — không gỡ được ở local.
+
+**Khi nào áp dụng:** lúc thiết kế phanh cho CI/cloud — việc critical thì dùng hook, đừng tin mỗi rule.
+
+**Ví dụ:**
 
 ```bash
 # Guard mẫu sống qua bypass:
@@ -79,20 +122,22 @@ echo "$input" | grep -qE 'rm -rf|sudo ' && echo '{"decision":"block","reason":"c
 echo '{"decision":"approve"}'
 ```
 
-**Ví dụ:** CI sandbox bypass mà vẫn muốn cấm `push main` → hook deny (sống) + settings deny (chết khi bypass). Luôn đặt hook cho việc critical.
+Muốn cấm `push main` kể cả khi CI chạy sandbox bypass → đặt hook deny (sống) chứ đừng chỉ đặt settings deny (chết khi bypass). Việc critical thì luôn đặt hook.
 
-**Khi nào áp dụng:** thiết kế phanh cho CI/cloud — critical thì hook, đừng tin mỗi rule.
+**Đào sâu:** [FAQ 05 — hooks](05-hooks-faq.md) · [lệnh `hooks`](../01-huong-dan-su-dung/commands/knowledge-system/hooks/README.md) · [FAQ 03 — deny & modes](03-permissions-modes.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-bảo-mật)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 3. Secrets trong MCP/settings: env vars + `reset-project-choices`?
-> **Hỏi ngắn gọn:** Secrets trong MCP/settings: env vars + `reset-project-choices`?
->
-> **Trả lời 1 câu:** Chỉ qua env vars (`${TOKEN}`), không commit token vào `.mcp.json`/settings.
 
+> **Câu hỏi:** MCP server của tôi cần token API, tôi định bỏ thẳng vào `.mcp.json` rồi push lên git — nguy hiểm không?
+> **Trả lời 1 câu:** Nguy hiểm — token chui thẳng vào git. Secret chỉ khai qua env vars kiểu `${TOKEN}`, giá trị thật đặt ngoài repo, không bao giờ commit vào `.mcp.json`/settings.
 
-**Giải thích chi tiết + ví dụ:** Chỉ qua env vars (`${TOKEN}`), không commit token vào `.mcp.json`/settings. Khi đổi approvals/policy project → `reset-project-choices` để xóa lựa chọn cũ (tránh approvals cũ còn hiệu lực).
+**Giải thích:** Khai qua biến môi trường nên file cấu hình commit lên git được mà không lộ token. Một việc hay quên nữa: khi đổi approvals hoặc policy của project, chạy `claude mcp reset-project-choices` để xóa lựa chọn cũ — nếu không, approvals cũ vẫn còn hiệu lực và người đến sau có thể dùng ké token của người cũ.
+
+**Khi nào áp dụng:** mọi lần thêm server MCP, rotate token hay đổi policy. Gắn lệnh `git grep` dưới đây vào CI để tự chặn (xem [FAQ 10](10-ci-sdk-routines-web.md)).
+
+**Ví dụ:**
 
 ```json
 {
@@ -108,20 +153,22 @@ git grep -E 'ghp_|sk-ant_|xoxb-|lin_' -- .mcp.json .claude/  # phải RỖNG
 claude mcp reset-project-choices   # khi đổi approvals project
 ```
 
-**Ví dụ:** onboard member → họ export env của họ, approvals project reset → không ai dùng ké token người cũ.
+Onboard member mới → họ tự export env của họ rồi chạy `reset-project-choices` → không ai dùng ké token của người cũ.
 
-**Khi nào áp dụng:** mọi lần add server + rotate token + đổi policy. Gắn `git grep` vào CI (xem FAQ 10).
+**Đào sâu:** [lệnh `mcp`](../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md) · [FAQ 04 — MCP](04-mcp-faq.md) · [FAQ 10 — CI an toàn](10-ci-sdk-routines-web.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-bảo-mật)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 4. Zero Data Retention (ZDR) — ai được, hỏi ai?
-> **Hỏi ngắn gọn:** Zero Data Retention (ZDR) — ai được, hỏi ai?
->
-> **Trả lời 1 câu:** ZDR có cho: **Enterprise qualified (Sub) / qualified Console accounts / AWS Platform qualified** — hỏi admin/contract của bạn, đừng đoán từ blog.
 
+> **Câu hỏi:** Khách hàng hỏi tôi "anh có đảm bảo không lưu dữ liệu của em không" — tôi trả lời sao, gói nào có ZDR?
+> **Trả lời 1 câu:** ZDR có cho: **Enterprise qualified (Sub)** / **qualified Console accounts** / **AWS Platform qualified** — nhưng đừng tự suy ra từ blog, hỏi admin/contract của bạn để xác nhận scope.
 
-**Giải thích chi tiết + ví dụ:** ZDR có cho: **Enterprise qualified (Sub) / qualified Console accounts / AWS Platform qualified** — hỏi admin/contract của bạn, đừng đoán từ blog. Mặc định telemetry/error-reporting theo provider: Bedrock/GCP/Foundry/AWS-Platform **tắt gửi về Anthropic theo default** (xem provider docs để xác nhận — default có thể đổi theo version).
+**Giải thích:** Bên cạnh ZDR, telemetry và error-reporting mặc định khác nhau theo provider: với Bedrock/GCP/Foundry/AWS-Platform thì mặc định **tắt gửi về Anthropic**. Tuy nhiên đừng tin mặc định — hãy đọc provider docs để xác nhận, default có thể đổi theo version.
+
+**Khi nào áp dụng:** hợp đồng yêu cầu "không lưu data" → xác nhận bằng văn bản với admin + đọc provider docs, đừng tin trí nhớ.
+
+**Ví dụ:**
 
 ```bash
 # Checklist trước khi cam kết với khách hàng:
@@ -131,20 +178,22 @@ claude mcp reset-project-choices   # khi đổi approvals project
 /status
 ```
 
-**Ví dụ:** team Bedrock mặc định không gửi về Anthropic — nhưng error-reporting bật ở client vẫn gửi crash log → tắt nếu contract yêu cầu.
+Team dùng Bedrock: mặc định không gửi về Anthropic, nhưng nếu error-reporting đang bật ở client thì vẫn gửi crash log → tắt đi khi contract yêu cầu.
 
-**Khi nào áp dụng:** hợp đồng yêu cầu "không lưu data" → xác nhận bằng văn bản admin + docs, không tin trí nhớ.
+**Đào sâu:** [FAQ 01 — provider](01-tai-khoan-pricing-cai-dat.md) · [Bài 02 — bề mặt dùng](../01-huong-dan-su-dung/02-cac-be-mat-terminal-ide-web-desktop.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-bảo-mật)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
-## 5. Skills / plugins / hooks có nguy hiểm không? (supply-chain — có)
-> **Hỏi ngắn gọn:** Skills / plugins / hooks có nguy hiểm không? (supply-chain — có)
->
-> **Trả lời 1 câu:** Có — chúng chạy code/quyết định trên máy bạn.
+## 5. Skill, plugin, hook có nguy hiểm không? (rủi ro supply-chain)
 
+> **Câu hỏi:** Tải skill, plugin hay hook từ cộng đồng về dùng thì có bị dính mã độc không?
+> **Trả lời 1 câu:** Có — skill, plugin, hook là code chạy thật trên máy bạn; cài bừa là mời rủi ro supply-chain vào máy.
 
-**Giải thích chi tiết + ví dụ:** Có — chúng chạy code/quyết định trên máy bạn. Plugin community xin cùng lúc đọc file + chạy shell + gọi mạng = full access. Chỉ cài nguồn tin cậy, đọc **Browse** (commands/knowledge-system/agents/skills/hooks/MCP) trước khi cài plugin; review scripts hooks như production code.
+**Giải thích:** Một plugin cộng đồng có thể xin cùng lúc quyền đọc file + chạy shell + gọi mạng = full access. Vì vậy chỉ cài nguồn tin cậy, và trước khi cài hãy mở `/plugin` đọc Browse (xem nó xin commands/agents/skills/hooks/MCP gì); review script của hook như code production.
+
+**Khi nào áp dụng:** mọi lần cài plugin/skill/agent lấy từ ngoài team.
+
+**Ví dụ:**
 
 ```bash
 # Trước khi cài plugin lạ:
@@ -158,25 +207,27 @@ ls .claude/hooks/ && cat .claude/hooks/*.sh
 git grep -E 'curl|rm -rf|sudo|exfil|ngrok' -- .claude/
 ```
 
-**Ví dụ:** plugin "theme đẹp" kèm hook PostToolUse gửi file đã sửa về URL lạ → supply-chain exfil. Đọc Browse 2 phút bắt được.
+Plugin "theme đẹp" kèm hook `PostToolUse` âm thầm gửi các file đã sửa về một URL lạ → đúng kiểu supply-chain exfil (đánh cắp dữ liệu). Đọc Browse 2 phút là bắt được.
 
-**Khi nào áp dụng:** mọi lần cài plugin/skill/agent từ ngoài team.
+**Đào sâu:** [lệnh `plugin`](../01-huong-dan-su-dung/commands/knowledge-system/plugin/README.md) · [Bài 09 — plugin & marketplace](../01-huong-dan-su-dung/09-plugins-marketplaces.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-bảo-mật)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 6. Review code AI viết thế nào? (fresh-reviewer + `/code-review` + human + tests)
-> **Hỏi ngắn gọn:** Review code AI viết thế nào? (fresh-reviewer + `/code-review` + human + tests)
->
-> **Trả lời 1 câu:** Đối xử output AI như code của **intern giỏi nhưng cần giám sát**.
 
+> **Câu hỏi:** Claude viết xong một loạt code, tôi merge thẳng lên main có ổn không?
+> **Trả lời 1 câu:** Đừng merge thẳng — coi output của AI như code của intern giỏi nhưng cần giám sát, và chạy đủ 4 lớp review bên dưới.
 
-**Giải thích chi tiết + ví dụ:** Đối xử output AI như code của **intern giỏi nhưng cần giám sát**. Pipeline 4 lớp:
+**Giải thích:** Pipeline 4 lớp:
 
-1. **Fresh-reviewer subagent** (không thấy history → không bị "tự bênh").
-2. **`/code-review`** (PR vừa) hoặc **`/ultrareview`** sandbox (PR lớn/security).
-3. **Human** đọc diff cuối (nhất là auth, tiền, migrate).
-4. **Tests xanh** (`/verify` chạy app thật, không tin model nói "xong").
+1. **Fresh-reviewer subagent** — không thấy history nên không bị "tự bênh" code chính nó vừa viết.
+2. **`/code-review`** cho PR vừa, hoặc **`/ultrareview`** chạy trong sandbox cho PR lớn/nhạy cảm bảo mật.
+3. **Human** đọc lại diff cuối — nhất là phần auth, tiền bạc, migrate.
+4. **Tests xanh** — `/verify` chạy app thật, đừng tin lời model nói "xong rồi".
+
+**Khi nào áp dụng:** mọi code AI viết trước khi merge; PR càng critical thì càng phải đủ 4 lớp.
+
+**Ví dụ:**
 
 ```bash
 # "Dùng fresh subagent review diff này, chỉ báo security + sai logic, bỏ qua style"
@@ -185,18 +236,22 @@ git grep -E 'curl|rm -rf|sudo|exfil|ngrok' -- .claude/
 npm test
 ```
 
-**Khi nào áp dụng:** mọi code AI viết trước khi merge. PR càng critical → càng đủ 4 lớp.
+Chạy đủ `/code-review` → `/verify` → `npm test` trước mỗi merge; nếu PR đụng tới auth hay migrate, bắt buộc thêm 1 lượt human đọc diff.
+
+**Đào sâu:** [lệnh `code-review`](../01-huong-dan-su-dung/commands/code-repo/code-review/README.md) · [lệnh `verify`](../01-huong-dan-su-dung/commands/code-repo/verify/README.md) · [Bài 04 — verification thật](../02-tips-thuc-chien/04-verification-done-that.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-bảo-mật)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
-## 7. `--dangerously-skip-permissions` khi nào? (chỉ CI sandbox cô lập)
-> **Hỏi ngắn gọn:** `--dangerously-skip-permissions` khi nào? (chỉ CI sandbox cô lập)
->
-> **Trả lời 1 câu:** Chỉ CI sandbox cô lập (container dùng 1 lần, không secrets thật, không network ra ngoài).
+## 7. Chỉ được dùng `--dangerously-skip-permissions` khi nào? (sandbox CI cô lập)
 
+> **Câu hỏi:** Thấy người ta hay thêm `--dangerously-skip-permissions` vào lệnh cho chạy nhanh, tôi dùng trên máy dev được không?
+> **Trả lời 1 câu:** Không — chỉ được dùng khi nơi chạy là CI sandbox cô lập thật sự: container dùng 1 lần, không secrets thật, không network ra ngoài.
 
-**Giải thích chi tiết + ví dụ:** Chỉ CI sandbox cô lập (container dùng 1 lần, không secrets thật, không network ra ngoài). Trên máy dev/cloud session bình thường: **không**. Hook deny vẫn thắng flag này, nhưng mọi permission hỏi thì bỏ hết.
+**Giải thích:** Trên máy dev hay cloud session bình thường: không bao giờ. Nhớ rõ một điểm: hook deny vẫn thắng được flag này, nhưng mọi câu hỏi quyền khác đều bị bỏ qua — nghĩa là đúng kiểu "tắt toàn bộ phanh".
+
+**Khi nào áp dụng:** gần như không khi nào. Cứ thấy mình định gõ flag này trên máy dev là dừng lại, chuyển sang allowlist hẹp.
+
+**Ví dụ:**
 
 ```bash
 # ✅ Sandbox dùng 1 lần, không secrets thật:
@@ -206,18 +261,20 @@ claude -p "migrate test" --dangerously-skip-permissions
 # Thay bằng: --permission-mode dontAsk + allowlist hẹp (FAQ 10)
 ```
 
-**Khi nào áp dụng:** gần như không. Nếu thấy mình gõ flag này trên máy dev → dừng, chuyển sang allowlist.
+**Đào sâu:** [Bài 10 — permissions & modes](../01-huong-dan-su-dung/10-permissions-modes-availability.md) · [lệnh `sandbox`](../01-huong-dan-su-dung/commands/auth-settings/sandbox/README.md) · [FAQ 10 — CI an toàn](10-ci-sdk-routines-web.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-bảo-mật)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
-## 8. Telemetry / error-reporting tắt ở đâu? (theo provider)
-> **Hỏi ngắn gọn:** Telemetry / error-reporting tắt ở đâu? (theo provider)
->
-> **Trả lời 1 câu:** Mặc định theo provider (Bedrock/GCP/Foundry/AWS-Platform tắt gửi về Anthropic theo default).
+## 8. Telemetry và error-reporting tắt ở đâu? (theo provider)
 
+> **Câu hỏi:** Công ty tôi không muốn gửi data về Anthropic, tắt telemetry bằng lệnh gì?
+> **Trả lời 1 câu:** Không có công tắc chung — mặc định telemetry/error-reporting theo provider đang dùng; với Bedrock/GCP/Foundry/AWS-Platform thì tắt gửi về Anthropic theo default.
 
-**Giải thích chi tiết + ví dụ:** Mặc định theo provider (Bedrock/GCP/Foundry/AWS-Platform tắt gửi về Anthropic theo default). Client vẫn có telemetry/error-reporting riêng — đọc provider docs + settings hiện tại, đừng đoán.
+**Giải thích:** Ngoài phần provider, bản thân client vẫn có telemetry/error-reporting riêng của nó — nên không có một lệnh tắt duy nhất. Việc của bạn: đọc provider docs + xem settings hiện tại, đừng đoán.
+
+**Khi nào áp dụng:** mỗi lần onboard máy cho enterprise/compliance, và sau mỗi `claude update` (default có thể đổi theo version).
+
+**Ví dụ:**
 
 ```bash
 /status          # provider đang dùng?
@@ -225,18 +282,20 @@ claude -p "migrate test" --dangerously-skip-permissions
 claude doctor    # có cảnh báo config lạ không
 ```
 
-**Khi nào áp dụng:** onboard enterprise/compliance + sau mỗi `claude update` (default có thể đổi).
+**Đào sâu:** [FAQ 01 — provider](01-tai-khoan-pricing-cai-dat.md) · [lệnh `doctor`](../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-bảo-mật)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 9. Lộ secret rồi — xử lý sao? (rotate + reset + rà git history)
-> **Hỏi ngắn gọn:** Lộ secret rồi — xử lý sao? (rotate + reset + rà git history)
->
-> **Trả lời 1 câu:** Secret đã commit là coi như lộ (git history giữ mãi).
 
+> **Câu hỏi:** Tôi lỡ commit token vào git rồi, giờ chỉ cần xóa file đi thôi đúng không?
+> **Trả lời 1 câu:** Không — secret đã commit là coi như lộ, git history giữ mãi. Xử lý theo 4 bước: rotate token trước, xóa approvals cũ, rà còn sót, rồi mới dọn history.
 
-**Giải thích chi tiết + ví dụ:** Secret đã commit là coi như lộ (git history giữ mãi). Xử lý 4 bước:
+**Giải thích:** Đừng chỉ ngồi xóa file. Thứ tự đúng là 4 bước trong block dưới — lưu ý bước 1 và 2 đảo ngược so với việc dọn git: vô hiệu token cũ càng sớm, thời gian token lộ càng ngắn.
+
+**Khi nào áp dụng:** ngay khi phát hiện; quy tắc cố định: rotate trước, dọn sau, luôn luôn.
+
+**Ví dụ:**
 
 ```bash
 # 1. Rotate NGAY (vô hiệu token cũ) — làm trước, dọn sau
@@ -247,20 +306,28 @@ git grep -E 'ghp_|sk-ant_|xoxb-|AKIA' -- .mcp.json .claude/ .
 # 4. Dọn history (nếu đã push): BFG/filter-repo + force-push + báo team rotate tiếp
 ```
 
-**Ví dụ:** commit nhầm `GITHUB_TOKEN` vào `.mcp.json` → rotate token trên GitHub trước (30s), rồi mới dọn git. Làm ngược (dọn git trước) → token sống thêm 10 phút trong tay crawler.
+Commit nhầm `GITHUB_TOKEN` vào `.mcp.json` → rotate token trên GitHub trước (30 giây), rồi mới dọn git. Làm ngược (dọn git trước) thì token sống thêm ~10 phút trong tay crawler.
 
-**Khi nào áp dụng:** ngay khi phát hiện. Rotate trước, dọn sau, luôn.
+**Đào sâu:** [lệnh `mcp`](../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md) · [FAQ 04 — MCP & secrets](04-mcp-faq.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-bảo-mật)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
-## 10. Checklist bảo mật repo mới (5 phút)?
-> **Hỏi ngắn gọn:** Checklist bảo mật repo mới (5 phút)?
->
-> **Trả lời 1 câu:** Chạy checklist này cho mọi repo trước khi cho Claude động tay:
+## 10. Checklist bảo mật repo mới (5 phút)
 
+> **Câu hỏi:** Repo mới sắp cho Claude vào làm, làm thế nào để nó không phá lung tung và không làm lộ secret?
+> **Trả lời 1 câu:** Chạy checklist 5 bước này trong ~5 phút trước khi để Claude động tay — dirs hẹp, secrets sạch, mcp/hooks sạch, doctor xanh.
 
-**Giải thích chi tiết + ví dụ:** Chạy checklist này cho mọi repo trước khi cho Claude động tay:
+**Giải thích:** Ý nghĩa từng bước:
+
+1. `/permissions` — dirs hẹp chưa, deny `rm -rf`/`sudo`/`.env` có chưa.
+2. `git grep` — đảm bảo không secret lọt vào `.mcp.json`/`.claude`.
+3. `/mcp` — server nào thừa thì tắt, chỉ giữ cái đang dùng.
+4. `/hooks` — có hook lạ thì đọc script trước khi cho chạy.
+5. `/doctor` — điểm security còn đỏ thì vá trước khi làm việc.
+
+**Khi nào áp dụng:** mỗi lần setup repo mới, dọn mỗi tháng 1 lần, và trước khi onboard member mới.
+
+**Ví dụ:**
 
 ```bash
 /permissions              # 1. dirs hẹp? deny rm-rf/sudo/.env có?
@@ -280,19 +347,19 @@ git grep -E 'ghp_|sk-ant_' -- .mcp.json .claude/   # 2. secrets sạch?
 }
 ```
 
-**Khi nào áp dụng:** setup repo mới + mỗi tháng 1 lần + trước khi onboard member.
+Chạy xong checklist mà `/doctor` không còn cảnh báo đỏ → mới cho Claude động tay; có cảnh báo thì vá trước.
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
+**Đào sâu:** [FAQ 03 — permissions](03-permissions-modes.md) · [lệnh `permissions`](../01-huong-dan-su-dung/commands/model-mode/permissions/README.md) · [templates/](../templates/) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-bảo-mật)
 
 ---
 
 ## Vẫn lỗi thì sao? (bảo mật)
 
-1. Nghi lộ secret → rotate trước, dọn sau (câu 9).
-2. Deny không ăn → `/permissions` merged + `/hooks` (hook nào allow nhầm?).
+1. Nghi lộ secret → **rotate trước, dọn sau** ([câu 9](#9-lộ-secret-rồi-xử-lý-sao-rotate-reset-rà-git-history)).
+2. Deny không ăn → mở `/permissions` xem merged rules + `/hooks` (hook nào allow nhầm?).
 3. Plugin/skill lạ → gỡ + rà `git grep` + `reset-project-choices`.
-4. ZDR/compliance → hỏi admin + provider docs, đừng tự kết luận.
-5. `/debug` → lạ thì chẩn đoán; `/bug` kèm `/status` + `doctor`.
+4. ZDR/compliance → hỏi admin + đọc provider docs, đừng tự kết luận.
+5. Đã thử hết → `/debug` chẩn đoán session; `/bug` kèm `/status` + `claude doctor`.
 
 ```bash
 git grep -E 'ghp_|sk-ant_|xoxb-|AKIA' -- . .
@@ -307,15 +374,15 @@ git grep -E 'ghp_|sk-ant_|xoxb-|AKIA' -- . .
 - Lệnh liên quan:
   - [../01-huong-dan-su-dung/commands/model-mode/permissions/README.md](../01-huong-dan-su-dung/commands/model-mode/permissions/README.md) — working dirs + allow/ask/deny
   - [../01-huong-dan-su-dung/commands/knowledge-system/hooks/README.md](../01-huong-dan-su-dung/commands/knowledge-system/hooks/README.md) — hook deny không bypass được
-  - [../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md](../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md) — secrets-env + reset-project-choices
-  - [../01-huong-dan-su-dung/commands/knowledge-system/plugin/README.md](../01-huong-dan-su-dung/commands/knowledge-system/plugin/README.md) — Browse trước khi cài
-  - [../01-huong-dan-su-dung/commands/code-repo/code-review/README.md](../01-huong-dan-su-dung/commands/code-repo/code-review/README.md) — review AI code
+  - [../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md](../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md) — secrets-env + `reset-project-choices`
+  - [../01-huong-dan-su-dung/commands/knowledge-system/plugin/README.md](../01-huong-dan-su-dung/commands/knowledge-system/plugin/README.md) — đọc Browse trước khi cài
+  - [../01-huong-dan-su-dung/commands/code-repo/code-review/README.md](../01-huong-dan-su-dung/commands/code-repo/code-review/README.md) — review code AI viết
   - [../01-huong-dan-su-dung/commands/code-repo/verify/README.md](../01-huong-dan-su-dung/commands/code-repo/verify/README.md) — chạy app thật kiểm chứng
   - [../01-huong-dan-su-dung/commands/auth-settings/sandbox/README.md](../01-huong-dan-su-dung/commands/auth-settings/sandbox/README.md) — sandbox OS cho việc nguy hiểm
 - Bài tổng quan:
   - [../01-huong-dan-su-dung/10-permissions-modes-availability.md](../01-huong-dan-su-dung/10-permissions-modes-availability.md) — modes + unbypassable
   - [../01-huong-dan-su-dung/09-plugins-marketplaces.md](../01-huong-dan-su-dung/09-plugins-marketplaces.md) — supply-chain plugins
   - [../02-tips-thuc-chien/04-verification-done-that.md](../02-tips-thuc-chien/04-verification-done-that.md) — verify như production
-- FAQ liên quan: [FAQ 03](03-permissions-modes.md) (phanh), [FAQ 05](05-hooks-faq.md) (review hooks), [FAQ 10](10-ci-sdk-routines-web.md) (CI an toàn).
+- FAQ liên quan: [FAQ 03](03-permissions-modes.md) (phanh quyền), [FAQ 04](04-mcp-faq.md) (MCP & secrets), [FAQ 05](05-hooks-faq.md) (review hooks), [FAQ 10](10-ci-sdk-routines-web.md) (CI an toàn).
 
 > Mẹo 1 dòng: _dirs hẹp, secrets qua env, critical thì hook deny, và bypass không bao giờ rời sandbox._

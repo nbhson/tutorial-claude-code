@@ -1,26 +1,25 @@
 # /insights — Nhìn lại cách bạn làm việc: token đi đâu, thói quen nào tốn kém
 
-> Loại Skill (phân tích) · Nhóm Tri thức & Hệ thống · Nguy hiểm Không (chỉ đọc log local, không sửa, không gửi đi)
-
-> Nói nôm na: `/insights` phân tích lịch sử dùng Claude Code của bạn (từ log/transcript local): token đốt vào việc gì, giờ nào hiệu quả, lệnh nào dùng nhiều, thói quen nào phung phí (clear ít, Read file to, batch ẩu) — rồi gợi ý 3-5 thay đổi cụ thể tiết kiệm nhất. Khác `/stats` (con số thô) — insights là "bác sĩ đọc kết quả xét nghiệm rồi kê đơn".
+> Loại Skill (phân tích) · Nhóm Tri thức & Hệ thống · Mức rủi ro Không (chỉ đọc log local, không sửa, không gửi đi)
+> **Nói nôm na:** `/insights` phân tích lịch sử dùng Claude Code của bạn (từ log/transcript local): token đốt vào việc gì, giờ nào hiệu quả, lệnh nào dùng nhiều, thói quen nào phung phí (clear ít, Read file to, batch ẩu) — rồi gợi ý 3-5 thay đổi cụ thể tiết kiệm nhất. Khác `/stats` (con số thô) — insights là "bác sĩ đọc kết quả xét nghiệm rồi kê đơn".
 
 ## Khi nào dùng
 
-- Dùng /insights khi bạn cần tra cứu/chẩn đoán/mở rộng hệ tri thức (agents, MCP, hooks, skills, debug, doctor).
-- Dùng /insights **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /insights thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng cuối tuần để hiểu token/thời gian đổ vào đâu và nhận 3–5 gợi ý tiết kiệm.
+- Dùng **trước khi** hoá đơn phình: phát hiện sớm thói quen đốt token (Read file to, clear ít).
+- Không dùng thay `/stats`: `/stats` là số thô, `/insights` là bác sĩ đọc số rồi kê đơn.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
-`/insights`
-`/insights --month`
-`/insights --team`
+/insights          # phân tích log local gần đây
+/insights --month  # gộp cả tháng
+/insights --team   # gộp log nhiều người
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -33,18 +32,14 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /insights (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Báo cáo token theo việc + 3–5 gợi ý cụ thể kèm ước tính tiết kiệm.
+- Chỉ đọc log local, không gửi đi đâu.
 
-Verify (30 giây):
-
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+**Kiểm tra nhanh:** đối chiếu số token với `/stats` cùng nguồn; xem `~/.claude/projects/` để chắc đúng profile.
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Báo cáo trống/không có dữ liệu | Log bị xoá hoặc profile khác | Kiểm tra `~/.claude/projects/`; đúng user/profile |
 | Số token lệch với bill | Bill tính cả API trực tiếp, insights chỉ CLI local | So với `/stats` cùng nguồn; bill cloud xem console riêng |
@@ -58,4 +53,4 @@ Verify (30 giây):
 - [../cost/README.md](../../session-context/cost/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
-> Mẹo 1 dòng: _chưa chắc thì gọi /insights sớm — 1 lệnh đúng lúc rẻ hơn 10 prompt sửa sai._
+> Mẹo 1 dòng: _áp dụng 1 gợi ý trước, đừng đổi hết 5 cái một lúc._

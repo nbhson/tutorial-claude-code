@@ -1,16 +1,15 @@
 # /cost — Xem tốn bao nhiêu token và bao nhiêu tiền trong phiên
 
-> Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (lệnh chỉ đọc báo cáo billing, không xóa/sửa gì, không phát sinh phí khi gọi)
-
-> Nói nôm na: `/cost` là "hóa đơn tại bàn": cho biết session hiện tại đã đốt bao nhiêu input/output tokens (kể cả cache), quy ra tiền ước tính, để bạn quyết định có nên compact/clear/đổi model hay không.
+> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (lệnh chỉ đọc báo cáo billing, không xóa/sửa gì, không phát sinh phí khi gọi)
+> **Nói nôm na:** `/cost` là "hóa đơn tại bàn": cho biết session hiện tại đã đốt bao nhiêu input/output tokens (kể cả cache), quy ra tiền ước tính, để bạn quyết định có nên compact/clear/đổi model hay không.
 
 ## Khi nào dùng
 
-- Dùng /cost khi bạn muốn quản lý phiên/context (mở, dọn, lưu, chia nhánh) mà không đụng tới code trên đĩa.
-- Dùng /cost **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /cost thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/cost` khi bạn muốn biết session đang đốt bao nhiêu token/quy ra tiền để quyết định có nên tiếp.
+- Dùng `/cost` sau khi đổi model hoặc trước khi tiếp tục task dài để ý thức ngân sách.
+- Không dùng `/cost` như số billing chính thức — đây là ước tính client, dashboard mới là nguồn tin khi trả tiền.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/cost`
@@ -18,7 +17,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -46,7 +45,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/cost` báo $0 dù hỏi nhiều | Đang dùng subscription quota, counters hiển thị khác / bản cũ chưa nhân giá | Không phải lỗi nghiêm trọng; xem `/usage` (quota) thay vì `/cost` |
 | Số `/cost` khác dashboard | `/cost` ước tính client, dashboard tính giá chính thức + discount/thuế | Tin dashboard cho billing, tin `/cost` cho ra quyết định kỹ thuật |

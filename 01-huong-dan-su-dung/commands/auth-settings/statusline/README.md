@@ -1,16 +1,15 @@
 # /statusline — Thanh trạng thái tuỳ biến: acc, model, dir, quota luôn trên màn hình
 
-> Loại Built-in · Nhóm Settings · Nguy hiểm Không (chỉ hiển thị — nhưng Có nhẹ nếu statusline chạy script ngoài lạ mà bạn paste mù từ internet)
-
-> Nói nôm na: `/statusline` cấu hình dòng thông tin nhỏ hiện thường trực (dưới prompt hoặc chân terminal): `work · default · /repo/api · 84% cache · 132k` — khỏi gõ `/status` 20 lần/ngày. Hiểu `/statusline` là hiểu "dán taplo lên kính lái" — `/status` là mở nắp capo xem, statusline là đồng hồ luôn trước mặt.
+> Loại Built-in · Nhóm Settings · Mức rủi ro Không (chỉ hiển thị — nhưng Có nhẹ nếu statusline chạy script ngoài lạ mà bạn paste mù từ internet)
+> **Nói nôm na:** `/statusline` cấu hình dòng thông tin nhỏ hiện thường trực (dưới prompt hoặc chân terminal): `work · default · /repo/api · 84% cache · 132k` — khỏi gõ `/status` 20 lần/ngày. Hiểu `/statusline` là hiểu "dán taplo lên kính lái" — `/status` là mở nắp capo xem, statusline là đồng hồ luôn trước mặt.
 
 ## Khi nào dùng
 
-- Dùng /statusline khi bạn cần chỉnh môi trường/tài khoản/cài đặt (login, IDE, config, remote, sandbox).
-- Dùng /statusline **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /statusline thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng khi bạn muốn acc/model/cwd/quota hiện thường trực mà không phải gõ `/status` nhiều lần trong ngày.
+- Dùng **trước khi** không muốn lặp lại `/status` (đầu ngày, đầu session): set statusline 1 lần, thấy `[acc]` đổi là nhận ra nhầm tài khoản ngay.
+- Không dùng `/statusline` thay cho việc tự để mắt trạng thái bất thường — dòng hiển thị có, nhưng bạn vẫn phải nhìn.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/statusline`
@@ -20,7 +19,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -36,7 +35,7 @@ Kết quả mong đợi:
 - Claude trả đúng việc của /statusline (không lan man), nêu rõ bước tiếp theo.
 - Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
 
-Verify (30 giây):
+**Kiểm tra nhanh:**
 
 ```bash
 # trong session: /status hoặc /context để chắc mode/context còn sạch
@@ -44,7 +43,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Biến hiện trống (`{quota}` = rỗng) | Bản CLI cũ chưa có biến đó | Update CLI; bỏ biến đó khỏi mẫu tạm |
 | Mỗi Enter chậm 1-2s | Exec nặng | `/statusline` xem exec nào chậm → xoá/cache |

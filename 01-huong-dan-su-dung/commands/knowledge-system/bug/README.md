@@ -1,26 +1,25 @@
 # /bug — Gói bug report gửi Anthropic: khi lỗi là của tool, không phải của bạn
 
-> Loại Workflow (thu thập + đóng gói) · Nhóm Tri thức & Hệ thống · Nguy hiểm Có nếu ẩu (gói conversation gửi đi có thể chứa secret/code nội bộ — luôn review trước khi Send)
-
-> Nói nôm na: `/bug` thu thập mọi thứ cần để báo lỗi Claude Code: mô tả, bước tái hiện, log, version, transcript rút gọn — đóng thành 1 gói, bạn review rồi mới gửi (GitHub issue hoặc Anthropic support). Dùng khi `/debug` xong kết luận "tôi làm đúng, tool sai". Hiểu 1 câu: `/debug` tự xem, `/bug` gửi người ta xem.
+> Loại Workflow (thu thập + đóng gói) · Nhóm Tri thức & Hệ thống · Mức rủi ro Có nếu ẩu (gói conversation gửi đi có thể chứa secret/code nội bộ — luôn review trước khi Send)
+> **Nói nôm na:** `/bug` thu thập mọi thứ cần để báo lỗi Claude Code: mô tả, bước tái hiện, log, version, transcript rút gọn — đóng thành 1 gói, bạn review rồi mới gửi (GitHub issue hoặc Anthropic support). Dùng khi `/debug` xong kết luận "tôi làm đúng, tool sai". Hiểu 1 câu: `/debug` tự xem, `/bug` gửi người ta xem.
 
 ## Khi nào dùng
 
-- Dùng /bug khi bạn cần tra cứu/chẩn đoán/mở rộng hệ tri thức (agents, MCP, hooks, skills, debug, doctor).
-- Dùng /bug **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /bug thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng khi `/debug` xong kết luận "tôi làm đúng, tool sai" và bạn cần gửi báo cáo cho Anthropic/GitHub.
+- Dùng **trước khi** tự bới log bằng tay: `/bug` gom sẵn mô tả, bước tái hiện, log, version, transcript rút gọn.
+- Không dùng khi lỗi do cấu hình/code của bạn — sửa trước, đừng đẩy việc của mình lên tool.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
-`/bug`
-`/bug --anonymize`
-`/bug --dry-run`
+/bug                # thu thập rồi mở bước review trước khi gửi
+/bug --anonymize    # che secret/PII (DSN, token) trước khi đóng gói
+/bug --dry-run      # chỉ xem gói, chưa gửi
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -34,18 +33,14 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /bug (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Gói report gồm mô tả + bước tái hiện + log/transcript rút gọn + version; sau anonymize không còn secret.
+- Gửi xong có link issue (GitHub) hoặc ticket (support) để dán vào PR nội bộ.
 
-Verify (30 giây):
-
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+**Kiểm tra nhanh:** mở lại gói ở bước B3, grep `password|token|dsn` phải rỗng; `/status` hoặc `/context` xác nhận mode/context còn sạch.
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/bug` báo unknown | CLI cũ | Update CLI; hoặc báo tay qua GitHub |
 | Anonymize sót secret lạ (format riêng cty) | Pattern không biết | Review tay B3; thêm pattern vào `.claude/bug-ignore` nếu có |
@@ -59,4 +54,4 @@ Verify (30 giây):
 - [../mcp/README.md](../../knowledge-system/mcp/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
-> Mẹo 1 dòng: _chưa chắc thì gọi /bug sớm — 1 lệnh đúng lúc rẻ hơn 10 prompt sửa sai._
+> Mẹo 1 dòng: _luôn chạy --anonymize trước khi Send — mắt người vẫn là chốt cuối._

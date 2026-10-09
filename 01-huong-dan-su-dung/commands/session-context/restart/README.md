@@ -1,16 +1,15 @@
 # /restart — Khởi động lại CLI giữ nguyên session (kèm offer bản mới)
 
-> Loại Built-in · Nhóm Session & Hệ thống · Nguy hiểm Không (giữ session; nhưng Có nhẹ nếu bạn restart giữa lúc tool đang ghi file — chờ nó xong hẳn rồi hẵng restart)
-
-> Nói nôm na: `/restart` (bí danh `/update` ở một số bản) khởi động lại tiến trình Claude Code mà KHÔNG mất hội thoại: update bản mới, nạp lại config/MCP/hooks, sửa treo lag — xong quay lại đúng chỗ đang làm. Bản mới còn offer nâng cấp version nếu có. Hiểu `/restart` là hiểu "khởi động lại máy mà không mất tab đang mở".
+> Loại Built-in · Nhóm Session & Hệ thống · Mức rủi ro Không (giữ session; nhưng Có nhẹ nếu bạn restart giữa lúc tool đang ghi file — chờ nó xong hẳn rồi hẵng restart)
+> **Nói nôm na:** `/restart` (bí danh `/update` ở một số bản) khởi động lại tiến trình Claude Code mà KHÔNG mất hội thoại: update bản mới, nạp lại config/MCP/hooks, sửa treo lag — xong quay lại đúng chỗ đang làm. Bản mới còn offer nâng cấp version nếu có. Hiểu `/restart` là hiểu "khởi động lại máy mà không mất tab đang mở".
 
 ## Khi nào dùng
 
-- Dùng /restart khi bạn muốn quản lý phiên/context (mở, dọn, lưu, chia nhánh) mà không đụng tới code trên đĩa.
-- Dùng /restart **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /restart thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/restart` khi CLI bắt đầu treo/lag, MCP timeout, hoặc cần nạp lại config/MCP/hooks.
+- Dùng `/restart` sau khi update bản mới, và chờ tool đang ghi file xong hẳn trước khi restart.
+- Không dùng `/restart` giữa lúc tool đang chạy lệnh dài — cắt ngang có thể làm fail thao tác đang ghi.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/restart`
@@ -20,7 +19,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -48,7 +47,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/update` báo unknown command | Bản bạn không có bí danh này | Dùng `/restart` (offer update nằm trong đó) |
 | Restart xong session trống | Snapshot fail (disk đầy / crash đúng lúc ghi) | `/resume` tìm session ID gần nhất; dọn disk; đừng restart khi máy báo disk full |

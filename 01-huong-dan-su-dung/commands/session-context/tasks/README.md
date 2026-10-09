@@ -1,16 +1,15 @@
 # /tasks — Quản lý background jobs đang chạy ngầm (alias /bashes)
 
-> Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (chỉ liệt kê/theo dõi jobs; kill job có thể dừng việc đang chạy — không xóa code)
-
-> Nói nôm na: `/tasks` (alias `/bashes`) là "trình quản lý tác vụ nền": xem jobs nào đang chạy (test suite, dev server, agent Explore dài), kiểm tra output, hoặc dừng job kẹt.
+> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (chỉ liệt kê/theo dõi jobs; kill job có thể dừng việc đang chạy — không xóa code)
+> **Nói nôm na:** `/tasks` (alias `/bashes`) là "trình quản lý tác vụ nền": xem jobs nào đang chạy (test suite, dev server, agent Explore dài), kiểm tra output, hoặc dừng job kẹt.
 
 ## Khi nào dùng
 
-- Dùng /tasks khi bạn muốn quản lý phiên/context (mở, dọn, lưu, chia nhánh) mà không đụng tới code trên đĩa.
-- Dùng /tasks **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /tasks thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/tasks` (alias `/bashes`) khi muốn xem job nền nào đang chạy (test suite, dev server, agent Explore dài).
+- Dùng `/tasks` để kiểm tra output hoặc dừng một job đang kẹt/watch mode.
+- Không dùng `/tasks` như lịch sử lệnh — chỉ lệnh chạy nền lâu mới xuất hiện ở đây.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/tasks`
@@ -19,7 +18,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -46,7 +45,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/tasks` trống dù vừa chạy lệnh | Lệnh chạy foreground xong nhanh, không thành job nền | Đúng hành vi; chỉ lệnh lâu mới thành background job |
 | Job running mãi không xong | Kẹt watch mode / chờ input / test treo | Kill rồi chạy lại với flags non-interactive (`--watchAll=false`, `--reporter=min`) |

@@ -1,26 +1,25 @@
 # /claude-api — Vọc Anthropic API: migrate SDK, thử managed agents
 
-> Loại Skill (tích hợp API) · Nhóm Tri thức & Hệ thống · Nguy hiểm Không (chỉ sinh code; nhưng Có nhẹ khi code chạm API key/tiền thật — key vào env, test trên Haiku trước)
-
-> Nói nôm na: `/claude-api` là bộ subcommands giúp dev dùng Anthropic API/SDK: migrate code cũ sang SDK mới, onboard managed agents (Agent SDK chạy trên hạ tầng Anthropic), và tra cứu mẫu gọi API copy-paste được. Đặc biệt: khi bạn `import anthropic` trong code, skill này tự load (auto-load) để gợi ý đúng phiên bản SDK.
+> Loại Skill (tích hợp API) · Nhóm Tri thức & Hệ thống · Mức rủi ro Không (chỉ sinh code; nhưng Có nhẹ khi code chạm API key/tiền thật — key vào env, test trên Haiku trước)
+> **Nói nôm na:** `/claude-api` là bộ subcommands giúp dev dùng Anthropic API/SDK: migrate code cũ sang SDK mới, onboard managed agents (Agent SDK chạy trên hạ tầng Anthropic), và tra cứu mẫu gọi API copy-paste được. Đặc biệt: khi bạn `import anthropic` trong code, skill này tự load (auto-load) để gợi ý đúng phiên bản SDK.
 
 ## Khi nào dùng
 
-- Dùng /claude-api khi bạn cần tra cứu/chẩn đoán/mở rộng hệ tri thức (agents, MCP, hooks, skills, debug, doctor).
-- Dùng /claude-api **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /claude-api thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng khi bạn viết/sửa code gọi Anthropic API hoặc SDK và muốn mẫu đúng phiên bản.
+- Dùng **trước khi** tự đọc changelog SDK: skill auto-load lúc bạn `import anthropic` để nhắc version.
+- Không dùng thay việc hiểu luồng API của bạn — code sinh xong bạn vẫn phải test.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
-`/claude-api`
-`/claude-api migrate`
-`/claude-api managed-agents-onboard`
+/claude-api                        # mở skill, xem subcommand
+/claude-api migrate <file>         # migrate code cũ sang SDK mới
+/claude-api managed-agents-onboard # onboard managed agents
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -33,18 +32,14 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /claude-api (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Diff migrate rõ ràng (API cũ → `client.messages.create(...)` đúng tham số), kèm cảnh báo method thiếu.
+- Với onboard: checklist env + smoke test chạy được trên managed.
 
-Verify (30 giây):
-
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+**Kiểm tra nhanh:** `pip show anthropic` xem version; chạy `pytest` xanh sau khi duyệt diff.
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Skill không auto-load | File chưa mở trong context / bản cũ | Gõ tay `/claude-api`; update CLI |
 | `migrate` báo SDK đã mới | Đúng là mới — hoặc pin version cũ trong requirements | Kiểm tra `pip show anthropic`; sửa pin rồi migrate |
@@ -58,4 +53,4 @@ Verify (30 giây):
 - [../agents/README.md](../../knowledge-system/agents/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
-> Mẹo 1 dòng: _chưa chắc thì gọi /claude-api sớm — 1 lệnh đúng lúc rẻ hơn 10 prompt sửa sai._
+> Mẹo 1 dòng: _dán API key qua env, không hardcode; test trên Haiku trước cho rẻ._

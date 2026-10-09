@@ -1,16 +1,15 @@
 # /export — Xuất toàn bộ hội thoại ra file text để lưu trữ, bàn giao, đối soát
 
-> Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (chỉ đọc + ghi 1 file export mới, không xóa/sửa code hay history)
-
-> Nói nôm na: `/export` là "nút in báo cáo": gom transcript hiện tại thành 1 file text/markdown gọn gàng để gửi đồng đội, lưu docs, hoặc đọc lại sau khi `/clear`.
+> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (chỉ đọc + ghi 1 file export mới, không xóa/sửa code hay history)
+> **Nói nôm na:** `/export` là "nút in báo cáo": gom transcript hiện tại thành 1 file text/markdown gọn gàng để gửi đồng đội, lưu docs, hoặc đọc lại sau khi `/clear`.
 
 ## Khi nào dùng
 
-- Dùng /export khi bạn muốn quản lý phiên/context (mở, dọn, lưu, chia nhánh) mà không đụng tới code trên đĩa.
-- Dùng /export **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /export thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/export` khi bạn cần lưu trữ transcript, bàn giao ca làm việc, hoặc đọc lại sau khi `/clear`.
+- Dùng `/export` ở cuối ca hoặc sau khi `/compact` để file ra gọn, có quyết định và bước tiếp theo.
+- Không dùng `/export` thay cho backup code — nó chỉ in hội thoại ra file text, không snapshot source.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/export`
@@ -18,7 +17,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -43,7 +42,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Không biết file export nằm đâu | Mỗi bản gợi ý đường dẫn khác nhau, dễ bỏ qua | Đọc kỹ câu trả lời sau `/export`, hoặc dặn trước "lưu vào docs/handover.md" |
 | File export quá dài (5000+ dòng) | Xuất nguyên session 100+ turns chưa compact | `/compact` trước rồi export; hoặc dặn "chỉ xuất quyết định + bước tiếp theo" |

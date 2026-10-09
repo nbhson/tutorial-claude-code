@@ -1,26 +1,26 @@
 # /plugin — Chợ ứng dụng của Claude: cài 1 lần được cả bộ skill + agent + MCP
 
-> Loại Built-in · Nhóm Tri thức & Hệ thống · Nguy hiểm Có (plugin chạy code trên máy bạn: hooks + MCP server của plugin có thể đọc file, gọi mạng — chỉ cài nguồn tin cậy)
-
-> Nói nôm na: `/plugin` mở trình quản lý plugin (plugin manager): khám phá (Discover), duyệt (Browse) và quản lý (Manage) các gói mở rộng. Một plugin = bundle gồm `skills/` (quy trình), `agents/` (subagent chuyên), `hooks/` (tự động hoá), MCP config (tools mới) và `commands/` (slash command mới) — cài 1 lần là có cả bộ, khỏi lắp từng mảnh. Hiểu `/plugin` là hiểu "app store" của Claude Code.
+> Loại Built-in · Nhóm Tri thức & Hệ thống · Mức rủi ro Có (plugin chạy code trên máy bạn: hooks + MCP server của plugin có thể đọc file, gọi mạng — chỉ cài nguồn tin cậy)
+> **Nói nôm na:** `/plugin` mở trình quản lý plugin (plugin manager): khám phá (Discover), duyệt (Browse) và quản lý (Manage) các gói mở rộng. Một plugin = bundle gồm `skills/` (quy trình), `agents/` (subagent chuyên), `hooks/` (tự động hoá), MCP config (tools mới) và `commands/` (slash command mới) — cài 1 lần là có cả bộ, khỏi lắp từng mảnh. Hiểu `/plugin` là hiểu "app store" của Claude Code.
 
 ## Khi nào dùng
 
-- Dùng /plugin khi bạn cần tra cứu/chẩn đoán/mở rộng hệ tri thức (agents, MCP, hooks, skills, debug, doctor).
-- Dùng /plugin **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /plugin thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng khi muốn cài bundle sẵn (skill + agent + hook + MCP + command) thay vì lắp từng mảnh.
+- Dùng **trước khi** tự build lại thứ đã có plugin: discover trước, tự viết sau.
+- Không dùng thay audit: plugin chạy code trên máy bạn, chỉ cài nguồn tin cậy.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
-`/plugin`
-`/plugin discover`
-`/plugin browse`
+/plugin              # mở trình quản lý plugin
+/plugin discover     # khám phá plugin
+/plugin browse       # duyệt marketplace
+# cài từ marketplace: claude plugin install --marketplace (cần ≥2.1.292)
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -34,18 +34,14 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /plugin (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Plugin enabled, lệnh/skill/agent/hook từ plugin xuất hiện sau khi nạp lại.
+- Cài từ marketplace cần ≥2.1.292 (`claude plugin install --marketplace`).
 
-Verify (30 giây):
-
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+**Kiểm tra nhanh:** `/plugin` Manage thấy enabled; gõ thử 1 lệnh của plugin để chắc đã nạp.
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Gõ lệnh plugin báo not found | Plugin disabled hoặc session cũ chưa nạp | `/plugin` Manage kiểm tra enabled; `/clear` nạp lại |
 | `/review` hiện picker mỗi lần | 2 plugin cùng tên lệnh | Gọi đầy đủ `pluginA:review`; hoặc gỡ 1 plugin |
@@ -59,4 +55,4 @@ Verify (30 giây):
 - [../permissions/README.md](../../model-mode/permissions/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
-> Mẹo 1 dòng: _chưa chắc thì gọi /plugin sớm — 1 lệnh đúng lúc rẻ hơn 10 prompt sửa sai._
+> Mẹo 1 dòng: _cài 1 plugin rồi /doctor ngay — plugin mới là chỗ dễ lệch cấu hình._

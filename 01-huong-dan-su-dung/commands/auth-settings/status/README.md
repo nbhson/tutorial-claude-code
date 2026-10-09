@@ -1,16 +1,15 @@
 # /status — Bảng đồng hồ: là ai, model gì, ở đâu, tốn bao nhiêu
 
-> Loại Built-in · Nhóm Settings · Nguy hiểm Không (chỉ đọc — lệnh an toàn nhất, gõ bao nhiêu lần cũng được)
-
-> Nói nôm na: `/status` hiện snapshot 1 màn hình: account + plan, model đang chạy, working dir + roots, cache hit, session dài bao nhiêu, token/quota đã dùng, version CLI. Hiểu `/status` là hiểu "nhìn đồng hồ taplo" — đầu session 3 giây, sau mỗi `/cd`/`teleport`/`login` 1 lần, khỏi lái mù.
+> Loại Built-in · Nhóm Settings · Mức rủi ro Không (chỉ đọc — lệnh an toàn nhất, gõ bao nhiêu lần cũng được)
+> **Nói nôm na:** `/status` hiện snapshot 1 màn hình: account + plan, model đang chạy, working dir + roots, cache hit, session dài bao nhiêu, token/quota đã dùng, version CLI. Hiểu `/status` là hiểu "nhìn đồng hồ taplo" — đầu session 3 giây, sau mỗi `/cd`/`teleport`/`login` 1 lần, khỏi lái mù.
 
 ## Khi nào dùng
 
-- Dùng /status khi bạn cần chỉnh môi trường/tài khoản/cài đặt (login, IDE, config, remote, sandbox).
-- Dùng /status **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /status thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng khi muốn biết 1 màn hình: account/plan, model đang chạy, cwd + roots, cache hit, quota đã dùng, version CLI — đầu session hoặc sau mỗi `/cd`/`/login`/`/teleport`.
+- Dùng **trước khi** làm việc trên máy/repo lạ hoặc nghi đang chạy nhầm account — check 3 giây khỏi dùng nhầm quota.
+- Không dùng `/status` thay cho việc tự quyết định account/model đúng — nó cho bạn thấy, nhưng việc chọn vẫn là của bạn.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/status`
@@ -20,7 +19,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -37,7 +36,7 @@ Kết quả mong đợi:
 - Claude trả đúng việc của /status (không lan man), nêu rõ bước tiếp theo.
 - Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
 
-Verify (30 giây):
+**Kiểm tra nhanh:**
 
 ```bash
 # trong session: /status hoặc /context để chắc mode/context còn sạch
@@ -45,7 +44,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Status hiện acc cũ sau khi login mới | Session giữ auth snapshot, chưa reload | Session mới (hoặc `/clear`) để nhận acc mới; kiểm tra `/config account` default |
 | `Roots: X (files only)` dù đã add-dir | Thiếu env flag cho CLAUDE.md dir phụ | Xem `/add-dir` (bật flag → remove + add lại) |

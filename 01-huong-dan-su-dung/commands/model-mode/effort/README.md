@@ -1,16 +1,16 @@
 # /effort — Chỉnh độ sâu suy luận (reasoning budget) mà không cần đổi model
 
-> Loại Built-in · Nhóm Model & Mode · Nguy hiểm Không (không sửa file, chỉ tăng/giảm tokens suy luận; effort cao tốn tiền và chậm hơn)
-
-> Nói nôm na: `/effort` là núm vặn "nghĩ kỹ hay nghĩ nhanh": `low` trả lời chớp nhoáng cho việc dễ, `max` đào sâu nhiều vòng cho bài toán kiến trúc. Cùng một model Sonnet, effort khác nhau cho chất lượng khác nhau — rẻ hơn nhiều so với cứ stuck là lên Opus.
+> Loại Built-in · Nhóm Model & Mode · Mức rủi ro Không (không sửa file, chỉ tăng/giảm tokens suy luận; effort cao tốn tiền và chậm hơn)
+>
+> **Nói nôm na:** `/effort` là núm vặn "nghĩ kỹ hay nghĩ nhanh": `low` trả lời chớp nhoáng cho việc dễ, `max` đào sâu nhiều vòng cho bài toán kiến trúc. Cùng một model, effort khác nhau cho chất lượng khác nhau — rẻ hơn nhiều so với cứ stuck là lên Opus.
 
 ## Khi nào dùng
 
-- Dùng /effort khi bạn muốn đổi cách model suy nghĩ/chạy (model, effort, mode, mục tiêu, quyền) trước khi làm task khó.
+- Dùng /effort khi cùng một model cần nghĩ sâu hơn (bug lạ, thiết kế hệ thống) hoặc trả lời nhanh hơn (việc vặt) — vặn reasoning budget thay vì đổi model.
 - Dùng /effort **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
 - Không dùng /effort thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/effort`
@@ -20,7 +20,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -47,7 +47,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/effort max` báo `unknown effort level` | Bản < 2.1.205 | Update `npm i -g @anthropic-ai/claude-code`; tạm dùng `/effort high` |
 | Đặt `max` rồi restart mất | `max` session-only by design | Đặt lại sau mỗi session; hoặc `settings.json` để `high` persistent |

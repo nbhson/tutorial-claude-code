@@ -1,8 +1,47 @@
-# FAQ 03 — Permissions & Modes
+# FAQ 03 — Permissions & modes (quyền hạn, chế độ & headless)
 
-> Nhóm Phanh & Chế độ · 10 câu hỏi deep-dive · Đọc xong dựng phanh 3 lớp, xoay modes không sợ, headless không kẹt deny
+> **Bài này cho ai:** bạn cần dựng phanh cho Claude Code, chọn permission mode đúng việc, hoặc đang kẹt deny lúc headless mà không hiểu vì sao.
+> **Cần gì trước:** đã cài và đăng nhập Claude Code ([FAQ 01](01-tai-khoan-pricing-cai-dat.md)); đọc qua [bài 10 — permissions & modes](../01-huong-dan-su-dung/10-permissions-modes-availability.md) càng tốt, không bắt buộc.
+> **Đọc xong bạn làm được:**
+> - Dựng phanh 3 lớp allow / ask / deny ở đúng file settings và xem bản merged bằng `/permissions`.
+> - Xoay 5 permission mode bằng Shift+Tab, biết lúc nào giữ `plan`, lúc nào nới `auto`, lúc nào không bao giờ mở `bypassPermissions`.
+> - Chạy headless `-p` với allowlist không bị kẹt deny, viết `PreToolUse` hook deny thắng cả `bypassPermissions`.
+> **Thời gian:** ~20 phút
 
-Mỗi câu có giải thích + config/lệnh copy-paste + ví dụ + khi nào áp dụng.
+## Thuật ngữ dùng trong bài này
+
+Đọc bảng này trước khi vào câu 1 — mọi thuật ngữ Anh trong bài đều được giải thích ở đây.
+
+| Thuật ngữ | Hiểu nôm na là gì | Ví dụ thấy ngay |
+|---|---|---|
+| Permission | Quyền Claude được tự làm việc gì mà không phải hỏi bạn | `/permissions` hiện bảng allow/ask/deny của session |
+| allow / ask / deny | 3 mức quyền: tự chạy luôn / hỏi 1 câu rồi chạy / cấm hẳn | `"deny": ["Bash(rm -rf:*)"]` trong settings.json |
+| Permission mode | Mức "tin tưởng" của cả session, xoay bằng Shift+Tab | `plan` chỉ đọc, `bypassPermissions` bỏ hết câu hỏi |
+| Merged view | Bản rule sau khi ghép mọi file settings lại — thứ thật sự có hiệu lực | `/permissions` hiện bản merged, không hiện từng file lẻ |
+| Settings file | Nơi ghi rule: `.claude/settings.json` (team), `.claude/settings.local.json` (bạn) | `cat .claude/settings.json` |
+| Managed policy | Quy tắc admin công ty ép từ xa, ở nhà không gỡ được | công ty cấm `curl ... \| bash` |
+| Hook | Script do chính CLI chạy khi sắp gọi tool — model không nhìn thấy nên không thể "quên" | `PreToolUse` hook chặn lệnh push lên `main` |
+| Headless | Chế độ `-p` cho CI/scripts: không ai bấm Yes → mọi `ask` thành deny | `claude -p "review PR"` |
+| Trust | Sự tin tưởng dành cho folder, cấp lúc mở repo; chưa tin thì hooks trong project bị bỏ qua | dialog "trust this folder" |
+| Frontmatter hook | Hook khai ngay trong file subagent `.claude/agents/x.md`, ở phần đầu file | `hooks:` trong frontmatter của agent `reviewer` |
+
+## Mục lục
+
+- [Sơ đồ nhanh (nhìn 30 giây là nhớ)](#sơ-đồ-nhanh-nhìn-30-giây-là-nhớ)
+- [Chọn đường vào nhanh](#chọn-đường-vào-nhanh)
+- [Bảng tổng hợp: allow / ask / deny + 3 files + 5 modes](#bảng-tổng-hợp-allow--ask--deny--3-files--5-modes)
+- [1. allow / ask / deny viết ở đâu? (/permissions alias /allowed-tools)](#1-allow--ask--deny-viết-ở-đâu-permissions-alias-allowed-tools)
+- [2. Shift+Tab xoay modes thế nào? (5 modes: default → acceptEdits → plan → auto → bypass)](#2-shifttab-xoay-modes-thế-nào-5-modes-default--acceptedits--plan--auto--bypass)
+- [3. Cloud có bypassPermissions không? (chỉ acceptEdits / plan, auto tùy bản, không bypass)](#3-cloud-có-bypasspermissions-không-chỉ-acceptedits--plan-auto-tùy-bản-không-bypass)
+- [4. Hook vs permission rule — ai thắng? (PreToolUse deny thắng cả bypassPermissions)](#4-hook-vs-permission-rule--ai-thắng-pretooluse-deny-thắng-cả-bypasspermissions)
+- [5. Rules (permission strings) có chặn được lệnh lách (binary khác, đường dẫn khác) không?](#5-rules-permission-strings-có-chặn-được-lệnh-lách-binary-khác-đường-dẫn-khác-không)
+- [6. Background subagent bị deny trong -p (headless) — vì sao và fix?](#6-background-subagent-bị-deny-trong--p-headless--vì-sao-và-fix)
+- [7. Frontmatter hooks của project subagent không chạy — vì sao? (trust)](#7-frontmatter-hooks-của-project-subagent-không-chạy--vì-sao-trust)
+- [8. Thiết kế allowlist cho headless (-p) thế nào cho không kẹt?](#8-thiết-kế-allowlist-cho-headless--p-thế-nào-cho-không-kẹt)
+- [9. 3 settings files merge thế nào? (xem merged, đừng đoán)](#9-3-settings-files-merge-thế-nào-xem-merged-đừng-đoán)
+- [10. Khi nào dùng --dangerously-skip-permissions? (gần như không)](#10-khi-nào-dùng---dangerously-skip-permissions-gần-như-không)
+- [Vẫn lỗi thì sao? (permissions/modes)](#vẫn-lỗi-thì-sao-permissionsmodes)
+- [Tham khảo chéo](#tham-khảo-chéo)
 
 ---
 
@@ -19,13 +58,29 @@ flowchart LR
   E -->|deny| H[Chặn cứng]
 ```
 
+## Chọn đường vào nhanh
+
+Đọc bảng này khi cần nhảy thẳng tới câu đúng với việc đang mắc — mỗi dòng 1 tình huống.
+
+| Tình huống của bạn | Nhảy tới |
+|---|---|
+| Không biết ghi allow / deny vào file nào | [Câu 1](#1-allow--ask--deny-viết-ở-đâu-permissions-alias-allowed-tools) |
+| Bấm Shift+Tab thấy hiện plan / acceptEdits mà không hiểu | [Câu 2](#2-shifttab-xoay-modes-thế-nào-5-modes-default--acceptedits--plan--auto--bypass) |
+| Dùng Claude Code trên bản Web/cloud, muốn biết có bypass không | [Câu 3](#3-cloud-có-bypasspermissions-không-chỉ-acceptedits--plan-auto-tùy-bản-không-bypass) |
+| Không rõ hook hay permission rule mới là thứ chặn được Claude | [Câu 4](#4-hook-vs-permission-rule--ai-thắng-pretooluse-deny-thắng-cả-bypasspermissions) |
+| Đã deny `rm -rf` mà vẫn sợ model lách bằng lệnh khác | [Câu 5](#5-rules-permission-strings-có-chặn-được-lệnh-lách-binary-khác-đường-dẫn-khác-không) |
+| Chạy `-p` / CI mà subagent nào cũng bị deny | [Câu 6](#6-background-subagent-bị-deny-trong--p-headless--vì-sao-và-fix) |
+| Đã khai hooks trong file subagent mà nó không chịu chạy | [Câu 7](#7-frontmatter-hooks-của-project-subagent-không-chạy--vì-sao-trust) |
+| Viết allowlist cho script headless sao cho không kẹt | [Câu 8](#8-thiết-kế-allowlist-cho-headless--p-thế-nào-cho-không-kẹt) |
+| "Allow rồi mà sao vẫn hỏi / vẫn deny" | [Câu 9](#9-3-settings-files-merge-thế-nào-xem-merged-đừng-đoán) |
+| Đang định xài `--dangerously-skip-permissions` cho máy dev | [Câu 10](#10-khi-nào-dùng---dangerously-skip-permissions-gần-như-không) |
+
 ## Bảng tổng hợp: allow / ask / deny + 3 files + 5 modes
 
+Đọc bảng này khi cần tra nhanh 1 khái niệm: mức quyền nào, ghi ở file nào, hay mode nào đang chạy.
+
 | Khái niệm | Tóm tắt 1 dòng | Xem ở đâu |
-|---
-
-
-|---|---|
+|---|---|---|
 | `allow` | Được chạy luôn, không hỏi | `/permissions` |
 | `ask` | Hỏi từng lần (mặc định cho sửa/xoá/chạy) | `/permissions` |
 | `deny` | Cấm luôn, hook allow cũng không nới được | `/permissions` merged |
@@ -43,20 +98,21 @@ Thứ tự merge (thắng dần): **defaults < project < local < managed**. Mana
 ---
 
 ## 1. allow / ask / deny viết ở đâu? (`/permissions` alias `/allowed-tools`)
-> **Hỏi ngắn gọn:** allow / ask / deny viết ở đâu? (`/permissions` alias `/allowed-tools`)
->
-> **Trả lời 1 câu:** Đừng đoán file nào đang thắng — mở `/permissions` xem merged view.
 
+> **Câu hỏi:** Muốn cấm Claude chạy `rm -rf`, hay cho phép tự chạy test không cần hỏi, thì ghi rule vào đâu?
+> **Trả lời 1 câu:** Ghi vào 3 chỗ (settings file + policy của org) rồi mở `/permissions` xem bản merged — đừng đoán file nào đang thắng.
 
-**Giải thích chi tiết + ví dụ:** Đừng đoán file nào đang thắng — mở `/permissions` xem merged view. Alias cũ `/allowed-tools` vẫn chạy.
-
-3 files:
+**Giải thích:** Lệnh `/permissions` (alias cũ `/allowed-tools` vẫn chạy) gom rule từ 3 nơi và hiện bản merged:
 
 - `.claude/settings.json` — team baseline, commit git (VD: deny `rm -rf`, deny `.env`).
 - `.claude/settings.local.json` — cá nhân (VD: bạn hay dùng `pnpm`, allow thêm), không commit.
 - Managed policy — org ép từ xa (VD: cấm `curl ... | bash`), local không gỡ được.
 
-**Config copy-paste (baseline Node, team dùng chung):**
+Ba chỗ này được ghép theo thứ tự nào thì xem [câu 9](#9-3-settings-files-merge-thế-nào-xem-merged-đừng-đoán).
+
+**Khi nào áp dụng:** setup repo mới + mỗi khi permission deny liên tục mà không hiểu vì sao → `/permissions` trước.
+
+**Ví dụ:** Config copy-paste (baseline Node, team dùng chung):
 
 ```json
 {
@@ -68,20 +124,18 @@ Thứ tự merge (thắng dần): **defaults < project < local < managed**. Mana
 }
 ```
 
-**Ví dụ:** PR nào xóa mất `deny rm -rf` → `/doctor permissions` báo đỏ + CI chặn merge (xem FAQ 01 câu 8).
+PR nào xóa mất rule `deny rm -rf` khỏi `.claude/settings.json` → `/doctor` (mục permissions) báo đỏ, CI của team chặn merge (setup 5 lệnh đầu repo xem [FAQ 01 câu 8](01-tai-khoan-pricing-cai-dat.md#8-bắt-đầu-repo-mới-5-lệnh-setup-đầu-repo-là-gì)).
 
-**Khi nào áp dụng:** setup repo mới + mỗi khi permission deny liên tục mà không hiểu vì sao → `/permissions` trước.
+**Đào sâu:** [lệnh `/permissions`](../01-huong-dan-su-dung/commands/model-mode/permissions/README.md) · [câu 9 — 3 settings files merge thế nào](#9-3-settings-files-merge-thế-nào-xem-merged-đừng-đoán) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-permissionsmodes)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 2. Shift+Tab xoay modes thế nào? (5 modes: default → acceptEdits → plan → auto → bypass)
-> **Hỏi ngắn gọn:** Shift+Tab xoay modes thế nào? (5 modes: default → acceptEdits → plan → auto → bypass)
->
-> **Trả lời 1 câu:** Bấm Shift+Tab để xoay vòng, không cần nhớ lệnh.
 
+> **Câu hỏi:** Bấm Shift+Tab thấy hiện chữ plan rồi acceptEdits gì đó — mấy chế độ đó là gì và khi nào dùng?
+> **Trả lời 1 câu:** Shift+Tab xoay vòng 5 permission mode, mỗi mode là 1 mức tin tưởng — không cần nhớ lệnh.
 
-**Giải thích chi tiết + ví dụ:** Bấm Shift+Tab để xoay vòng, không cần nhớ lệnh. Mỗi mode là 1 "mức tin tưởng":
+**Giải thích:** Mỗi mode là 1 "mức tin tưởng":
 
 ```text
 default ── hỏi như thường (làm task lạ)
@@ -91,45 +145,47 @@ auto ── tự chạy nhiều hơn (task tin cậy; cloud hay dùng)
 bypassPermissions ── bỏ hỏi TẤT CẢ (CHỈ CI sandbox, KHÔNG máy dev)
 ```
 
-**Làm thế nào (steps copy-paste):**
+**Khi nào áp dụng:** task càng lớn/càng lạ → mode càng chặt (plan). Task nhỏ/quen → nới dần.
+
+**Ví dụ:**
 
 ```bash
 # Trong session: bấm Shift+Tab để xoay, hoặc gõ:
 /plan    # vào plan mode (đọc + trình plan)
 ```
 
-**Ví dụ:** task "refactor auth 20 files" → vào `plan` trước, duyệt plan 5 phút, rồi sang `acceptEdits` cho chạy. Đừng vào `acceptEdits` ngay với task chưa hiểu.
+Task "refactor auth 20 files" → vào `plan` trước, duyệt plan 5 phút, rồi sang `acceptEdits` cho chạy. Đừng vào `acceptEdits` ngay với task chưa hiểu.
 
-**Khi nào áp dụng:** task càng lớn/càng lạ → mode càng chặt (plan). Task nhỏ/quen → nới dần.
+**Đào sâu:** [lệnh `/plan`](../01-huong-dan-su-dung/commands/model-mode/plan/README.md) · [bài 10 — permissions & modes theo provider](../01-huong-dan-su-dung/10-permissions-modes-availability.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-permissionsmodes)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
-## 3. Cloud có Bypass không? (Không — chỉ Accept edits / Plan, Auto tùy bản)
-> **Hỏi ngắn gọn:** Cloud có Bypass không? (Không — chỉ Accept edits / Plan, Auto tùy bản)
->
-> **Trả lời 1 câu:** Cloud session KHÔNG có `bypassPermissions`.
+## 3. Cloud có `bypassPermissions` không? (chỉ `acceptEdits` / `plan`, `auto` tùy bản, không bypass)
 
+> **Câu hỏi:** Dùng Claude Code trên bản Web/cloud thì có bật bypassPermissions cho nhanh được không?
+> **Trả lời 1 câu:** Không — cloud session chỉ có `acceptEdits`, `plan` (và `auto` tùy bản), không có `bypassPermissions`.
 
-**Giải thích chi tiết + ví dụ:** Cloud session KHÔNG có `bypassPermissions`. Chỉ có Accept edits (tự sửa + push branch) và Plan (chờ duyệt), `/Auto` tùy bản. Đây là thiết kế an toàn: cloud chạy xa tay bạn, bypass là tự sát.
+**Giải thích:** Cloud chỉ có `acceptEdits` (tự sửa + push branch) và `plan` (chờ duyệt), `auto` tùy bản. Đây là thiết kế an toàn: cloud chạy xa tay bạn, bypass là tự sát.
+
+**Khi nào áp dụng:** viết CI/cloud script mà định dùng `--permission-mode bypassPermissions` → đổi sang `dontAsk` + allowlist rõ (xem [FAQ 10](10-ci-sdk-routines-web.md)). Đừng cố bypass trên cloud, không có đâu.
+
+**Ví dụ:**
 
 ```text
 Máy dev:  default → acceptEdits → plan → auto → bypass (đủ 5)
 Cloud:    acceptEdits / plan (/auto tùy bản). KHÔNG bypass.
 ```
 
-**Khi nào áp dụng:** viết CI/cloud script mà định dùng `--permission-mode bypassPermissions` → đổi sang `dontAsk` + allowlist rõ (xem FAQ 10). Đừng cố bypass trên cloud, không có đâu.
+**Đào sâu:** [FAQ 10 — CI, SDK, routines, Web](10-ci-sdk-routines-web.md) · [bài 10 — availability theo provider](../01-huong-dan-su-dung/10-permissions-modes-availability.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-permissionsmodes)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
-## 4. Hook vs permission rule — ai thắng? (`PreToolUse` deny thắng cả bypass)
-> **Hỏi ngắn gọn:** Hook vs permission rule — ai thắng? (`PreToolUse` deny thắng cả bypass)
->
-> **Trả lời 1 câu:** Đây là câu quan trọng nhất file này:
+## 4. Hook vs permission rule — ai thắng? (`PreToolUse` deny thắng cả `bypassPermissions`)
 
+> **Câu hỏi:** Mình viết hook deny mà permission lại allow — cái nào chặn được Claude thật sự?
+> **Trả lời 1 câu:** Hook `PreToolUse` deny thắng mọi thứ kể cả `bypassPermissions`; ngược lại hook allow không nới được gì cả.
 
-**Giải thích chi tiết + ví dụ:** Đây là câu quan trọng nhất file này:
+**Giải thích:** Đây là câu quan trọng nhất file này:
 
 - **`PreToolUse` hook deny THẮNG TẤT CẢ**, kể cả `bypassPermissions`. Hook là phanh tay độc lập.
 - **Hook allow KHÔNG nới được** deny của settings hay `ask` của org. Hooks chỉ siết thêm, không nới lỏng.
@@ -145,7 +201,9 @@ Bảng ai thắng ai:
 | Managed deny vs local allow | Managed thắng |
 | Permission allow vs `ask` mặc định | Allow thắng (trong cùng level) |
 
-**Config copy-paste (phanh không bypass được):**
+**Khi nào áp dụng:** việc critical (push main, xóa DB, gửi tiền) → hook deny + settings deny cả hai. Đừng tin mỗi permission rule.
+
+**Ví dụ:** Config copy-paste (phanh không bypass được):
 
 ```bash
 # scripts/guard-no-push-main.sh — chặn push main dù bypass
@@ -159,27 +217,27 @@ echo '{"decision":"approve"}'
 { "hooks": { "PreToolUse": [{ "matcher": "Bash", "hooks": [{ "type": "command", "command": "./scripts/guard-no-push-main.sh" }] }] } }
 ```
 
-**Khi nào áp dụng:** việc critical (push main, xóa DB, gửi tiền) → hook deny + settings deny cả hai. Đừng tin mỗi permission rule.
+**Đào sâu:** [bài 07 — hooks tự động hóa](../01-huong-dan-su-dung/07-hooks-tu-dong-hoa.md) · [FAQ 05 — hooks](05-hooks-faq.md) · [lệnh `/hooks`](../01-huong-dan-su-dung/commands/knowledge-system/hooks/README.md)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
-## 5. Rules (permission strings) có chặn được lệnh lách (binary khác,绕行) không?
-> **Hỏi ngắn gọn:** Rules (permission strings) có chặn được lệnh lách (binary khác,绕行) không?
->
-> **Trả lời 1 câu:** Không chắc.
+## 5. Rules (permission strings) có chặn được lệnh lách (binary khác, đường dẫn khác) không?
 
+> **Câu hỏi:** Mình đã deny `rm -rf` rồi — model có cách nào chạy lệnh tương tự mà vẫn lọt qua rule không?
+> **Trả lời 1 câu:** Không chắc — rule permission chỉ match chuỗi lệnh, không phải bộ phân tích bảo mật của shell.
 
-**Giải thích chi tiết + ví dụ:** Không chắc. Permission rules là match chuỗi lệnh, không phải shell security parser. Kẻ cố tình (hoặc model ngáo) có thể lách bằng binary khác, đường dẫn khác, encode khác:
+**Giải thích:** Rule hoạt động bằng cách so chuỗi lệnh với pattern bạn viết — nó không hiểu ngữ cảnh shell. Kẻ cố tình (hoặc model ngáo) có thể lách bằng binary khác, đường dẫn khác, encode khác:
 
 ```text
 deny "Bash(rm -rf:*)"  →  lách bằng `rm -R -f`, `python -c 'shutil.rmtree(...)'`, `./my-rm.sh`
 deny "Read(.env)"      →  lách bằng `cat .env` qua Bash, `cp .env /tmp/x`
 ```
 
-**Fix:** việc critical → hook kiểm tra sâu + OS sandbox (container, user riêng, filesystem read-only), không trông chờ mỗi rule chuỗi.
+**Khi nào áp dụng:** rule chặn "người ngay" (model làm đúng nhưng hỏi cho chắc). Chặn "kẻ gian" (lách cố ý) → hook + sandbox.
 
-**Làm thế nào (steps copy-paste):**
+**Ví dụ:**
+
+**Fix:** việc critical → hook kiểm tra sâu + OS sandbox (container, user riêng, filesystem read-only), không trông chờ mỗi rule chuỗi.
 
 ```json
 {
@@ -194,23 +252,23 @@ deny "Read(.env)"      →  lách bằng `cat .env` qua Bash, `cp .env /tmp/x`
 # chạy agent trong container không có quyền sudo, mount secrets read-only-off
 ```
 
-**Khi nào áp dụng:** rule chặn "người ngay" (model làm đúng nhưng hỏi cho chắc). Chặn "kẻ gian" (lách cố ý) → hook + sandbox.
+**Đào sâu:** [lệnh `sandbox`](../01-huong-dan-su-dung/commands/auth-settings/sandbox/README.md) · [bài 06 tips — công thức hook](../02-tips-thuc-chien/06-hooks-recipes.md) · [FAQ 09 — bảo mật & riêng tư](09-bao-mat-quyen-rieng-tu.md)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 6. Background subagent bị deny trong `-p` (headless) — vì sao và fix?
-> **Hỏi ngắn gọn:** Background subagent bị deny trong `-p` (headless) — vì sao và fix?
->
+
+> **Câu hỏi:** Chạy `claude -p` trên CI thấy subagent nào cũng bị deny hết — vì sao và fix thế nào?
 > **Trả lời 1 câu:** `-p` (non-interactive) không hiện prompt hỏi → mọi `ask` thành deny.
 
+**Giải thích:** Ở chế độ thường, lệnh bị `ask` sẽ hiện hộp thoại cho bạn bấm Yes/No. Chạy `-p` thì không có ai ngồi đó: hook vẫn chạy cho tool call của subagent, nhưng không có hộp thoại ai bấm Yes thay bạn. Kết quả: subagent kẹt deny hàng loạt.
 
-**Giải thích chi tiết + ví dụ:** `-p` (non-interactive) không hiện prompt hỏi → mọi `ask` thành deny. Hooks vẫn chạy cho tool calls của nó, nhưng không có "hook decision" thay người bấm Yes. Kết quả: subagent kẹt deny hàng loạt.
+**Khi nào áp dụng:** mọi `-p` / background / CI — luôn chạy thử với allowlist rõ trước khi schedule.
 
-**Fix — thiết kế hooks + allowlist headless-friendly:**
+**Ví dụ:** Fix — thiết kế hooks + allowlist headless-friendly:
 
 ```bash
-# Chạy CI: pre-approve read-only + lệnh窄, mode dontAsk
+# Chạy CI: pre-approve read-only + lệnh hẹp, mode dontAsk
 claude -p "review PR" --permission-mode dontAsk \
   --allowedTools "Read,Grep,Glob,Bash" \
   --output-format json
@@ -225,27 +283,27 @@ claude -p "review PR" --permission-mode dontAsk \
 }
 ```
 
-**Ví dụ:** background agent cần `git push` → headless deny (vì `ask`). Fix: hoặc allow rõ `Bash(git push origin feat/*:*)`, hoặc tách bước push ra cho người bấm tay.
+Background agent cần `git push` → headless deny (vì `ask`). Fix: hoặc allow rõ `Bash(git push origin feat/*:*)`, hoặc tách bước push ra cho người bấm tay.
 
-**Khi nào áp dụng:** mọi `-p` / background / CI — luôn chạy thử với allowlist rõ trước khi schedule.
+**Đào sâu:** [FAQ 10 — CI, SDK, routines, Web](10-ci-sdk-routines-web.md) · [FAQ 08 — lỗi thường gặp](08-loi-thuong-gap-troubleshooting.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-permissionsmodes)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 7. Frontmatter hooks của project subagent không chạy — vì sao? (trust)
-> **Hỏi ngắn gọn:** Frontmatter hooks của project subagent không chạy — vì sao? (trust)
->
-> **Trả lời 1 câu:** Subagent file trong project (`.claude/agents/x.md`) có thể kèm frontmatter hooks.
 
+> **Câu hỏi:** Đã khai hooks trong file `.claude/agents/x.md` rồi mà sao chạy hoài không thấy fire?
+> **Trả lời 1 câu:** Vì workspace chưa được trust — hooks trong frontmatter của project subagent chỉ chạy khi folder đã tin.
 
-**Giải thích chi tiết + ví dụ:** Subagent file trong project (`.claude/agents/x.md`) có thể kèm frontmatter hooks. Nhưng hooks đó chỉ chạy khi **workspace được trust** (dialog "trust this folder" lúc mở). `-p` không tính là trusted → skip + log, không báo ầm ĩ nên dễ tưởng "hook hỏng".
+**Giải thích:** Subagent file trong project (`.claude/agents/x.md`) có thể kèm frontmatter hooks. Nhưng hooks đó chỉ chạy khi **workspace được trust** (dialog "trust this folder" lúc mở). `-p` không tính là trusted → skip + log, không báo ầm ĩ nên dễ tưởng "hook hỏng".
 
 Ngoại lệ chạy luôn:
 
 - User-level agents (`~/.claude/agents/`) — máy bạn, tin sẵn.
 - `--agents` inline JSON — bạn gõ tay, tin luôn.
 
-**Làm thế nào (steps copy-paste):**
+**Khi nào áp dụng:** hook agent "lúc chạy lúc không" → check trust đầu tiên (xem thêm [FAQ 05](05-hooks-faq.md)).
+
+**Ví dụ:**
 
 ```bash
 /agents        # xem agents + hooks kèm theo
@@ -253,22 +311,22 @@ Ngoại lệ chạy luôn:
 # Chạy lại, check log xem hook đã lửa chưa
 ```
 
-**Ví dụ:** hook format của agent `reviewer` chạy ngon trên máy bạn (đã trust) nhưng im re trên CI (`-p`) → đúng thiết kế. CI thì viết hook ở settings CI, đừng trông chờ frontmatter hooks project.
+Hook format của agent `reviewer` chạy ngon trên máy bạn (đã trust) nhưng im re trên CI (`-p`) → đúng thiết kế. CI thì viết hook ở settings CI, đừng trông chờ frontmatter hooks project.
 
-**Khi nào áp dụng:** hook agent "lúc chạy lúc không" → check trust đầu tiên (xem thêm FAQ 05).
+**Đào sâu:** [FAQ 05 — hooks](05-hooks-faq.md) · [bài 07 — hooks tự động hóa](../01-huong-dan-su-dung/07-hooks-tu-dong-hoa.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-permissionsmodes)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 8. Thiết kế allowlist cho headless (`-p`) thế nào cho không kẹt?
-> **Hỏi ngắn gọn:** Thiết kế allowlist cho headless (`-p`) thế nào cho không kẹt?
->
-> **Trả lời 1 câu:** Nguyên tắc: allow RÕ từng lệnh cần, deny RÕ từng cái cấm, còn lại để hỏi (mà headless = deny).
 
+> **Câu hỏi:** Viết allowlist cho script `-p` sao cho agent không bị kẹt deny giữa chừng?
+> **Trả lời 1 câu:** Allow rõ từng lệnh cần, deny rõ từng cái cấm, còn lại để hỏi — mà headless thì "hỏi" là "deny".
 
-**Giải thích chi tiết + ví dụ:** Nguyên tắc: allow RÕ từng lệnh cần, deny RÕ từng cái cấm, còn lại để hỏi (mà headless = deny). Đừng `allow Bash(*)` cho gọn — đó là mở toang.
+**Giải thích:** Đừng `allow Bash(*)` cho gọn — đó là mở toang. Thay vào đó viết allowlist hẹp đúng việc script cần.
 
-**Config copy-paste (CI review an toàn):**
+**Khi nào áp dụng:** mọi script `-p`. Test tay 1 lần với đúng allowlist đó trước khi gắn vào cron/CI.
+
+**Ví dụ:** Config copy-paste (CI review an toàn):
 
 ```bash
 claude -p "review diff" \
@@ -285,20 +343,20 @@ claude -p "quét auth flow" \
   --output-format json
 ```
 
-**Khi nào áp dụng:** mọi script `-p`. Test tay 1 lần với đúng allowlist đó trước khi gắn vào cron/CI.
+**Đào sâu:** [FAQ 10 — CI, SDK, routines, Web](10-ci-sdk-routines-web.md) · [FAQ 09 — bảo mật & riêng tư](09-bao-mat-quyen-rieng-tu.md) · [lệnh `/permissions`](../01-huong-dan-su-dung/commands/model-mode/permissions/README.md)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 9. 3 settings files merge thế nào? (xem merged, đừng đoán)
-> **Hỏi ngắn gọn:** 3 settings files merge thế nào? (xem merged, đừng đoán)
->
-> **Trả lời 1 câu:** Thứ tự merge: defaults → project (`settings.json`) → local (`settings.local.json`) → managed (org).
 
+> **Câu hỏi:** Đã allow rồi mà sao nó vẫn hỏi / vẫn deny — có khi rule ở chỗ khác thắng không?
+> **Trả lời 1 câu:** Có — merge theo thứ tự defaults → project → local → managed, cùng key thì file đứng sau thắng, nhưng managed deny / org `ask` luôn thắng local allow.
 
-**Giải thích chi tiết + ví dụ:** Thứ tự merge: defaults → project (`settings.json`) → local (`settings.local.json`) → managed (org). Cùng 1 key thì sau thắng trước, NHƯNG managed deny/org ask luôn thắng local allow.
+**Giải thích:** Ba settings file + policy org được ghép thành 1 bản merged, và bản đó mới là thứ chạy thật. Xem nó tại `/permissions`, đừng mở từng file đoán.
 
-**Làm thế nào (steps copy-paste):**
+**Khi nào áp dụng:** mỗi khi "allow rồi mà vẫn deny" — 90% là managed/org thắng.
+
+**Ví dụ:**
 
 ```bash
 /permissions    # XEM MERGED TẠI ĐÂY, đừng mở từng file đoán
@@ -306,20 +364,22 @@ cat .claude/settings.json
 cat .claude/settings.local.json 2>/dev/null
 ```
 
-**Ví dụ:** local bạn `allow Bash(curl:*)` nhưng managed deny → `/permissions` hiện deny → đừng mất 30 phút debug "sao allow rồi vẫn hỏi". Hỏi admin org.
+Local bạn `allow Bash(curl:*)` nhưng managed deny → `/permissions` hiện deny → đừng mất 30 phút debug "sao allow rồi vẫn hỏi". Hỏi admin org.
 
-**Khi nào áp dụng:** mỗi khi "allow rồi mà vẫn deny" — 90% là managed/org thắng.
+**Đào sâu:** [lệnh `/permissions`](../01-huong-dan-su-dung/commands/model-mode/permissions/README.md) · [lệnh `/status`](../01-huong-dan-su-dung/commands/auth-settings/status/README.md) · [FAQ 09 — bảo mật & riêng tư](09-bao-mat-quyen-rieng-tu.md)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 10. Khi nào dùng `--dangerously-skip-permissions`? (gần như không)
-> **Hỏi ngắn gọn:** Khi nào dùng `--dangerously-skip-permissions`? (gần như không)
->
-> **Trả lời 1 câu:** Chỉ CI sandbox cô lập (container dùng 1 lần, không secrets thật, không network ra ngoài).
 
+> **Câu hỏi:** Có bao giờ an toàn khi chạy `--dangerously-skip-permissions` trên máy mình không?
+> **Trả lời 1 câu:** Gần như không — chỉ CI sandbox cô lập: container dùng 1 lần, không secrets thật, không network ra ngoài.
 
-**Giải thích chi tiết + ví dụ:** Chỉ CI sandbox cô lập (container dùng 1 lần, không secrets thật, không network ra ngoài). Trên máy dev và cloud session bình thường: KHÔNG. Hook deny vẫn thắng flag này, nhưng permission hỏi thì bỏ hết — 1 lệnh `rm -rf` ngáo là đi cả máy.
+**Giải thích:** Trên máy dev và cloud session bình thường: KHÔNG. Hook deny vẫn thắng flag này, nhưng permission hỏi thì bỏ hết — 1 lệnh `rm -rf` ngáo là đi cả máy.
+
+**Khi nào áp dụng:** mỗi khi định thêm flag này vào script local hay docker dev thường trực → đó là dấu hiệu cần viết allowlist thay vì bỏ qua hỏi (xem [câu 8](#8-thiết-kế-allowlist-cho-headless--p-thế-nào-cho-không-kẹt)).
+
+**Ví dụ:**
 
 ```bash
 # ✅ CI sandbox dùng 1 lần:
@@ -328,9 +388,7 @@ claude -p "migrate test" --dangerously-skip-permissions
 # ❌ Máy dev / cloud session: KHÔNG BAO GIỜ
 ```
 
-Chi tiết xem [FAQ 09](09-bao-mat-quyen-rieng-tu.md).
-
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
+**Đào sâu:** [FAQ 09 — bảo mật & riêng tư](09-bao-mat-quyen-rieng-tu.md) · [bài 10 — permissions & modes theo provider](../01-huong-dan-su-dung/10-permissions-modes-availability.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-permissionsmodes)
 
 ---
 
@@ -338,9 +396,10 @@ Chi tiết xem [FAQ 09](09-bao-mat-quyen-rieng-tu.md).
 
 1. `/permissions` — xem merged rules (deny ẩn? managed thắng?).
 2. `/hooks` — có hook deny nào chặn không (hook thắng bypass).
-3. `/status` — version cũ? provider nào? (mode Auto có tùy bản).
+3. `claude doctor` + `/status` — version cũ? duplicate install? provider nào? (mode `auto` có tùy bản).
 4. Trust dialog — frontmatter hooks project cần trust folder.
 5. `/debug` — session vẫn lạ → chẩn đoán sâu.
+6. `/bug` — đi hết 5 bước trên mà vẫn lỗi thì nghi của chính Claude Code: gói report kèm `/status` + `claude doctor`, chạy hết thứ tự [FAQ 08](08-loi-thuong-gap-troubleshooting.md).
 
 ```bash
 /permissions

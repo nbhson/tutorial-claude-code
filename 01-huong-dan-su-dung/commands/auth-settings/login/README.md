@@ -1,16 +1,15 @@
 # /login — Đăng nhập tài khoản: OAuth trình duyệt, chọn plan, lưu token máy local
 
-> Loại Built-in · Nhóm Auth · Nguy hiểm Không (chỉ mở flow xác thực; nhưng Có nhẹ nếu login nhầm tài khoản cá nhân trên máy công ty — token lưu local ai cầm máy cũng dùng được)
-
-> Nói nôm na: `/login` mở quy trình đăng nhập Claude Code: sinh URL OAuth (hoặc mở sẵn trình duyệt), bạn duyệt quyền trên web, CLI nhận token và lưu vào máy local, từ đó mọi session dùng quota của tài khoản đó. Hiểu `/login` là hiểu "cắm chìa khoá" — làm 1 lần, dùng nhiều tháng cho tới khi token hết hạn hoặc `/logout`.
+> Loại Built-in · Nhóm Auth · Mức rủi ro Không (chỉ mở flow xác thực; nhưng Có nhẹ nếu login nhầm tài khoản cá nhân trên máy công ty — token lưu local ai cầm máy cũng dùng được)
+> **Nói nôm na:** `/login` mở quy trình đăng nhập Claude Code: sinh URL OAuth (hoặc mở sẵn trình duyệt), bạn duyệt quyền trên web, CLI nhận token và lưu vào máy local, từ đó mọi session dùng quota của tài khoản đó. Hiểu `/login` là hiểu "cắm chìa khoá" — làm 1 lần, dùng nhiều tháng cho tới khi token hết hạn hoặc `/logout`.
 
 ## Khi nào dùng
 
-- Dùng /login khi bạn cần chỉnh môi trường/tài khoản/cài đặt (login, IDE, config, remote, sandbox).
-- Dùng /login **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /login thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng khi máy chưa đăng nhập (mới cài, token hết hạn, vừa bị logout) hoặc muốn đổi sang tài khoản/plan khác.
+- Dùng **trước khi** bắt đầu task thật (đầu ngày, đầu session): login đúng tài khoản có quota trước, tránh giữa task mới hết hạn mức.
+- Không dùng `/login` thay cho việc tự kiểm tra tài khoản đang dùng: login xong vẫn nên `/status` xem mình đang là ai.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/login`
@@ -20,7 +19,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -32,7 +31,6 @@ claude
 /login
 # → Trình duyệt tự mở, bấm "Authorize Claude Code"
 # → Terminal báo: "✓ Signed in as ban@gmail.com (Pro)"
-
 ```
 
 Kết quả mong đợi:
@@ -40,7 +38,7 @@ Kết quả mong đợi:
 - Claude trả đúng việc của /login (không lan man), nêu rõ bước tiếp theo.
 - Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
 
-Verify (30 giây):
+**Kiểm tra nhanh:**
 
 ```bash
 # trong session: /status hoặc /context để chắc mode/context còn sạch
@@ -48,7 +46,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Trình duyệt mở nhưng bấm Authorize xong CLI vẫn chờ | Callback localhost bị chặn (firewall/VPN) hoặc mở nhầm profile trình duyệt | Copy URL sang trình duyệt khác; tắt VPN thử; dùng device-code (mở trên máy khác, nhập mã) |
 | `No browser detected` trên máy có GUI | Biến `BROWSER` unset hoặc chạy qua tmux/SSH | Set `export BROWSER=open` (macOS) rồi `/login` lại; hoặc dùng device-code |

@@ -1,16 +1,15 @@
 # /rename — Đặt tên dễ nhớ cho session hiện tại để mai resume 1 phát trúng
 
-> Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (chỉ đổi tên hiển thị trong index, không xóa/sửa code hay history)
-
-> Nói nôm na: `/rename` là "dán nhãn hộp đồ": đặt tên gợi nhớ (`payments-fix`, `migration-ca-dem`) cho session ID khô khan, để `/resume` / picker tìm thấy trong 3 giây.
+> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (chỉ đổi tên hiển thị trong index, không xóa/sửa code hay history)
+> **Nói nôm na:** `/rename` là "dán nhãn hộp đồ": đặt tên gợi nhớ (`payments-fix`, `migration-ca-dem`) cho session ID khô khan, để `/resume` / picker tìm thấy trong 3 giây.
 
 ## Khi nào dùng
 
-- Dùng /rename khi bạn muốn quản lý phiên/context (mở, dọn, lưu, chia nhánh) mà không đụng tới code trên đĩa.
-- Dùng /rename **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /rename thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/rename` khi bạn muốn đặt tên gợi nhớ cho session ID khô khan để `/resume` tìm trúng sau.
+- Dùng `/rename` ngay trước khi nghỉ/đóng máy — một tên tốt tiết kiệm cả phút lướt picker.
+- Không dùng `/rename` như cách lưu nội dung — đổi tên chỉ đổi nhãn, không đổi lịch sử hội thoại.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/rename <tên>`
@@ -19,7 +18,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -46,7 +45,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/resume <tên>` báo not found | Sai chính tả, sai dấu, khác hoa/thường | `/resume` (picker) để copy tên chính xác; dùng kebab-case không dấu |
 | 2 sessions cùng tên | Đặt tên chung chung (`fix`, `test`) | Đặt tên duy nhất có ngày/phạm vi; rename lại 1 trong 2 |

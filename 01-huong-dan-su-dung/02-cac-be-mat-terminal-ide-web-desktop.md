@@ -1,27 +1,50 @@
-# 02 — Các Bề Mặt Sử Dụng: Terminal, IDE, Desktop, Web, Mobile
+# 02 — Các bề mặt sử dụng: terminal, IDE, desktop, web, mobile
 
-> Bài 02 của series. Đọc xong bạn chọn đúng surface cho từng task, thuộc CLI flags hay dùng,
-> setup được cloud environment, và hiểu config nào đi theo surface nào.
-> Thời gian: ~30 phút.
+> **Bài này cho ai:** dev đã cài Claude Code nhưng chưa biết nên mở bằng cách nào cho từng loại task.
+> **Cần gì trước:** đã cài và đăng nhập Claude Code (bài 01), dùng terminal cơ bản được. Không cần biết trước về AI.
+> **Đọc xong bạn làm được:**
+> - Chọn đúng bề mặt sử dụng (surface) cho task trước mặt: terminal, IDE, desktop, web hay mobile.
+> - Gọi rành các CLI flags thường dùng: `--permission-mode`, `--add-dir`, `-p`, `--output-format`, `--cloud`.
+> - Setup cloud environment 1 lần (`gh auth login` → `/web-setup` → setup script) rồi dùng lại mãi.
+> - Chỉ ra config nào đi theo máy bạn, config nào phải cấu hình lại trên cloud.
+> **Thời gian:** ~30 phút
 >
-> **Cách đọc:** mỗi khái niệm có Định nghĩa 1 câu → Ví dụ đời thường → Ví dụ copy-paste.
-> Mỗi code block có **Kỳ vọng / Verify** để biết làm xong thấy gì.
+> **Cách đọc:** mỗi khái niệm có định nghĩa 1 câu → ví dụ đời thường → ví dụ copy-paste.
+> Cuối mỗi phần có khối **Kiểm tra nhanh:** — làm xong nhìn vào đó để biết thấy gì là đúng.
+
+## Thuật ngữ dùng trong bài này
+
+Đọc bảng này trước khi vào mục 1 — mọi thuật ngữ Anh trong bài đều được giải thích ở đây.
+
+| Thuật ngữ | Hiểu nôm na là gì | Ví dụ thấy ngay | Khi nào dùng |
+|---|---|---|---|
+| Bề mặt sử dụng (surface) | Cửa vào cùng 1 căn nhà (agentic loop), khác nhau ở chỗ code chạy | Fix typo → terminal `claude`; refactor 1 giờ → `claude --cloud "..."` | Đầu mỗi task: chọn cửa trước khi bắt tay |
+| Terminal CLI (`claude`) | Cửa chính: gõ lệnh trực tiếp trên máy bạn | `claude --permission-mode plan "đọc login.ts, không sửa gì"` | Mặc định hằng ngày, task nhiều lệnh Bash, scripts/CI |
+| CLI flag | Nút điều hòa lúc khởi động: khóa cách Claude được chạy trong session đó | `--add-dir ../shared`, `--model opus`, `--output-format json` | Muốn khóa mode/scope/model cho cả session |
+| IDE extension | Cửa sổ nhìn thẳng vào code: inline diff + @-mention | Bôi đen hàm → `@` → `giải thích + đề xuất 2 edge cases` | Review diff lớn, cần trỏ đúng file/selection |
+| Ứng dụng desktop (desktop app) | Phòng khách rộng: nhiều session cạnh nhau + lên lịch | Mở 3 session feat A/B/review side-by-side | Đa session, review trực quan, tạo `/schedule` bằng UI |
+| Web (`claude.ai/code`) | Camera từ xa: code chạy trên máy ảo Anthropic | `claude --cloud "migrate table X, mở PR"` rồi gập laptop | Task trên 30 phút, không cần giữ máy mở, check từ điện thoại |
+| Cloud environment | Bếp cho thuê: setup script + env vars + mức network | Setup script `pnpm install --frozen-lockfile && pnpm build`, `DATABASE_URL` đặt trên web | Trước mọi cloud session dài (làm 1 lần, dùng mãi) |
+| Remote control | Điều khiển từ xa: chat từ điện thoại, code vẫn chạy máy bạn | Máy dev mở `claude`, điện thoại chat tiếp qua claude.ai | Ra ngoài vẫn muốn approve/deny mà máy dev vẫn mở |
+| Teleport | Chuyển nhà giữ nguyên đồ: mang session sang máy/VM khác | Local đang làm dở → `/teleport` → tiếp tục trên cloud | Đổi máy giữa chừng, local hết pin hoặc muốn giao cloud chạy tiếp |
 
 ## Mục lục
 
-1. [Vì sao nhiều surface? (why)](#1-vì-sao-nhiều-surface-why)
-2. [Terminal CLI deep-dive + full flags reference](#2-terminal-cli--sức-mạnh-gốc)
+1. [Vì sao có nhiều bề mặt sử dụng?](#1-vì-sao-có-nhiều-bề-mặt-sử-dụng)
+2. [Terminal CLI — sức mạnh gốc](#2-terminal-cli--sức-mạnh-gốc)
 3. [IDE (VS Code / JetBrains)](#3-ide-vs-code--jetbrains)
-4. [Desktop app](#4-desktop-app)
-5. [Web (claude.ai/code) + cloud env setup chi tiết](#5-web-claudeaicode--research-preview)
-6. [Mobile + Remote Control + Slack](#6-mobile--remote-control--slack)
-7. [Walkthrough: chọn surface theo task](#7-walkthrough-chọn-surface-theo-task)
-8. [Lưu ý config theo surface + pitfalls + bài tập](#8-lưu-ý-config-theo-surface)
-9. [Bảng thuật ngữ](#9-bảng-thuật-ngữ)
-10. [Hiểu nhầm thường gặp](#10-hiểu-nhầm-thường-gặp)
+4. [Ứng dụng desktop](#4-ứng-dụng-desktop)
+5. [Web (`claude.ai/code`) và setup cloud environment](#5-web-claudeaicode-và-setup-cloud-environment)
+6. [Mobile, remote control và Slack](#6-mobile-remote-control-và-slack)
+7. [Đi từng bước: chọn bề mặt theo task](#7-đi-từng-bước-chọn-bề-mặt-theo-task)
+8. [Lưu ý config theo bề mặt và pitfall](#8-lưu-ý-config-theo-bề-mặt-và-pitfall)
+9. [Hiểu nhầm thường gặp](#9-hiểu-nhầm-thường-gặp)
+10. [Bài tập thực hành](#10-bài-tập-thực-hành)
 11. [Link chéo](#11-link-chéo)
 
-### Khái niệm mở đầu
+## Ba khái niệm nền (đọc 1 lần nhớ cả bài)
+
+Ba khái niệm này trả lời câu hỏi mở đầu của bài: cùng một Claude Code, vì sao có nhiều cách mở đến thế, và mỗi cách khác nhau ở điểm nào? Tra bảng thuật ngữ ở đầu file nếu quên thuật ngữ lạ.
 
 - **Surface là gì?** 1 câu: cửa để bạn vào cùng 1 căn nhà (agentic loop), khác nhau chỗ code chạy ở đâu.
   - Ví dụ đời thường: như vào nhà bằng cửa chính (terminal), cửa sổ (IDE inline), camera từ xa (web cloud).
@@ -35,11 +58,13 @@
 
 ---
 
-## 1. Vì sao nhiều surface? (why)
+## 1. Vì sao có nhiều bề mặt sử dụng?
+
+Section này trả lời: cùng 1 agentic loop (bài 00), vì sao Anthropic phải làm nhiều cách mở đến thế — và ranh giới giữa chúng nằm ở đâu?
 
 Cùng 1 agentic loop (bài 00), nhưng **code chạy ở đâu** và **config nào được dùng** khác nhau:
 
-```
+```text
 Terminal/IDE/Desktop-local/Remote → code chạy TRÊN MÁY BẠN, dùng ~/.claude/ + .claude/ repo.
 Web/Desktop-cloud                → code chạy TRÊN CLOUD VM, chỉ dùng repo + cloud env vars.
 ```
@@ -69,13 +94,17 @@ Giải thích từng bước:
 - **S3:** task dài muốn gập laptop, check từ điện thoại → Web cloud thắng vì VM chạy tiếp khi disconnect.
 - **LC vs CC:** local dùng `~/.claude/` + hooks/MCP máy bạn; cloud chỉ dùng thứ đã commit + env đặt trên web — phải setup trước (mục 5.2).
 
-> **Kỳ vọng / Verify:** bạn nhìn diagram và xếp được 3 task mẫu (typo → CLI, review 25 files → Desktop/IDE, migrate 1 giờ → Web) đúng như mục 7.2.
+**Kiểm tra nhanh:** nhìn diagram, bạn xếp được 3 task mẫu đúng như mục 7.2 — typo → terminal, review 25 files → desktop/IDE, migrate 1 giờ → web.
 
 ---
 
 ## 2. Terminal CLI — sức mạnh gốc
 
+Section này trả lời: mở terminal lên thì gõ lệnh gì, và khóa session bằng flag nào cho đúng việc?
+
 ### 2.1. Lệnh khởi động hay dùng
+
+Bắt đầu bằng 9 lệnh mở session bạn sẽ dùng nhiều nhất:
 
 ```bash
 claude                     # mở session interactive
@@ -89,9 +118,9 @@ claude --cloud             # ném session lên cloud (cần GitHub + setup /web-
 claude --dangerously-skip-permissions  # bypass (chỉ CI sandbox, KHÔNG dùng máy dev)
 ```
 
-> **Kỳ vọng / Verify:** `claude` mở REPL với prompt `>`; `claude -p "summarize diff"` in kết quả rồi thoát (không kẹt REPL); `claude --continue` mở lại session gần nhất. `--dangerously-skip-permissions` chỉ thử trong sandbox, không thử trên máy dev.
+**Kiểm tra nhanh:** `claude` mở REPL với prompt `>`; `claude -p "summarize diff"` in kết quả rồi thoát (không kẹt REPL); `claude --continue` mở lại session gần nhất. `--dangerously-skip-permissions` chỉ thử trong sandbox, không bao giờ thử trên máy dev.
 
-### 2.2. Full CLI flags reference (v2.1.x, copy-paste được)
+### 2.2. Bảng tra toàn bộ CLI flags (v2.1.x, copy-paste được)
 
 > Không phải mọi flag tồn tại trên mọi version/provider — check `claude --help` trên máy bạn
 > làm chuẩn cuối. Bảng dưới tổng hợp từ docs + thực tế.
@@ -105,8 +134,6 @@ claude --resume "my-feature"         # resume theo name (đã /rename trước �
 claude --fork <id>                   # fork session (thử what-if, giữ mạch chính)
 ```
 
-> **Kỳ vọng / Verify:** `--resume` không id hiện picker chọn session; có id/name thì mở đúng session cũ với history còn nguyên. `/rename my-feature` trước thì `--resume "my-feature"` mới tìm thấy.
-
 **Prompt & output (non-interactive, CI/scripts):**
 
 ```bash
@@ -119,8 +146,6 @@ claude -p "summarize" --input-format text < diff.txt
 claude --init-only                    # chỉ chạy Setup hooks, không mở session (CI warmup)
 ```
 
-> **Kỳ vọng / Verify:** lệnh in JSON ra stdout (parse được bằng `jq`), exit 0 trong CI. `--init-only` chạy xong thoát ngay, không mở REPL — dùng để warmup trước khi chạy job thật (bài 12).
-
 **Model & effort:**
 
 ```bash
@@ -130,8 +155,6 @@ claude --agent explore                # chạy persona subagent cho cả session
 claude --agents '{"reviewer":{"prompt":"...","tools":["Read","Grep"]}}'  # inline JSON agent
 ```
 
-> **Kỳ vọng / Verify:** `/model` trong session hiện đúng model đã chọn; `--effort` không báo `Unknown option` (nếu báo → version <2.1.205 → `claude update`). `--agent explore` chạy ở chế độ read-only explore.
-
 **Dirs & sandbox:**
 
 ```bash
@@ -139,8 +162,6 @@ claude --add-dir ../shared --add-dir /tmp/contracts   # thêm dirs ngoài CWD
 claude --sandbox                                       # bật OS sandbox (giới hạn FS/network)
 claude --sandbox-network                               # chi tiết network policy
 ```
-
-> **Kỳ vọng / Verify:** trong session Claude đọc được file trong `../shared` (thử `Đọc 1 file trong ../shared`). Không có `--add-dir` thì nó báo `outside working directory`. Muốn load CLAUDE.md của dir thêm → export `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1` (bài 01).
 
 **MCP & skills gating:**
 
@@ -158,8 +179,6 @@ claude --disallowedTools "Bash, Write"        # cấm hẳn trong session này
 claude --dangerously-skip-permissions  # = bypass — CHỈ CI sandbox
 ```
 
-> **Kỳ vọng / Verify:** `--permission-mode plan` thì Claude chỉ đọc + trình plan, không sửa file (thử giao sửa, nó phải hỏi trước). `Shift+Tab` trong REPL xoay vòng modes, statusline hiện mode hiện tại.
-
 **Cloud:**
 
 ```bash
@@ -167,14 +186,22 @@ claude --cloud "migrate table X, mở PR"  # tạo cloud session từ terminal
 claude --cloud --model opus              # cloud + chọn model
 ```
 
-### 2.3. Ví dụ thực tế (3 flows copy-paste)
+**Kiểm tra nhanh:** gõ các lệnh dưới đây và so lại từng nhóm flag ở trên:
+
+- **Session & resume:** `--resume` không truyền id hiện picker chọn session; truyền id/name thì mở đúng session cũ với history còn nguyên. Muốn `--resume "my-feature"` tìm thấy thì trước đó phải `/rename my-feature`.
+- **Prompt & output:** lệnh in JSON ra stdout (parse được bằng `jq`), exit 0 trong CI. `--init-only` chạy xong thoát ngay, không mở REPL — dùng để warmup trước khi chạy job thật (bài 12).
+- **Model & effort:** `/model` trong session hiện đúng model đã chọn; `--effort` không báo `Unknown option` (nếu báo → version <2.1.205 → `claude update`). `--agent explore` chạy ở chế độ read-only explore.
+- **Dirs & sandbox:** trong session Claude đọc được file trong `../shared` (thử `Đọc 1 file trong ../shared`). Không có `--add-dir` thì Claude báo `outside working directory`. Muốn load CLAUDE.md của dir thêm → export `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1` (bài 01).
+- **Permissions:** `--permission-mode plan` thì Claude chỉ đọc + trình plan, không sửa file (thử giao sửa, Claude phải hỏi trước). `Shift+Tab` trong REPL xoay vòng modes, statusline hiện mode hiện tại.
+
+### 2.3. Ví dụ thực tế (3 flow copy-paste)
+
+Section con này trả lời: với 3 việc hay gặp nhất, gõ cụ thể lệnh gì và mong đợi gì?
 
 ```bash
 # Flow 1 — Task đọc hiểu nhanh, không cho sửa gì (an toàn tuyệt đối):
 claude --permission-mode plan "đọc apps/api/src/routes/login.ts và giải thích flow auth, không sửa gì"
 ```
-
-> **Kỳ vọng / Verify:** Claude chỉ trả lời giải thích, `git status` sạch (không file nào đổi). Nếu nó đòi sửa → mode chưa đúng, bấm `Shift+Tab` về `plan`.
 
 ```bash
 # Flow 2 — Làm việc với shared lib ngoài repo (monorepo tách folder):
@@ -183,8 +210,6 @@ claude --add-dir ../shared-contracts
 # > "Đọc types trong ../shared-contracts, đối chiếu với apps/api usage, báo mismatch."
 # Cần load CLAUDE.md của add-dir: export CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1 (bài 01).
 ```
-
-> **Kỳ vọng / Verify:** Claude liệt kê được types trong `../shared-contracts` và chỉ ra mismatch (nếu có). Không `--add-dir` thì nó báo không thấy đường dẫn — đó là tín hiệu thiếu flag.
 
 ```bash
 # Flow 3 — CI one-shot review (không mở REPL):
@@ -195,7 +220,11 @@ claude -p "review git diff main...HEAD, in tối đa 10 findings dạng checklis
 # Chi tiết print-mode + guardrails: bài 12.
 ```
 
-> **Kỳ vọng / Verify:** in ra tối đa 10 findings dạng checklist, exit 0, không mở REPL. Dùng trong CI (bài 12) với guardrails khóa sẵn.
+**Kiểm tra nhanh:**
+
+- **Flow 1:** Claude chỉ trả lời giải thích, `git status` sạch (không file nào đổi). Nếu Claude đòi sửa → mode chưa đúng, bấm `Shift+Tab` về `plan`.
+- **Flow 2:** Claude liệt kê được types trong `../shared-contracts` và chỉ ra mismatch (nếu có). Không `--add-dir` thì Claude báo không thấy đường dẫn — đó là tín hiệu thiếu flag.
+- **Flow 3:** in ra tối đa 10 findings dạng checklist, exit 0, không mở REPL. Dùng trong CI (bài 12) với guardrails khóa sẵn.
 
 ### 2.4. Phím tắt sống còn trong REPL
 
@@ -211,6 +240,8 @@ Flags quan trọng khác: `--mcp-config`, `--disable-slash-commands`, `--permiss
 
 ## 3. IDE (VS Code / JetBrains)
 
+Section này trả lời: terminal đã đủ, vì sao vẫn phải mở IDE — và nối IDE xong trong 10 phút thế nào?
+
 Điểm cộng duy nhất đáng tiền so với terminal:
 
 - Inline diffs ngay trong editor (review từng hunk, accept/reject granular).
@@ -220,7 +251,7 @@ Flags quan trọng khác: `--mcp-config`, `--disable-slash-commands`, `--permiss
 
 Cấu hình dùng chung với CLI nên không cần setup 2 lần. `/ide` xem integrations + status.
 
-### 3.1. Walkthrough IDE 10 phút
+### 3.1. Đi từng bước: 10 phút với IDE
 
 ```text
 Bước 1: Cài extension "Claude Code" trong VS Code → reload.
@@ -230,9 +261,7 @@ Bước 4: Bôi đen 1 hàm → gõ @ → chọn selection → prompt "giải th
 Bước 5: Giao task sửa nhỏ → review inline diff từng hunk → Accept.
 ```
 
-> **Kỳ vọng / Verify:** sau Bước 3, `/ide` in `VS Code connected` (không phải `not connected`). Sau Bước 4, Claude trích đúng hàm bạn bôi đen (không nhầm file). Sau Bước 5, diff hiện từng hunk có nút Accept/Reject.
-
-### 3.2. Khi nào IDE thắng terminal? (bảng)
+### 3.2. Khi nào IDE thắng terminal?
 
 | Task | Thắng | Vì sao |
 |---|---|---|
@@ -242,9 +271,13 @@ Bước 5: Giao task sửa nhỏ → review inline diff từng hunk → Accept.
 | Chạy task dài, nhiều lệnh Bash | Terminal | Terminal scroll + copy tốt hơn, ít lag |
 | Spawn nhiều subagents | Terminal | `/agents` tab + kill switch tiện hơn |
 
+**Kiểm tra nhanh:** sau Bước 3, `/ide` in `VS Code connected` (không phải `not connected`). Sau Bước 4, Claude trích đúng hàm bạn bôi đen (không nhầm file). Sau Bước 5, diff hiện từng hunk có nút Accept/Reject.
+
 ---
 
-## 4. Desktop app
+## 4. Ứng dụng desktop
+
+Section này trả lời: mở desktop app thay terminal thì được gì — 3 việc desktop làm tốt nhất là gì?
 
 - Chạy local hoặc cloud session; review diff trực quan; multi-session side-by-side.
 - Schedule recurring tasks (`/schedule` routines — bài 12); kick off cloud sessions.
@@ -259,13 +292,16 @@ Bước 5: Giao task sửa nhỏ → review inline diff từng hunk → Accept.
 3. Lên lịch routines: tạo /schedule từ UI (morning digest, weekly audit) mà không cần nhớ cú pháp.
 ```
 
-> **Kỳ vọng / Verify:** mở được 2 sessions cạnh nhau (mỗi panel 1 task khác nhau, không lẫn context). Review 1 PR thấy hunk folding + nút accept từng phần. Tạo 1 `/schedule` từ UI xong thấy nó hiện trong danh sách routines.
+**Kiểm tra nhanh:** mở được 2 sessions cạnh nhau (mỗi panel 1 task khác nhau, không lẫn context). Review 1 PR thấy hunk folding + nút accept từng phần. Tạo 1 `/schedule` từ UI xong thấy routines này hiện trong danh sách.
 
 ---
 
-## 5. Web (`claude.ai/code`) — research preview
+## 5. Web (`claude.ai/code`) và setup cloud environment
 
-> Khả dụng: Pro/Max/Team, Enterprise seat đủ điều kiện (bắt buộc sign-in claude.ai, bài 10).
+Section này trả lời: lên web chạy task dài thì vào theo luồng nào, và setup cloud environment gồm những bước nào?
+
+> Đây là bề mặt còn ở dạng bản xem trước (research preview): khả dụng với Pro/Max/Team,
+> Enterprise seat đủ điều kiện (bắt buộc sign-in claude.ai, bài 10).
 
 ### 5.1. Luồng chuẩn
 
@@ -275,7 +311,7 @@ Bước 5: Giao task sửa nhỏ → review inline diff từng hunk → Accept.
 3. Review PR, comment, Claude address; bật auto-fix PR nếu muốn.
 4. Teleport session về terminal khi cần (`/teleport` ngược lại: resume remote session từ claude.ai).
 
-### 5.2. Cloud environment setup chi tiết (làm 1 lần, dùng mãi)
+### 5.2. Setup cloud environment chi tiết (làm 1 lần, dùng mãi)
 
 Setup nhanh từ terminal (cần GitHub CLI `gh`):
 
@@ -289,8 +325,6 @@ gh auth status   # phải thấy Logged in
 # → sync gh token, tạo cloud environment.
 # Mặc định: Trusted network, CHƯA có setup script → phải edit tay bên dưới.
 ```
-
-> **Kỳ vọng / Verify:** `gh auth status` báo `Logged in as <user>`; `/web-setup` báo `Cloud environment created`. Nếu `gh` chưa login → `/web-setup` gãy ngay — làm lại `gh auth login` trước.
 
 **Bước 3 — Edit environment (trên web `claude.ai/code → Settings → Environments`):**
 
@@ -336,7 +370,7 @@ claude --cloud "đọc README và tóm tắt project, không sửa gì"
 # Nếu setup script fail → sửa script → relaunch.
 ```
 
-Rồi edit environment: network access levels, env vars, setup script. Cài mobile app để monitor.
+Edit environment xong (network levels, env vars, setup script — chi tiết Bước 3), bạn cài thêm mobile app để monitor session từ điện thoại.
 
 Từ terminal tạo cloud session / task định kỳ:
 
@@ -344,6 +378,8 @@ Từ terminal tạo cloud session / task định kỳ:
 claude --cloud "migrate table X, mở PR"
 # + /schedule cho routines: morning digest, CI failure analysis overnight, weekly dep audit (bài 12)
 ```
+
+**Kiểm tra nhanh:** `gh auth status` báo `Logged in as <user>`; `/web-setup` báo `Cloud environment created`. Nếu `gh` chưa login thì `/web-setup` gãy ngay — làm lại `gh auth login` trước. Setup script test chạy pass (thấy `CLOUD_ENV_READY=1` trong logs trên web); nếu fail → sửa script → relaunch.
 
 ### 5.3. Teleport (chuyển session qua lại)
 
@@ -357,11 +393,13 @@ claude --resume <session-id>
 # Hoặc trong CLI session: /teleport (ngược lại: resume remote session từ claude.ai).
 ```
 
-> **Kỳ vọng / Verify:** sau `/teleport`, trên web thấy đúng session với conversation còn nguyên (không trắng). Về terminal, `claude --resume <id>` mở lại đúng session đó. Nếu mất add-dir paths → gộp files vào repo trước (pitfall mục 8.2).
+**Kiểm tra nhanh:** sau `/teleport`, trên web thấy đúng session với conversation còn nguyên (không trắng). Về terminal, `claude --resume <id>` mở lại đúng session đó. Nếu mất add-dir paths → gộp files vào repo trước (pitfall mục 8.2).
 
 ---
 
-## 6. Mobile + Remote Control + Slack
+## 6. Mobile, remote control và Slack
+
+Section này trả lời: ra ngoài mà vẫn muốn theo dõi hoặc gõ tiếp session thì dùng gì — và ranh giới của từng cách là ở đâu?
 
 - `/mobile` hiện QR để pair điện thoại; sessions persist cross-device.
 - Remote Control: chat từ claude.ai/mobile nhưng code chạy **trên máy bạn** (dùng local config).
@@ -380,13 +418,15 @@ claude --resume <session-id>
 # Khác Web: Web chạy trên cloud VM, Remote chạy trên máy bạn.
 ```
 
-> **Kỳ vọng / Verify:** sau `/mobile`, QR hiện và quét xong thấy sessions sync trên điện thoại. Remote: chat từ điện thoại mà `pwd`/`git status` vẫn là máy dev (không phải cloud VM). Đóng terminal máy dev → remote mất (khác cloud vẫn chạy).
+**Kiểm tra nhanh:** sau `/mobile`, QR hiện và quét xong thấy sessions sync trên điện thoại. Remote: chat từ điện thoại mà `pwd`/`git status` vẫn là máy dev (không phải cloud VM). Đóng terminal máy dev → remote mất (khác cloud vẫn chạy).
 
 ---
 
-## 7. Walkthrough: chọn surface theo task
+## 7. Đi từng bước: chọn bề mặt theo task
 
-### 7.1. Cheat table
+Section này gom mọi thứ ở trên thành bảng chọn nhanh: task nào → bề mặt nào → lệnh mở đầu.
+
+### 7.1. Bảng chọn nhanh
 
 | Task | Chọn | Lệnh mở đầu |
 |---|---|---|
@@ -397,7 +437,7 @@ claude --resume <session-id>
 | Việc lặp lại theo lịch | Routines `/schedule` + Desktop/Web | `/schedule` (bài 12) |
 | Team automation | CI/CD + Agent SDK | `claude -p` jobs (bài 12) |
 
-### 7.2. 3 ví dụ chọn surface (why)
+### 7.2. 3 ví dụ chọn bề mặt (vì sao)
 
 ```text
 Ví dụ 1 — "Fix typo README" (2 phút):
@@ -413,13 +453,15 @@ Ví dụ 3 — "Review PR 25 files của teammate" (cần mắt):
 
 ---
 
-## 8. Lưu ý config theo surface
+## 8. Lưu ý config theo bề mặt và pitfall
+
+Section này trả lời câu hay gặp nhất: "ở máy tôi chạy mà sao lên cloud mất mất?" — config nào đi theo bề mặt nào, và những pitfall thường gặp kèm cách fix.
 
 - Local (CLI/IDE/Desktop-local/Remote): dùng `~/.claude/` + `.claude/` repo + env máy bạn.
 - Cloud (Web/Desktop-cloud): chỉ repo (+ cloud environment vars/setup script). Đừng ngạc nhiên khi
   MCP local/hook local "biến mất" trên cloud — phải cấu hình lại trong environment.
 
-### 8.1. Bảng config đi theo surface nào
+### 8.1. Bảng config đi theo bề mặt nào
 
 | Config | Local (CLI/IDE/Remote) | Cloud (Web) | Ghi chú |
 |---|---|---|---|
@@ -431,7 +473,7 @@ Ví dụ 3 — "Review PR 25 files của teammate" (cần mắt):
 | Env vars máy bạn | Có | Không (dùng cloud env vars) | `DATABASE_URL` local ≠ cloud |
 | `--add-dir` dirs | Có | Không | Cloud chỉ thấy repo đã connect |
 
-### 8.2. Pitfalls + cách fix
+### 8.2. Pitfall và cách fix
 
 | Pitfall | Vì sao | Fix |
 |---|---|---|
@@ -442,7 +484,25 @@ Ví dụ 3 — "Review PR 25 files của teammate" (cần mắt):
 | IDE báo "not connected" | Extension chưa link CLI session | Chạy `/ide` trong đúng session CLI của repo đó |
 | Teleport mất context | Add-dir dirs không theo | Gộp files cần vào repo trước khi teleport |
 
-### 8.3. Bài tập thực hành
+---
+
+## 9. Hiểu nhầm thường gặp
+
+Section này trả lời: những lầm tưởng nào khiến bạn chọn sai bề mặt hoặc bật nhầm quyền nguy hiểm?
+
+| Hiểu nhầm | Sự thật | Ví dụ sửa |
+|---|---|---|
+| Surface nào cũng như nhau, thích đâu mở đó | Khác nơi chạy + config đi kèm: local dùng `~/.claude/` + MCP/hook máy bạn; cloud chỉ thấy repo + cloud env | Local chạy tốt mà cloud báo "MCP not found" là bình thường → cấu hình lại MCP http/sse trên cloud env (mục 5.2, 8.1) |
+| Web cloud là "bản yếu" của CLI | Cloud thắng task dài (gập laptop vẫn chạy, VM cô lập); CLI thắng latency + MCP local | Typo 2 phút → CLI; migrate 1 giờ → Web. Đừng boot VM cho việc 2 phút |
+| Remote Control = Web | Remote chạy trên máy bạn (tắt terminal là mất); Web chạy trên cloud VM (disconnect vẫn chạy) | Cần gập máy → `--cloud`; chỉ ra ngoài 1 lúc, máy vẫn mở → Remote |
+| `--dangerously-skip-permissions` cho nhanh | = bypass toàn bộ gate, chỉ an toàn trong CI sandbox | Máy dev dùng `auto` + rules hẹp (bài 10); copy flag CI về máy dev là mở cửa cho prompt-injection |
+| IDE thay được CLI | IDE thắng nhìn diff, thua chạy Bash dài + multi-session | Task nhiều lệnh Bash/subagents → về terminal; review 20 files → sang IDE |
+
+---
+
+## 10. Bài tập thực hành
+
+Section này biến bảng tra ở trên thành thao tác tay — 3 bài tổng cộng khoảng 45 phút.
 
 **Bài 1 (10 phút) — Flags drill:**
 Chạy `claude --help`, đối chiếu với bảng mục 2.2. Thử `--permission-mode plan`,
@@ -459,37 +519,13 @@ Thử làm 1 task bằng surface khác thường dùng, so sánh thời gian.
 
 ---
 
-## 9. Bảng thuật ngữ
-
-| Thuật ngữ | Là gì (hiểu nôm na) | Ví dụ cụ thể | Khi nào dùng |
-|---|---|---|---|
-| Surface | Cửa vào cùng 1 căn nhà (agentic loop), khác chỗ code chạy | Fix typo → Terminal `claude`; refactor 1 giờ → `claude --cloud "..."` | Đầu mỗi task: chọn cửa trước khi làm |
-| Terminal CLI (`claude`) | Cửa chính: gõ lệnh trực tiếp trên máy bạn | `claude --permission-mode plan "đọc login.ts, không sửa gì"` | Mặc định hàng ngày, task Bash nhiều, scripts/CI |
-| CLI flag | Nút điều hòa lúc khởi động: khóa cách chạy session đó | `--add-dir ../shared`, `--model opus`, `--output-format json` | Muốn khóa mode/scope/model cho cả session |
-| IDE extension | Cửa sổ nhìn trực tiếp code: inline diff + @-mention | Bôi đen hàm → `@` → `giải thích + đề xuất 2 edge cases` | Review diff lớn, cần trỏ đúng file/selection |
-| Desktop app | Phòng khách rộng: nhiều session cạnh nhau + lên lịch | Mở 3 sessions feat A/B/review side-by-side | Multi-session, review trực quan, tạo `/schedule` bằng UI |
-| Web (`claude.ai/code`) | Camera từ xa: code chạy trên máy ảo Anthropic | `claude --cloud "migrate table X, mở PR"` rồi gập laptop | Task 30'+, không cần giữ máy mở, check từ điện thoại |
-| Cloud environment | Bếp cho thuê: setup script + env vars + network level | `setup script: pnpm install --frozen-lockfile && pnpm build`, `DATABASE_URL` đặt trên web | Trước mọi cloud session dài (làm 1 lần, dùng mãi) |
-| Remote Control | Điều khiển từ xa: chat từ điện thoại, code vẫn chạy máy bạn | Máy dev mở `claude`, điện thoại chat tiếp qua claude.ai | Ra ngoài vẫn muốn approve/deny, máy dev vẫn mở |
-| Teleport | Chuyển nhà giữ nguyên đồ: mang session qua máy/VM khác | Local đang làm dở → `/teleport` → tiếp tục trên cloud | Đổi máy giữa chừng, local hết pin/muốn giao cloud chạy tiếp |
-
-## 10. Hiểu nhầm thường gặp
-
-| Hiểu nhầm | Sự thật | Ví dụ sửa |
-|---|---|---|
-| Surface nào cũng như nhau, thích đâu mở đó | Khác nơi chạy + config đi kèm: local dùng `~/.claude/` + MCP/hook máy bạn; cloud chỉ thấy repo + cloud env | Local chạy tốt mà cloud báo "MCP not found" là bình thường → cấu hình lại MCP http/sse trên cloud env (mục 5.2, 8.1) |
-| Web cloud là "bản yếu" của CLI | Cloud thắng task dài (gập laptop vẫn chạy, VM cô lập); CLI thắng latency + MCP local | Typo 2 phút → CLI; migrate 1 giờ → Web. Đừng boot VM cho việc 2 phút |
-| Remote Control = Web | Remote chạy trên máy bạn (tắt terminal là mất); Web chạy trên cloud VM (disconnect vẫn chạy) | Cần gập máy → `--cloud`; chỉ ra ngoài 1 lúc, máy vẫn mở → Remote |
-| `--dangerously-skip-permissions` cho nhanh | = bypass toàn bộ gate, chỉ an toàn trong CI sandbox | Máy dev dùng `auto` + rules hẹp (bài 10); copy flag CI về máy dev là mở cửa cho prompt-injection |
-| IDE thay được CLI | IDE thắng nhìn diff, thua chạy Bash dài + multi-session | Task nhiều lệnh Bash/subagents → về terminal; review 20 files → sang IDE |
-
 ## 11. Link chéo
 
-- **Bài 00 — Tổng quan**: agentic loop giống nhau mọi surface, khác nơi chạy + config.
-- **Bài 01 — Cài đặt**: `gh auth login`, `claude doctor`, version floor cho `/cd /goal`.
-- **Bài 03 — CLAUDE.md**: config nào commit để cloud thấy, cái nào để local.
-- **Bài 04 — Slash commands**: `/ide /mobile /teleport /remote-env /add-dir /web-setup /schedule`.
-- **Bài 06 — Subagents**: agent view dispatch + worktrees cho parallel sessions.
-- **Bài 10 — Permissions**: modes theo surface (cloud không có Manual/Bypass).
-- **Bài 11 — Worktrees & checkpoints**: parallel sessions sạch.
-- **Bài 12 — SDK/CI/CD**: `claude -p` non-interactive + routines `/schedule`.
+- **[Bài 00 — Tổng quan](./00-tong-quan-claude-code.md)**: agentic loop giống nhau mọi surface, khác nơi chạy + config.
+- **[Bài 01 — Cài đặt](./01-cai-dat-va-xac-thuc.md)**: `gh auth login`, `claude doctor`, version floor cho `/cd /goal`.
+- **[Bài 03 — CLAUDE.md](./03-claude-md-memory-rules.md)**: config nào commit để cloud thấy, cái nào để local.
+- **[Bài 04 — Slash commands](./04-slash-commands-toan-tap.md)**: `/ide /mobile /teleport /remote-env /add-dir /web-setup /schedule`.
+- **[Bài 06 — Subagents](./06-subagents-agent-teams-parallel.md)**: agent view dispatch + worktrees cho parallel sessions.
+- **[Bài 10 — Permissions](./10-permissions-modes-availability.md)**: modes theo surface (cloud không có Manual/Bypass).
+- **[Bài 11 — Worktrees & checkpoints](./11-git-worktrees-checkpoints.md)**: parallel sessions sạch.
+- **[Bài 12 — SDK/CI/CD](./12-agent-sdk-ci-cd-automation.md)**: `claude -p` non-interactive + routines `/schedule`.

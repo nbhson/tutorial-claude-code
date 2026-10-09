@@ -1,16 +1,15 @@
 # /ide — Gắn Claude Code vào IDE: VS Code, JetBrains, diff inline, jump-to-file
 
-> Loại Built-in · Nhóm Remote · Nguy hiểm Không (chỉ kết nối editor — nhưng Có nhẹ nếu IDE mở folder nhạy cảm mà Claude được đọc toàn workspace)
-
-> Nói nôm na: `/ide` kết nối session terminal với IDE đang mở: Claude đọc file bạn đang xem, hiện diff inline để duyệt, `jump-to-file` từ lỗi sang đúng dòng, chạy test rồi hiện kết quả trong editor. Hiểu `/ide` là hiểu "mời Claude ngồi cùng bàn IDE" — não vẫn ở terminal, mắt thêm ở editor.
+> Loại Built-in · Nhóm Remote · Mức rủi ro Không (chỉ kết nối editor — nhưng Có nhẹ nếu IDE mở folder nhạy cảm mà Claude được đọc toàn workspace)
+> **Nói nôm na:** `/ide` kết nối session terminal với IDE đang mở: Claude đọc file bạn đang xem, hiện diff inline để duyệt, `jump-to-file` từ lỗi sang đúng dòng, chạy test rồi hiện kết quả trong editor. Hiểu `/ide` là hiểu "mời Claude ngồi cùng bàn IDE" — não vẫn ở terminal, mắt thêm ở editor.
 
 ## Khi nào dùng
 
-- Dùng /ide khi bạn cần chỉnh môi trường/tài khoản/cài đặt (login, IDE, config, remote, sandbox).
-- Dùng /ide **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /ide thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng khi bạn muốn Claude thấy đúng file + selection đang mở trong IDE, duyệt diff inline và jump-to-file từ lỗi sang đúng dòng.
+- Dùng **trước khi** vào giai đoạn sửa/review nhiều file (đầu task gỡ bug, trước khi review diff dài) — kết nối `/ide` sớm để duyệt từng hunk inline.
+- Không dùng `/ide` thay cho việc tự duyệt từng hunk — bạn vẫn là người bấm Accept/Reject.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/ide`
@@ -20,7 +19,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -38,7 +37,7 @@ Kết quả mong đợi:
 - Claude trả đúng việc của /ide (không lan man), nêu rõ bước tiếp theo.
 - Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
 
-Verify (30 giây):
+**Kiểm tra nhanh:**
 
 ```bash
 # trong session: /status hoặc /context để chắc mode/context còn sạch
@@ -46,7 +45,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `No IDE detected` | Chưa cài extension hoặc IDE mở folder khác | Cài extension; mở đúng folder; connect lại |
 | Diff không hiện inline | Extension cũ hoặc file quá lớn | Update extension; file >1MB duyệt bằng text |

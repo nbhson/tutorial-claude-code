@@ -1,16 +1,15 @@
 # /recap — Tóm tắt context khi quay lại session sau break
 
-> Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (chỉ đọc + tóm tắt, không sửa gì)
-
-> Nói nôm na: `/recap` sinh context summary khi bạn quay lại session sau giờ nghỉ/ngắt quãng: đang làm gì, tới đâu, quyết định gì đã chốt, việc dở nào còn lại. Sinh ra để khỏi cuộn 200 tin nhắn đọc lại từ đầu. Hiểu `/recap` là hiểu "đồng nghiệp trực thay tóm tắt ca cho bạn lúc quay lại".
+> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (chỉ đọc + tóm tắt, không sửa gì)
+> **Nói nôm na:** `/recap` sinh context summary khi bạn quay lại session sau giờ nghỉ/ngắt quãng: đang làm gì, tới đâu, quyết định gì đã chốt, việc dở nào còn lại. Sinh ra để khỏi cuộn 200 tin nhắn đọc lại từ đầu. Hiểu `/recap` là hiểu "đồng nghiệp trực thay tóm tắt ca cho bạn lúc quay lại".
 
 ## Khi nào dùng
 
-- Dùng /recap khi bạn muốn quản lý phiên/context (mở, dọn, lưu, chia nhánh) mà không đụng tới code trên đĩa.
-- Dùng /recap **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /recap thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/recap` khi quay lại session sau giờ nghỉ và không muốn cuộn 200 tin nhắn đọc lại.
+- Dùng `/recap` ngay đầu buổi làm tiếp, rồi `/todos` để nắm việc còn dở.
+- Không dùng `/recap` cho session mới vài tin — chẳng có gì để tóm, đọc trực tiếp nhanh hơn.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/recap`
@@ -20,7 +19,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -48,7 +47,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Recap chung chung ("đang refactor") | Session mới 5 tin, chưa có gì để tóm | Session ngắn thì khỏi recap; đọc trực tiếp 5 tin |
 | Recap sót todo quan trọng | Todo tạo muộn, nằm sâu trong tool log | Luôn `/todos` sau recap; ghi todo ngay khi phát sinh, đừng để trong đầu |

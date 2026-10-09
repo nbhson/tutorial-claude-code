@@ -1,16 +1,15 @@
 # /fork — Tách conversation hiện tại thành nhánh mới, giữ bản gốc nguyên vẹn
 
-> Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (không xóa/sửa file; chỉ copy context sang session mới — bản gốc giữ nguyên)
-
-> Nói nôm na: `/fork` là "rẽ nhánh không sợ hỏng": copy toàn bộ (hoặc 1 phần) context hiện tại sang 1 conversation mới để thử hướng khác, trong khi bản gốc vẫn an toàn.
+> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (không xóa/sửa file; chỉ copy context sang session mới — bản gốc giữ nguyên)
+> **Nói nôm na:** `/fork` là "rẽ nhánh không sợ hỏng": copy toàn bộ (hoặc 1 phần) context hiện tại sang 1 conversation mới để thử hướng khác, trong khi bản gốc vẫn an toàn.
 
 ## Khi nào dùng
 
-- Dùng /fork khi bạn muốn quản lý phiên/context (mở, dọn, lưu, chia nhánh) mà không đụng tới code trên đĩa.
-- Dùng /fork **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /fork thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/fork` khi bạn muốn thử một hướng khác mà không sợ làm hỏng conversation gốc.
+- Dùng `/fork` **trước khi** bắt đầu thí nghiệm dài, và `/compact` trước nếu session đã nặng.
+- Không dùng `/fork` để cách ly file — hai nhánh chung filesystem, cần `git worktree` nếu muốn tách code thật.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/fork`
@@ -18,8 +17,9 @@
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
+> Fork mode (subagent hưởng nguyên context) bật mặc định từ ≥2.1.232, tắt bằng `CLAUDE_CODE_FORK_SUBAGENT=0`.
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -42,7 +42,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Fork xong 2 nhánh sửa cùng file loạn | Chung filesystem, không cách ly file | Dùng `git worktree` / `git branch` riêng cho mỗi hướng |
 | Fork từ session 80% RAM, nhánh mới đã đầy | Copy nguyên history nặng | `/compact` trước khi fork, hoặc fork sớm hơn |

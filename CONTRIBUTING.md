@@ -1,7 +1,13 @@
 # Đóng góp cho Khóa Học Claude Code
 
 Cảm ơn bạn muốn đóng góp! Repo này là tài liệu tiếng Việt, mọi code block copy-paste được.
-Đọc 5 phút file này trước khi mở PR để bài mới "khớp format, không phải sửa lại".
+Đọc 2 file này trước khi mở PR:
+
+1. [`WRITING-STYLE.md`](./WRITING-STYLE.md) — **quy chuẩn viết** (khung mở đầu, glossary đầu file,
+   giọng chữ, cách bày Verify) + **dữ kiện chuẩn** (version/model/giá đang đúng).
+2. File này — format từng loại file + checklist PR.
+
+Viết theo `WRITING-STYLE.md` là bắt buộc; các mục dưới đây mô tả cấu trúc khung cho từng loại file.
 
 ## Cách thêm bài mới đúng format
 

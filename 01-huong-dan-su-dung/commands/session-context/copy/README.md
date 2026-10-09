@@ -1,16 +1,15 @@
 # /copy — Copy đoạn hội thoại ra clipboard để paste nhanh sang Slack/PR/docs
 
-> Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (chỉ đọc + ghi clipboard, không xóa/sửa code hay history)
-
-> Nói nôm na: `/copy` là "chụp nhanh 1 đoạn": copy phần hội thoại (hoặc câu trả lời cuối) ra clipboard hệ điều hành để paste vào Slack, PR, docs mà không cần xuất cả file như `/export`.
+> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (chỉ đọc + ghi clipboard, không xóa/sửa code hay history)
+> **Nói nôm na:** `/copy` là "chụp nhanh 1 đoạn": copy phần hội thoại (hoặc câu trả lời cuối) ra clipboard hệ điều hành để paste vào Slack, PR, docs mà không cần xuất cả file như `/export`.
 
 ## Khi nào dùng
 
-- Dùng /copy khi bạn muốn quản lý phiên/context (mở, dọn, lưu, chia nhánh) mà không đụng tới code trên đĩa.
-- Dùng /copy **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /copy thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/copy` khi bạn muốn đưa một đoạn hội thoại/câu trả lời sang Slack, PR hay docs mà không xuất cả file.
+- Dùng `/copy` ngay sau khi model trả xong phần cần chia sẻ — chụp sớm khỏi lục lại history.
+- Không dùng `/copy` khi cần nguyên file transcript có format chuẩn — việc đó của `/export`.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/copy`
@@ -18,7 +17,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -42,7 +41,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Paste ra trắng/không có gì | Clipboard qua SSH không khả dụng / quyền OS chặn | Copy tay từ output fallback; cấp quyền clipboard cho terminal/IDE |
 | Copy cả đoạn dài 500 dòng | Không giới hạn phạm vi | Dặn rõ: "chỉ copy 20 dòng patch + 3 bullets giải thích" rồi `/copy` |

@@ -1,16 +1,16 @@
 # /goal — Đặt điều kiện hoàn thành, evaluator tự check mỗi turn cho tới khi xong
 
-> Loại Built-in · Nhóm Model & Mode · Nguy hiểm Không (không sửa file; chỉ đặt tiêu chí dừng + vòng check; tốn thêm tokens evaluator — cần ≥2.1.139)
-
-> Nói nôm na: `/goal` biến câu "làm cho xong" mơ hồ thành hợp đồng rõ ràng: bạn viết điều kiện hoàn thành ("tests pass + không lint error"), một evaluator (model phụ) check sau mỗi turn, task chỉ dừng khi đạt — hoặc khi bạn ngắt. Chống bệnh "model bảo xong nhưng thực ra chưa".
+> Loại Built-in · Nhóm Model & Mode · Mức rủi ro Không (không sửa file; chỉ đặt tiêu chí dừng + vòng check; tốn thêm tokens evaluator — cần ≥2.1.139)
+>
+> **Nói nôm na:** `/goal` biến câu "làm cho xong" mơ hồ thành hợp đồng rõ ràng: bạn viết điều kiện hoàn thành ("tests pass + không lint error"), một evaluator (model phụ) check sau mỗi turn, task chỉ dừng khi đạt — hoặc khi bạn ngắt. Chống bệnh "model bảo xong nhưng thực ra chưa".
 
 ## Khi nào dùng
 
-- Dùng /goal khi bạn muốn đổi cách model suy nghĩ/chạy (model, effort, mode, mục tiêu, quyền) trước khi làm task khó.
+- Dùng /goal khi task có tiêu chí hoàn thành đo được (test pass, lint sạch, file tồn tại) để evaluator tự check tới khi xong.
 - Dùng /goal **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
 - Không dùng /goal thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/goal <điều kiện>`
@@ -20,7 +20,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -43,7 +43,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/goal` báo `unknown command` | Bản < 2.1.139 | Update CLI ≥2.1.139 |
 | Evaluator PASS ẩu dù còn lỗi | Goal mơ hồ ("làm cho xong") | Viết lại goal có số đo (pass, <, file tồn tại) |

@@ -1,16 +1,15 @@
 # /branch — Tạo nhánh thử nghiệm what-if từ conversation hiện tại
 
-> Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (không xóa/sửa file; chỉ copy context sang nhánh thử nghiệm — an toàn nếu kết hợp git riêng)
-
-> Nói nôm na: `/branch` giống `/fork` nhưng mang ngữ nghĩa "thử giả thuyết": tách 1 nhánh what-if để trả lời "nếu làm theo cách B thì sao?", trong khi nhánh chính vẫn đi cách A.
+> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (không xóa/sửa file; chỉ copy context sang nhánh thử nghiệm — an toàn nếu kết hợp git riêng)
+> **Nói nôm na:** `/branch` giống `/fork` nhưng mang ngữ nghĩa "thử giả thuyết": tách 1 nhánh what-if để trả lời "nếu làm theo cách B thì sao?", trong khi nhánh chính vẫn đi cách A.
 
 ## Khi nào dùng
 
-- Dùng /branch khi bạn muốn quản lý phiên/context (mở, dọn, lưu, chia nhánh) mà không đụng tới code trên đĩa.
-- Dùng /branch **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /branch thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/branch` khi bạn muốn thử một giả thuyết "nếu làm cách B thì sao?" mà nhánh chính vẫn đi cách A.
+- Dùng `/branch` cho câu hỏi what-if ngắn, chỉ đọc để có số liệu trước khi quyết định.
+- Không dùng `/branch` như fork cho hướng dài — nhánh thử vẫn chung filesystem, muốn tách code phải dùng git riêng.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/branch`
@@ -19,7 +18,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -42,7 +41,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Nhánh thử sửa hỏng code nhánh chính | Chung filesystem | Dùng `git worktree` riêng; hoặc chỉ cho nhánh thử quyền đọc (`--permission-mode plan`) |
 | Không phân biệt branch/fork | Ngữ nghĩa gần nhau | What-if ngắn → branch; rẽ hướng dài → fork. Về kỹ thuật gần như nhau |

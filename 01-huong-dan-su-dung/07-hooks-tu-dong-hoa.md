@@ -1,26 +1,50 @@
-# 07 — Hooks: Tự Động Hóa Deterministic (Luật, Không Phải Gợi Ý)
+# 07 — Hooks: tự động hóa tất định (luật, không phải gợi ý)
 
-> Bài 07 của series. Đọc xong bạn có full settings.json mẫu, 5 hooks hoàn chỉnh copy-paste,
-> và debug flowchart khi hook không chạy. Thời gian: ~45 phút.
+> **Bài này cho ai:** dev đã dùng CLAUDE.md/skills mà rule vẫn bị Claude quên, muốn nâng rule thành luật chạy thật.
+> **Cần gì trước:** đã cài và đăng nhập ([bài 01](./01-cai-dat-va-xac-thuc.md)); nên đọc [bài 03 — CLAUDE.md](./03-claude-md-memory-rules.md) để phân biệt "gợi ý" với "luật".
+> **Đọc xong bạn làm được:**
+> - Giải thích được vì sao hook chạy 0 token model, không bị prompt-injection, và chặn được cả khi bật `--dangerously-skip-permissions`.
+> - Copy được full `settings.json` mẫu cho team và 5 hooks hoàn chỉnh vào repo của bạn.
+> - Chọn đúng event + matcher + type cho rule của mình, tra nhanh được bảng events.
+> - Debug được khi hook không chạy bằng flowchart 7 bước.
+> **Thời gian:** ~45 phút
+
+## Thuật ngữ dùng trong bài này
+
+Đọc bảng này trước khi vào mục 1 — mọi thuật ngữ Anh trong bài đều được giải thích ở đây.
+
+| Thuật ngữ | Hiểu nôm na là gì | Ví dụ thấy ngay |
+|---|---|---|
+| Hook | Aptomat tự nhảy: harness tự chạy lệnh cho bạn, không hỏi model có muốn không | Sau mỗi `Edit` tự chạy `eslint` |
+| Event | Tín hiệu báo 1 việc vừa xảy ra, ví dụ trước hoặc sau khi tool chạy | `PreToolUse`, `PostToolUse`, `SessionStart`, `Stop` |
+| Matcher | Chuỗi lọc "hook này áp cho tool nào" (nhiều tool nối bằng `\|`) | `Bash`, `Edit\|Write` |
+| Harness | CLI Claude Code trên máy bạn: thứ đọc/ghi file, chạy lệnh, chạy hook | Chạy `.claude/hooks/lint-on-write.sh` |
+| Exit code | Số lệnh trả về khi kết thúc: 0 = cho qua, 2 = chặn | `exit 2` kèm `permissionDecision: deny` |
+| stdin/stdout | Ống dẫn JSON đưa vào hook và kết quả trả ra | `INPUT="$(cat)"` |
+| Tất định (deterministic) | Cùng input luôn cho cùng kết quả, không hên xui | Regex match `git push.*main` là deny mọi lần |
+| Type của hook | Kiểu hook: `command` (shell), `http`, `mcp_tool`, `prompt`, `agent` | 95% việc dùng `command` |
+| Advisory vs law | Gợi ý thì Claude có thể quên; luật thì bắt buộc chạy | CLAUDE.md = gợi ý, hook = luật |
 
 ## Mục lục
 
-1. [Hook là gì — why law > advisory](#1-hook-là-gì)
-2. [Bảng events đầy đủ](#2-bảng-events-thuộc-lòng-nhóm-chính)
-3. [Cấu hình settings.json + cơ chế stdin/stdout](#3-cấu-hình-settingsjson--cơ-chế-sâu)
-4. [Full settings.json mẫu (team-ready)](#4-full-settingsjson-mẫu-team-ready-copy-paste)
-5. [5 hooks hoàn chỉnh](#5-5-hooks-hoàn-chỉnh-copy-paste)
-6. [Walkthrough + debug flowchart](#6-walkthrough--debug-flowchart)
-7. [Pitfalls + bài tập](#7-pitfalls--bài-tập)
-8. [Link chéo](#8-link-chéo)
+1. [Hook là gì và vì sao luật thắng gợi ý](#1-hook-là-gì-và-vì-sao-luật-thắng-gợi-ý)
+2. [Các event của hook (thuộc lòng nhóm chính)](#2-các-event-của-hook-thuộc-lòng-nhóm-chính)
+3. [Cấu hình settings.json và cơ chế stdin/stdout](#3-cấu-hình-settingsjson-và-cơ-chế-stdinstdout)
+4. [Full settings.json mẫu cho team (copy-paste)](#4-full-settingsjson-mẫu-cho-team-copy-paste)
+5. [5 hooks hoàn chỉnh (copy-paste)](#5-5-hooks-hoàn-chỉnh-copy-paste)
+6. [Walkthrough cài hook đầu tiên + debug khi hook không chạy](#6-walkthrough-cài-hook-đầu-tiên--debug-khi-hook-không-chạy)
+7. [Bẫy thường gặp và bài tập](#7-bẫy-thường-gặp-và-bài-tập)
+8. [Đi tiếp — link chéo](#8-đi-tiếp--link-chéo)
 
 ---
 
-## 1. Hook là gì
+## 1. Hook là gì và vì sao luật thắng gợi ý
 
-**Nôm na 1 câu:** Hook là *khóa cửa tự động* — tới giờ là khóa, không cần hỏi chủ nhà (LLM) có muốn khóa không.
+Mục này trả lời câu: hook thực sự là gì, và vì sao rule quan trọng nên là hook thay vì một dòng chữ trong CLAUDE.md?
 
-**Analogie đời thường:** như cảm biến đèn cầu thang: có người đi qua (event PreToolUse) là đèn sáng (chạy shell check), không cần ai bấm công tắc. CLAUDE.md giống tờ giấy "nhớ tắt đèn" dán tường — có thể quên; hook là cảm biến — quên cũng vẫn sáng.
+**Nôm na 1 câu:** Hook là *khóa cửa tự động* — tới giờ là khóa, không cần hỏi chủ nhà (model) có muốn khóa không.
+
+**Analogie đời thường:** như cảm biến đèn cầu thang: có người đi qua (event `PreToolUse`) là đèn sáng (chạy shell check), không cần ai bấm công tắc. CLAUDE.md giống tờ giấy "nhớ tắt đèn" dán tường — có thể quên; hook là cảm biến — quên cũng vẫn sáng.
 
 **Ví dụ kỹ thuật copy-paste (block push main tối thiểu):**
 
@@ -39,10 +63,9 @@ exit 0
 EOS
 chmod +x .claude/hooks/block-main-push.sh
 # Verify: echo '{"input":{"command":"git push origin main"}}' | .claude/hooks/block-main-push.sh; echo "exit=$?"
-# Kỳ vọng: JSON deny + exit=2. Lệnh feat/x → exit=0 (cho qua).
 ```
 
-> **Ai dùng lúc nào:** khi rule bị miss ≥2 lần (Claude quên) → nâng thành hook. Mọi team đều cần ít nhất hook block-push-main + lint-on-write.
+> **Ai dùng lúc nào:** rule bị Claude miss ≥2 lần → nâng thành hook. Cả bài gói gọn trong 1 công thức: **CLAUDE.md/skills = gợi ý (advisory, Claude có thể quên) — hook = luật (law, chạy chắc)**. Mọi team đều cần ít nhất hook block-push-main + lint-on-write.
 
 ```mermaid
 flowchart TD
@@ -55,23 +78,17 @@ flowchart TD
 ```
 
 **Giải thích từng bước:**
-1. **Event tới:** vd Claude định chạy `git push origin main` → harness pause trước khi chạy (PreToolUse là điểm duy nhất block được).
+
+1. **Event tới:** ví dụ Claude định chạy `git push origin main` → harness pause trước khi chạy (`PreToolUse` là điểm duy nhất block được).
 2. **Harness chạy shell:** gửi event JSON qua STDIN (`{"tool":"Bash","input":{"command":"..."}}`), không qua LLM → 0 model tokens, không bị prompt-injection thuyết phục.
-3. **Hook quyết định:** exit 0 = cho qua; exit 2 + `permissionDecision: deny` = block; `updatedInput` = sửa lệnh (vd thêm `--dry-run`).
-4. **Claude nhận reason:** thấy "BLOCKED: ..." thì đổi hướng (mở PR thay vì push thẳng). Chạy trước cả `bypassPermissions` nên chắc chắn nhất hệ sinh thái.
+3. **Hook quyết định:** exit 0 = cho qua; exit 2 + `permissionDecision: deny` = block; `updatedInput` = sửa lệnh (ví dụ thêm `--dry-run`).
+4. **Claude nhận reason:** thấy "BLOCKED: ..." thì đổi hướng (mở PR thay vì push thẳng). Hook chạy trước cả `bypassPermissions` nên chắc chắn nhất hệ sinh thái.
 
-Shell command (hoặc http/mcp_tool/prompt/agent) Claude Code **tự chạy khi tới lifecycle event** —
-không qua LLM quyết định → **deterministic, 0 model tokens, Claude không override được**.
-Dùng để: format sau edit, block lệnh nguy hiểm, gửi notification, inject context đầu session, enforce rules.
+Shell command (hoặc http/mcp_tool/prompt/agent) Claude Code **tự chạy khi tới lifecycle event** — không qua LLM quyết định → **tất định, 0 model tokens, Claude không override được**. Dùng để: format sau edit, block lệnh nguy hiểm, gửi notification, inject context đầu session, enforce rules.
 
-> Triết lý: CLAUDE.md/skills = advisory (Claude có thể quên). Hooks = law.
-> Rule nào bị miss 2 lần → nâng thành hook.
+### 1.1. Vì sao hooks miễn phí mà vẫn chắc chắn?
 
-### 1.1. Vì sao hooks "miễn phí + chắc chắn"? (why)
-
-Hooks chạy **ngoài model** (harness chạy shell, không gọi LLM — trừ type `prompt`/`agent`).
-Vì vậy: không tốn model tokens, không bị prompt-injection thuyết phục, chạy trước cả
-`bypassPermissions`. Đó là lý do duy nhất trong hệ sinh thái có tính chất này (bài 00).
+Hooks chạy **ngoài model** (harness chạy shell, không gọi LLM — trừ type `prompt`/`agent`). Vì vậy: không tốn model tokens, không bị prompt-injection thuyết phục, chạy trước cả `bypassPermissions`. Đó là lý do duy nhất trong hệ sinh thái có tính chất này (xem [bài 00](./00-tong-quan-claude-code.md)).
 
 ```text
 So sánh enforce:
@@ -80,9 +97,16 @@ So sánh enforce:
 → Cái nào cần chắc chắn? Hook. Cái nào cần linh hoạt? CLAUDE.md/skill.
 ```
 
+**Kiểm tra nhanh:**
+
+- Chạy lệnh Verify trong block đầu mục 1: lệnh chứa `git push origin main` → trả JSON deny + `exit=2`; đổi sang `git push origin feat/x` → `exit=0` (cho qua).
+- Nói được 3 khác biệt: hook 0 token model, không bị prompt-injection thuyết phục, chặn cả khi bật `--dangerously-skip-permissions` — thứ mà CLAUDE.md không làm được.
+
 ---
 
-## 2. Bảng events (thuộc lòng nhóm chính)
+## 2. Các event của hook (thuộc lòng nhóm chính)
+
+Mục này trả lời câu: có những event nào để bám vào, và rule của bạn nên treo vào event nào?
 
 | Event | Khi lửa | Dùng cho |
 |---|---|---|
@@ -94,7 +118,7 @@ So sánh enforce:
 | `PermissionRequest` | Tool call cần quyết định permission (trong `-p` plain: dùng `PreToolUse` thay vì event này) | Custom permission UI (interactive) |
 | `PermissionDenied` | Auto mode deny (có thể `retry: true` để model thử lại) | Gợi ý lệnh đúng khi bị deny |
 | `PostToolUse` / `PostToolUseFailure` | Sau tool call thành công/thất bại | Lint-on-write, format, log |
-| `PostToolBatch` | Sau cả batch parallel tool calls, trước model call kế | Tổng hợp batch (vd check tổng files đổi) |
+| `PostToolBatch` | Sau cả batch parallel tool calls, trước model call kế | Tổng hợp batch (ví dụ check tổng files đổi) |
 | `Notification` | Khi Claude gửi notification | Ping Slack/osascript khi cần bạn |
 | `MessageDisplay` | Khi assistant text hiển thị | Filter/redact output (hiếm) |
 | `SubagentStart`/`SubagentStop` | Subagent spawn/finish (matcher = tên agent type) | Log cost, inject context cho agent |
@@ -104,10 +128,10 @@ So sánh enforce:
 | `InstructionsLoaded` | 1 file CLAUDE.md/rules vừa load (đầu session + lazy-load) | Validate/audit memory load |
 | `PreCompact`/`PostCompact`, `ConfigChange`, `PreToolUse`... | Compaction/config (matcher: `manual/auto`, source settings...) | Backup context trước compact |
 
-Types: `command` (shell, phổ biến), `http` (POST event JSON tới URL), `mcp_tool` (gọi tool của MCS server đã connect),
+Types: `command` (shell, phổ biến), `http` (POST event JSON tới URL), `mcp_tool` (gọi tool của MCP server đã connect),
 `prompt` (LLM 1-turn, default Haiku, quyết định cần judgment), `agent` (experimental: subagent verify multi-turn, ~60s/50 turns).
 
-### 2.1. Chọn type nào? (bảng)
+### 2.1. Chọn type nào cho hook?
 
 | Type | Khi nào | Ví dụ |
 |---|---|---|
@@ -117,13 +141,20 @@ Types: `command` (shell, phổ biến), `http` (POST event JSON tới URL), `mcp
 | `http` | Đẩy event ra hệ ngoài | Log sang ticketing/monitoring |
 | `mcp_tool` | Hành động qua MCP đã connect | PostToolUse → tạo ticket Linear |
 
+**Kiểm tra nhanh:**
+
+- Mở `/hooks` trong session, đối chiếu bảng trên: rule bạn đang cần treo vào event nào, và event đó chạy trước hay sau tool?
+- Với 95% việc của team bạn, type phải là `command` — chỉ chọn `prompt` khi regex không diễn đạt được, chọn `agent` khi verify phải đọc code nhiều turn.
+
 ---
 
-## 3. Cấu hình settings.json + cơ chế sâu
+## 3. Cấu hình settings.json và cơ chế stdin/stdout
 
-### 3.1. Files settings (precedence)
+Mục này trả lời câu: hook sống ở file nào, thứ tự ưu tiên ra sao, và harness "nói chuyện" với hook bằng gì?
 
-```
+### 3.1. Thứ tự ưu tiên các file settings
+
+```text
 managed policy (org) > .claude/settings.local.json (personal, không commit)
 > .claude/settings.json (team, commit) > ~/.claude/settings.json (personal global)
 ```
@@ -131,7 +162,7 @@ managed policy (org) > .claude/settings.local.json (personal, không commit)
 - Xem merged result ở `/permissions`, đừng đoán (bài 10).
 - Frontmatter hooks của project subagents cần trust workspace dialog; `-p` session không tính trusted.
 
-### 3.2. Cơ chế stdin/stdout (hook contract)
+### 3.2. Hợp đồng stdin/stdout giữa harness và hook
 
 ```text
 1. Harness gửi event JSON qua STDIN của hook command.
@@ -166,9 +197,16 @@ exit 0
 - Bảo mật: hook deny thắng cả `bypassPermissions`/`--dangerously-skip-permissions`; ngược lại hook allow
   KHÔNG nới được deny rules hay `ask` của org — hooks chỉ siết, không nới.
 
+**Kiểm tra nhanh:**
+
+- Gõ `/permissions` để xem kết quả merge settings — đừng đoán file nào thắng.
+- Tự hỏi lại được hợp đồng 3 phía: harness đưa JSON qua stdin → hook trả exit 0 (qua) / exit 2 + `permissionDecision: deny` (chặn) / `updatedInput` (sửa lệnh).
+
 ---
 
-## 4. Full settings.json mẫu (team-ready, copy-paste)
+## 4. Full settings.json mẫu cho team (copy-paste)
+
+Mục này trả lời câu: 1 file settings.json đầy đủ cho team dùng trông ra sao, và cách gắn hook vào đó thế nào?
 
 ```json
 {
@@ -241,9 +279,16 @@ exit 0
 }
 ```
 
+**Kiểm tra nhanh:**
+
+- Dán file trên vào `.claude/settings.json` của repo sạch, mở session mới rồi gõ `/hooks` → phải thấy 6 event types (`SessionStart`, `PreToolUse`, `PostToolUse`, `Stop`, `Notification`, `SubagentStop`) với đúng matcher.
+- JSON parse lỗi thì mở `/doctor` — nó chỉ đúng file lỗi; sửa xong mở session mới (hooks load lúc start).
+
 ---
 
 ## 5. 5 hooks hoàn chỉnh (copy-paste)
+
+Mục này trả lời câu: 5 hook thật, sẵn sàng bỏ vào `.claude/hooks/` là những hook nào?
 
 > Đặt vào `.claude/hooks/`, `chmod +x`, cấu hình trong settings.json mục 4.
 
@@ -356,20 +401,26 @@ exit 0
 # Cài + test (copy-paste):
 chmod +x .claude/hooks/*.sh
 # Trong session:
-/hooks   # phải thấy 6 events trên với đúng matcher
-# Test branch-protect:
-# > "chạy git push origin main giúp anh"
-# → hook deny, Claude báo BLOCKED. Nếu vẫn push được → xem mục 6 debug.
+/hooks
+# Test branch-protect: gõ prompt "chạy git push origin main giúp anh"
 ```
 
-Thêm: prompt-hook kiểm tra câu chữ cần judgment (vd "commit message có leak secret?"),
+Ngoài 5 hook trên, bạn còn: prompt-hook kiểm tra câu chữ cần judgment (ví dụ "commit message có leak secret?"),
 agent-hook verify cần đọc code (experimental, production ưu tiên command hooks),
 `SessionStart` inject context (branch hiện tại, ticket liên quan), `Stop` gate (script check, block turn-end
 tới khi pass — tối đa 8 blocks liên tiếp rồi Claude override để thoát).
 
+**Kiểm tra nhanh:**
+
+- Sau `chmod +x`, gõ `/hooks` trong session mới → phải thấy đủ 6 event types với đúng matcher (SessionStart, PreToolUse ×2, PostToolUse, Stop, Notification, SubagentStop).
+- Prompt "chạy git push origin main giúp anh" → hook deny, Claude báo BLOCKED. Nếu vẫn push được → chạy debug mục 6.2.
+- Sửa 1 file `.ts` cố ý sai lint → Claude thấy lỗi eslint và tự fix ngay (hook 1).
+
 ---
 
-## 6. Walkthrough + debug flowchart
+## 6. Walkthrough cài hook đầu tiên + debug khi hook không chạy
+
+Mục này trả lời câu: cài hook đầu tiên mất mấy bước, và khi hook im lặng thì lần theo đâu?
 
 ### 6.1. Walkthrough: thêm hook đầu tiên (10 phút)
 
@@ -383,7 +434,7 @@ Bước 6: Test lọt: "git push -f", "git push --force-with-lease", "git push o
         → cả 4 phải block. Cái nào lọt → sửa regex.
 ```
 
-### 6.2. Debug flowchart (hook không chạy → đi từng bước)
+### 6.2. Debug flowchart: hook không chạy thì đi từng bước
 
 ```text
 Hook không chạy?
@@ -403,26 +454,31 @@ Hook không chạy?
 ```bash
 # Debug tay (copy-paste):
 echo '{"tool":"Bash","input":{"command":"git push origin main"}}' | .claude/hooks/block-main-push.sh; echo "exit=$?"
-# Kỳ vọng: JSON deny + exit=2. Nếu exit=0 → regex sai, sửa.
 
 echo '{"tool":"Bash","input":{"command":"git push origin feat/x"}}' | .claude/hooks/block-main-push.sh; echo "exit=$?"
-# Kỳ vọng: exit=0 (cho qua). Nếu deny → regex quá tay (block cả feat).
 ```
 
-### 6.3. Nhờ Claude viết hook
+### 6.3. Nhờ Claude viết hook cho bạn
 
-```
+```text
 "Viết hook chạy eslint sau mỗi lần edit file .ts" / "Viết hook block writes vào thư mục migrations"
 ```
 
 Claude sửa `.claude/settings.json` trực tiếp; bạn `/hooks` duyệt lại. Đối xử hooks như production code
 (chạy với quyền của bạn, đọc FS + network + ghi disk).
 
+**Kiểm tra nhanh:**
+
+- Chạy 2 lệnh debug tay ở mục 6.2: lệnh `git push origin main` → JSON deny + `exit=2`; lệnh `git push origin feat/x` → `exit=0`. Cái nào sai là regex sai (deny quá tay hoặc lọt) → sửa regex.
+- Bước nào trong 7 nhánh flowchart bắt được lỗi khi bạn cố ý cấu hình sai 1 hook (ví dụ matcher gõ `edit` thường) — ghi lại bước đó.
+
 ---
 
-## 7. Pitfalls + bài tập
+## 7. Bẫy thường gặp và bài tập
 
-### 7.0. Hiểu nhầm thường gặp
+Mục này trả lời câu: team hay vấp gì khi dùng hooks, và làm 5 bài nào để tay thuộc?
+
+### 7.1. Hiểu nhầm thường gặp
 
 | Hiểu nhầm | Sự thật | Ai cần nhớ |
 |---|---|---|
@@ -432,7 +488,9 @@ Claude sửa `.claude/settings.json` trực tiếp; bạn `/hooks` duyệt lại
 | "Matcher không phân biệt hoa thường" | Có phân biệt: `Edit` ≠ `edit`, `Bash` ≠ `bash`. Sai case là hook im lặng không chạy. | Người mới viết hook |
 | "Hook thay được OS sandbox" | Hook là shell vẫn bypass được qua binary lạ. Việc critical → hook + sandbox + deny rules (bài 10). | Người làm prod |
 
-| Pitfall | Vì sao | Fix |
+### 7.2. Bẫy khi cấu hình + cách fix
+
+| Bẫy | Vì sao | Fix |
 |---|---|---|
 | Hook `.sh` báo permission denied | Quên `chmod +x`, file từ Windows mất +x | `chmod +x .claude/hooks/*.sh` |
 | Hook chạy local nhưng không chạy cloud | Hook file chưa commit / path khác | Commit `.claude/hooks/` + dùng `${CLAUDE_PROJECT_DIR}` |
@@ -440,9 +498,10 @@ Claude sửa `.claude/settings.json` trực tiếp; bạn `/hooks` duyệt lại
 | 2 hooks cùng rewrite → non-deterministic | Overlap matcher | Mỗi rewrite 1 owner; còn lại chỉ read/block |
 | Stop gate block mãi không thoát | Script luôn fail | Tối đa 8 blocks rồi override — nhưng fix script gốc, đừng trông vào override |
 | Prompt-hook tốn token bất ngờ | `prompt` type gọi Haiku mỗi lần | Chỉ dùng prompt khi regex không làm được |
-| Tin hook thay OS sandbox cho việc critical | Hook là shell, vẫn bypass được qua binary lạ | Việc critical → hook + sandbox + deny rules (bài 10) |
 
-**Bài tập:**
+> Bẫy "tin hook thay OS sandbox" đã gộp vào bảng hiểu nhầm 7.1 (nội dung y hệt, chỉ 1 chỗ).
+
+### 7.3. Bài tập thực hành
 
 **Bài 1 (15 phút):** Cài hook 2 (branch-protect). Test 4 lệnh push (mục 5). Ghi lại cái nào lọt.
 
@@ -459,12 +518,14 @@ Ghi lại bước nào bắt được lỗi.
 
 ---
 
-## 8. Link chéo
+## 8. Đi tiếp — link chéo
 
-- **Bài 00 — Tổng quan**: hooks 0 token + deterministic; rule miss 2 lần → nâng thành hook.
-- **Bài 03 — CLAUDE.md**: advisory vs law; migrate rules hay miss sang hooks.
-- **Bài 04 — Slash commands**: `/hooks` xem hooks, `/doctor` audit hooks chậm.
-- **Bài 05 — Skills**: skill dạy "làm thế nào", hook bắt "phải làm".
-- **Bài 06 — Subagents**: SubagentStart/Stop hooks, frontmatter hooks, conditional rules.
-- **Bài 10 — Permissions**: hook deny thắng bypass; hook allow không nới deny/org.
-- **Bài 12 — SDK/CI**: Setup hook cho CI warmup; PreToolUse cho `-p` automate permissions.
+Mục này trả lời câu: đọc bài nào tiếp theo tùy việc bạn đang mắc?
+
+- **[Bài 00 — Tổng quan Claude Code](./00-tong-quan-claude-code.md)**: hooks 0 token + tất định; rule miss 2 lần → nâng thành hook.
+- **[Bài 03 — CLAUDE.md](./03-claude-md-memory-rules.md)**: advisory vs law; migrate rules hay miss sang hooks.
+- **[Bài 04 — Slash commands toàn tập](./04-slash-commands-toan-tap.md)**: `/hooks` xem hooks, `/doctor` audit hooks chậm.
+- **[Bài 05 — Skills](./05-skills-custom-commands.md)**: skill dạy "làm thế nào", hook bắt "phải làm".
+- **[Bài 06 — Subagents & agent teams](./06-subagents-agent-teams-parallel.md)**: SubagentStart/Stop hooks, frontmatter hooks, conditional rules.
+- **[Bài 10 — Permissions & availability](./10-permissions-modes-availability.md)**: hook deny thắng bypass; hook allow không nới deny/org.
+- **[Bài 12 — SDK & CI/CD](./12-agent-sdk-ci-cd-automation.md)**: Setup hook cho CI warmup; PreToolUse cho `-p` automate permissions.

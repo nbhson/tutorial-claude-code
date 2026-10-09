@@ -1,16 +1,15 @@
 # /compact — Nén lịch sử hội thoại thành tóm tắt, giữ đà task mà nhẹ context
 
-> Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (không xóa/sửa file code; chỉ thay conversation dài bằng bản tóm tắt — chi tiết gốc không khôi phục trong phiên)
-
-> Nói nôm na: `/compact` là "nén RAM có chọn lọc": thay vì xóa trắng như `/clear`, nó tóm tắt toàn bộ hội thoại thành 1 bản summary gọn rồi tiếp tục task từ đó. Dùng khi context đầy nhưng bạn vẫn đang làm dở cùng 1 task.
+> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (không xóa/sửa file code; chỉ thay conversation dài bằng bản tóm tắt — chi tiết gốc không khôi phục trong phiên)
+> **Nói nôm na:** `/compact` là "nén RAM có chọn lọc": thay vì xóa trắng như `/clear`, nó tóm tắt toàn bộ hội thoại thành 1 bản summary gọn rồi tiếp tục task từ đó. Dùng khi context đầy nhưng bạn vẫn đang làm dở cùng 1 task.
 
 ## Khi nào dùng
 
-- Dùng /compact khi bạn muốn quản lý phiên/context (mở, dọn, lưu, chia nhánh) mà không đụng tới code trên đĩa.
-- Dùng /compact **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /compact thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/compact` khi context đầy nhưng bạn vẫn đang làm dở cùng một task và muốn giữ mạch làm việc.
+- Dùng `/compact <focus>` chủ động ở ~60% thay vì đợi auto-compact giữa chừng cho summary đẹp hơn.
+- Không dùng `/compact` thay cho `/clear` khi đổi hẳn việc khác — nén lại vẫn mang theo rác của task cũ.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/compact`
@@ -20,7 +19,7 @@ Auto-compact
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -48,7 +47,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Compact xong model quên tên file quan trọng | Focus quá chung chung ("tóm tắt giúp tôi") | Compact lại không cứu được (history đã mất); lần sau focus nêu tên file cụ thể. Trước mắt bảo model đọc lại file / `glob` tìm lại |
 | Compact xong todos biến mất | Summary bỏ qua todos | Gõ `/todos` kiểm tra, tạo lại tay; lần sau focus ghi "giữ nguyên todo list" |

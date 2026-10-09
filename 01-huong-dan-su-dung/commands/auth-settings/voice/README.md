@@ -1,16 +1,15 @@
 # /voice — Nói thay vì gõ (giữ Space để nói, thả để gửi)
 
-> Loại Built-in · Nhóm Nhập liệu & Trợ năng · Nguy hiểm Không (chỉ đổi cách nhập; nhưng Có nhẹ nếu bạn đọc to secret/mã OTP nơi đông người)
-
-> Nói nôm na: `/voice` bật/tắt voice dictation trong terminal: giữ `Space` để nói, thả ra là transcript thành prompt gửi đi. Sinh ra cho lúc mỏi tay, đang đi bộ với mobile, hoặc ý dài nói nhanh hơn gõ. Hiểu `/voice` là hiểu "nhắn voice như chat app, nhưng nó biến thành chữ trước khi gửi".
+> Loại Built-in · Nhóm Nhập liệu & Trợ năng · Mức rủi ro Không (chỉ đổi cách nhập; nhưng Có nhẹ nếu bạn đọc to secret/mã OTP nơi đông người)
+> **Nói nôm na:** `/voice` bật/tắt voice dictation trong terminal: giữ `Space` để nói, thả ra là transcript thành prompt gửi đi. Sinh ra cho lúc mỏi tay, đang đi bộ với mobile, hoặc ý dài nói nhanh hơn gõ. Hiểu `/voice` là hiểu "nhắn voice như chat app, nhưng nó biến thành chữ trước khi gửi".
 
 ## Khi nào dùng
 
-- Dùng /voice khi bạn cần chỉnh môi trường/tài khoản/cài đặt (login, IDE, config, remote, sandbox).
-- Dùng /voice **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /voice thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng khi mỏi tay, đang đi bộ với mobile, hoặc ý dài nói nhanh hơn gõ.
+- Dùng **trước khi** rời bàn / chuẩn bị đọc đoạn dài — kiểm tra mic hoạt động từ đầu, khỏi thu được nửa chừng mới biết hỏng.
+- Không dùng `/voice` thay cho việc tự đọc lại transcript trước khi gửi — voice dễ sai từ chuyên môn, vẫn phải kiểm tra.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/voice`
@@ -20,7 +19,7 @@ Giữ `Space`
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -39,7 +38,7 @@ Kết quả mong đợi:
 - Claude trả đúng việc của /voice (không lan man), nêu rõ bước tiếp theo.
 - Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
 
-Verify (30 giây):
+**Kiểm tra nhanh:**
 
 ```bash
 # trong session: /status hoặc /context để chắc mode/context còn sạch
@@ -47,7 +46,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Giữ Space không thu, thả ra trống | OS chưa cấp quyền mic (lần đầu Deny) | Settings OS → cho terminal quyền mic; `/terminal-setup` kiểm tra lại |
 | Transcript toàn sai từ chuyên môn | Nói nhanh + từ lạ (`webhook`, `idempotency`) | Nói chậm, đánh vần tên riêng; hoặc gõ tay đoạn có từ chuyên môn |

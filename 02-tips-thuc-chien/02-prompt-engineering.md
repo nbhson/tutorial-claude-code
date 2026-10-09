@@ -1,30 +1,61 @@
-# Tips 02 — Prompt Engineering Cho Claude Code (Viết Sao, Ra Vậy)
+# Tips 02 — Prompt engineering: viết sao, ra vậy
 
-> Claude Code không đọc được ý nghĩ. Prompt tốt = chỉ đúng files + end-state cụ thể + cách verify + ràng buộc. Bài này mổ xẻ anatomy 4 thành phần, 6 mẫu prompt theo task, bảng sai→sửa, và guide cho non-coder.
+> **Bài này cho ai:** dev hay gõ prompt rồi nhận output lan man, hoặc người mới (kể cả không viết code) muốn Claude Code ra kết quả đúng ngay lần đầu.
+> **Cần gì trước:** đã cài và đăng nhập Claude Code ([bài 01](../01-huong-dan-su-dung/01-cai-dat-va-xac-thuc.md)); không bắt buộc đọc gì thêm.
+> **Đọc xong bạn làm được:**
+> - Viết prompt đủ 4 thành phần (files / end-state / chi tiết / format) kèm 3 gia vị (tiêu chí thành công / cách verify / ràng buộc phủ định).
+> - Chọn đúng 1 trong 6 mẫu prompt theo task: bug, feature, refactor, research, review, data/docs.
+> - Tự chấm prompt cũ theo bảng sai→sửa + checklist 10 ô trước khi bấm Enter.
+> - Viết prompt cho data/docs được dù bạn không biết code.
+> **Thời gian:** ~40 phút
+
+## Thuật ngữ dùng trong bài này
+
+Đọc bảng này trước khi vào mục 1 — mọi thuật ngữ Anh trong bài đều được giải thích ở đây.
+
+| Thuật ngữ | Hiểu nôm na là gì | Ví dụ thấy ngay |
+|---|---|---|
+| Scope (files nào) | Khoanh vùng model được phép đọc/sửa — càng hẹp càng rẻ | `Chỉ đọc src/auth/login.ts + __tests__/login.test.ts` |
+| End-state | Trạng thái "xong" trông thế nào, không phải đang làm gì | `Tách auth.ts thành 3 modules, giữ public API, test xanh` |
+| Verify | Câu dặn model tự chạy check rồi dán kết quả, thay vì "chắc đúng" | `Chạy pnpm --filter auth test và dán log` |
+| NEVER (ràng buộc phủ định) | Danh sách cấm địa model không được đụng | `Đừng đụng src/generated/, đừng commit thẳng main` |
+| Plan mode | Chế độ chỉ lập plan chờ bạn duyệt, code sau | Mẫu 2: `Chờ tôi duyệt mới implement. Không code trong message này.` |
+| Regression test | Test dựng lại đúng bug cũ, để lỗi không quay lại | Mẫu 1: `Thêm 1 regression test cover case này` |
+| Diff (`git diff --stat`) | Bảng kê file nào đã thay đổi — dùng để xem có lệch scope không | `git diff --stat` chỉ chạm `apps/auth/**` |
+| Subagent | Agent con có context riêng, nhận việc rộng rồi chỉ trả tóm tắt về main | Mẫu 4: `Dùng subagent explore src/payments/refund*` |
 
 ## Mục lục
 
-- [1. Vì sao prompt quyết định output?](#1-vì-sao-prompt-quyết-định-output)
-- [2. Giải phẫu prompt tốt: 4 thành phần](#2-giải-phẫu-prompt-tốt-4-thành-phần)
-- [3. Ba gia vị nâng chất lượng 10x](#3-ba-gia-vị-nâng-chất-lượng-10x)
-- [4. Sáu mẫu prompt theo task (copy-paste)](#4-sáu-mẫu-prompt-theo-task-copy-paste)
-- [5. Walkthrough: từ prompt tệ tới prompt tốt](#5-walkthrough-từ-prompt-tệ-tới-prompt-tốt)
-- [6. Bảng sai→sửa](#6-bảng-saisửa)
-- [7. Non-coder guide](#7-non-coder-guide)
-- [8. Checklist trước khi Enter](#8-checklist-trước-khi-enter)
-- [9. Pitfalls + fix](#9-pitfalls--fix)
-- [10. Bài tập](#10-bài-tập)
-- [11. Tham khảo chéo](#11-tham-khảo-chéo)
+1. [Vì sao prompt quyết định output?](#1-vì-sao-prompt-quyết-định-output)
+2. [Giải phẫu prompt tốt: 4 thành phần](#2-giải-phẫu-prompt-tốt-4-thành-phần)
+3. [Ba gia vị nâng chất lượng 10x](#3-ba-gia-vị-nâng-chất-lượng-10x)
+4. [Sáu mẫu prompt theo task (copy-paste)](#4-sáu-mẫu-prompt-theo-task-copy-paste)
+5. [Walkthrough: từ prompt tệ tới prompt tốt](#5-walkthrough-từ-prompt-tệ-tới-prompt-tốt)
+6. [Bảng sai→sửa](#6-bảng-saisửa)
+7. [Hướng dẫn cho người không viết code (non-coder)](#7-hướng-dẫn-cho-người-không-viết-code-non-coder)
+8. [Checklist trước khi Enter](#8-checklist-trước-khi-enter)
+9. [Pitfalls + fix](#9-pitfalls--fix)
+10. [Bảng tra nôm na + analogie + verify cho 3 thuật ngữ chính](#10-bảng-tra-nôm-na--analogie--verify-cho-3-thuật-ngữ-chính)
+11. [Sơ đồ Mermaid: từ prompt tới done](#11-sơ-đồ-mermaid-từ-prompt-tới-done)
+12. [Bảng so sánh activity vs end-state (hiểu nôm na + ví dụ)](#12-bảng-so-sánh-activity-vs-end-state-hiểu-nôm-na--ví-dụ)
+13. [Before/After: prompt dở vs prompt tốt](#13-beforeafter-prompt-dở-vs-prompt-tốt)
+14. [Hiểu nhầm thường gặp](#14-hiểu-nhầm-thường-gặp)
+15. [Bài tập](#15-bài-tập)
+16. [Tham khảo chéo](#16-tham-khảo-chéo)
 
 ---
 
 ## 1. Vì sao prompt quyết định output?
 
-### 1.1. Model giỏi + prompt ẩu = output sprawling
+Mục này trả lời câu: vì sao model giỏi mà prompt ẩu vẫn cho output lan man, và 2 phút viết prompt kỹ tiết kiệm được gì?
+
+Claude Code không đọc được ý nghĩ. Prompt tốt = chỉ đúng files + end-state cụ thể + cách verify + ràng buộc. Bài này mổ xẻ cấu trúc 4 thành phần, 6 mẫu prompt theo task, bảng sai→sửa và hướng dẫn cho người không viết code.
+
+### 1.1. Model giỏi + prompt ẩu = output lan man
 
 Nguyên nhân #1 của "Claude sửa lan man, đọc 100 files, đổi API không hỏi":
 
-- Không phải model lười, mà là bạn cho nó **quyền tự do quá rộng**.
+- Không phải model lười, mà là bạn cho model **quyền tự do quá rộng**.
 - Prompt `"investigate auth"` với repo 500 files = mời model đi lạc.
 - Prompt `"fix login"` không scope = model tự đoán scope, tự đoán done, tự đoán verify.
 
@@ -46,9 +77,11 @@ Mỗi prompt tốt làm 3 việc:
 
 ## 2. Giải phẫu prompt tốt: 4 thành phần
 
+Mục này trả lời câu: 1 prompt tốt gồm những mảnh nào, và viết từng mảnh ra sao để copy-paste được ngay?
+
 Mọi prompt tốt đều có đủ 4 mảnh. Thiếu 1 mảnh là output lệch 1 hướng.
 
-### Thành phần 1 — Files nào (scope)
+### 2.1. Thành phần 1 — Files nào (scope)
 
 Chỉ file/thư mục liên quan. Càng cụ thể càng rẻ.
 
@@ -62,9 +95,9 @@ Mẹo:
 
 - Dùng `@` để nạp file vào context (IDE/CLI hỗ trợ): `@src/auth/login.ts`.
 - Nếu file >1000 dòng: đừng ném nguyên. Bảo subagent tóm tắt từng phần, main chỉ nhận outline.
-- Non-code: thay "files" bằng "nguồn" — `/data/feedback-q3.csv`, `docs/sprint-12.md`.
+- Không có code (data/docs): thay "files" bằng "nguồn" — `/data/feedback-q3.csv`, `docs/sprint-12.md`.
 
-### Thành phần 2 — Tìm/tạo gì (end-state, không phải activity)
+### 2.2. Thành phần 2 — Tìm/tạo gì (end-state, không phải activity)
 
 Mô tả **trạng thái cuối**, không mô tả hoạt động.
 
@@ -76,7 +109,7 @@ TỐT (end-state): "Tách src/auth.ts (>500 dòng) thành 3 modules, giữ publi
 
 Công thức: **động từ + đối tượng + tiêu chuẩn chấp nhận**.
 
-### Thành phần 3 — Chi tiết nào (độ phân giải)
+### 2.3. Thành phần 3 — Chi tiết nào (độ phân giải)
 
 Bạn muốn sâu tới đâu? Columns nào? Quotes? Counts? Segments? Edge cases?
 
@@ -86,7 +119,7 @@ TỐT code: "Liệt kê files sẽ sửa (đường dẫn đầy đủ), hàm n�
 TỆ: "Cho chi tiết vào" (chi tiết gì? bao nhiêu là đủ?)
 ```
 
-### Thành phần 4 — Format output nào
+### 2.4. Thành phần 4 — Format output nào
 
 Không chỉ định format = nhận format ngẫu nhiên (lúc table, lúc prose dài, lúc JSON gãy).
 
@@ -96,7 +129,7 @@ TỐT: "Trả về plan markdown lưu vào plan.md, gồm: steps + risks + verif
 TỐT: "Trả về JSON: {files: [...], risks: [...], verify: '...'}"
 ```
 
-### Ví dụ tổng hợp 4 thành phần
+### 2.5. Ví dụ tổng hợp 4 thành phần
 
 ```text
 TỆ:
@@ -120,7 +153,9 @@ Phân tích:
 
 ## 3. Ba gia vị nâng chất lượng 10x
 
-### Gia vị 1 — Success criteria explicit
+Mục này trả lời câu: ngoài 4 thành phần, thêm 3 gia vị nào để model tự chạy check và không đụng cấm địa?
+
+### 3.1. Gia vị 1 — Tiêu chí thành công (success criteria) viết rõ
 
 Done phải check được bằng lệnh, không bằng cảm giác.
 
@@ -132,7 +167,7 @@ TỐT: "Done = demo log của flow refund paste ở cuối + screenshot /verify 
 
 Xem thêm thang verification ở [Tips 04](./04-verification-done-that.md).
 
-### Gia vị 2 — Cách verify (bắt iterate trong message)
+### 3.2. Gia vị 2 — Cách verify (bắt model tự lặp trong message)
 
 Thêm 1 câu này, Claude tự chạy → đọc lỗi → sửa → chạy lại, thay vì dừng ở "chắc đúng".
 
@@ -146,9 +181,9 @@ Biến thể cho data / docs:
 "Sau khi ra table, đối chiếu tổng counts với `wc -l` raw file. Lệch >1% thì kiểm tra lại trước khi show."
 ```
 
-### Gia vị 3 — Ràng buộc phủ định (NEVER / đừng)
+### 3.3. Gia vị 3 — Ràng buộc phủ định (NEVER / đừng)
 
-Model cần biết **cấm địa**. Không dặn là nó sẽ đụng.
+Model cần biết **cấm địa**. Không dặn là model sẽ đụng.
 
 ```text
 "Đừng đụng `src/generated/`, đừng đổi DB schema, đừng commit thẳng main, đừng thêm dependency mới."
@@ -162,7 +197,9 @@ Mẹo: gom ràng buộc chung vào `CLAUDE.md` (tự áp mọi turn), chỉ đ�
 
 ## 4. Sáu mẫu prompt theo task (copy-paste)
 
-### Mẫu 1 — BUG (fix tối thiểu + regression test)
+Mục này trả lời câu: gặp task bug, feature, refactor, research, review hay data/docs thì copy-paste prompt nào?
+
+### 4.1. Mẫu 1 — BUG (fix tối thiểu + regression test)
 
 ```text
 BUG: Tái hiện lỗi [mô tả + steps tái hiện + log lỗi paste kèm].
@@ -183,7 +220,7 @@ Tìm root cause trong src/auth/login.ts, fix tối thiểu, thêm regression tes
 chạy pnpm --filter auth test login và dán log. Đừng đổi API, đừng đụng generated/.
 ```
 
-### Mẫu 2 — FEATURE (plan trước, code sau)
+### 4.2. Mẫu 2 — FEATURE (plan trước, code sau)
 
 ```text
 FEATURE: Tôi muốn <mục tiêu 1 câu>.
@@ -195,7 +232,7 @@ Trước khi code:
 Output: markdown plan, lưu vào plan.md.
 ```
 
-### Mẫu 3 — REFACTOR (giữ API + gate từng bước)
+### 4.3. Mẫu 3 — REFACTOR (giữ API + gate từng bước)
 
 ```text
 REFACTOR: Tách file <X, vd src/auth.ts ~900 dòng> thành modules <liệt kê, vd auth/login, auth/session, auth/types>.
@@ -205,7 +242,7 @@ REFACTOR: Tách file <X, vd src/auth.ts ~900 dòng> thành modules <liệt kê, 
 - Cuối cùng dán `git diff --stat` + log test xanh.
 ```
 
-### Mẫu 4 — RESEARCH (subagent + output chuẩn)
+### 4.4. Mẫu 4 — RESEARCH (subagent + output chuẩn)
 
 ```text
 RESEARCH: Dùng subagent explore <phạm vi hẹp, vd src/payments/refund*>.
@@ -216,7 +253,7 @@ RESEARCH: Dùng subagent explore <phạm vi hẹp, vd src/payments/refund*>.
 - Chỉ liệt kê files mày sẽ sửa/đọc nếu làm change tiếp theo. Không dump log dài.
 ```
 
-### Mẫu 5 — REVIEW (adversarial, có severity)
+### 4.5. Mẫu 5 — REVIEW (adversarial, có severity)
 
 ```text
 REVIEW: Review diff này với plan trong plan.md.
@@ -227,7 +264,7 @@ REVIEW: Review diff này với plan trong plan.md.
 
 Chi tiết calibration reviewer ở [Tips 04](./04-verification-done-that.md).
 
-### Mẫu 6 — DATA / DOCS (cho non-coder + coder đều dùng)
+### 4.6. Mẫu 6 — DATA / DOCS (người không viết code và coder đều dùng)
 
 ```text
 DATA: Đọc <file csv/docs, vd /data/feedback-q3.csv>.
@@ -240,6 +277,8 @@ DATA: Đọc <file csv/docs, vd /data/feedback-q3.csv>.
 ---
 
 ## 5. Walkthrough: từ prompt tệ tới prompt tốt
+
+Mục này trả lời câu: sửa 1 prompt theo từng vòng thì thêm gì vào, và mỗi vòng tiết kiệm được bao nhiêu turn?
 
 **Tình huống:** bạn muốn refactor file `auth.ts` 800 dòng. Lần 1 prompt ẩu.
 
@@ -277,6 +316,8 @@ Bài học: **mỗi vòng thêm 1 thành phần (scope → end-state → verify 
 
 ## 6. Bảng sai→sửa
 
+Mục này trả lời câu: 8 lỗi prompt hay gặp gây hỏng theo hướng nào, và copy ý nào thay thế?
+
 | Sai (prompt ẩu) | Vì sao hỏng | Sửa (copy ý này) |
 |---|---|---|
 | `"investigate auth"` (không scope) | Đọc 300 files, tốn 30K tokens | Khoanh module + câu hỏi cần trả lời + output format |
@@ -290,7 +331,9 @@ Bài học: **mỗi vòng thêm 1 thành phần (scope → end-state → verify 
 
 ---
 
-## 7. Non-coder guide
+## 7. Hướng dẫn cho người không viết code (non-coder)
+
+Mục này trả lời câu: không biết code thì chuyển 4 thành phần sang ngôn ngữ nào, và bắt đầu từ prompt nào?
 
 Cùng công thức 4 thành phần, chỉ thay từ ngữ:
 
@@ -311,7 +354,7 @@ cái gì không được đụng. Khi đủ thì sinh CLAUDE.md <100 dòng."
 
 → Bạn chỉ cần trả lời hội thoại, Claude lo cấu trúc. Sau đó mọi prompt tiếp theo tự gọn vì đã có `CLAUDE.md`.
 
-**Ví dụ non-coder hoàn chỉnh:**
+**Ví dụ hoàn chỉnh cho người không viết code:**
 
 ```text
 "Đọc thư mục /data/feedback/. Tìm 3 lý do khách phàn nàn nhiều nhất tháng này.
@@ -322,6 +365,8 @@ Mỗi lý do kèm 2 quotes nguyên văn + số lượng. Output table markdown.
 ---
 
 ## 8. Checklist trước khi Enter
+
+Mục này trả lời câu: trước khi bấm Enter, bạn tự chấm prompt theo đủ 10 ô nào?
 
 - [ ] Có **scope** cụ thể (files/thư mục/đường dẫn)?
 - [ ] Có **end-state** (xong thì trông thế nào, không phải "cố gắng")?
@@ -334,11 +379,17 @@ Mỗi lý do kèm 2 quotes nguyên văn + số lượng. Output table markdown.
 - [ ] File >1000 dòng → đã tách hoặc giao subagent tóm tắt?
 - [ ] 1 prompt 1 việc (không gộp 5 việc)?
 
-> Nếu tick đủ 10 ô, prompt của bạn thuộc top 5%.
+**Kiểm tra nhanh:**
+
+- Tick đủ 10 ô → prompt của bạn thuộc top 5%.
 
 ---
 
 ## 9. Pitfalls + fix
+
+Mục này trả lời câu: 9 bẫy prompt nào khiến bạn tốn turns nhất, nhận ra bằng triệu chứng nào và fix ra sao?
+
+Đọc bảng này khi prompt của bạn vừa có 1 trong 9 triệu chứng dưới đây.
 
 | Pitfall | Triệu chứng | Fix |
 |---|---|---|
@@ -354,30 +405,11 @@ Mỗi lý do kèm 2 quotes nguyên văn + số lượng. Output table markdown.
 
 ---
 
-## 10. Bài tập
+## 10. Bảng tra nôm na + analogie + verify cho 3 thuật ngữ chính
 
-**Bài 1 (10 phút — mổ prompt cũ):**
+Mục này trả lời câu: scope, end-state, verify + NEVER hình dung ra sao theo cách đời thường, và tự kiểm chứng prompt đã đủ chưa bằng cách nào?
 
-- Lấy 3 prompts gần nhất bạn đã gõ (trong transcript hoặc trí nhớ).
-- Chấm mỗi prompt theo 4 thành phần (files / end-state / chi tiết / format): thiếu mảnh nào?
-- Viết lại 1 prompt tệ nhất thành bản đủ 4 mảnh + verify + NEVER.
-
-**Bài 2 (20 phút — dùng 6 mẫu):**
-
-- Lấy 1 bug thật + 1 feature thật trong repo.
-- Viết prompt bug theo Mẫu 1, prompt feature theo Mẫu 2 (plan trước).
-- Chạy thử, đếm số turns tới done. Mục tiêu: bug ≤4 turns, feature có plan duyệt trước khi code.
-
-**Bài 3 (15 phút — non-coder):**
-
-- Dùng prompt phỏng vấn ở mục 7 để tạo/sửa `CLAUDE.md` cho project.
-- Sau đó nhờ 1 đồng nghiệp non-code dùng Mẫu 6 (data) để hỏi dữ liệu. Ghi lại: họ có cần bạn "dịch" không?
-
-> Đạt: sau 1 tuần, ≥80% prompts của bạn có scope + verify + NEVER mà không cần cố nhớ (thành reflex).
-
----
-
-### 10.5. Thuật ngữ mới (nôm na + analogie + ví dụ + verify)
+Đọc bảng này khi muốn nhớ nhanh 3 mảnh quan trọng nhất của prompt bằng hình ảnh đời thường thay vì lý thuyết.
 
 | Thuật ngữ | Nôm na 1 câu | Analogie | Ví dụ kỹ thuật thật | Cách verify |
 |---|---|---|---|---|
@@ -385,7 +417,11 @@ Mỗi lý do kèm 2 quotes nguyên văn + số lượng. Output table markdown.
 | End-state | Trạng thái xong trông thế nào, không phải đang làm gì. | Như đặt món: `cơm gà xối mỡ` thay vì `nấu gì đó cho ngon`. | `Top 5 complaints, mỗi dòng quote+count+segment, markdown table` | Output có đủ 5 dòng + table, không phải prose dài. |
 | Verify + NEVER | Câu bắt tự chạy check + vùng cấm không được đụng. | Như hợp đồng: nghiệm thu (verify) + điều cấm (NEVER). | `Chạy pnpm test auth và dán log. Đừng đụng generated/` | Log xanh dán kèm + `diff` không chạm cấm địa. |
 
-### 10.6. Mermaid: từ prompt tới done
+---
+
+## 11. Sơ đồ Mermaid: từ prompt tới done
+
+Mục này trả lời câu: từ lúc gõ prompt tới lúc ra kết quả, vòng lặp đi qua những bước nào và dừng ở đâu?
 
 ```mermaid
 flowchart LR
@@ -407,22 +443,32 @@ Giải thích:
 4. **D→E:** dặn iterate trong message để tự retry.
 5. **E→F:** log xanh + diff gọn mới done.
 
-### 10.7. Bảng so sánh có cột Hiểu nôm na + Ví dụ
+---
+
+## 12. Bảng so sánh activity vs end-state (hiểu nôm na + ví dụ)
+
+Mục này trả lời câu: mô tả "đang làm gì" và mô tả "xong ra sao" cho 2 kết quả khác nhau ở đâu?
 
 | Kiểu prompt | Hiểu nôm na | Ví dụ |
 |---|---|---|
 | Activity (tệ) | Nói đang làm gì, không nói xong ra sao | `Xem giúp auth` → đọc 40 files, đổi luôn API |
 | End-state (tốt) | Nói xong nhận được gì cụ thể | `Tách auth.ts thành 3 modules, giữ API, test xanh` → 15 phút xong |
 
-**Kỳ vọng thấy gì:**
+**Prompt mẫu (copy-paste):**
 
 ```text
 "Refactor src/auth.ts (~800 dòng) thành login/session/types. Giữ API. Sau mỗi bước chạy pnpm --filter auth test và dán log. Đừng đụng generated/."
 ```
 
-> Kỳ vọng thấy gì: 1 turn plan 5 bullet + 3 turns implement + log xanh + `diff --stat` gọn. Nếu vẫn hỏi `test gì?` là prompt thiếu verify.
+**Kiểm tra nhanh:**
 
-### 10.8. Before/After
+- Prompt trên → 1 turn plan 5 bullet + 3 turns implement + log xanh + `diff --stat` gọn. Nếu model vẫn hỏi `test gì?` là prompt của bạn thiếu verify.
+
+---
+
+## 13. Before/After: prompt dở vs prompt tốt
+
+Mục này trả lời câu: cùng 1 yêu cầu refactor, prompt dở và prompt tốt chênh nhau bao nhiêu về thời gian và độ hỏng?
 
 **Before (dở):** `"Refactor auth cho sạch"` → Kết quả dở: đọc 40 files, đổi API, test đỏ 5 chỗ, mất 45 phút rewind.
 
@@ -432,9 +478,15 @@ Giải thích:
 "Refactor src/auth.ts (800 dòng) thành src/auth/login.ts, session.ts, types.ts. Giữ API (re-export). Sau mỗi bước chạy pnpm --filter auth test và dán log. Đỏ thì dừng. Đừng đụng generated/, đừng thêm dep. Trước khi code trình outline 5 bullet chờ duyệt."
 ```
 
-> Kết quả tốt + Kỳ vọng: plan duyệt trước, test xanh từng bước, tổng 15 phút, không rewind.
+**Kiểm tra nhanh:**
 
-### 10.9. Hiểu nhầm thường gặp
+- Kết quả After: plan duyệt trước, test xanh từng bước, tổng 15 phút, không rewind.
+
+---
+
+## 14. Hiểu nhầm thường gặp
+
+Mục này trả lời câu: 3 lầm tưởng nào khiến bạn viết prompt sai dù đã nắm công thức?
 
 | Hiểu nhầm | Sự thật |
 |---|---|
@@ -442,7 +494,38 @@ Giải thích:
 | Mô tả solution chi tiết là tốt | Ép sai hướng từ đầu; mô tả problem + constraints, để plan đề xuất solution |
 | `Làm cho nhanh` là tối ưu | Model cắt test/verify; phải `tối thiểu nhưng test xanh, dán log` |
 
-## 11. Tham khảo chéo
+---
+
+## 15. Bài tập
+
+Mục này trả lời câu: làm 3 bài nào để 4 thành phần + 3 gia vị thành phản xạ?
+
+**Bài 1 (10 phút — mổ prompt cũ):**
+
+- Lấy 3 prompts gần nhất bạn đã gõ (trong transcript hoặc trí nhớ).
+- Chấm mỗi prompt theo 4 thành phần (files / end-state / chi tiết / format): thiếu mảnh nào?
+- Viết lại 1 prompt tệ nhất thành bản đủ 4 mảnh + verify + NEVER.
+
+**Bài 2 (20 phút — dùng 6 mẫu):**
+
+- Lấy 1 bug thật + 1 feature thật trong repo.
+- Viết prompt bug theo Mẫu 1, prompt feature theo Mẫu 2 (plan trước).
+- Chạy thử, đếm số turns tới done. Mục tiêu: bug ≤4 turns, feature có plan duyệt trước khi code.
+
+**Bài 3 (15 phút — cho người không viết code):**
+
+- Dùng prompt phỏng vấn ở mục 7 để tạo/sửa `CLAUDE.md` cho project.
+- Sau đó nhờ 1 đồng nghiệp không viết code dùng Mẫu 6 (data) để hỏi dữ liệu. Ghi lại: họ có cần bạn "dịch" không?
+
+**Kiểm tra nhanh:**
+
+- Đạt: sau 1 tuần, ≥80% prompts của bạn có scope + verify + NEVER mà không cần cố nhớ (đã thành phản xạ).
+
+---
+
+## 16. Tham khảo chéo
+
+Mục này trả lời câu: muốn đi sâu từng lệnh hoặc chủ đề liên quan prompt thì mở link nào?
 
 - Lệnh hay kèm prompt:
   - [../01-huong-dan-su-dung/commands/model-mode/plan/README.md](../01-huong-dan-su-dung/commands/model-mode/plan/README.md) — ép plan mode bằng lệnh

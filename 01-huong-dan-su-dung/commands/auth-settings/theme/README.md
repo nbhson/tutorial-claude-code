@@ -1,16 +1,15 @@
 # /theme — Đổi giao diện: sáng/tối, tương phản cao, mù màu
 
-> Loại Built-in · Nhóm Settings · Nguy hiểm Không (chỉ đổi màu — không đụng code, auth, hay permissions)
-
-> Nói nôm na: `/theme` đổi bảng màu CLI: tối (mặc định), sáng (ra nắng), tương phản cao (mắt kém), thân thiện mù màu. Hiểu `/theme` là hiểu "đổi áo" — mặc gì thì làm việc vẫn thế, nhưng nhìn lâu đỡ mỏi.
+> Loại Built-in · Nhóm Settings · Mức rủi ro Không (chỉ đổi màu — không đụng code, auth, hay permissions)
+> **Nói nôm na:** `/theme` đổi bảng màu CLI: tối (mặc định), sáng (ra nắng), tương phản cao (mắt kém), thân thiện mù màu. Hiểu `/theme` là hiểu "đổi áo" — mặc gì thì làm việc vẫn thế, nhưng nhìn lâu đỡ mỏi.
 
 ## Khi nào dùng
 
-- Dùng /theme khi bạn cần chỉnh môi trường/tài khoản/cài đặt (login, IDE, config, remote, sandbox).
-- Dùng /theme **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /theme thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng khi đổi môi trường ánh sáng (ra nắng, phòng tối) hoặc muốn tương phản cao / thân thiện mù màu cho đỡ mỏi mắt.
+- Dùng **trước khi** demo trình diễn (màn hình lóa, máy chiếu): đổi `/theme light` sớm để diff đọc được, khỏi sửa giữa lúc demo.
+- Không dùng `/theme` thay cho việc tự bảo trì theme terminal bên ngoài — nó chỉ đổi bảng màu CLI, không sửa theme terminal.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/theme`
@@ -20,7 +19,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -36,7 +35,7 @@ Kết quả mong đợi:
 - Claude trả đúng việc của /theme (không lan man), nêu rõ bước tiếp theo.
 - Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
 
-Verify (30 giây):
+**Kiểm tra nhanh:**
 
 ```bash
 # trong session: /status hoặc /context để chắc mode/context còn sạch
@@ -44,7 +43,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Đổi theme mà màu không đổi | Terminal ép 16 màu hoặc `NO_COLOR` set | Kiểm tra terminal truecolor; `unset NO_COLOR` |
 | Picker theme trống | Themes dir bị xoá | Reinstall CLI hoặc copy themes từ máy khác |

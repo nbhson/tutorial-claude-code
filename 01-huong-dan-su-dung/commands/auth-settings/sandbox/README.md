@@ -1,16 +1,15 @@
 # /sandbox — Hộp cát: dependency status, chạy thử cách ly, nổ thì không sao
 
-> Loại Built-in · Nhóm Settings · Nguy hiểm Không (chính nó là phanh — chạy trong cát thì nổ cũng không văng ra ngoài; nhưng Có nếu bạn tin "đã sandbox" rồi chạy bừa lệnh phá hoại mà sandbox cấu sai)
-
-> Nói nôm na: `/sandbox` quản lý môi trường chạy cách ly: kiểm tra dependency status (cái gì thiếu/hỏng trong cát), chạy lệnh thử trong cát trước khi chạy thật, xoá cát làm lại khi bẩn. Hiểu `/sandbox` là hiểu "phòng thí nghiệm có kính chống nổ" — thuốc mới thử trong này, nổ thì lau kính chứ không sập nhà.
+> Loại Built-in · Nhóm Settings · Mức rủi ro Không (chính nó là phanh — chạy trong cát thì nổ cũng không văng ra ngoài; nhưng Có nếu bạn tin "đã sandbox" rồi chạy bừa lệnh phá hoại mà sandbox cấu sai)
+> **Nói nôm na:** `/sandbox` quản lý môi trường chạy cách ly: kiểm tra dependency status (cái gì thiếu/hỏng trong cát), chạy lệnh thử trong cát trước khi chạy thật, xoá cát làm lại khi bẩn. Hiểu `/sandbox` là hiểu "phòng thí nghiệm có kính chống nổ" — thuốc mới thử trong này, nổ thì lau kính chứ không sập nhà.
 
 ## Khi nào dùng
 
-- Dùng /sandbox khi bạn cần chỉnh môi trường/tài khoản/cài đặt (login, IDE, config, remote, sandbox).
-- Dùng /sandbox **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /sandbox thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng khi muốn chạy thử package/lệnh chưa rõ độ tin cậy trong cách ly trước khi cho chạy thật: cài lib lạ, script có gọi mạng.
+- Dùng **trước khi** cài/chạy thứ lạ (đầu task, trước việc chạm mạng hoặc ghi file nhạy cảm): thử trong cát trước, nổ thì `reset` không mất gì.
+- Không dùng `/sandbox` thay cho việc tự đọc lệnh trước khi chạy thật ngoài cát — sandbox config sai vẫn không phải là giấy miễn tội.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/sandbox`
@@ -20,7 +19,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -40,7 +39,7 @@ Kết quả mong đợi:
 - Claude trả đúng việc của /sandbox (không lan man), nêu rõ bước tiếp theo.
 - Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
 
-Verify (30 giây):
+**Kiểm tra nhanh:**
 
 ```bash
 # trong session: /status hoặc /context để chắc mode/context còn sạch
@@ -48,7 +47,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `command not found` trong cát dù ngoài có | Toolchain cát thiếu | `status` xem thiếu gì; cài vào image cát hoặc chạy ngoài |
 | Lệnh cần mạng fail trong cát | Network blocked (đúng thiết kế) | Allowlist registry cần thiết, hoặc chạy ngoài khi đã tin |

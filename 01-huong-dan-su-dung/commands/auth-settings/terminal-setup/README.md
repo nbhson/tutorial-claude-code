@@ -1,16 +1,15 @@
 # /terminal-setup — Fix terminal: Shift+Enter, truecolor, font, từng app
 
-> Loại Built-in · Nhóm Settings · Nguy hiểm Không (chỉ hướng dẫn + kiểm tra cấu hình terminal — không đụng code hay auth)
-
-> Nói nôm na: `/terminal-setup` chẩn đoán và hướng dẫn fix terminal ngoài: Shift+Enter không xuống dòng, màu xấu, font rỗ, Esc lag... cho từng app (iTerm2, VS Code, Kitty, Alacritty, Zed, Warp, WezTerm). Hiểu `/terminal-setup` là hiểu "thợ điện của xưởng" — CLI ngon mà điện (terminal) chập chờn thì làm gì cũng giật.
+> Loại Built-in · Nhóm Settings · Mức rủi ro Không (chỉ hướng dẫn + kiểm tra cấu hình terminal — không đụng code hay auth)
+> **Nói nôm na:** `/terminal-setup` chẩn đoán và hướng dẫn fix terminal ngoài: Shift+Enter không xuống dòng, màu xấu, font rỗ, Esc lag... cho từng app (iTerm2, VS Code, Kitty, Alacritty, Zed, Warp, WezTerm). Hiểu `/terminal-setup` là hiểu "thợ điện của xưởng" — CLI ngon mà điện (terminal) chập chờn thì làm gì cũng giật.
 
 ## Khi nào dùng
 
-- Dùng /terminal-setup khi bạn cần chỉnh môi trường/tài khoản/cài đặt (login, IDE, config, remote, sandbox).
-- Dùng /terminal-setup **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /terminal-setup thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng khi terminal "ăn mất" phím (Shift+Enter không xuống dòng), màu xấu, font rỗ, Esc lag — chạy theo đúng app bạn đang dùng (iTerm2, VS Code, Kitty...).
+- Dùng **trước khi** soạn prompt nhiều dòng / vào task phải gõ nhiều — fix Shift+Enter từ đầu khỏi nuốt prompt giữa chừng.
+- Không dùng `/terminal-setup` thay cho việc tự chỉnh đúng app đang dùng — kết quả đúng app nào phải chọn đúng app đó.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/terminal-setup`
@@ -20,7 +19,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -36,7 +35,7 @@ Kết quả mong đợi:
 - Claude trả đúng việc của /terminal-setup (không lan man), nêu rõ bước tiếp theo.
 - Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
 
-Verify (30 giây):
+**Kiểm tra nhanh:**
 
 ```bash
 # trong session: /status hoặc /context để chắc mode/context còn sạch
@@ -44,7 +43,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Fix đúng hướng dẫn mà Shift+Enter vẫn gửi | tmux/screen ở giữa ăn mã (chưa passthrough) | `set -g extended-keys on` (tmux 3.2+); hoặc test ngoài tmux để loại trừ |
 | Màu xấu dù truecolor ✓ | `TERM` sai (`xterm` thay vì `xterm-256color`) | `export TERM=xterm-256color` (hoặc theo app) |

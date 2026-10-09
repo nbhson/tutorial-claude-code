@@ -1,16 +1,15 @@
 # /exit — Thoát Claude Code: đóng session, giữ nguyên auth và config
 
-> Loại Built-in · Nhóm Auth · Nguy hiểm Không (chỉ đóng CLI; history + token + code giữ nguyên — muốn xoá auth phải `/logout`)
-
-> Nói nôm na: `/exit` (alias: `Ctrl+C` 2 lần, `/quit`, gõ `exit`) thoát hẳn Claude Code về shell. Token vẫn lưu, lần sau mở `claude` là vào ngay không cần login. Hiểu `/exit` là hiểu "đóng cửa đi về" — khác `/clear` (ở lại nhưng quên việc cũ) và `/logout` (về và rút chìa).
+> Loại Built-in · Nhóm Auth · Mức rủi ro Không (chỉ đóng CLI; history + token + code giữ nguyên — muốn xoá auth phải `/logout`)
+> **Nói nôm na:** `/exit` (alias: `Ctrl+C` 2 lần, `/quit`, gõ `exit`) thoát hẳn Claude Code về shell. Token vẫn lưu, lần sau mở `claude` là vào ngay không cần login. Hiểu `/exit` là hiểu "đóng cửa đi về" — khác `/clear` (ở lại nhưng quên việc cũ) và `/logout` (về và rút chìa).
 
 ## Khi nào dùng
 
-- Dùng /exit khi bạn cần chỉnh môi trường/tài khoản/cài đặt (login, IDE, config, remote, sandbox).
-- Dùng /exit **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /exit thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng khi xong việc trong session, muốn đóng CLI về shell mà vẫn giữ auth + history để hôm sau `claude --resume` vào lại đúng chỗ.
+- Dùng **trước khi** rời máy/đi về giữa task dở — thoát bằng `/exit` đàng hoàng để checkpoint lưu, mai mở `--resume` là tiếp tục.
+- Không dùng `/exit` thay cho việc lưu công việc: code chưa `git commit` thì thoát cũng không lưu thay bạn.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/exit`
@@ -20,7 +19,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -39,7 +38,7 @@ Kết quả mong đợi:
 - Claude trả đúng việc của /exit (không lan man), nêu rõ bước tiếp theo.
 - Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
 
-Verify (30 giây):
+**Kiểm tra nhanh:**
 
 ```bash
 # trong session: /status hoặc /context để chắc mode/context còn sạch
@@ -47,7 +46,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `--resume` báo `no session found` | Hôm qua đóng X terminal, checkpoint hỏng | `claude --resume --list` xem còn gì; rút kinh nghiệm `/exit` |
 | `Ctrl+C` 1 lần thoát luôn (không ở lại) | Bấm 2 lần quá nhanh | Dùng `/exit` gõ tay khi muốn chắc; 1 lần Ctrl+C = huỷ lệnh, đợi 1s rồi mới bấm tiếp nếu muốn thoát |

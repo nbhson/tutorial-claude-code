@@ -1,43 +1,50 @@
-# 08 — MCP: Kết Nối Claude Tới Thế Giới Ngoài (GitHub, DB, Browser...)
+# 08 — MCP: kết nối Claude tới thế giới ngoài (GitHub, DB, browser...)
 
-> Bài 08 của series. Đọc xong bạn setup được từng server GitHub/Playwright/Postgres/Notion,
-> hiểu scope precedence, và prune MCP gọn ≤10 tools. Thời gian: ~40 phút.
+> **Bài này cho ai:** dev muốn Claude chạm được GitHub/DB/browser/Notion, hoặc tech lead chuẩn hóa MCP cho team.
+> **Cần gì trước:** đã cài và đăng nhập ([bài 01](./01-cai-dat-va-xac-thuc.md)); nên đọc [bài 05 — Skills](./05-skills-custom-commands.md) trước vì mục 5 nói vì sao skill + MCP là cặp bài trùng.
+> **Đọc xong bạn làm được:**
+> - Setup được từng server GitHub / Playwright / Postgres / Notion theo lệnh copy-paste, kèm `.mcp.json` commit an toàn.
+> - Chọn đúng scope (project/local/user) và biết scope nào thắng khi trùng tên, kể cả khi lên cloud.
+> - Prune MCP gọn: tools visible ≤10, servers 3–6, có checklist + flow 2 tuần/lần.
+> - Debug được MCP đang hỏng bằng flowchart 4 nhánh từ `/mcp`.
+> **Thời gian:** ~40 phút
+
+## Thuật ngữ dùng trong bài này
+
+Đọc bảng này trước khi vào mục 1 — mọi thuật ngữ Anh trong bài đều được giải thích ở đây.
+
+| Thuật ngữ | Hiểu nôm na là gì | Ví dụ thấy ngay |
+|---|---|---|
+| MCP (Model Context Protocol) | Cổng USB chuẩn cho AI: 1 chuẩn cắm cho mọi tool, khỏi viết glue-code riêng | `claude mcp add --transport stdio github -- npx @anthropic/mcp-github@latest` |
+| MCP Client | Bộ điều phối giữ danh sách tools các server chào hàng — chính là Claude Code | Gõ `/mcp` để xem danh sách |
+| MCP Server | Chương trình dịch lệnh chuẩn MCP thành API/DB/browser thật | `npx @playwright/mcp@latest` |
+| Transport | Loại dây nối: `stdio` (spawn process local), `sse`/`http` (server remote) | `--transport stdio` / `--transport http` |
+| Scope | Server này của ai, sống ở đâu: `project` / `local` / `user` | `.mcp.json` commit cho team |
+| Tools / Resources / Prompts | Tay để hành động / mắt để đọc / công thức pha sẵn | `github.create_pr`, `github://.../issues/123`, `/mcp__github__review_pr` |
+| Prune | Dọn tủ: server 2 tuần không gọi thì disable, rồi remove | `/mcp` → `disable <name>`, `claude mcp remove <name>` |
+| OAuth | Lấy quyền qua tài khoản trong browser, không paste token vào chat | `/mcp` → `notion: authorize` → connected |
 
 ## Mục lục
 
-1. [MCP là gì — why](#1-mcp-là-gì)
+1. [MCP là gì và vì sao cần nó](#1-mcp-là-gì-và-vì-sao-cần-nó)
 2. [Thêm server: 3 transports](#2-thêm-server-3-transports)
-3. [Setup từng server chi tiết](#3-setup-từng-server-chi-tiết-githubplaywrightpostgresnotion)
-4. [Scope precedence deep-dive](#4-scope-precedence-deep-dive)
+3. [Setup từng server chi tiết (GitHub/Playwright/Postgres/Notion)](#3-setup-từng-server-chi-tiết-githubplaywrightpostgresnotion)
+4. [Scope precedence — ai thắng khi trùng tên?](#4-scope-precedence--ai-thắng-khi-trùng-tên)
 5. [Skill + MCP cặp bài trùng](#5-skill--mcp-cặp-bài-trùng)
-6. [Prune guide + walkthrough + pitfalls + bài tập](#6-prune-guide--giữ-mcp-khỏe)
-7. [Link chéo](#7-link-chéo)
-
----
-
-## Mục lục
-
-1. [MCP là gì — why](#1-mcp-là-gì)
-   - [1.0. Sơ đồ tổng quan](#10-sơ-đồ-tổng-quan-claude-code--mcp)
-   - [1.1. Sequence 1 request "liệt kê 5 PRs"](#11-sequence-1-request-liệt-kê-5-prs-qua-6-bước)
-   - [1.2. Tools — tay để hành động](#12-tools--tay-để-hành-động)
-   - [1.3. Resources — mắt để đọc](#13-resources--mắt-để-đọc)
-   - [1.4. Prompts — công thức pha sẵn](#14-prompts--công-thức-pha-sẵn)
-2. [Thêm server: 3 transports](#2-thêm-server-3-transports)
-3. [Setup từng server chi tiết](#3-setup-từng-server-chi-tiết-githubplaywrightpostgresnotion)
-4. [Scope precedence deep-dive](#4-scope-precedence-deep-dive)
-5. [Skill + MCP cặp bài trùng](#5-skill--mcp-cặp-bài-trùng)
-6. [Prune guide + walkthrough + pitfalls + bài tập](#6-prune-guide--giữ-mcp-khỏe)
+6. [Prune guide — giữ MCP khỏe](#6-prune-guide--giữ-mcp-khỏe)
 7. [Hiểu nhầm thường gặp](#7-hiểu-nhầm-thường-gặp)
-8. [Link chéo](#8-link-chéo)
+8. [Đi tiếp — link chéo](#8-đi-tiếp--link-chéo)
 
 ---
 
-## 1. MCP là gì
+## 1. MCP là gì và vì sao cần nó
+
+Mục này trả lời câu: MCP là gì, bên trong 1 request đi qua những bước nào, và 3 khái niệm Tools/Resources/Prompts khác nhau ở đâu?
 
 **Nôm na 1 câu:** MCP là *cổng USB chuẩn* cho AI — cắm GitHub/DB/Browser vào là Claude dùng được ngay, khỏi viết glue-code riêng cho từng tool.
 
 **Analogie đời thường (2 lớp):**
+
 - *Ổ USB:* trước đây mỗi thiết bị cần driver riêng (chuột, máy in, ổ cứng mỗi kiểu cắm khác nhau). USB ra đời → 1 chuẩn cắm cho tất cả. MCP cũng vậy: trước đây mỗi AI phải viết integration riêng cho GitHub, Postgres...; có MCP → 1 chuẩn `tools/list` + `tools/call`, server nào cũng nói cùng thứ tiếng.
 - *Bồi bàn gọi bếp:* bạn (user) gọi bồi bàn (Claude Code). Bồi bàn không tự nấu, mà ghi order theo mẫu chuẩn rồi hét vào bếp (MCP Server: bếp GitHub, bếp Postgres, bếp Browser). Bếp nấu xong (gọi API/DB/Browser thật) trả món ra, bồi bàn trình bày đẹp lên bàn. Bạn không bao giờ vào bếp — chỉ nói với bồi bàn.
 
@@ -48,15 +55,14 @@
 claude mcp add --transport stdio github --scope project -- npx @anthropic/mcp-github@latest
 # Verify: trong session gõ
 # /mcp
-# Kỳ vọng: dòng `github: connected`. Chưa connected → xem mục 6 debug + bài tập 4.
 ```
 
-> **Ai dùng lúc nào:** dev cần Claude *chạm* thế giới ngoài repo — đọc PR/issue GitHub, query DB dev, mở browser chụp UI, tra Notion/Linear. Nếu dữ liệu đã nằm trong repo → đừng thêm MCP (đọc file trực tiếp rẻ hơn).
+> **Ai dùng lúc nào:** dev cần Claude *chạm* thế giới ngoài repo — đọc PR/issue GitHub, query DB dev, mở browser chụp UI, tra Notion/Linear.
 
 **Công thức nhớ:** **MCP = reach (vươn tay), Skill = cách dùng reach đó cho đúng**
 (skill chứa schema DB, message-format rules, quy ước repo...). Quản lý hàng ngày bằng `/mcp`, thêm server bằng `claude mcp add --transport stdio|sse|http --scope project|local|user`.
 
-Khi nào KHÔNG cần MCP: dữ liệu đã nằm trong repo → Claude đọc trực tiếp, thêm MCP chỉ tốn maintenance.
+**Khi nào KHÔNG cần MCP:** dữ liệu đã nằm trong repo → Claude đọc trực tiếp, thêm MCP chỉ tốn maintenance (đọc file trực tiếp rẻ hơn).
 
 ### 1.0. Sơ đồ tổng quan Claude Code → MCP
 
@@ -74,7 +80,8 @@ flowchart LR
 ```
 
 **Giải thích từng bước (đọc sơ đồ từ trái sang phải):**
-1. **Bạn gõ prompt** — vd "liệt kê 5 PRs mở gần nhất". Đây là tiếng Việt tự nhiên, chưa phải API call.
+
+1. **Bạn gõ prompt** — ví dụ "liệt kê 5 PRs mở gần nhất". Đây là tiếng Việt tự nhiên, chưa phải API call.
 2. **Claude Code (MCP Client)** — bộ não + điều phối. Nó giữ danh sách tools/resources/prompts mà các server đã chào hàng (`tools/list` lúc session start).
 3. **MCP Servers (github/postgres/playwright/notion)** — 4 "bếp" chuyên món riêng. Mỗi server là 1 process (stdio, Claude spawn local) hoặc 1 URL remote (sse/http). Server dịch lệnh chuẩn MCP thành API thật.
 4. **Hệ ngoài (GitHub API / DB / Browser / Notion)** — nơi dữ liệu thật sống. Server gọi tới đây, lấy kết quả thô về.
@@ -83,8 +90,6 @@ flowchart LR
 ```bash
 # Verify sơ đồ trên máy bạn (copy-paste):
 claude mcp list
-# Kỳ vọng: thấy 4 dòng github/postgres/playwright/notion + scope + connected.
-# Chỉ thấy 1-2 dòng là bình thường (cài tới đâu hiện tới đó) — làm tiếp mục 3.
 ```
 
 ### 1.1. Sequence 1 request "liệt kê 5 PRs" qua 6 bước
@@ -107,19 +112,13 @@ sequenceDiagram
 ```
 
 **Giải thích từng bước:**
+
 1. **`tools/list` (chào hàng):** lúc session start (và khi `/mcp reconnect`), Claude hỏi mỗi server "mày biết làm gì?". Server trả catalog kèm JSON schema đầu vào.
 2. **Chọn tool:** Claude match ý định "liệt kê PRs" với `list_prs` (không phải `create_pr`). Nếu có 10 tools tên na ná → đây là chỗ accuracy giảm khi cài quá nhiều server (xem prune mục 6).
-3. **Approval:** harness đối chiếu permission rules (bài 10) + `ask` — read-only thường auto-allow, write (create_pr/merge) thì hỏi. Bạn thấy dòng `Allow?` chính là bước này.
+3. **Approval:** harness đối chiếu [quyền permissions](./10-permissions-modes-availability.md) + `ask` — read-only thường auto-allow, write (create_pr/merge) thì hỏi. Bạn thấy dòng `Allow?` chính là bước này.
 4. **`tools/call`:** Claude gọi tool với arguments đã điền (owner/repo/limit). Arguments sai schema → server trả lỗi validation, Claude sửa và gọi lại.
 5. **Server gọi API thật:** server dùng token (gh token / OAuth) gọi GitHub API. Bạn không bao giờ paste token vào chat — token nằm ở env (mục 4).
 6. **Trình bày:** Claude tóm tắt JSON thô thành 5 dòng tiếng Việt + link. JSON 2000 dòng không bao giờ dump nguyên vào chat.
-
-```text
-# Verify sequence này (copy-paste trong session đã cài github):
-# > "liệt kê 5 PRs mở gần nhất của repo này + tóm tắt mỗi PR 1 dòng"
-# Kỳ vọng: Claude gọi list_prs (bạn thấy tool call), trả 5 dòng + link PR.
-# Nếu Claude hỏi "owner/repo là gì?" → nó thiếu context repo, trả lời tên repo rồi hỏi lại.
-```
 
 ### 1.2. Tools — tay để hành động
 
@@ -165,13 +164,6 @@ sequenceDiagram
 > **Claude dùng khi nào:** khi cần *hành động* ra ngoài — tạo PR, post comment, chạy query, mở browser, tạo ticket. Read-only (list_prs, SELECT) chạy luôn; write (create_pr, DELETE) → hỏi bạn trước (trừ khi rule allow).
 > **Ai dùng lúc nào:** dev dùng `github.*` hàng ngày; ai đụng DB dùng `postgres.query` qua skill `db-query` (mục 5) để khỏi viết SQL nguy hiểm.
 
-```text
-# Verify Tools (trong session):
-# > "liệt kê MCP tools mày đang thấy + server nào expose. Server nào thừa?"
-# Kỳ vọng: Claude liệt kê tên tools theo server (github: list_prs...; postgres: query...).
-# Quá ~10 tools visible → accuracy giảm, prune theo mục 6.
-```
-
 ### 1.3. Resources — mắt để đọc
 
 **Nôm na 1 câu:** Resources là *dữ liệu đọc qua địa chỉ URI* — không phải hàm, mà là file/issue/doc có địa chỉ cố định.
@@ -194,13 +186,6 @@ github://repos/acme/api/files/main/src/auth.ts
 > **Claude dùng khi nào:** khi cần *đọc* 1 thực thể cụ thể (issue/PR/file/Notion page) mà không cần tính toán. Nhẹ hơn tools/call vì không cần arguments phức tạp.
 > **Ai dùng lúc nào:** reviewer cần đọc issue/PR kèm diff; dev tra docs Notion ("đọc page API conventions").
 
-```text
-# Verify Resources:
-# > "đọc issue #123 của repo này"
-# Kỳ vọng: Claude fetch resource URI tương ứng, tóm tắt title + labels + comments mới nhất.
-# Nếu báo "không tìm thấy resource" → server github chưa connected (/mcp kiểm tra).
-```
-
 ### 1.4. Prompts — công thức pha sẵn
 
 **Nôm na 1 câu:** Prompts là *template do server định nghĩa*, hiện lên như slash command `/mcp__<server>__<prompt>`.
@@ -214,7 +199,7 @@ github://repos/acme/api/files/main/src/auth.ts
 /mcp__github__review_pr
 # Gọi:
 /mcp__github__review_pr 45
-# Kỳ vọng: server nhét PR #45 vào template review chuẩn của nó
+# Server nhét PR #45 vào template review chuẩn của nó
 # (diff + checklist + format report), Claude chạy theo template đó.
 
 # Khác skill ở chỗ: prompts do SERVER định nghĩa (đổi server là đổi list).
@@ -224,26 +209,30 @@ github://repos/acme/api/files/main/src/auth.ts
 > **Claude dùng khi nào:** khi server muốn chuẩn hóa 1 workflow nhiều bước (review PR, triage issue) — gọi 1 prompt thay vì chain 5 tools tay.
 > **Ai dùng lúc nào:** team dùng github server → dùng `/mcp__github__review_pr` thay vì viết skill review riêng; team Postgres → prompt query mẫu có sẵn.
 
-```text
-# Verify Prompts:
-# Gõ "/" → tìm dòng bắt đầu /mcp__ → có là server expose prompts thành công.
-# Không thấy → server đó không expose prompts (bình thường, không phải lỗi).
-```
-
 ### 1.5. Cơ chế sâu tóm lại (3 khái niệm)
 
 | Khái niệm | Là gì (nôm na) | Ví dụ thật | Claude dùng khi nào |
 |---|---|---|---|
-| **Tools** | Hàm Claude gọi (có input/output schema) | `github.create_pr`, `postgres.query` | Cần *hành động*: tạo PR, chạy query, mở browser |
+| **Tools** | Hàm Claude gọi ( có input/output schema) | `github.create_pr`, `postgres.query` | Cần *hành động*: tạo PR, chạy query, mở browser |
 | **Resources** | Dữ liệu đọc (URI-addressable) | `github://repos/acme/api/issues/123` | Cần *đọc* 1 thực thể cụ thể |
 | **Prompts** | Templates hiện thành `/mcp__<server>__<prompt>` | `/mcp__github__review_pr` | Cần *workflow chuẩn* server đóng gói sẵn |
 
 Transports: **stdio** (Claude spawn process local — nhanh, cần binary local),
 **SSE/HTTP** (remote server — dùng được trên cloud, cần auth headers). Chi tiết + lệnh ở mục 2.
 
+**Kiểm tra nhanh:**
+
+- `claude mcp list` → thấy 4 dòng github/postgres/playwright/notion + scope + connected (mới cài thì 1–2 dòng là bình thường, cài tới đâu hiện tới đó — làm tiếp mục 3). Chưa connected → mục 6 debug + bài tập 4.
+- Trong session đã cài github, gõ: "liệt kê 5 PRs mở gần nhất của repo này + tóm tắt mỗi PR 1 dòng" → Claude gọi `list_prs` (bạn thấy tool call), trả 5 dòng + link PR. Nếu Claude hỏi "owner/repo là gì?" → nó thiếu context repo, trả lời tên repo rồi hỏi lại.
+- Gõ: "liệt kê MCP tools mày đang thấy + server nào expose. Server nào thừa?" → Claude liệt kê tên tools theo server (github: list_prs...; postgres: query...). Quá ~10 tools visible → accuracy giảm, prune theo mục 6.
+- Gõ: "đọc issue #123 của repo này" → Claude fetch resource URI tương ứng, tóm tắt title + labels + comments mới nhất. Báo "không tìm thấy resource" → server github chưa connected (`/mcp` kiểm tra).
+- Gõ `/` → tìm dòng bắt đầu `/mcp__` → có là server expose prompts thành công. Không thấy → server đó không expose prompts (bình thường, không phải lỗi).
+
 ---
 
-## 2. Thêm server (3 transports)
+## 2. Thêm server: 3 transports
+
+Mục này trả lời câu: `claude mcp add` có 3 loại dây nào, chọn khi nào, và secrets để đâu?
 
 **Nôm na 1 câu:** `claude mcp add` là *cắm dây* — chọn loại dây (stdio/sse/http) + chọn ổ cắm (scope project/local/user) rồi cắm server vào.
 
@@ -260,6 +249,7 @@ flowchart TD
 ```
 
 **Giải thích từng nhánh:**
+
 1. **stdio:** Claude `fork` 1 process trên máy bạn (`npx ...`). Không mạng, nhanh nhất. *Ai dùng lúc nào:* github/playwright/postgres dev trên laptop.
 2. **sse:** kết nối streaming giữ lâu tới server remote. *Ai dùng lúc nào:* API nội bộ realtime, cần push.
 3. **http:** gọi REST từng request, OAuth dễ nhất. *Ai dùng lúc nào:* Notion/Linear/Slack (mỗi người token riêng, scope `user`).
@@ -270,22 +260,19 @@ claude mcp add --transport stdio playwright -- npx @playwright/mcp@latest
 claude mcp add --transport stdio github -- npx @anthropic/mcp-github@latest
 claude mcp add --transport stdio postgres -- npx @modelcontextprotocol/server-postgres@latest \
   postgresql://user:pass@host/db
-# Verify: claude mcp list → thấy 3 dòng trên status connected (hoặc needs-auth).
-# Kỳ vọng: stdio fail thường do thiếu binary (npx/node) — chạy tay `npx ... --help` để check.
+# Verify: claude mcp list
 
 # Remote SSE / HTTP
 claude mcp add --transport sse private-api https://api.example/mcp \
   --header "Authorization: Bearer TOKEN"
 claude mcp add --transport http notion https://mcp.notion.com/mcp
-# Verify: /mcp → notion: authorize → OAuth browser → connected.
-# Kỳ vọng: sse/http fail thường do header sai hoặc URL thiếu /mcp suffix.
+# Verify: /mcp
 
 # Env + JSON + import từ Claude Desktop
 claude mcp add <name> --env KEY=VALUE -- <cmd> [args...]
 claude mcp add-json <name> '{"command":"npx","args":[...]}'
 claude mcp add-from-claude-desktop
-# Verify: claude mcp get <name> → thấy env + command đúng.
-# Kỳ vọng: --env để secrets ở env, không hardcode vào .mcp.json (xem mục 4).
+# Verify: claude mcp get <name>
 ```
 
 Scopes: `--scope project` (ghi `.mcp.json`, share team) / `local` / `user` (`~/.claude.json`).
@@ -302,9 +289,19 @@ CLI: `claude mcp list|get <name>|remove <name>|reset-project-choices|serve`
 (`serve` = biến chính Claude Code thành 1 MCP stdio server).
 Non-interactive `-p` (≥2.1.205): `/mcp` no-arg in text summary thay vì mở dialog.
 
+(06/10/2026, Claude Code ≥2.1.292) MCP mặc định negotiate protocol `2026-07-28` — tương tác MCP mới hơn với mọi provider.
+
+**Kiểm tra nhanh:**
+
+- Sau 3 lệnh stdio ở trên: `claude mcp list` hiện 3 dòng ở trạng thái connected (hoặc needs-auth). Thất bại thường do thiếu binary — chạy tay `npx ... --help` để check.
+- Sau 2 lệnh remote: `/mcp` → `notion: authorize` → OAuth browser → connected. Thất bại thường do header sai hoặc URL thiếu hậu tố `/mcp`.
+- `claude mcp get <name>` thấy env + command đúng; mọi secret để ở env (`--env`), không hardcode vào `.mcp.json` (xem mục 4).
+
 ---
 
 ## 3. Setup từng server chi tiết (GitHub/Playwright/Postgres/Notion)
+
+Mục này trả lời câu: lệnh cài chi tiết 4 server hay dùng nhất là gì, verify từng cái ra sao?
 
 ### 3.1. GitHub (impact cao nhất — cài đầu tiên)
 
@@ -318,8 +315,7 @@ claude mcp add --transport stdio github --scope project -- npx @anthropic/mcp-gi
 
 # Bước 3: verify trong session:
 /mcp
-# → github: connected. Test:
-# > "liệt kê 5 PRs mở gần nhất của repo này + tóm tắt mỗi PR 1 dòng"
+# Test: "liệt kê 5 PRs mở gần nhất của repo này + tóm tắt mỗi PR 1 dòng"
 ```
 
 ```json
@@ -346,7 +342,7 @@ pnpm dev &
 # > "mở http://localhost:3000/login bằng browser, chụp màn hình, nhận xét UI có vấn đề gì"
 ```
 
-> Playwright local stdio KHÔNG theo lên cloud (bài 02) — cloud cần browser MCP remote hoặc `/verify` flow khác.
+> Playwright local stdio KHÔNG theo lên cloud ([bài 02](./02-cac-be-mat-terminal-ide-web-desktop.md)) — cloud cần browser MCP remote hoặc `/verify` flow khác.
 
 ### 3.3. Postgres (đọc schema + query — KHÔNG commit password)
 
@@ -388,7 +384,6 @@ claude mcp add --transport http notion --scope user https://mcp.notion.com/mcp
 
 # Trong session (lần đầu OAuth):
 /mcp
-# → notion: authorize → browser OAuth → approve → connected.
 # Test:
 # > "tìm docs Notion về API conventions của team, tóm tắt 10 dòng"
 ```
@@ -400,11 +395,20 @@ claude mcp add --transport http notion --scope user https://mcp.notion.com/mcp
 claude mcp add --transport stdio fetch -- npx @modelcontextprotocol/server-fetch@latest
 ```
 
+**Kiểm tra nhanh:**
+
+- GitHub: `/mcp` → `github: connected`, rồi prompt "liệt kê 5 PRs..." trả về 5 dòng + link PR.
+- Playwright: app local đang chạy → prompt mở + screenshot trả về ảnh và nhận xét UI.
+- Postgres: prompt "liệt kê tables + đếm rows, chỉ đọc" trả danh sách tables kèm số rows.
+- Notion: `/mcp` → `notion: authorize` → browser OAuth → approve → connected; prompt tìm docs trả tóm tắt 10 dòng.
+
 ---
 
-## 4. Scope precedence deep-dive
+## 4. Scope precedence — ai thắng khi trùng tên?
 
-**Nôm na 1 câu:** scope trả lời "server này của *ai*, sống ở *đâu*, đi theo *lên cloud không*?".
+Mục này trả lời câu: server này của *ai*, sống ở *đâu*, đi theo lên cloud không, và scope nào thắng khi trùng tên?
+
+**Nôm na 1 câu:** scope trả lời "server này của ai, sống ở đâu, có lên cloud không?".
 
 **Analogie:** như chỗ để đồ: project = tủ lạnh chung của team (ai cũng mở được, đồ phải dán nhãn không độc); local = ngăn kéo bàn bạn ở văn phòng (riêng máy đó); user = balo bạn đeo đi đâu cũng mang (mọi repo trên máy bạn).
 
@@ -420,7 +424,7 @@ flowchart LR
 
 ### 4.1. 3 scopes + thứ tự thắng
 
-```
+```text
 project (.mcp.json, commit cho team) < local (project + machine, không commit) < user (~/.claude.json, mọi project)
 ```
 
@@ -432,7 +436,7 @@ project (.mcp.json, commit cho team) < local (project + machine, không commit) 
 
 - Cùng tên server ở 2 scopes → scope cụ thể hơn (user > local > project) thắng.
 - `claude mcp reset-project-choices` → reset approvals đã chọn cho project servers.
-- Cloud sessions: chỉ thấy project scope committed + cloud env (local/user không theo — bài 02).
+- Cloud sessions: chỉ thấy project scope committed + cloud env (local/user không theo — [bài 02](./02-cac-be-mat-terminal-ide-web-desktop.md)).
 
 ```bash
 # Xem + debug scopes (copy-paste):
@@ -468,9 +472,16 @@ claude mcp add --transport stdio postgres --scope local -- <cmd>  # chuyển san
 }
 ```
 
+**Kiểm tra nhanh:**
+
+- `claude mcp get github` chỉ ra scope nào đang thắng; `grep -ri "sk-\|token\|password" .mcp.json` phải trống.
+- Trùng tên server ở project + user → bạn chỉ ra được user thắng, và nói được cloud chỉ thấy gì (project đã commit + env cloud).
+
 ---
 
 ## 5. Skill + MCP cặp bài trùng
+
+Mục này trả lời câu: có MCP rồi vì sao vẫn cần skill kèm, và 2 file skill mẫu team thường viết là gì?
 
 **Nôm na 1 câu:** MCP là *cánh tay vươn ra*, Skill là *bộ quy tắc cầm nắm cho khéo* — thiếu 1 trong 2 là hoặc không với tới, hoặc với tới mà làm đổ vỡ.
 
@@ -510,16 +521,17 @@ description: Post message Slack đúng format team. Dùng khi user nói post/not
 # Channel map: xem references/channels.md. Dry-run: hiện preview trước khi post.
 ```
 
-```bash
-# Verify cặp Skill+MCP (copy-paste):
-# 1. Có MCP nhưng không skill → hỏi Claude "query users table" → nó SELECT * không LIMIT (ngốn context).
-# 2. Thêm skill db-query (mục 5) → hỏi lại → nó SELECT ... LIMIT 100 + chỉ hiện 20 rows.
-# Kỳ vọng: có skill output gọn + an toàn hơn hẳn. Đây là lý do "cặp bài trùng".
-```
+**Kiểm tra nhanh:**
+
+- Bước 1 (chỉ có MCP, chưa skill): hỏi Claude "query users table" → nó `SELECT *` không LIMIT (ngốn context).
+- Bước 2: thêm skill `db-query` ở trên, hỏi lại → nó `SELECT ... LIMIT 100` và chỉ hiện 20 rows.
+- Output gọn + an toàn hơn hẳn chính là lý do "cặp bài trùng" — nếu 2 bước trên ra cùng kết quả, skill chưa được load (kiểm tra `.claude/skills/` + mô tả skill có nhắc "query DB" không).
 
 ---
 
 ## 6. Prune guide — giữ MCP khỏe
+
+Mục này trả lời câu: giữ bao nhiêu server là vừa, dọn định kỳ thế nào, và checklist thế nào算 là khỏe?
 
 **Nôm na 1 câu:** prune là *dọn tủ lạnh* định kỳ — món nào 2 tuần không ai ăn thì bỏ, kẻo chật tủ + đồ thiu lây đồ tươi (tools nhiễu làm Claude chọn sai).
 
@@ -534,6 +546,7 @@ description: Post message Slack đúng format team. Dùng khi user nói post/not
 | Linear / Notion / Jira / Slack | Tickets, docs, messages | Team sống trong đó | Team không dùng / đã migrate tool |
 
 > Quá ~10 MCP tools visible → accuracy chọn tool giảm (gọi sai/bỏ sót). Thêm cái dùng thật, prune cái không.
+> Đây là **ngưỡng thực nghiệm cộng đồng** (hạn mức hiển thị ≈10 tools, servers thực dùng 3–6), không phải số chính thức của Anthropic.
 
 ### 6.2. Prune flow định kỳ (2 tuần/lần, 10 phút)
 
@@ -552,18 +565,12 @@ claude mcp remove <name>
 
 ### 6.3. MCP prompts → slash commands động
 
-Server có thể expose prompts → hiện dạng `/mcp__<server>__<prompt>`. Gõ `/` để thấy.
-
-```text
-# Ví dụ: github server expose review_pr prompt:
-# Gõ "/" → thấy /mcp__github__review_pr → gọi như slash command.
-# Khác skill: prompts do SERVER định nghĩa (đổi server là đổi list).
-```
+Nội dung này đã gộp vào [mục 1.4](#14-prompts--công-thức-pha-sẵn) — cả 2 nói cùng 1 chuyện: server expose prompt hiện thành `/mcp__<server>__<prompt>`, gõ `/` để thấy, và prompts do SERVER định nghĩa (đổi server là đổi list), khác skill do bạn viết.
 
 ### 6.4. MCP tool hooks (nâng cao)
 
 Hooks type `mcp_tool`: gọi tool của server đã connect ngay trong hook (vd: PostToolUse → log sang ticketing).
-Xem Hooks reference cho schema.
+Xem [bài 07 — Hooks](./07-hooks-tu-dong-hoa.md) cho schema.
 
 ```json
 // Ví dụ ý tưởng (schema chi tiết xem docs Hooks reference):
@@ -586,7 +593,7 @@ Xem Hooks reference cho schema.
 |---|---|---|
 | Paste password vào `.mcp.json` rồi commit | Tiện tay | Env placeholder `${VAR}` + secrets ở shell/cloud env; `git rm` + rotate creds đã lọt |
 | Cài 15 servers "cho chắc" | Sợ thiếu | 3–6, prune định kỳ; check `/usage` |
-| Local stdio lên cloud mất | Cloud không có binary local | Cloud dùng HTTP/SSE remotes (bài 02) |
+| Local stdio lên cloud mất | Cloud không có binary local | Cloud dùng HTTP/SSE remotes ([bài 02](./02-cac-be-mat-terminal-ide-web-desktop.md)) |
 | Token hết hạn → disconnected | OAuth ngắn hạn | `/mcp reconnect <name>`; cron nhắc re-auth |
 | Không skill kèm → Claude query sai schema | MCP không biết conventions | Viết skill db-query/slack-post (mục 5) |
 
@@ -600,9 +607,16 @@ Xem Hooks reference cho schema.
 
 **Bài 4 (10 phút):** Chạy prune flow (mục 6.2): `/usage` → tìm server 0 calls → disable. Audit `.mcp.json` secrets.
 
+**Kiểm tra nhanh:**
+
+- Chạy prune flow mục 6.2: `/usage` tìm được server 0 calls 2 tuần → `disable` trước, `claude mcp remove <name>` sau.
+- Tự chấm checklist 6.5: được 6/6 tick thì MCP của bạn đang khỏe; tool nào dính 1 pitfall bảng trên thì fix trước, rồi mới thêm server mới.
+
 ---
 
 ## 7. Hiểu nhầm thường gặp
+
+Mục này trả lời câu: những lầm tưởng nào khiến người dùng MCP cài sai, và gặp lỗi thì mở gì trước?
 
 | Hiểu nhầm | Sự thật | Ai cần nhớ |
 |---|---|---|
@@ -624,14 +638,22 @@ flowchart TD
 
 **Giải thích:** debug MCP luôn bắt đầu từ `/mcp` (nhìn status), không đoán. 4 nhánh trên cover 90% lỗi thực tế.
 
+**Kiểm tra nhanh:**
+
+- Gõ `/mcp`, đọc status của server đang nghi, chọn đúng 1 trong 4 nhánh của sơ đồ (reconnect / re-OAuth / disable+remove / prune+skill) thay vì đoán.
+- Kể lại được 6 hiểu nhầm trên cho đồng nghiệp mà không nhìn bảng.
+
 ---
 
-## 8. Link chéo
+## 8. Đi tiếp — link chéo
 
-- **Bài 02 — Surfaces**: local stdio vs cloud HTTP/SSE; cloud env MCP setup lại.
-- **Bài 04 — Slash commands**: `/mcp reconnect/enable/disable`, `/mcp__*__*` prompts động.
-- **Bài 05 — Skills**: skill chứa *cách dùng* MCP (schema, format, channel map).
-- **Bài 07 — Hooks**: `mcp_tool` hooks type; PreToolUse guard DB prod.
-- **Bài 09 — Plugins**: bundle MCP servers vào plugin share team.
-- **Bài 10 — Permissions**: MCP tools tuân permission rules; provider cắt web search.
-- **Bài 12 — SDK/CI**: MCP trong CI runners + Agent SDK custom tools.
+Mục này trả lời câu: đọc bài nào tiếp theo tùy việc bạn đang mắc?
+
+- **[Bài 02 — Từng bề mặt dùng](./02-cac-be-mat-terminal-ide-web-desktop.md)**: local stdio vs cloud HTTP/SSE; cloud env MCP setup lại.
+- **[Bài 04 — Slash commands toàn tập](./04-slash-commands-toan-tap.md)**: `/mcp reconnect/enable/disable`, `/mcp__*__*` prompts động.
+- **[Bài 05 — Skills](./05-skills-custom-commands.md)**: skill chứa *cách dùng* MCP (schema, format, channel map).
+- **[Bài 07 — Hooks](./07-hooks-tu-dong-hoa.md)**: `mcp_tool` hooks type; PreToolUse guard DB prod.
+- **[Bài 09 — Plugins & marketplaces](./09-plugins-marketplaces.md)**: bundle MCP servers vào plugin share team.
+- **[Bài 10 — Permissions & availability](./10-permissions-modes-availability.md)**: MCP tools tuân permission rules; provider cắt web search.
+- **[Bài 12 — SDK & CI/CD](./12-agent-sdk-ci-cd-automation.md)**: MCP trong CI runners + Agent SDK custom tools.
+

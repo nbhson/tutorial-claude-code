@@ -1,27 +1,49 @@
-# Tips 10 — Debugging & Phím Tắt Power-User (Ít Người Biết)
+# Tips 10 — Debug Claude Code theo 4 lớp từ ngoài vào trong + phím tắt ít người biết
 
-> Kẹt thì debug theo lớp (L1→L4), không đoán mò. Bài này: 4 lớp debug (status/doctor → context/cost/usage → hooks/mcp/permissions → debug/bug), full phím tắt + micro-features, và 9 pitfalls power-user vẫn dính.
+> **Bài này cho ai:** dev hay thấy Claude "tự dưng dở đi", prompt không chạy, hoặc đang thoát tình trạng "dở thì đổi model" mà vẫn đoán mò.
+> **Cần gì trước:** đã cài và đăng nhập Claude Code ([bài 01](../01-huong-dan-su-dung/01-cai-dat-va-xac-thuc.md)); đọc [Tips 06 — hooks](./06-hooks-recipes.md) và [Tips 08 — token/cost](./08-tiet-kiem-cost-token.md) trước thì vào L3/L2 nhanh hơn.
+> **Đọc xong bạn làm được:**
+> - Debug được "Claude dở" theo 4 lớp L1→L4 (setup → context/tiền → hooks/MCP/permissions → debug/bug) trong ~10 phút, không đoán mò.
+> - Xử được các ca hỏng thật: push bị block oan, session chậm + lan man, subagent chạy mãi không về.
+> - Dùng được phím tắt + thủ thuật nhỏ đáng nhớ (`Shift+Tab`, Double-Esc, `Ctrl+X Ctrl+K`, `/btw`...) và tránh 9 cái bẫy người dùng nâng cao vẫn dính.
+> **Thời gian:** ~30 phút
+
+## Thuật ngữ dùng trong bài này
+
+Đọc bảng này trước khi vào mục 1 — mọi thuật ngữ Anh trong bài đều được giải thích ở đây.
+
+| Thuật ngữ | Hiểu nôm na là gì | Ví dụ đời thường | Ví dụ kỹ thuật thật | Cách kiểm tra |
+|---|---|---|---|---|
+| Debug theo lớp L1→L4 | Khám từ ngoài vào trong, rẻ trước đắt sau. | Như khám bệnh: hỏi triệu chứng (L1) → đo huyết áp (L2) → X-quang (L3) → hội chẩn (L4). | L1 `/status`+`/doctor`, L2 `/context`+`/cost`+`/usage`, L3 `/hooks`+`/mcp`+`/permissions`, L4 `/debug`+`/bug` | 80% ca xong ở L1–L3 trong 10 phút, chưa cần `/bug`. |
+| Kill switch subagents | Nút ngắt điện khi fan-out chập. | Như aptomat: chập là sập cả dàn, rồi bật lại từng cái. | `Ctrl+X Ctrl+K` ×2 trong 3s | `/agents` hết job nền; `/usage` ngừng vọt. |
+| Statusline + `/btw` | Bảng đồng hồ + hỏi thầm không ghi sổ. | Như đồng hồ xăng (statusline) + hỏi đường không ghi biên bản (`/btw`). | `/statusline` hiện `sonnet · 42%`; `/btw hàm X làm gì?` | Không cần `/context` mỗi lần; history không dài thêm. |
+| Subagent | Một tiến trình con của Claude, nhận 1 việc hẹp, có context riêng, xong trả kết quả về mạch chính. | Cử trợ lý đi tra cứu 1 việc, về kể gọn, khỏi kéo cả team đi. | `"dùng subagent đọc src/auth/login*.ts, ≤8 files, tóm tắt 15 dòng"` | `/agents` thấy con nền; kết quả về đúng hẹn. |
+| Hook | Script Claude tự chạy đúng thời điểm (trước/sau một thao tác) để chặn hoặc bắt buộc quy tắc. | Soát vé ở cửa: thiếu vé là chặn, có vé là cho qua. | `PostToolUse` chạy sau mỗi lần sửa file, chặn `git push` sai branch | `/hooks` thấy hook + event matcher của nó. |
+| MCP | Cổng chuẩn nối Claude với công cụ ngoài (GitHub, browser, DB...). | Ổ cắm chuẩn: cắm thiết bị nào cũng vừa. | GitHub MCP server cho Claude đọc PR/issue cross-repo | `/mcp` thấy server + trạng thái connected |
+| Context | Bộ nhớ tạm của phiên làm việc — hết chỗ là model lẫn, quên rule. | RAM điện thoại: mở 50 app là treo. | `/context` chỉ 82% toàn log test cũ | `/context` thấy grid % + ai đang ngốn |
 
 ## Mục lục
 
-- [1. Tư duy debug theo lớp](#1-tư-duy-debug-theo-lớp)
-- [2. L1: setup (status/doctor)](#2-l1-setup-statusdoctor)
-- [3. L2: context + tiền (context/cost/usage)](#3-l2-context--tiền-contextcostusage)
-- [4. L3: hooks + MCP + permissions (cái gì chặn?)](#4-l3-hooks--mcp--permissions-cái-gì-chặn)
-- [5. L4: debug session + gửi bug](#5-l4-debug-session--gửi-bug)
-- [6. Ví dụ copy-paste: 3 ca cứu nhanh](#6-ví-dụ-copy-paste-3-ca-cứu-nhanh)
-- [7. Walkthrough: "Claude bỗng dở đi" trong 10 phút](#7-walkthrough-claude-bỗng-dở-đi-trong-10-phút)
-- [8. Phím tắt & micro-features đáng tiền](#8-phím-tắt--micro-features-đáng-tiền)
-- [9. Bảng tra nhanh: triệu chứng → lớp → lệnh](#9-bảng-tra-nhanh-triệu-chứng--lớp--lệnh)
-- [10. 9 pitfalls power-user vẫn dính (+ checklist)](#10-9-pitfalls-power-user-vẫn-dính--checklist)
-- [11. Bài tập](#11-bài-tập)
-- [12. Tham khảo chéo](#12-tham-khảo-chéo)
+1. [Vì sao quan tâm: debug theo 4 lớp, không đoán mò](#1-vì-sao-quan-tâm-debug-theo-4-lớp-không-đoán-mò)
+2. [L1: setup (status/doctor)](#2-l1-setup-statusdoctor)
+3. [L2: context + tiền (context/cost/usage)](#3-l2-context--tiền-contextcostusage)
+4. [L3: hooks + MCP + permissions (cái gì chặn?)](#4-l3-hooks--mcp--permissions-cái-gì-chặn)
+5. [L4: debug session + gửi bug](#5-l4-debug-session--gửi-bug)
+6. [Ví dụ copy-paste: 3 ca cứu nhanh](#6-ví-dụ-copy-paste-3-ca-cứu-nhanh)
+7. [Walkthrough: "Claude bỗng dở đi" trong 10 phút](#7-walkthrough-claude-bỗng-dở-đi-trong-10-phút)
+8. [Phím tắt & thủ thuật nhỏ đáng tiền](#8-phím-tắt--thủ-thuật-nhỏ-đáng-tiền)
+9. [Bảng tra nhanh: triệu chứng → lớp → lệnh](#9-bảng-tra-nhanh-triệu-chứng--lớp--lệnh)
+10. [9 cái bẫy người dùng nâng cao vẫn dính (+ checklist)](#10-9-cái-bẫy-người-dùng-nâng-cao-vẫn-dính--checklist)
+11. [Bài tập](#11-bài-tập)
+12. [Tham khảo chéo](#12-tham-khảo-chéo)
 
 ---
 
-## 1. Tư duy debug theo lớp
+## 1. Vì sao quan tâm: debug theo 4 lớp, không đoán mò
 
-Đừng hỏi "sao Claude ngu đi?" — hỏi "tắc ở lớp nào?" Đi từ ngoài vào trong, rẻ trước đắt sau:
+Mục này trả lời câu: vì sao mọi lần Claude "dở" bạn phải tra "tắc ở lớp nào" theo thứ tự từ ngoài vào trong, và đi đúng lớp thì đỡ được bao nhiêu thời gian và tiền.
+
+Đừng hỏi "sao Claude ngu đi?" — hãy hỏi "tắc ở lớp nào?" Đi từ ngoài vào trong, rẻ trước đắt sau:
 
 ```text
 L1: /status (version/model/account) → /doctor (setup) → claude doctor (ngoài terminal)
@@ -32,9 +54,45 @@ L4: /debug (troubleshoot session) → /bug (gửi Anthropic)
 
 > Quy tắc: **chưa qua L1–L3 thì chưa được kết luận "model dở".** 80% ca "model dở" là context bẩn, hook chặn nhầm, hoặc nhầm model/effort.
 
+### 1.1. Cùng một tình huống, hai cách xử lý (before/after)
+
+**Before:** `"Sao Claude ngu đi?" → đoán mò đổi model, cãi 5 turns` → Kết quả dở: context 82% + hook chặn nhầm + MCP đỏ vẫn y nguyên, bill vọt.
+
+**After:**
+
+```bash
+/status        # phát hiện haiku -> /model sonnet
+/context       # 76% -> /compact giữ plan, bỏ 2 logs
+/hooks         # test-gate full 4p -> TEST_SCOPE=auth
+/mcp           # github đỏ -> disable tạm
+```
+
+**Kiểm tra nhanh:** sau 10 phút đi đúng L1→L4, xong 80% ca: session nhẹ, hết treo; còn fail mới dùng `/debug` + session mới + `/export` + `/bug` kèm repro tối thiểu.
+
+### 1.2. So sánh các lớp: nhìn là nhớ
+
+| Lớp | Hiểu nôm na | Ví dụ |
+|---|---|---|
+| L1 setup | Coi giấy tờ xe trước khi chê xe yếu | `/status` phát hiện đang haiku tưởng opus → `/model sonnet` |
+| L2 context/tiền | Coi xăng + hành lý có quá tải không | `/context` 82% toàn log cũ → `/compact` giữ plan, bỏ log |
+| L3 chặn | Coi có ai kéo thắng tay không | `feat/my-main-fix` bị block → hook substring `main` → sửa regex intent |
+
+Thử nhanh cho cả 3 lớp:
+
+```bash
+/status
+/context
+/hooks
+echo '{"tool_input":{"command":"git push origin feat/my-main-fix"}}' | ./hooks/branch-protect.sh; echo "exit=$?"
+```
+
+**Kiểm tra nhanh:** `/status` ra đúng model/branch; `/context` <70% sau compact; hook test `exit=0` (cho qua). `exit=2` là chặn oan → sửa theo [Tips 06](./06-hooks-recipes.md) mục 2b.
+
 ---
 
 ## 2. L1: setup (status/doctor)
+
+Mục này trả lời câu: ở lớp ngoài cùng, bạn kiểm tra đúng người/đúng máy/đúng chỗ đứng chưa — version, model, account, cwd, branch?
 
 ### `/status`: mình đang là ai, ở đâu?
 
@@ -45,7 +103,7 @@ L4: /debug (troubleshoot session) → /bug (gửi Anthropic)
 
 Check:
 
-- Version quá cũ → lệnh mới (`/batch`, `/ultrareview`) báo unknown. Update: `npm i -g @anthropic-ai/claude-code`.
+- Version quá cũ → lệnh mới (`/batch`, `/ultrareview`) báo unknown. Update: `claude update` (theo nguyên tắc **update trước, debug sau**).
 - Model nhầm (tưởng opus mà đang haiku) → chất lượng khác hẳn. Đổi: `/model`.
 - Cwd/branch nhầm (tưởng repo A mà đang repo B) → mọi đọc file sai. `pwd` + `git branch --show-current`.
 
@@ -73,6 +131,8 @@ claude doctor
 
 ## 3. L2: context + tiền (context/cost/usage)
 
+Mục này trả lời câu: RAM và tiền của phiên đang ở mức bất thường nào, và ai đang ngốn?
+
 ### `/context`: RAM còn bao nhiêu?
 
 ```bash
@@ -99,6 +159,8 @@ claude doctor
 ---
 
 ## 4. L3: hooks + MCP + permissions (cái gì chặn?)
+
+Mục này trả lời câu: cái gì đang âm thầm chặn hoặc làm hỏng tool — hook sai, MCP đỏ, hay rule permission?
 
 Khi tool "lặng lẽ không chạy" hoặc bị block oan, 90% ở lớp này.
 
@@ -144,6 +206,8 @@ time ./hooks/test-gate.sh
 
 ## 5. L4: debug session + gửi bug
 
+Mục này trả lời câu: khi nào mới lên tầng debug sâu, và gửi bug cho Anthropic thế nào để họ sửa được?
+
 ```bash
 /debug
 # → troubleshoot session hiện tại (transcript, checkpoints, tasks kẹt, subagents nền)
@@ -164,6 +228,8 @@ Khi nào lên L4:
 ---
 
 ## 6. Ví dụ copy-paste: 3 ca cứu nhanh
+
+Mục này trả lời câu: 3 ca hỏng thật được xử lý theo đúng lớp nào, với lệnh nào?
 
 ### Ca 1 — Push bị block oan (`feat/my-main-fix` không push được)
 
@@ -201,6 +267,8 @@ echo '{"tool_input":{"command":"git push origin feat/my-main-fix"}}' | ./hooks/b
 ---
 
 ## 7. Walkthrough: "Claude bỗng dở đi" trong 10 phút
+
+Mục này trả lời câu: một ca thật "Claude bỗng dở đi" được khám theo phút từ 0→10 như thế nào?
 
 **Phút 0–2 (L1):**
 
@@ -246,9 +314,42 @@ TEST_SCOPE=auth ./hooks/test-gate.sh
 
 > Ghi lại ca này vào team log (1 dòng: nguyên nhân + fix) — lần sau 2 phút là ra.
 
+### Tóm tắt nhanh bằng bản đồ L1→L4
+
+```mermaid
+flowchart TD
+    A["Claude bỗng dở?"] --> L1["L1: /status + /doctor (version/model/cwd)"]
+    L1 --> L2["L2: /context + /cost + /usage (RAM/tiền/ai ngốn)"]
+    L2 --> L3["L3: /hooks + /mcp + /permissions (ai chặn?)"]
+    L3 --> L4["L4: /debug -> terminal mới -> /export + /bug"]
+    L1 --> F1{Nhầm model/version/branch?}
+    L2 --> F2{>70% / bill vọt?}
+    L3 --> F3{Hook substring / MCP đỏ / rule chặn?}
+    F1 -->|Có| G1["/model + update + pwd/branch"]
+    F2 -->|Có| G2["/compact focus / /clear + plan"]
+    F3 -->|Có| G3["Sửa regex + disable MCP đỏ"]
+    G1 --> D[Done + ghi team log 1 dòng]
+    G2 --> D
+    G3 --> D
+```
+
+Đọc bản đồ từng nhánh:
+
+1. **A→L1:** version cũ (`unknown command`), nhầm model, nhầm cwd/branch.
+2. **L1→L2:** RAM còn bao nhiêu, ai ngốn (explorer 45K, log 800 dòng).
+3. **L2→L3:** tool lặng lẽ không chạy → hook/MCP/permissions (90% ở đây).
+4. **L3→L4:** trông đúng mà vẫn fail → `/debug`, thử session mới loại trừ context bẩn.
+5. **→D:** ghi 1 dòng log để lần sau 2 phút.
+
+**Kiểm tra nhanh:** sau 10 phút bạn chỉ được khép ca khi đi được tới `D` trên bản đồ — xong 80% ca ở L1–L3, ghi được 1 dòng team log (nguyên nhân + fix); chỉ khi 4 nhánh đều "không" mới tính tới chuyện đổ lỗi model.
+
 ---
 
-## 8. Phím tắt & micro-features đáng tiền
+## 8. Phím tắt & thủ thuật nhỏ đáng tiền
+
+Mục này trả lời câu: phím tắt nào đáng nhớ trước, và 2 thủ thuật nhỏ nào ít người biết nhất?
+
+Đọc bảng này khi cần tra phím theo nhu cầu:
 
 | Phím/lệnh | Tác dụng | Khi dùng |
 |---|---|---|
@@ -268,7 +369,7 @@ TEST_SCOPE=auth ./hooks/test-gate.sh
 | `/agents` / `/tasks` | Agents running/library + tasks nền | Giám sát fan-out |
 | `/doctor` / `/debug` / `/bug` | Khám setup / troubleshoot / gửi Anthropic | L1/L4 |
 
-**2 micro-features ít người biết:**
+**2 thủ thuật nhỏ ít người biết:**
 
 ```bash
 # 1. Status line hiện model + % context (khỏi /context mỗi lần)
@@ -284,9 +385,13 @@ TEST_SCOPE=auth ./hooks/test-gate.sh
 
 ## 9. Bảng tra nhanh: triệu chứng → lớp → lệnh
 
+Mục này trả lời câu: đang gặp triệu chứng này thì bắt đầu từ lớp nào, dùng lệnh nào?
+
+Đọc bảng này khi gặp đúng triệu chứng:
+
 | Triệu chứng | Lớp | Lệnh / fix |
 |---|---|---|
-| `unknown command` | L1 version | `claude --version`, update `npm i -g @anthropic-ai/claude-code` |
+| `unknown command` | L1 version | `claude --version`, update `claude update` |
 | Model trả lời khác hẳn hôm qua | L1 model | `/status` xem model, `/model` đổi lại |
 | Đang repo/branch khác tưởng | L1 cwd | `pwd`, `git branch --show-current`, `/status` |
 | Trả lời lan man, quên rule | L2 context | `/context` → `/compact` focus hoặc `/clear` + plan |
@@ -300,9 +405,11 @@ TEST_SCOPE=auth ./hooks/test-gate.sh
 
 ---
 
-## 10. 9 pitfalls power-user vẫn dính (+ checklist)
+## 10. 9 cái bẫy người dùng nâng cao vẫn dính (+ checklist)
 
-1. **Infinite exploration ("investigate" không scope).** Đọc 300 files, bill vọt. Fix: scope hẹp + subagent + output contract ([Tips 01](./01-context-hygiene.md)).
+Mục này trả lời câu: người dùng lâu năm vẫn dính những cái bẫy nào, và checklist mỗi tuần gồm gì để không dính lại?
+
+1. **Explore vô hạn ("investigate" không scope).** Đọc 300 files, bill vọt. Fix: scope hẹp + subagent + output contract ([Tips 01](./01-context-hygiene.md)).
 2. **Reviewer tự chấm bài mình.** Toàn PASS mù. Fix: luôn fresh reviewer ([Tips 04](./04-verification-done-that.md)).
 3. **Hook chặn nhầm vì substring (`main`).** `feat/my-main-fix` oan. Fix: match intent + test 4 ca push ([Tips 06](./06-hooks-recipes.md)).
 4. **Tin "should work".** Không log/diff/test. Fix: đòi evidence (L2 verify, [Tips 04](./04-verification-done-that.md)).
@@ -313,7 +420,7 @@ TEST_SCOPE=auth ./hooks/test-gate.sh
 9. **Quên cloud ≠ local.** Config/hooks/MCP local không lên cloud (claude.ai). Fix: cái gì cần trên cloud thì cấu hình cloud-scope + test trên cloud trước khi tin.
 10. **Bonus: `--dangerously-skip-permissions` trên máy dev.** Tiện 10 giây, rủi ro xóa/push bừa. Fix: chỉ dùng trong CI sandbox, máy dev dùng `/permissions` duyệt.
 
-**Checklist power-user mỗi tuần:**
+**Checklist người dùng nâng cao mỗi tuần:**
 
 - [ ] `Shift+Tab` xoay modes thuộc tay (không cần nhìn)?
 - [ ] Double-Esc rewind thay vì cãi quá 2 turns?
@@ -328,6 +435,8 @@ TEST_SCOPE=auth ./hooks/test-gate.sh
 
 ## 11. Bài tập
 
+Mục này trả lời câu: làm gì để phím tắt thành phản xạ và debug theo lớp thành thói quen?
+
 **Bài 1 (15 phút — thuộc phím tắt):**
 
 1. Xoay `Shift+Tab` hết vòng modes, chụp nhớ vị trí `plan`.
@@ -340,9 +449,9 @@ TEST_SCOPE=auth ./hooks/test-gate.sh
 2. Debug theo L1→L4, ghi mỗi lỗi mất bao lâu + lệnh nào tìm ra.
 3. Viết 1 dòng team log mỗi lỗi (nguyên nhân + fix) để lần sau 2 phút.
 
-**Bài 3 (20 phút — audit 9 pitfalls):**
+**Bài 3 (20 phút — audit 9 cái bẫy):**
 
-1. Đối chiếu 9 pitfalls với tuần vừa rồi: bạn dính mấy cái? (thành thật).
+1. Đối chiếu 9 cái bẫy với tuần vừa rồi: bạn dính mấy cái? (thành thật).
 2. Fix 2 cái dễ nhất (vd hẹp 1 skill description, sửa 1 hook substring).
 3. Đặt statusline hiện model + % context (khỏi quên `/context`).
 
@@ -350,84 +459,9 @@ TEST_SCOPE=auth ./hooks/test-gate.sh
 
 ---
 
-### 11.5. Thuật ngữ mới (nôm na + analogie + ví dụ + verify)
-
-| Thuật ngữ | Nôm na 1 câu | Analogie | Ví dụ kỹ thuật thật | Cách verify |
-|---|---|---|---|---|
-| Debug theo lớp L1→L4 | Khám từ ngoài vào trong, rẻ trước đắt sau. | Như khám bệnh: hỏi triệu chứng (L1) → đo huyết áp (L2) → X-quang (L3) → hội chẩn (L4). | L1 `/status//doctor`, L2 `/context//cost//usage`, L3 `/hooks//mcp//permissions`, L4 `/debug//bug` | 80% ca xong ở L1-L3 trong 10p, chưa cần `/bug`. |
-| Kill switch subagents | Nút ngắt điện khi fan-out chập. | Như aptomat: chập là sập cả dàn, rồi bật lại từng cái. | `Ctrl+X Ctrl+K ×2 trong 3s` | `/agents` hết job nền; `/usage` ngừng vọt. |
-| Statusline + `/btw` | Bảng đồng hồ + hỏi thầm không ghi sổ. | Như đồng hồ xăng (statusline) + hỏi đường không ghi biên bản (`/btw`). | `/statusline` hiện `sonnet · 42%`; `/btw hàm X làm gì?` | Không cần `/context` mỗi lần; history không dài thêm. |
-
-### 11.6. Mermaid: debug L1→L4 trong 10 phút
-
-```mermaid
-flowchart TD
-    A["Claude bỗng dở?"] --> L1["L1: /status + /doctor (version/model/cwd)"]
-    L1 --> L2["L2: /context + /cost + /usage (RAM/tiền/ai ngốn)"]
-    L2 --> L3["L3: /hooks + /mcp + /permissions (ai chặn?)"]
-    L3 --> L4["L4: /debug -> terminal mới -> /export + /bug"]
-    L1 --> F1{Nhầm model/version/branch?}
-    L2 --> F2{>70% / bill vọt?}
-    L3 --> F3{Hook substring / MCP đỏ / rule chặn?}
-    F1 -->|Có| G1["/model + update + pwd/branch"]
-    F2 -->|Có| G2["/compact focus / /clear + plan"]
-    F3 -->|Có| G3["Sửa regex + disable MCP đỏ"]
-    G1 --> D[Done + ghi team log 1 dòng]
-    G2 --> D
-    G3 --> D
-```
-
-Giải thích:
-
-1. **A→L1:** version cũ (`unknown command`), nhầm model, nhầm cwd/branch.
-2. **L1→L2:** RAM còn bao nhiêu, ai ngốn (explorer 45K, log 800 dòng).
-3. **L2→L3:** tool lặng lẽ không chạy → hook/MCP/permissions (90% ở đây).
-4. **L3→L4:** trông đúng mà vẫn fail → `/debug`, thử session mới loại trừ context bẩn.
-5. **→D:** ghi 1 dòng log để lần sau 2 phút.
-
-### 11.7. Bảng so sánh có cột Hiểu nôm na + Ví dụ
-
-| Lớp | Hiểu nôm na | Ví dụ |
-|---|---|---|
-| L1 setup | Coi giấy tờ xe trước khi chê xe yếu | `/status` phát hiện đang haiku tưởng opus → `/model sonnet` |
-| L2 context/tiền | Coi xăng + hành lý có quá tải không | `/context` 82% toàn log cũ → `/compact` giữ plan, bỏ log |
-| L3 chặn | Coi có ai kéo thắng tay không | `feat/my-main-fix` bị block → hook substring `main` → sửa regex intent |
-
-**Kỳ vọng thấy gì:**
-
-```bash
-/status
-/context
-/hooks
-echo '{"tool_input":{"command":"git push origin feat/my-main-fix"}}' | ./hooks/branch-protect.sh; echo "exit=$?"
-```
-
-> Kỳ vọng thấy gì: `/status` đúng model/branch; `/context` <70% sau compact; hook test `exit=0` (cho qua). `exit=2` là chặn oan → sửa theo Tips 06.
-
-### 11.8. Before/After
-
-**Before:** `"Sao Claude ngu đi?" → đoán mò đổi model, cãi 5 turns` → Kết quả dở: context 82% + hook chặn nhầm + MCP đỏ vẫn y nguyên, bill vọt.
-
-**After:**
-
-```bash
-/status        # phát hiện haiku -> /model sonnet
-/context       # 76% -> /compact giữ plan, bỏ 2 logs
-/hooks         # test-gate full 4p -> TEST_SCOPE=auth
-/mcp           # github đỏ -> disable tạm
-```
-
-> Kết quả tốt + Kỳ vọng: 10 phút xong 80% ca, session nhẹ, hết treo; còn fail mới `/debug` + session mới + `/export + /bug` kèm repro tối thiểu.
-
-### 11.9. Hiểu nhầm thường gặp
-
-| Hiểu nhầm | Sự thật |
-|---|---|
-| Chưa qua L1-L3 đã kết luận model dở | 80% là context bẩn/hook chặn/nhầm model; phải đi lớp rẻ trước |
-| `--dangerously-skip-permissions` trên dev cho nhanh | Tiện 10s, rủi xóa/push bừa; chỉ CI sandbox, dev dùng `/permissions` duyệt |
-| Thêm MCP khi data đã local là xịn | Nặng context + chậm; `Read/Grep` local trước, thiếu mới bật MCP |
-
 ## 12. Tham khảo chéo
+
+Mục này trả lời câu: muốn đọc sâu từng lệnh và các bài tips liên quan thì bắt đầu từ đâu?
 
 - Lệnh debug & sessions:
   - [../01-huong-dan-su-dung/commands/auth-settings/status/README.md](../01-huong-dan-su-dung/commands/auth-settings/status/README.md) — mình là ai, ở đâu

@@ -1,16 +1,15 @@
 # /resume — Mở lại phiên cũ theo ID/tên hoặc picker, tiếp tục đúng chỗ dang dở
 
-> Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (không xóa/sửa file; chỉ nạp lại transcript cũ vào context — an toàn, nhưng có thể tốn tokens để nạp lại)
-
-> Nói nôm na: `/resume` là "cỗ máy thời gian phiên làm việc": liệt kê các session trước (theo ID/tên), cho bạn mở lại đúng chỗ dang dở thay vì giải thích lại từ đầu. Cặp song sinh với CLI flags `--continue` / `--resume`.
+> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (không xóa/sửa file; chỉ nạp lại transcript cũ vào context — an toàn, nhưng có thể tốn tokens để nạp lại)
+> **Nói nôm na:** `/resume` là "cỗ máy thời gian phiên làm việc": liệt kê các session trước (theo ID/tên), cho bạn mở lại đúng chỗ dang dở thay vì giải thích lại từ đầu. Cặp song sinh với CLI flags `--continue` / `--resume`.
 
 ## Khi nào dùng
 
-- Dùng /resume khi bạn muốn quản lý phiên/context (mở, dọn, lưu, chia nhánh) mà không đụng tới code trên đĩa.
-- Dùng /resume **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /resume thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/resume` khi bạn muốn mở lại đúng session cũ theo ID/tên thay vì giải thích lại từ đầu.
+- Dùng `/resume` (và `/rename` trước khi nghỉ) để sáng hôm sau vào việc trong vài giây.
+- Không dùng `/resume` khi đã chốt bỏ hướng cũ — nạp lại session dài chỉ làm context phình thêm.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/resume`
@@ -20,7 +19,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -48,7 +47,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/resume` picker trống | Đứng sai thư mục / sai profile / transcript bị xóa | `pwd` kiểm tra repo, đăng nhập đúng account, kiểm tra `~/.claude/projects/` còn file không |
 | `/resume <tên>` báo not found | Sai tên (phân biệt hoa/thường, dấu `-`/`_`) hoặc tên có khoảng trắng chưa quote | Gõ `/resume` không tham số để picker rồi copy tên chính xác; quote nếu có space: `/resume "my session"` |

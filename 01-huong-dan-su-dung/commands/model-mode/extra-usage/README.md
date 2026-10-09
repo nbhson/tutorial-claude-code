@@ -1,16 +1,16 @@
 # /extra-usage — Mua thêm quota khi hết giới hạn gói, không ngắt việc giữa chừng
 
-> Loại Built-in · Nhóm Model & Mode · Nguy hiểm Không (chỉ liên quan billing/quota; không sửa code; có thể tốn tiền thật — đọc kỹ giá trước khi bật)
-
-> Nói nôm na: `/extra-usage` cho phép vượt trần quota của gói (Pro/Max/Team) bằng cách trả thêm pay-as-you-go, để Opus/effort cao không bị ngắt giữa task dài. Không phải "hack miễn phí" — là công tắc billing có kiểm soát.
+> Loại Built-in · Nhóm Model & Mode · Mức rủi ro Không (chỉ liên quan billing/quota; không sửa code; có thể tốn tiền thật — đọc kỹ giá trước khi bật)
+>
+> **Nói nôm na:** `/extra-usage` cho phép vượt trần quota của gói (Pro/Max/Team) bằng cách trả thêm pay-as-you-go, để Opus/effort cao không bị ngắt giữa task dài. Không phải "hack miễn phí" — là công tắc billing có kiểm soát.
 
 ## Khi nào dùng
 
-- Dùng /extra-usage khi bạn muốn đổi cách model suy nghĩ/chạy (model, effort, mode, mục tiêu, quyền) trước khi làm task khó.
+- Dùng /extra-usage khi task dài sắp hoặc đã chạm trần quota gói (Pro/Max/Team) mà bạn không muốn dừng giữa chừng.
 - Dùng /extra-usage **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
 - Không dùng /extra-usage thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/extra-usage`
@@ -20,7 +20,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -48,7 +48,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/extra-usage` báo không khả dụng | Gói Free / admin tắt / bản cũ | Nâng gói, liên hệ admin, update CLI |
 | Bật rồi vẫn báo limit | Rate-limit cứng (chống abuse), không phải quota tiền | Đợi vài phút, giảm song song (`/batch` ít worktree hơn) |

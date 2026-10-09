@@ -1,24 +1,24 @@
 # /todos — Xem và quản lý danh sách việc cần làm của session hiện tại
 
-> Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (chỉ đọc/ghi todo list trong memory session, không xóa/sửa code)
-
-> Nói nôm na: `/todos` là "bảng việc dán tường": liệt kê các đầu việc model đang theo (pending/in-progress/done), để bạn kiểm tra tiến độ, bổ sung, hoặc chốt trước khi compact/clear/bàn giao.
+> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (chỉ đọc/ghi todo list trong memory session, không xóa/sửa code)
+> **Nói nôm na:** `/todos` là "bảng việc dán tường": liệt kê các đầu việc model đang theo (pending/in-progress/done), để bạn kiểm tra tiến độ, bổ sung, hoặc chốt trước khi compact/clear/bàn giao.
 
 ## Khi nào dùng
 
-- Dùng /todos khi bạn muốn quản lý phiên/context (mở, dọn, lưu, chia nhánh) mà không đụng tới code trên đĩa.
-- Dùng /todos **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /todos thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/todos` khi bạn muốn xem model đang theo những đầu việc nào (pending/in-progress/done).
+- Dùng `/todos` **trước khi** compact/clear/bàn giao để không mất danh sách việc đang dở.
+- Không dùng `/todos` như bằng chứng hoàn thành — tick `done` phải kèm verify, không tin kế hoạch suông.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/todos`
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
+> `TodoWrite`/`TaskCreate` bị gỡ khỏi Opus 4.8 / Sonnet 5 / Fable 5 (w33/2026), bật lại bằng `CLAUDE_CODE_ENABLE_TODO_TOOLS=1`.
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -42,7 +42,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/todos` trống dù task dài | Model chưa tạo todos (task ít bước hoặc prompt chung) | Dặn: "Tạo todo list 5 bước cho task này" |
 | Todos mất sau compact/clear | Gắn với conversation đã nén/xóa | Tạo lại tay; lần sau nêu "giữ todo list" trong focus compact, export trước clear |

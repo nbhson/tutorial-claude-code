@@ -1,16 +1,15 @@
 # /context — Kính hiển vi context window: đang đầy bao nhiêu, nặng ở đâu
 
-> Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (lệnh chỉ đọc, không xóa/sửa gì cả — an toàn tuyệt đối)
-
-> Nói nôm na: `/context` mở bảng "grid visualize": cho bạn thấy context window đã dùng bao nhiêu %, nặng ở chỗ nào (system, CLAUDE.md, history, tools, MCP), để quyết định nên `/compact`, `/clear` hay cứ làm tiếp.
+> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (lệnh chỉ đọc, không xóa/sửa gì cả — an toàn tuyệt đối)
+> **Nói nôm na:** `/context` mở bảng "grid visualize": cho bạn thấy context window đã dùng bao nhiêu %, nặng ở chỗ nào (system, CLAUDE.md, history, tools, MCP), để quyết định nên `/compact`, `/clear` hay cứ làm tiếp.
 
 ## Khi nào dùng
 
-- Dùng /context khi bạn muốn quản lý phiên/context (mở, dọn, lưu, chia nhánh) mà không đụng tới code trên đĩa.
-- Dùng /context **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /context thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/context` khi Claude trả lời chậm dần và bạn muốn biết context đang nặng ở chỗ nào.
+- Dùng `/context` định kỳ (30–60 phút) để quyết định `/compact`, `/clear` hay cứ làm tiếp.
+- Không dùng `/context` như số billing — nó đo dung lượng hội thoại hiện tại, không phải tiền tích lũy.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/context`
@@ -19,7 +18,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -45,7 +44,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/context` báo % khác với `/cost` | `/context` đo RAM hiện tại, `/cost` đo tổng billing tích lũy | Không phải lỗi; đọc cả 2 với ý nghĩa khác nhau |
 | % vọt từ 30% lên 75% sau 1 paste | Paste file log/ảnh lớn | `/compact bỏ log` hoặc đừng paste cả file, chỉ paste đoạn cần (`read` theo dòng) |

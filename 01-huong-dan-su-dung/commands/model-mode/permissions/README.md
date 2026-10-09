@@ -1,16 +1,16 @@
 # /permissions — Quản lý quyền tools: ai được đọc/ghi/chạy gì, hỏi khi nào
 
-> Loại Built-in (alias /allowed-tools) · Nhóm Model & Mode · Nguy hiểm Có nếu cấu hình ẩu (allow-all / bypass trên máy thật = mất phanh; deny sai = kẹt việc)
-
-> Nói nôm na: `/permissions` (alias `/allowed-tools`) là trung tâm phân quyền: quy định tool nào được chạy thẳng (allow), tool nào phải hỏi (ask), tool nào cấm hẳn (deny). Mọi mode Shift+Tab (default/acceptEdits/plan/auto/bypass) thực chất chỉ là preset đè lên bảng này. Hiểu bảng này là hiểu phanh của Claude Code.
+> Loại Built-in (alias /allowed-tools) · Nhóm Model & Mode · Mức rủi ro Có nếu cấu hình ẩu (allow-all / bypass trên máy thật = mất phanh; deny sai = kẹt việc)
+>
+> **Nói nôm na:** `/permissions` (alias `/allowed-tools`) là trung tâm phân quyền: quy định tool nào được chạy thẳng (allow), tool nào phải hỏi (ask), tool nào cấm hẳn (deny). Mọi mode Shift+Tab (default/acceptEdits/plan/auto/bypass) thực chất chỉ là preset đè lên bảng này. Hiểu bảng này là hiểu phanh của Claude Code.
 
 ## Khi nào dùng
 
-- Dùng /permissions khi bạn muốn đổi cách model suy nghĩ/chạy (model, effort, mode, mục tiêu, quyền) trước khi làm task khó.
+- Dùng /permissions khi cần định hình allow/ask/deny — tool nào chạy thẳng, tool nào phải hỏi, tool nào cấm hẳn.
 - Dùng /permissions **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
 - Không dùng /permissions thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/permissions`
@@ -20,18 +20,19 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
 ```bash
-# Bước 1: mở UI
+# Bước 1: mở UI phân quyền
 /permissions
 
-# Bước 2: thêm Bash(python:*)/Bash(pytest:*) vào allow
-# Hoặc sửa file trực tiếp:
+# Bước 2 (không dùng UI): sửa .claude/settings.local.json
+```
 
-# .claude/settings.local.json — thêm:
+```json
+{"permissions": {"allow": ["Bash(python:*)", "Bash(pytest:*)"]}}
 ```
 
 Kết quả mong đợi:
@@ -47,7 +48,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Model báo `permission denied` khi chạy test | Thiếu allow `Bash(pytest/npm test:*)` | Thêm vào `settings.local.json` allow |
 | Thêm allow ở local mà vẫn bị chặn | Managed policy deny ở trên (ổ khóa 🔒) | Không vượt được — ticket IT hoặc đi đường vòng an toàn |

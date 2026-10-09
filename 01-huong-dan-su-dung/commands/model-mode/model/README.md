@@ -1,16 +1,16 @@
 # /model — Đổi model AI giữa phiên, cân bằng tốc độ / sức mạnh / chi phí
 
-> Loại Built-in · Nhóm Model & Mode · Nguy hiểm Không (không sửa file, chỉ đổi engine suy luận cho các turn tiếp theo; context cũ giữ nguyên)
-
-> Nói nôm na: `/model` cho bạn đổi "bộ não" của Claude Code ngay giữa phiên: lúc cần nhanh-rẻ thì dùng Haiku/Sonnet, lúc cần suy luận sâu thì chuyển Opus. Context hội thoại, file đã đọc, todos giữ nguyên — chỉ model phục vụ turn tiếp theo thay đổi.
+> Loại Built-in · Nhóm Model & Mode · Mức rủi ro Không (không sửa file, chỉ đổi engine suy luận cho các turn tiếp theo; context cũ giữ nguyên)
+>
+> **Nói nôm na:** `/model` cho bạn đổi "bộ não" của Claude Code ngay giữa phiên: lúc cần nhanh-rẻ thì dùng Haiku/Sonnet, lúc cần suy luận sâu thì chuyển Opus 5.5 (mặc định ở hầu hết gói từ ≥2.1.280). Context hội thoại, file đã đọc, todos giữ nguyên — chỉ model phục vụ turn tiếp theo thay đổi.
 
 ## Khi nào dùng
 
-- Dùng /model khi bạn muốn đổi cách model suy nghĩ/chạy (model, effort, mode, mục tiêu, quyền) trước khi làm task khó.
+- Dùng /model khi cần đổi "bộ não" giữa phiên: nhanh-rẻ (Haiku/Sonnet) cho việc thường, suy luận sâu (Opus 5.5) cho bài khó.
 - Dùng /model **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
 - Không dùng /model thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/model`
@@ -20,7 +20,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -47,7 +47,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/model opus` báo `not available` | Plan/provider chưa enable Opus | Dùng `/model sonnet` + `/effort high`; hoặc liên hệ admin Bedrock/Vertex |
 | Đổi Opus mà trả lời vẫn "ngu" như cũ | Context nhiễm rác, model nào cũng sai | `/compact` hoặc `/clear` rồi hỏi lại |

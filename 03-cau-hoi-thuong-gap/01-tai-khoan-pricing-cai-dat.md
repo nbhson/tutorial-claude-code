@@ -1,8 +1,43 @@
-# FAQ 01 — Tài Khoản, Pricing & Cài Đặt
+# FAQ 01 — Tài khoản, pricing & cài đặt
 
-> Nhóm Tài khoản & Cài đặt · 10 câu hỏi deep-dive · Đọc xong tự cài, tự chọn provider, tự fix lỗi version trong 10 phút
+> **Bài này cho ai:** bạn cần trả lời 3 câu về Claude Code — cần tài khoản gì, tốn bao nhiêu, cài đặt sao cho sạch (hoặc đang phải dọn 2 bản cài song song).
+> **Cần gì trước:** mở được terminal; máy có `gh` CLI thì làm luôn bước `/web-setup`, không có thì bỏ qua.
+> **Đọc xong bạn làm được:**
+> - Chọn đúng đường vào (subscription hay API key), biết gói nào có Claude Code và giá từng gói.
+> - Cài đúng 1 bản, phát hiện và dọn duplicate install bằng 4 lệnh.
+> - Fix `Unknown command` theo thứ tự update trước, debug sau, tra được từng lệnh cần bản nào.
+> - Setup 5 lệnh đầu cho repo mới, biết lúc nào `/init` lúc nào copy `templates/CLAUDE.md`.
+> **Thời gian:** ~15 phút
 
-File này trả lời mọi câu hỏi "dùng Claude Code thì cần tài khoản gì, tốn bao nhiêu, cài sao cho sạch". Mỗi câu có giải thích + lệnh copy-paste + ví dụ + khi nào áp dụng.
+## Thuật ngữ dùng trong bài này
+
+Đọc bảng này trước khi vào mục 1 — mọi thuật ngữ Anh trong bài đều được giải thích ở đây.
+
+| Thuật ngữ | Hiểu nôm na là gì | Ví dụ thấy ngay |
+|---|---|---|
+| Subscription | Gói trả tiền tháng của claude.ai (Pro/Max/Team) — đăng nhập bằng tài khoản, không dán key | `claude login` → browser mở trang đăng nhập |
+| API key | Chuỗi `sk-ant-...` của Anthropic Console, trả tiền theo tokens thật dùng | `export ANTHROPIC_API_KEY="sk-ant-xxxx"` |
+| Provider | Nơi model chạy: Anthropic trực tiếp (Sub/Console) hay qua cloud khác (Bedrock, GCP, Foundry) | `/status` hiện provider đang dùng |
+| Native binary | Bản cài chính chủ tải thẳng từ Anthropic, update bằng `claude update` | `curl -fsSL https://claude.ai/install.sh \| bash` |
+| Version floor | Bản tối thiểu phải có để lệnh tồn tại — bản cũ gõ vào là `Unknown command` | `/cd` cần ≥2.1.169 |
+| Headless | Chạy Claude không cần người ngồi gõ, dành cho CI/scripts | `claude -p "hi"` |
+
+## Mục lục
+
+- [Sơ đồ nhanh (nhìn 30 giây là nhớ)](#sơ-đồ-nhanh-nhìn-30-giây-là-nhớ)
+- [Bảng tổng hợp: chọn đường vào nhanh](#bảng-tổng-hợp-chọn-đường-vào-nhanh)
+- [1. Cần tài khoản gì để dùng Claude Code?](#1-cần-tài-khoản-gì-để-dùng-claude-code)
+- [2. Provider: Sub / Console / Bedrock / GCP / Foundry khác nhau gì?](#2-provider-sub--console--bedrock--gcp--foundry-khác-nhau-gì)
+- [3. Các mặt Web / Mobile / Slack / Routines / Remote vì sao bắt buộc claude.ai sign-in?](#3-các-mặt-web--mobile--slack--routines--remote-vì-sao-bắt-buộc-claudeai-sign-in)
+- [4. Cài đặt thế nào cho sạch: native binary vs Homebrew vs npm?](#4-cài-đặt-thế-nào-cho-sạch-native-binary-vs-homebrew-vs-npm)
+- [5. Duplicate install (2 bản Claude song song) — phát hiện và dọn?](#5-duplicate-install-2-bản-claude-song-song--phát-hiện-và-dọn)
+- [6. claude login/logout vs /login, /logout, /status — dùng cái nào?](#6-claude-loginlogout-vs-login-logout-status--dùng-cái-nào)
+- [7. claude update và version floor: lệnh lạ 90% là version cũ](#7-claude-update-và-version-floor-lệnh-lạ-90-là-version-cũ)
+- [8. Bắt đầu repo mới: 5 lệnh setup đầu repo là gì?](#8-bắt-đầu-repo-mới-5-lệnh-setup-đầu-repo-là-gì)
+- [9. Project mới tinh thì copy templates/CLAUDE.md thế nào?](#9-project-mới-tinh-thì-copy-templatesclaudemd-thế-nào)
+- [10. Báo lỗi cho Anthropic thế nào (/bug)?](#10-báo-lỗi-cho-anthropic-thế-nào-bug)
+- [Vẫn lỗi thì sao? (thứ tự debug chuẩn)](#vẫn-lỗi-thì-sao-thứ-tự-debug-chuẩn)
+- [Tham khảo chéo](#tham-khảo-chéo)
 
 ---
 
@@ -12,7 +47,7 @@ File này trả lời mọi câu hỏi "dùng Claude Code thì cần tài khoả
 flowchart TD
   A[Bạn là ai?] -->|Dev cá nhân Pro/Max| B[claude login<br/>full cloud: Web/Remote/Routines]
   A -->|CI / automation| C[API key / Bedrock / Vertex<br/>headless -p, mat Remote]
-  B --> D[/status -> /init -> /permissions]
+  B --> D["/status -> /init -> /permissions"]
   C --> D
   D --> E{Lỗi lệnh lạ?}
   E -->|Unknown command| F[claude update trước, debug sau]
@@ -22,10 +57,7 @@ flowchart TD
 ## Bảng tổng hợp: chọn đường vào nhanh
 
 | Bạn là ai | Tài khoản cần | Cài thế nào | Lệnh đầu tiên |
-|---
-
-
-|---|---|---|
+|---|---|---|---|
 | Dev cá nhân có Pro/Max | Subscription Claude (Pro/Max) | Native binary + `claude login` | `claude`, rồi `/status` |
 | Dev công ty dùng API | Anthropic Console API key | Native binary + env `ANTHROPIC_API_KEY` | `claude -p "hi"` test |
 | Team AWS (Bedrock) | AWS creds + model access | Native + config provider Bedrock | `/status` check provider |
@@ -36,19 +68,35 @@ flowchart TD
 ---
 
 ## 1. Cần tài khoản gì để dùng Claude Code?
-> **Hỏi ngắn gọn:** Cần tài khoản gì để dùng Claude Code?
->
-> **Trả lời 1 câu:** Có 2 đường vào chính, đừng nhầm:
 
+> **Câu hỏi:** Cài Claude Code có bắt buộc mua gói không, hay dùng tài khoản thường cũng được?
+> **Trả lời 1 câu:** Không bắt buộc — chọn 1 trong 2 đường vào: tài khoản claude.ai (Pro/Max/Team/Enterprise) hoặc API key Anthropic Console; riêng gói Free thì không có Claude Code.
 
-**Giải thích chi tiết + ví dụ:** Có 2 đường vào chính, đừng nhầm:
+**Giải thích:** Hai đường vào khác nhau ở chỗ trả tiền và tính năng:
 
 - **Subscription (Pro / Max / Team / Enterprise):** đăng nhập bằng tài khoản `claude.ai`. Dùng chung quota subscription. Hợp cho dev cá nhân và team đã mua gói Claude.
 - **API key (Anthropic Console):** `sk-ant-...` trả theo usage. Hợp cho CI, automation, team muốn tách bill theo key.
 
 Terminal CLI + VS Code extension hỗ trợ thêm **third-party providers**: Bedrock, GCP Agent Platform (Vertex), Foundry... — tức là model chạy qua cloud của bạn thay vì Anthropic trực tiếp.
 
-**Làm thế nào (steps copy-paste):**
+Giá gói subscription (tra 07/10/2026, nguồn [WRITING-STYLE — Phần B](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-07102026)):
+
+| Gói | Giá /tháng | Claude Code? | Ghi chú |
+|---|---|---|---|
+| Free | $0 | ❌ | Không có Claude Code |
+| Pro | $17 (trả trước năm) hoặc $20 | ✅ | Ít nhất 5× Free theo phiên 5 giờ |
+| Max 5x | $100 | ✅ | 5× Pro theo phiên 5 giờ |
+| Max 20x | $200 | ✅ | 20× Pro theo phiên 5 giờ |
+| Team (Standard) | $20 (trả trước năm) hoặc $25 | ✅ | Tối thiểu 2 ghế, tối đa 150 ghế |
+| Team (Premium) | $100 (trả trước năm) hoặc $125 | ✅ | 5× Standard |
+
+Hạn mức tính theo **phiên 5 giờ cuộn** + hạn tuần; chat web và Claude Code dùng chung 1 hạn mức.
+
+Còn khi trả theo API key thì giá tính theo model (USD / 1 triệu tokens): **Fable 5.1** $10/$50 · **Opus 5.5** $4/$20 (đọc cache $0.20) · **Sonnet 5.5** $2/$10 · **Haiku 4.5** $1/$5 với context 200K.
+
+**Khi nào áp dụng:** luôn quyết định NGAY từ đầu, vì nó khóa luôn câu 3 (có dùng được Web/Routines không).
+
+**Ví dụ:**
 
 ```bash
 # Cách 1: subscription (khuyên dùng cho dev tay)
@@ -60,20 +108,18 @@ export ANTHROPIC_API_KEY="sk-ant-xxxx"
 claude -p "ping" --output-format json
 ```
 
-**Ví dụ:** bạn có Pro cá nhân + công ty cấp Bedrock. Máy dev dùng `claude login` (Pro), CI dùng Bedrock creds — tách 2 môi trường, không lẫn bill.
+Bạn có Pro cá nhân + công ty cấp Bedrock. Máy dev dùng `claude login` (Pro), CI dùng Bedrock creds — tách 2 môi trường, không lẫn bill.
 
-**Khi nào áp dụng:** luôn quyết định NGAY từ đầu, vì nó khóa luôn câu 3 (có dùng được Web/Routines không).
+**Đào sâu:** [Bài 01 — cài đặt và xác thực](../01-huong-dan-su-dung/01-cai-dat-va-xac-thuc.md) · [FAQ 10 — CI, SDK, routines, Web](10-ci-sdk-routines-web.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-thứ-tự-debug-chuẩn)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
-## 2. Provider matrix: Sub / Console / Bedrock / GCP / Foundry khác nhau gì?
-> **Hỏi ngắn gọn:** Provider matrix: Sub / Console / Bedrock / GCP / Foundry khác nhau gì?
->
-> **Trả lời 1 câu:** Không phải provider nào cũng có đủ tính năng.
+## 2. Provider: Sub / Console / Bedrock / GCP / Foundry khác nhau gì?
 
+> **Câu hỏi:** Công ty em đang chạy AWS/GCP, Claude Code xài được không và thiếu gì so với dùng thẳng Anthropic?
+> **Trả lời 1 câu:** Xài được — mọi provider đều chạy đủ terminal + IDE, nhưng chỉ subscription claude.ai mới có đủ Web/Routines/Remote.
 
-**Giải thích chi tiết + ví dụ:** Không phải provider nào cũng có đủ tính năng. Bảng dưới là bản đồ "đường nào đi được tới đâu":
+**Giải thích:** Không phải provider nào cũng có đủ tính năng. Bảng dưới là bản đồ "đường nào đi được tới đâu":
 
 | Tính năng | Sub (claude.ai) | Console API | Bedrock | GCP/Vertex | Foundry |
 |---|---|---|---|---|---|
@@ -86,22 +132,32 @@ claude -p "ping" --output-format json
 | ZDR (zero retention) | Enterprise qualified | Qualified accounts | Mặc định tắt gửi về Anthropic* | Mặc định tắt* | Theo MS contract |
 | Telemetry gửi về Anthropic | Theo cài đặt | Theo cài đặt | Tắt mặc định | Tắt mặc định | Theo MS |
 
-\* Xem provider docs của bạn để xác nhận; hỏi admin/contract trước khi cam kết với khách hàng (chi tiết FAQ 09).
+\* Xem provider docs của bạn để xác nhận; hỏi admin/contract trước khi cam kết với khách hàng (chi tiết [FAQ 09](09-bao-mat-quyen-rieng-tu.md)).
 
 **Khi nào áp dụng:** team enterprise chọn Bedrock/GCP vì compliance → chấp nhận mất Routines/Remote. Dev indie chọn Sub → được full tính năng cloud.
 
+**Ví dụ:**
+
+```bash
+/status    # dòng Provider hiện Bedrock / GCP / Anthropic — đừng đoán
+```
+
+Máy công ty có AWS creds → `/status` hiện provider `Bedrock`, session vẫn chạy bình thường; tới lúc cần `/schedule` (Routines) thì báo thiếu quyền → phải quay lại đường Sub ở câu 1.
+
+**Đào sâu:** [Bài 02 — từng bề mặt dùng](../01-huong-dan-su-dung/02-cac-be-mat-terminal-ide-web-desktop.md) · [FAQ 09 — bảo mật & riêng tư](09-bao-mat-quyen-rieng-tu.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-thứ-tự-debug-chuẩn)
+
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
-## 3. Web / Mobile / Desktop-cloud / Slack / Routines / Remote / Chrome / Computer use / Artifacts — vì sao bắt buộc `claude.ai` sign-in?
-> **Hỏi ngắn gọn:** Web / Mobile / Desktop-cloud / Slack / Routines / Remote / Chrome / Computer use / Artifacts — vì sao bắt buộc `claude.ai` sign-in?
->
-> **Trả lời 1 câu:** Các mặt này chạy trên hạ tầng cloud của Anthropic (session persist cross-device, push branch, schedule...), nên phải gắn với identity `claude.ai`, không thể chỉ cầm API key gọi vào.
+## 3. Các mặt Web / Mobile / Slack / Routines / Remote vì sao bắt buộc claude.ai sign-in?
 
+> **Câu hỏi:** Em có API key rồi mà sao gõ `/schedule` hay mở bản Web vẫn báo phải đăng nhập?
+> **Trả lời 1 câu:** Vì đó là cloud service của Anthropic — muốn xài phải đăng nhập `claude.ai`, API key không đủ.
 
-**Giải thích chi tiết + ví dụ:** Các mặt này chạy trên hạ tầng cloud của Anthropic (session persist cross-device, push branch, schedule...), nên phải gắn với identity `claude.ai`, không thể chỉ cầm API key gọi vào. API-key-only = cục model trần, không có lớp "session cloud".
+**Giải thích:** Các mặt Web / Mobile / Desktop-cloud / Slack / Chrome extension / Computer use / Artifacts / Routines (`/schedule`) / Remote (`--cloud`, teleport) chạy trên hạ tầng cloud của Anthropic (session persist cross-device, push branch, schedule...), nên phải gắn với identity `claude.ai`, không thể chỉ cầm API key gọi vào. API-key-only = cục model trần, không có lớp "session cloud".
 
-**Làm thế nào (steps copy-paste):**
+**Khi nào áp dụng:** ngay khi ai đó hỏi "sao em không thấy nút cloud" — 99% là đang dùng API-key-only. Chi tiết xem [FAQ 10](10-ci-sdk-routines-web.md).
+
+**Ví dụ:**
 
 ```bash
 # Trong terminal đã login Sub:
@@ -111,26 +167,26 @@ claude login        # đảm bảo đã sign-in claude.ai
 /teleport           # thử chuyển session lên cloud
 ```
 
-**Ví dụ:** bạn dùng API key Console, gõ `/schedule` → báo thiếu quyền. Fix: `claude login` sang Sub rồi thử lại.
+Bạn dùng API key Console, gõ `/schedule` → báo thiếu quyền. Fix: `claude login` sang Sub rồi thử lại.
 
-**Khi nào áp dụng:** ngay khi ai đó hỏi "sao em không thấy nút cloud" — 99% là đang dùng API-key-only. Chi tiết xem [FAQ 10](10-ci-sdk-routines-web.md).
+**Đào sâu:** [FAQ 10 — routines, Web, CI](10-ci-sdk-routines-web.md) · [Bài 02 — terminal/IDE/web/desktop](../01-huong-dan-su-dung/02-cac-be-mat-terminal-ide-web-desktop.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-thứ-tự-debug-chuẩn)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 4. Cài đặt thế nào cho sạch: native binary vs Homebrew vs npm?
-> **Hỏi ngắn gọn:** Cài đặt thế nào cho sạch: native binary vs Homebrew vs npm?
->
-> **Trả lời 1 câu:** Có 3 đường cài, nhưng chỉ nên giữ **1**:
 
+> **Câu hỏi:** Cài Claude Code bằng cách nào cho chuẩn, brew với npm có dùng song song được không?
+> **Trả lời 1 câu:** Có 3 đường cài, nhưng chỉ nên giữ **1** — native binary.
 
-**Giải thích chi tiết + ví dụ:** Có 3 đường cài, nhưng chỉ nên giữ **1**:
+**Giải thích:** Mỗi cách có trade-off khác nhau:
 
 - **Native binary (khuyên dùng):** `curl .../install.sh | bash` — binary chính chủ, update nhanh, ít lỗi PATH nhất.
 - **Homebrew cask:** tiện cho macOS (`brew install --cask claude-code`), nhưng version có thể chậm hơn native nửa nhịp.
 - **npm (`npm i -g @anthropic-ai/claude-code`):** chỉ khi bạn kẹt môi trường không cài được binary (VD container lạ). Dễ dính duplicate install nhất.
 
-**Làm thế nào (steps copy-paste):**
+**Khi nào áp dụng:** máy mới → native. Đừng bao giờ `npm install` thêm khi đã có native.
+
+**Ví dụ:**
 
 ```bash
 # Cách khuyên dùng (native):
@@ -143,20 +199,20 @@ brew install --cask claude-code
 # IDE: cài extension "Claude Code" trong VS Code / JetBrains rồi login
 ```
 
-**Khi nào áp dụng:** máy mới → native. Đừng bao giờ `npm install` thêm khi đã có native.
+**Đào sâu:** [Bài 01 — cài đặt và xác thực](../01-huong-dan-su-dung/01-cai-dat-va-xac-thuc.md) · [lệnh `doctor`](../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-thứ-tự-debug-chuẩn)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 5. Duplicate install (2 bản Claude song song) — phát hiện và dọn?
-> **Hỏi ngắn gọn:** Duplicate install (2 bản Claude song song) — phát hiện và dọn?
->
-> **Trả lời 1 câu:** Triệu chứng: `which -a claude` ra 2 đường, `/status` báo version khác `claude --version`, update hoài không lên.
 
+> **Câu hỏi:** Sao update hoài mà lệnh mới vẫn bảo `Unknown command`, kiểm tra kiểu gì?
+> **Trả lời 1 câu:** Bạn đang có 2 bản Claude cài song song — kiểm tra bằng `which -a claude` và `claude doctor`.
 
-**Giải thích chi tiết + ví dụ:** Triệu chứng: `which -a claude` ra 2 đường, `/status` báo version khác `claude --version`, update hoài không lên. Nguyên nhân 90% là vừa cài native vừa `npm i -g`.
+**Giải thích:** Triệu chứng: `which -a claude` ra 2 đường, `/status` báo version khác `claude --version`, update hoài không lên. Nguyên nhân 90% là vừa cài native vừa `npm i -g`.
 
-**Làm thế nào (steps copy-paste):**
+**Khi nào áp dụng:** mỗi khi update không có tác dụng hoặc lệnh mới (VD `/cd`) báo `Unknown command` dù đã update.
+
+**Ví dụ:**
 
 ```bash
 which -a claude
@@ -171,27 +227,27 @@ which claude    # giờ chỉ còn 1
 claude update
 ```
 
-**Ví dụ:** `which -a` ra `/opt/homebrew/bin/claude` + `~/.nvm/.../claude`. Gỡ bản npm, giữ brew/native, PATH sạch lại.
+`which -a` ra `/opt/homebrew/bin/claude` + `~/.nvm/.../claude`. Gỡ bản npm, giữ brew/native, PATH sạch lại.
 
-**Khi nào áp dụng:** mỗi khi update không có tác dụng hoặc lệnh mới (VD `/cd`) báo `Unknown command` dù đã update.
+**Đào sâu:** [lệnh `doctor`](../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md) · [Bài 01 — cài đặt và xác thực](../01-huong-dan-su-dung/01-cai-dat-va-xac-thuc.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-thứ-tự-debug-chuẩn)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 6. `claude login/logout` vs `/login`, `/logout`, `/status` — dùng cái nào?
-> **Hỏi ngắn gọn:** `claude login/logout` vs `/login`, `/logout`, `/status` — dùng cái nào?
->
-> **Trả lời 1 câu:** Có 2 mặt trận:
 
+> **Câu hỏi:** Ngoài terminal với trong session khác nhau ở đâu, đang chat thì đổi account bằng lệnh nào?
+> **Trả lời 1 câu:** Ngoài terminal thì `claude login/logout`; đang trong session thì `/login`, `/logout`, `/status` — không cần thoát ra.
 
-**Giải thích chi tiết + ví dụ:** Có 2 mặt trận:
+**Giải thích:**
 
 - **Ngoài terminal (shell):** `claude login` / `claude logout` — xác thực account cho CLI.
 - **Trong session (đang chat với Claude):** `/login` / `/logout` / `/status` — xem và đổi account ngay trong phiên, không cần thoát.
 
 `/status` là lệnh "soi gương": hiện account, provider, model, version, working dirs.
 
-**Làm thế nào (steps copy-paste):**
+**Khi nào áp dụng:** đầu mỗi máy mới, đầu mỗi session lạ, và mỗi khi bill có gì sai sai.
+
+**Ví dụ:**
 
 ```bash
 # Ngoài terminal:
@@ -204,22 +260,20 @@ claude logout
 /logout
 ```
 
-**Ví dụ:** đang làm mà nghi sai account (bill vào key công ty thay vì Pro cá nhân) → gõ `/status`, thấy sai thì `/logout` → `/login` lại, không mất session.
+Đang làm mà nghi sai account (bill vào key công ty thay vì Pro cá nhân) → gõ `/status`, thấy sai thì `/logout` → `/login` lại, không mất session.
 
-**Khi nào áp dụng:** đầu mỗi máy mới, đầu mỗi session lạ, và mỗi khi bill có gì sai sai.
+**Đào sâu:** [lệnh `status`](../01-huong-dan-su-dung/commands/auth-settings/status/README.md) · [lệnh `login`](../01-huong-dan-su-dung/commands/auth-settings/login/README.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-thứ-tự-debug-chuẩn)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 7. `claude update` và version floor: lệnh lạ 90% là version cũ
-> **Hỏi ngắn gọn:** `claude update` và version floor: lệnh lạ 90% là version cũ
->
-> **Trả lời 1 câu:** Claude Code phát triển nhanh (2025–2026 đổi API liên tục).
 
+> **Câu hỏi:** Gõ `/cd` mà nó trả lời `Unknown command` — phải làm sao, cài đè thêm được không?
+> **Trả lời 1 câu:** Đừng cài thêm — chạy `claude update` rồi mở session mới: 90% "lệnh lạ" là do bản cũ.
 
-**Giải thích chi tiết + ví dụ:** Claude Code phát triển nhanh (2025–2026 đổi API liên tục). Gõ lệnh mới trên bản cũ → `Unknown command`. Quy tắc: **update trước, debug sau**.
+**Giải thích:** Claude Code phát triển nhanh (2025–2026 đổi API liên tục). Gõ lệnh mới trên bản cũ → `Unknown command`. Quy tắc: **update trước, debug sau**. Bản mới nhất tại thời điểm viết: **v2.1.292** (phát hành 06/10/2026).
 
-Bảng version floor hay gặp (kiểm tra bằng `/status` + release notes):
+Bảng version floor hay gặp — đọc khi cần biết 1 lệnh/tính năng đòi bản nào (kiểm tra bằng `/status` + release notes); bảng đầy đủ tra ở [WRITING-STYLE — B6](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-07102026):
 
 | Lệnh / tính năng | Cần bản tối thiểu | Ghi chú |
 |---|---|---|
@@ -230,8 +284,13 @@ Bảng version floor hay gặp (kiểm tra bằng `/status` + release notes):
 | `disable-model-invocation` chặn scheduled fire | ≥2.1.196 | Trước đó chỉ chặn tay |
 | `/mcp` no-arg in text trong `-p` | ≥2.1.205 | Headless mới có |
 | Full `/doctor` 6 mục | v2.x | Bản 1.x chỉ 2 mục |
+| `/skill-doctor` | ≥2.1.252 | Tìm skill không dùng |
+| `fable` → Fable 5.1 | ≥2.1.257 | Model mạnh nhất, chậm nhất |
+| Opus 5.5 (mặc định ở hầu hết gói) | ≥2.1.280 | Từ 22/09/2026 |
 
-**Làm thế nào (steps copy-paste):**
+**Khi nào áp dụng:** mọi lỗi "lệnh không tồn tại" — luôn là bước 1 trong thứ tự debug (xem [FAQ 08](08-loi-thuong-gap-troubleshooting.md)).
+
+**Ví dụ:**
 
 ```bash
 claude update
@@ -240,28 +299,28 @@ claude --version
 /status    # xem version đang chạy
 ```
 
-**Ví dụ:** gõ `/cd web` → `Unknown command: /cd`. Đừng sửa config gì cả: `claude update` lên ≥2.1.169, mở session mới, gõ lại → chạy.
+Gõ `/cd web` → `Unknown command: /cd`. Đừng sửa config gì cả: `claude update` lên ≥2.1.169, mở session mới, gõ lại → chạy.
 
-**Khi nào áp dụng:** mọi lỗi "lệnh không tồn tại" — luôn là bước 1 trong thứ tự debug (xem FAQ 08).
+**Đào sâu:** [Bài 04 — slash commands toàn tập](../01-huong-dan-su-dung/04-slash-commands-toan-tap.md) · [WRITING-STYLE — B6 lệnh theo bản](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-07102026) · [FAQ 08 — lỗi thường gặp](08-loi-thuong-gap-troubleshooting.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-thứ-tự-debug-chuẩn)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 8. Bắt đầu repo mới: 5 lệnh setup đầu repo là gì?
-> **Hỏi ngắn gọn:** Bắt đầu repo mới: 5 lệnh setup đầu repo là gì?
->
-> **Trả lời 1 câu:** Thứ tự chuẩn cho repo vừa clone / vừa tạo (làm 1 lần, hưởng cả dự án):
 
+> **Câu hỏi:** Vừa clone repo về, gõ `claude` xong không biết làm gì tiếp theo?
+> **Trả lời 1 câu:** Thứ tự chuẩn cho repo vừa clone / vừa tạo (làm 1 lần, hưởng cả dự án): `/init` → `/memory` → `/mcp` → tạo subagents → `/permissions`.
 
-**Giải thích chi tiết + ví dụ:** Thứ tự chuẩn cho repo vừa clone / vừa tạo (làm 1 lần, hưởng cả dự án):
+**Giải thích:** 5 bước theo đúng thứ tự:
 
 1. `/init` — sinh CLAUDE.md từ codebase thật (đừng viết tay từ đầu).
 2. `/memory` — tách sở thích cá nhân ra khỏi CLAUDE.md.
 3. `/mcp` — gắn data ngoài repo (DB, tickets, docs...). Không có thì bỏ qua.
-4. Tạo subagents — tách việc đọc ồn sang worker (xem FAQ 07).
-5. `/permissions` — dựng phanh allow/ask/deny baseline (xem FAQ 03).
+4. Tạo subagents — tách việc đọc ồn sang worker (xem [FAQ 07](07-subagents-teams-workflows.md)).
+5. `/permissions` — dựng phanh allow/ask/deny baseline (xem [FAQ 03](03-permissions-modes.md)).
 
-**Làm thế nào (steps copy-paste):**
+**Khi nào áp dụng:** mọi repo chưa từng dùng Claude Code. Team thì commit `.claude/` + `CLAUDE.md` sau bước 5 để người sau khỏi setup lại.
+
+**Ví dụ:**
 
 ```bash
 cd ~/code/my-repo && claude
@@ -276,22 +335,22 @@ cd ~/code/my-repo && claude
 /doctor   # khám lại xem còn đỏ gì
 ```
 
-**Ví dụ repo mới tinh (chưa có code):** không có gì để `/init` quét → copy `templates/CLAUDE.md` trong tutorial này rồi sửa cho hợp stack, sau đó chạy 5 lệnh trên từ bước 2.
+Repo mới tinh (chưa có code): không có gì để `/init` quét → copy `templates/CLAUDE.md` trong tutorial này rồi sửa cho hợp stack, sau đó chạy 5 lệnh trên từ bước 2.
 
-**Khi nào áp dụng:** mọi repo chưa từng dùng Claude Code. Team thì commit `.claude/` + `CLAUDE.md` sau bước 5 để người sau khỏi setup lại.
+**Đào sâu:** [FAQ 03 — permissions & modes](03-permissions-modes.md) · [FAQ 07 — subagents & teams](07-subagents-teams-workflows.md) · [lệnh `init`](../01-huong-dan-su-dung/commands/code-repo/init/README.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-thứ-tự-debug-chuẩn)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 9. Project mới tinh thì copy `templates/CLAUDE.md` thế nào?
-> **Hỏi ngắn gọn:** Project mới tinh thì copy `templates/CLAUDE.md` thế nào?
->
-> **Trả lời 1 câu:** `/init` cần code để quét.
 
+> **Câu hỏi:** Repo trống chưa có code thì `/init` có ra gì không, hay phải tự viết CLAUDE.md?
+> **Trả lời 1 câu:** Repo trống thì `/init` chỉ sinh file chung chung — hãy copy `templates/CLAUDE.md`.
 
-**Giải thích chi tiết + ví dụ:** `/init` cần code để quét. Repo trống → nó sinh ra file chung chung. Cách ngon hơn: copy template theo stack rồi sửa 20%.
+**Giải thích:** `/init` cần code để quét. Repo trống → nó sinh ra file chung chung. Cách ngon hơn: copy template theo stack rồi sửa 20%.
 
-**Làm thế nào (steps copy-paste):**
+**Khi nào áp dụng:** `git init` vừa xong, chưa có file nào. Sau khi code lên hình (vài trăm dòng), chạy `/init` lại để nó bổ sung kiến trúc thật.
+
+**Ví dụ:**
 
 ```bash
 ls templates/
@@ -299,22 +358,22 @@ cp templates/CLAUDE.md ./CLAUDE.md
 # Mở CLAUDE.md, sửa: stack, lệnh test/lint/build, cấu trúc thư mục, quy ước branch
 ```
 
-**Ví dụ:** template Node ghi `npm test`; bạn dùng `pnpm` → sửa ngay dòng đó. Sai 1 dòng này, model chạy sai lệnh cả tháng.
+Template Node ghi `npm test`; bạn dùng `pnpm` → sửa ngay dòng đó. Sai 1 dòng này, model chạy sai lệnh cả tháng.
 
-**Khi nào áp dụng:** `git init` vừa xong, chưa có file nào. Sau khi code lên hình (vài trăm dòng), chạy `/init` lại để nó bổ sung kiến trúc thật.
+**Đào sâu:** [Bài 03 — CLAUDE.md & memory](../01-huong-dan-su-dung/03-claude-md-memory-rules.md) · [templates/](../templates/) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-thứ-tự-debug-chuẩn)
 
 ---
 
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
 ## 10. Báo lỗi cho Anthropic thế nào (`/bug`)?
-> **Hỏi ngắn gọn:** Báo lỗi cho Anthropic thế nào (`/bug`)?
->
-> **Trả lời 1 câu:** `/bug` gói conversation + context thành bug report gửi Anthropic.
 
+> **Câu hỏi:** Lỗi này chắc của Claude Code chứ không phải do em — báo ở đâu và báo gì cho họ tái hiện được?
+> **Trả lời 1 câu:** `/bug` gói conversation + context thành bug report gửi Anthropic, nhưng phải kèm `/status` + `claude doctor` thì họ mới tái hiện nổi.
 
-**Giải thích chi tiết + ví dụ:** `/bug` gói conversation + context thành bug report gửi Anthropic. Nhưng gửi mỗi conversation thì team Anthropic khó tái hiện — phải kèm thêm 2 thứ: `/status` (account/provider/version/model) và `claude doctor` (sức khoẻ máy).
+**Giải thích:** Nhưng gửi mỗi conversation thì team Anthropic khó tái hiện — phải kèm thêm 2 thứ: `/status` (account/provider/version/model) và `claude doctor` (sức khoẻ máy).
 
-**Làm thế nào (steps copy-paste):**
+**Khi nào áp dụng:** khi đã đi hết thứ tự debug ([FAQ 08](08-loi-thuong-gap-troubleshooting.md)) mà vẫn lỗi, và nghi lỗi của chính Claude Code chứ không phải config của bạn.
+
+**Ví dụ:**
 
 ```bash
 # Trong session đang lỗi:
@@ -328,17 +387,13 @@ claude doctor
 claude --version
 ```
 
-**Ví dụ report chuẩn:**
-
 ```text
 Tiêu đề: /mcp reconnect treo sau sleep (macOS, v2.1.x)
 Mô tả: reconnect GitHub server quay 60s rồi timeout, hôm qua còn chạy.
 Kèm: /status output + claude doctor output + steps (sleep → wake → /mcp → treo).
 ```
 
-**Khi nào áp dụng:** khi đã đi hết thứ tự debug (FAQ 08) mà vẫn lỗi, và nghi lỗi của chính Claude Code chứ không phải config của bạn.
-
-**Nếu vẫn lỗi thì:** đi hết thứ tự `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` (chi tiết xem FAQ 08 + mục *Vẫn lỗi thì sao* cuối file).
+**Đào sâu:** [lệnh `bug`](../01-huong-dan-su-dung/commands/knowledge-system/bug/README.md) · [FAQ 08 — lỗi thường gặp](08-loi-thuong-gap-troubleshooting.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-thứ-tự-debug-chuẩn)
 
 ---
 

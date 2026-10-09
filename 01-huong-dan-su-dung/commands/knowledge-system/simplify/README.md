@@ -1,26 +1,25 @@
 # /simplify — Làm code đơn giản lại: bớt phức tạp, giữ nguyên tính năng
 
-> Loại Skill (refactor) · Nhóm Tri thức & Hệ thống · Nguy hiểm Không (chỉ refactor; nhưng Có nhẹ nếu simplify đụng logic tinh vi — luôn chạy test sau)
-
-> Nói nôm na: `/simplify`要求 model đọc 1 hàm/file bạn chỉ định, đo độ phức tạp (lồng nhau, nhánh, dài), rồi đề xuất bản gọn hơn mà test vẫn xanh: tách hàm, gộp nhánh, bỏ code chết, đặt tên rõ. Khác `/review` (tìm lỗi) và `/refactor` chung chung (đổi cấu trúc) — simplify chỉ theo 1 hướng: đơn giản hơn.
+> Loại Skill (refactor) · Nhóm Tri thức & Hệ thống · Mức rủi ro Không (chỉ refactor; nhưng Có nhẹ nếu simplify đụng logic tinh vi — luôn chạy test sau)
+> **Nói nôm na:** `/simplify` yêu cầu model đọc 1 hàm/file bạn chỉ định, đo độ phức tạp (lồng nhau, nhánh, dài), rồi đề xuất bản gọn hơn mà test vẫn xanh: tách hàm, gộp nhánh, bỏ code chết, đặt tên rõ. Khác `/review` (tìm lỗi) và `/refactor` chung chung (đổi cấu trúc) — simplify chỉ theo 1 hướng: đơn giản hơn.
 
 ## Khi nào dùng
 
-- Dùng /simplify khi bạn cần tra cứu/chẩn đoán/mở rộng hệ tri thức (agents, MCP, hooks, skills, debug, doctor).
-- Dùng /simplify **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /simplify thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng khi 1 hàm/file khó đọc: lồng sâu, nhiều nhánh, dài dòng, code chết.
+- Dùng **trước khi** thêm tính năng lên code rối: dọn trước cho dễ mở rộng.
+- Không dùng thay chạy test: simplify xong phải để test xanh chứng minh không đổi hành vi.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
-`/simplify <file>`
-`/simplify <file>:<hàm>`
-`/simplify --aggressive`
+/simplify <file>          # simplify cả file
+/simplify <file>:<hàm>    # chỉ 1 hàm
+/simplify --aggressive    # gọn tay hơn
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -33,18 +32,14 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /simplify (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Diff gọn hơn (early-return, tách hàm, bỏ code chết), test vẫn xanh.
+- Không đổi tính năng; nếu hành vi đổi là fail.
 
-Verify (30 giây):
-
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+**Kiểm tra nhanh:** chạy test suite (hoặc nhóm test của hàm) sau khi duyệt diff.
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Simplify xong test đỏ | Đổi hành vi (bỏ nhánh cần thiết) | Hoàn tác, simplify từng chiêu nhỏ thay vì 1 lần lớn |
 | Model chỉ format, không gọn | Hàm đã gọn hoặc prompt chung quá | Chỉ hàm cụ thể + `--aggressive`; đo số trước (độ sâu/nhánh) |
@@ -58,4 +53,4 @@ Verify (30 giây):
 - [../compact/README.md](../../session-context/compact/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
-> Mẹo 1 dòng: _chưa chắc thì gọi /simplify sớm — 1 lệnh đúng lúc rẻ hơn 10 prompt sửa sai._
+> Mẹo 1 dòng: _simplify từng hàm một, đừng 1 lượt cả module rồi mới test._

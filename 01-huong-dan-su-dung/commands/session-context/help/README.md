@@ -1,16 +1,15 @@
 # /help — Trợ giúp tại chỗ: tra cứu lệnh, cú pháp, phím tắt trong 5 giây
 
-> Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (chỉ hiển thị tài liệu, không thay đổi gì)
-
-> Nói nôm na: `/help` là "bảng chỉ dẫn dán tường": liệt kê slash commands khả dụng, cú pháp ngắn, phím tắt (như double-Esc), để tra ngay trong terminal mà không cần mở docs web.
+> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (chỉ hiển thị tài liệu, không thay đổi gì)
+> **Nói nôm na:** `/help` là "bảng chỉ dẫn dán tường": liệt kê slash commands khả dụng, cú pháp ngắn, phím tắt (như double-Esc), để tra ngay trong terminal mà không cần mở docs web.
 
 ## Khi nào dùng
 
-- Dùng /help khi bạn muốn quản lý phiên/context (mở, dọn, lưu, chia nhánh) mà không đụng tới code trên đĩa.
-- Dùng /help **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /help thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/help` khi bạn quên tên/cú pháp lệnh hoặc phím tắt (như double-Esc) ngay trong terminal.
+- Dùng `/help` ngay khi mới vào session để biết máy mình đang có những lệnh nào.
+- Không dùng `/help` như tài liệu deep-dive — nó liệt kê nhanh vài dòng, chi tiết vẫn ở file chuyên đề/docs.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/help`
@@ -19,7 +18,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -44,7 +43,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/help` thiếu lệnh mới (branch/fork) | CLI cũ | `npm i -g @anthropic-ai/claude-code` rồi `/help` lại |
 | `/help <lệnh>` không ra chi tiết | Bản bạn chỉ hỗ trợ `/help` tổng | Hỏi trực tiếp: "Giải thích /<lệnh> + ví dụ" hoặc mở file deep-dive |

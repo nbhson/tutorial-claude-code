@@ -1,26 +1,26 @@
 # /plan — Chế độ lập kế hoạch: chỉ đọc + viết plan, cấm sửa code cho tới khi duyệt
 
-> Loại Built-in · Nhóm Model & Mode · Nguy hiểm Không (bản thân plan mode an toàn — cấm ghi/sửa file; nguy hiểm chỉ khi bạn duyệt plan ẩu rồi cho chạy bypass sau đó)
-
-> Nói nôm na: `/plan` (và mode `plan` trong vòng xoay Shift+Tab) khóa Claude Code ở trạng thái "chỉ được nhìn, không được chạm": đọc file, search, vẽ kiến trúc, viết plan từng bước — nhưng mọi Edit/Write/Bash ghi đều bị chặn. Bạn duyệt plan rồi mới cho thực thi. Đây là phanh an toàn số 1 cho task lớn.
+> Loại Built-in · Nhóm Model & Mode · Mức rủi ro Không (bản thân plan mode an toàn — cấm ghi/sửa file; nguy hiểm chỉ khi bạn duyệt plan ẩu rồi cho chạy bypass sau đó)
+>
+> **Nói nôm na:** `/plan` (và mode `plan` trong vòng xoay Shift+Tab) khóa Claude Code ở trạng thái "chỉ được nhìn, không được chạm": đọc file, search, vẽ kiến trúc, viết plan từng bước — nhưng mọi Edit/Write/Bash ghi đều bị chặn. Bạn duyệt plan rồi mới cho thực thi. Đây là phanh an toàn số 1 cho task lớn.
 
 ## Khi nào dùng
 
-- Dùng /plan khi bạn muốn đổi cách model suy nghĩ/chạy (model, effort, mode, mục tiêu, quyền) trước khi làm task khó.
+- Dùng /plan trước task lớn để khóa ghi: chỉ đọc + vạch plan, duyệt xong mới cho sửa code.
 - Dùng /plan **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
 - Không dùng /plan thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/plan`
 `/plan <mô tả task>`
-Shift+Tab
+`Shift+Tab`
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -44,7 +44,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/plan` xong model vẫn sửa file | Chưa thật sự ở plan mode (mới gõ text, chưa Enter lệnh) | Kiểm tra status bar hiện `plan`; gõ lại `/plan` |
 | Ở plan nhưng cần ghi 1 file plan ra đĩa | Plan chặn ghi là đúng | Bảo "hiển thị plan dạng markdown để tôi copy", hoặc tạm Shift+Tab về `acceptEdits` ghi 1 file rồi quay lại plan |

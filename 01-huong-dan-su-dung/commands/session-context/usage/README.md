@@ -1,16 +1,15 @@
 # /usage — Breakdown tiêu thụ: skill, subagent, plugin, MCP nào đốt token + quota còn bao nhiêu
 
-> Loại Built-in · Nhóm Session & Context · Nguy hiểm Không (chỉ đọc thống kê, không xóa/sửa gì)
-
-> Nói nôm na: `/usage` là "camera giám sát chi tiết": không chỉ cho biết tốn bao nhiêu (như `/cost`), mà cho biết **tốn vào việc gì** — skill nào, subagent nào, plugin nào, MCP server nào — kèm rate limits / quota còn lại.
+> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (chỉ đọc thống kê, không xóa/sửa gì)
+> **Nói nôm na:** `/usage` là "camera giám sát chi tiết": không chỉ cho biết tốn bao nhiêu (như `/cost`), mà cho biết **tốn vào việc gì** — skill nào, subagent nào, plugin nào, MCP server nào — kèm rate limits / quota còn lại.
 
 ## Khi nào dùng
 
-- Dùng /usage khi bạn muốn quản lý phiên/context (mở, dọn, lưu, chia nhánh) mà không đụng tới code trên đĩa.
-- Dùng /usage **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /usage thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/usage` khi bạn muốn biết token/quota bị đốt vào skill, subagent, plugin hay MCP nào.
+- Dùng `/usage` sau một việc tốn kém (Explore cả repo) để tìm chỗ tối ưu cho lần sau.
+- Không dùng `/usage` như hoá đơn tiền — nó nghiêng về phân bổ và rate limit, tiền thì xem `/cost`/dashboard.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/usage`
@@ -18,7 +17,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -45,7 +44,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/usage` trống / chỉ có tổng | Bản CLI cũ chưa có breakdown per-MCP | Update `npm i -g @anthropic-ai/claude-code` |
 | Rate limits trống khi dùng API key | Pay-as-you-go không có quota 5h/weekly kiểu subscription | Đúng hành vi; xem dashboard billing thay vì quota |

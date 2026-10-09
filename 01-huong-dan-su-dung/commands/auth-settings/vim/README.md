@@ -1,16 +1,15 @@
 # /vim — Chế độ vim: normal/insert, hjkl, soạn prompt như soạn code
 
-> Loại Built-in · Nhóm Settings · Nguy hiểm Không (chỉ đổi cách soạn phím — nhưng Có nhẹ nếu normal-mode bấm nhầm `shift+y` duyệt permission lúc đang tưởng mình soạn text)
-
-> Nói nôm na: `/vim` bật/tắt chế độ soạn kiểu vim trong khung nhập: `Esc` về normal (`hjkl` di chuyển, `w/b` nhảy từ, `dd` xoá dòng), `i/a/o` vào insert gõ tiếp. Hiểu `/vim` là hiểu "khung chat cũng là buffer vim" — tay vim khỏi rời home row.
+> Loại Built-in · Nhóm Settings · Mức rủi ro Không (chỉ đổi cách soạn phím — nhưng Có nhẹ nếu normal-mode bấm nhầm `shift+y` duyệt permission lúc đang tưởng mình soạn text)
+> **Nói nôm na:** `/vim` bật/tắt chế độ soạn kiểu vim trong khung nhập: `Esc` về normal (`hjkl` di chuyển, `w/b` nhảy từ, `dd` xoá dòng), `i/a/o` vào insert gõ tiếp. Hiểu `/vim` là hiểu "khung chat cũng là buffer vim" — tay vim khỏi rời home row.
 
 ## Khi nào dùng
 
-- Dùng /vim khi bạn cần chỉnh môi trường/tài khoản/cài đặt (login, IDE, config, remote, sandbox).
-- Dùng /vim **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /vim thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng khi bạn quen vim và muốn soạn prompt như soạn code: `Esc` về normal, `hjkl` di chuyển, `w/b` nhảy từ, `dd` xoá dòng.
+- Dùng **trước khi** soạn prompt dài (spec, prompt nhiều dòng, mô tả refactor): bật `/vim on` từ đầu, sửa nhanh bằng lệnh vim thay vì phím mũi tên.
+- Không dùng `/vim` thay cho việc tự nhớ chế độ đang ở: quên `Esc` mà bấm phím normal vẫn có thể duyệt nhầm permission.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/vim`
@@ -20,7 +19,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -36,7 +35,7 @@ Kết quả mong đợi:
 - Claude trả đúng việc của /vim (không lan man), nêu rõ bước tiếp theo.
 - Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
 
-Verify (30 giây):
+**Kiểm tra nhanh:**
 
 ```bash
 # trong session: /status hoặc /context để chắc mode/context còn sạch
@@ -44,7 +43,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `Esc` không về normal | Terminal/tmux ăn Esc | Fix terminal-setup; dùng `Ctrl+[` tạm |
 | `hjkl` gõ ra chữ thay vì di chuyển | Đang insert (chưa Esc) hoặc vim off | `Esc` trước; `/vim --status` kiểm tra |

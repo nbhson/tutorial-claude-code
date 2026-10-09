@@ -1,16 +1,15 @@
 # /mobile — Pair điện thoại: quét QR, điều khiển session từ xa, persist cross-device
 
-> Loại Built-in · Nhóm Remote · Nguy hiểm Có nhẹ (điện thoại thành remote full-quyền của session — mất điện thoại = mất điều khiển; nhưng Không chuyển nơi chạy, code vẫn ở máy cũ)
-
-> Nói nôm na: `/mobile` ghép điện thoại với session đang chạy trên desktop: hiện QR, quét bằng app là điện thoại thành "điều khiển từ xa" — xem log, gõ prompt, duyệt permission (`Yes/No`) từ quán cà phê. Execution vẫn ở máy desktop (khác `/teleport` là bê cả session đi). Hiểu `/mobile` là hiểu "cầm remote TV ra sân" — TV vẫn trong nhà, bạn chỉ mang remote đi.
+> Loại Built-in · Nhóm Remote · Mức rủi ro Có nhẹ (điện thoại thành remote full-quyền của session — mất điện thoại = mất điều khiển; nhưng Không chuyển nơi chạy, code vẫn ở máy cũ)
+> **Nói nôm na:** `/mobile` ghép điện thoại với session đang chạy trên desktop: hiện QR, quét bằng app là điện thoại thành "điều khiển từ xa" — xem log, gõ prompt, duyệt permission (`Yes/No`) từ quán cà phê. Execution vẫn ở máy desktop (khác `/teleport` là bê cả session đi). Hiểu `/mobile` là hiểu "cầm remote TV ra sân" — TV vẫn trong nhà, bạn chỉ mang remote đi.
 
 ## Khi nào dùng
 
-- Dùng /mobile khi bạn cần chỉnh môi trường/tài khoản/cài đặt (login, IDE, config, remote, sandbox).
-- Dùng /mobile **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /mobile thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng khi bạn phải rời bàn giữa task mà vẫn muốn xem log, gõ prompt, duyệt `Yes/No` từ điện thoại.
+- Dùng **trước khi** rời nhà giữa task chạy dài (test 45 phút, migrate): pair từ trước, ra ngoài chỉ còn bấm duyệt.
+- Không dùng `/mobile` thay cho việc tự đọc kỹ lệnh: bấm `Yes` từ xa mà không đọc vẫn nguy hiểm như bấm ở máy.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/mobile`
@@ -20,7 +19,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -39,7 +38,7 @@ Kết quả mong đợi:
 - Claude trả đúng việc của /mobile (không lan man), nêu rõ bước tiếp theo.
 - Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
 
-Verify (30 giây):
+**Kiểm tra nhanh:**
 
 ```bash
 # trong session: /status hoặc /context để chắc mode/context còn sạch
@@ -47,7 +46,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Quét QR báo `expired` | Pairing token TTL 5-10 phút, để lâu quá | `/mobile --qr` sinh mới rồi quét ngay |
 | Quét QR báo `account mismatch` | App login mail khác với desktop | Đăng xuất app, login đúng mail desktop rồi quét lại |

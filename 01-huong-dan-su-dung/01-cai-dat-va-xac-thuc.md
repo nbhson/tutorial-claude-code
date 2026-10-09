@@ -1,28 +1,51 @@
-# 01 — Cài Đặt, Xác Thực & Kiểm Tra Sức Khỏe
+# 01 — Cài đặt, xác thực và kiểm tra sức khỏe
 
-> Bài 01 của series. Đọc xong bạn cài được Claude Code trên mọi OS, login đúng provider,
-> chạy `claude doctor` hiểu từng dòng output, và fix được 90% lỗi setup.
-> Thời gian: ~30 phút + 15 phút làm theo.
->
+> **Bài này cho ai:** bạn sắp cài Claude Code lần đầu, hoặc đã cài rồi nhưng `claude doctor` cứ báo đỏ.
+> **Cần gì trước:** mở được terminal, biết `cd` và `git clone`. Chưa cần có tài khoản — bước đăng nhập làm ngay trong bài.
+> **Đọc xong bạn làm được:**
+> - Cài Claude Code trên macOS / Linux / Windows (WSL) bằng native binary, không bị duplicate install.
+> - Chọn đúng provider (subscription, API key, Bedrock...) và login hoặc đổi account mà không mất feature.
+> - Chạy `claude doctor` và `/doctor`, đọc từng dòng `[✓]`/`[!]`, tự sửa 9 lỗi setup hay gặp.
+> - Setup xong 1 repo: `/init → /memory → /mcp → /permissions` + 1 task end-to-end.
+> **Thời gian:** ~30 phút đọc + 15 phút làm theo
+
 > **Cách đọc:** mỗi khái niệm có 3 dòng (Định nghĩa → Ví dụ đời thường → Ví dụ copy-paste).
-> Mỗi code block có dòng **Kỳ vọng / Verify** để biết làm xong thấy gì.
+> Cuối mỗi mục có khối **Kiểm tra nhanh:** gộp hết bước "làm xong thấy gì" của mục đó.
+
+## Thuật ngữ dùng trong bài này
+
+Đọc bảng này trước khi vào mục 1 — mọi thuật ngữ Anh trong bài đều được giải thích ở đây.
+
+| Thuật ngữ | Hiểu nôm na là gì | Ví dụ thấy ngay | Khi nào dùng |
+|---|---|---|---|
+| Native binary | Quạt cây cắm điện là chạy, không cần pin riêng | `curl .../install.sh \| bash` rồi `claude --version` ra `2.1.x` | Cài mặc định cho mọi OS |
+| PATH | Danh sách đường mà terminal đi tìm lệnh | `~/.local/bin` phải có trong `echo $PATH` | Khi gặp `command not found: claude` |
+| Duplicate install | Nhà có 2 chìa khóa, không biết ổ nào đúng | `which -a claude` ra 2 dòng (brew + native) | Khi version check rối, `claude doctor` báo duplicate |
+| Provider | Nhà mạng cung cấp model + tính tiền | Subscription → `claude login`; CI → `ANTHROPIC_API_KEY` | Chọn trước khi thắc mắc "sao thiếu lệnh?" |
+| `claude doctor` | Phiếu khám sức khỏe chỉ đọc, không chích thuốc | `claude doctor` in `[✓] Auth`, `[!] MCP` | Chạy đầu tiên khi lỗi lạ |
+| `/doctor` | Bác sĩ vừa khám vừa hỏi có cho mổ không | `/doctor` hỏi `remove duplicate? [y/N]` | Khi muốn sửa luôn duplicate/trim CLAUDE.md |
+| WSL | Phòng Linux nằm trong nhà Windows | `wsl --install -d Ubuntu` rồi cài Claude trong Ubuntu | Dev Windows cần hooks/symlink/docker Linux |
+| gh CLI | Chìa khóa ra GitHub từ terminal | `gh auth login` rồi `gh auth status` thấy `Logged in` | Trước `/web-setup` + cloud sessions |
 
 ## Mục lục
 
-1. [Vì sao cài đặt v2.1.x khác trước?](#1-vì-sao-cài-đặt-v21x-khác-trước--why)
-2. [Cài đặt từng OS](#2-cài-đặt-từng-os-step-by-step)
-3. [WSL deep-dive](#3-wsl-deep-dive-windows-nhưng-chạy-linux)
-4. [Version matrix](#4-version-matrix--chọn-bản-nào)
-5. [Đăng nhập / đổi tài khoản / providers](#5-đăng-nhập--đổi-tài-khoản--providers)
-6. [Session đầu tiên trong 1 repo](#6-session-đầu-tiên-trong-1-repo-walkthrough)
-7. [claude doctor + /doctor deep-dive](#7-claude-doctor-và-doctor--bác-sĩ-của-mọi-lỗi-setup)
-8. [Update & biến môi trường](#8-update--biến-môi-trường-hữu-ích)
-9. [Bảng thuật ngữ](#9-bảng-thuật-ngữ)
-10. [Hiểu nhầm thường gặp](#10-hiểu-nhầm-thường-gặp)
-11. [Checklist + pitfalls + bài tập](#11-checklist-pitfalls-bài-tập)
-12. [Link chéo](#12-link-chéo)
+Mục [Khái niệm mở đầu](#khái-niệm-mở-đầu) giải thích native binary, provider và `claude doctor` trong 2 phút + cho bạn xem trước lộ trình 6 bước.
 
-### Khái niệm mở đầu
+1. [Vì sao cài đặt v2.1.x khác trước?](#1-vì-sao-cài-đặt-v21x-khác-trước)
+2. [Cài đặt từng OS, từng bước](#2-cài-đặt-từng-os-từng-bước)
+3. [Đi sâu về WSL (Windows nhưng chạy Linux)](#3-đi-sâu-về-wsl-windows-nhưng-chạy-linux)
+4. [So sánh version — chọn bản nào?](#4-so-sánh-version--chọn-bản-nào)
+5. [Đăng nhập / đổi tài khoản / providers](#5-đăng-nhập--đổi-tài-khoản--providers)
+6. [Session đầu tiên trong 1 repo, đi từng bước](#6-session-đầu-tiên-trong-1-repo-đi-từng-bước)
+7. [claude doctor và /doctor — bác sĩ của mọi lỗi setup](#7-claude-doctor-và-doctor--bác-sĩ-của-mọi-lỗi-setup)
+8. [Cập nhật & biến môi trường hữu ích](#8-cập-nhật--biến-môi-trường-hữu-ích)
+9. [Hiểu nhầm thường gặp](#9-hiểu-nhầm-thường-gặp)
+10. [Checklist, bẫy thường gặp và bài tập](#10-checklist-bẫy-thường-gặp-và-bài-tập)
+11. [Link chéo](#11-link-chéo)
+
+## Khái niệm mở đầu
+
+Mục này trả lời 3 câu nền trong 2 phút — native binary là gì, provider là gì, `claude doctor` là gì — rồi chỉ cho bạn lộ trình 6 bước cài đặt.
 
 - **Native binary là gì?** 1 câu: file chạy độc lập, không cần cài Node đúng version.
   - Ví dụ đời thường: như mua quạt cây cắm điện là chạy, không cần mua thêm pin + sạc riêng.
@@ -56,7 +79,9 @@ Giải thích từng bước:
 
 ---
 
-## 1. Vì sao cài đặt v2.1.x khác trước? (why)
+## 1. Vì sao cài đặt v2.1.x khác trước?
+
+Mục này trả lời câu: vì sao không nên cài bằng npm như trước, và native binary mạnh hơn ở đâu?
 
 Trước 2025: `npm i -g @anthropic-ai/claude-code` là đường chính. Vấn đề: phụ thuộc Node,
 xung đột version Node giữa máy, update chậm, khó sandbox native.
@@ -70,11 +95,13 @@ Windows installer). Lợi ích:
 - Sandbox/OS integration (keychain, notifications, file trust) làm native tốt hơn.
 
 > Hệ quả thực tế: nếu máy bạn còn cả 2 bản (`which -a claude` ra 2 dòng), mọi lệnh version
-> check đều rối. Gỡ 1 bản, giữ native. Chi tiết mục 9.
+> check đều rối. Gỡ 1 bản, giữ native. Chi tiết ở mục Thuật ngữ đầu file và bảng lỗi mục 10.2.
 
 ---
 
-## 2. Cài đặt từng OS (step-by-step)
+## 2. Cài đặt từng OS, từng bước
+
+Mục này trả lời câu: trên macOS, Linux, Windows và IDE thì cài bằng lệnh nào, và cài xong kiểm tra ra sao?
 
 ### 2.1. macOS
 
@@ -115,11 +142,9 @@ Verify macOS:
 
 ```bash
 claude --version        # kỳ vọng: 2.1.x
-claude doctor           # kỳ vọng: không báo đỏ (xem mục 7 để đọc output mẫu)
+claude doctor           # kỳ vọng: không báo đỏ (xem mục 7 để đọc kết quả mẫu)
 ls ~/.claude/           # phải có settings.json sau lần chạy đầu
 ```
-
-> **Kỳ vọng / Verify:** `claude --version` in `2.1.x`; `claude doctor` toàn `[✓]`, không `[✗]`; `ls ~/.claude/` thấy `settings.json`. Nếu `command not found` → PATH thiếu `~/.local/bin`, làm lại bước export PATH + restart shell.
 
 ### 2.2. Linux (Ubuntu/Debian/Fedora/Arch)
 
@@ -138,8 +163,6 @@ source ~/.bashrc
 claude --version
 claude doctor
 ```
-
-> **Kỳ vọng / Verify:** `claude --version` ra `2.1.x`, `claude doctor` không đỏ. `which -a claude` chỉ 1 dòng (`~/.local/bin/claude`). Nếu ra 2 dòng (còn bản npm) → gỡ 1 bản theo mục 9.
 
 Fedora:
 
@@ -175,8 +198,6 @@ claude --version
 claude doctor
 ```
 
-> **Kỳ vọng / Verify:** cả 2 lệnh đều chạy, `claude doctor` không đỏ. Dev Windows mà dùng hooks/shell scripts → nên sang WSL (mục 3) thay vì cố PowerShell.
-
 > Khuyến nghị cho dev Windows: code trong WSL (`\\wsl$\Ubuntu\home\...`), mở VS Code bằng
 > `code .` từ trong WSL. Mọi lệnh `claude` chạy trong WSL để hooks/shell scripts Linux hoạt động.
 
@@ -193,18 +214,25 @@ Verify IDE:
 3. Thử @-mention 1 file trong input → Claude đọc đúng file.
 ```
 
-> **Kỳ vọng / Verify:** sidebar Claude hiện trong VS Code; `/ide` báo `VS Code connected` (không phải `not connected`); `@-mention` 1 file thì Claude trích đúng nội dung file đó. Thiếu bước nào → cài lại extension rồi chạy `/ide` trong đúng session của repo đó.
-
 ### 2.5. Điều kiện tài khoản
 
-- Hầu hết surfaces cần **Claude subscription** (Pro/Max/Team/Enterprise) hoặc **Anthropic Console API key**.
+- Hầu hết bề mặt sử dụng cần **Claude subscription** (Pro/Max/Team/Enterprise) hoặc **Anthropic Console API key**. Giá gói hiện tại: tra tại claude.com/pricing.
 - Terminal CLI + VS Code còn hỗ trợ **third-party providers** (Bedrock, Google Agent Platform, Microsoft Foundry...).
 - Web/Mobile/Desktop-cloud/Slack/Routines/Remote Control/Chrome extension... **bắt buộc** sign-in `claude.ai`
   (xem bảng phân biệt theo provider ở bài 10).
 
+**Kiểm tra nhanh:**
+
+- macOS: `claude --version` in `2.1.x`; `claude doctor` toàn `[✓]`, không `[✗]`; `ls ~/.claude/` thấy `settings.json`. Nếu `command not found` → PATH thiếu `~/.local/bin`, làm lại bước export PATH + restart shell.
+- Linux: `claude --version` ra `2.1.x`, `claude doctor` không đỏ. `which -a claude` chỉ 1 dòng (`~/.local/bin/claude`). Nếu ra 2 dòng (còn bản npm) → gỡ 1 bản theo bảng lỗi mục 10.2.
+- Windows: cả `claude --version` lẫn `claude doctor` đều chạy, `claude doctor` không đỏ. Dev Windows mà dùng hooks/shell scripts → nên sang WSL (mục 3) thay vì cố PowerShell.
+- IDE: sidebar Claude hiện trong VS Code; `/ide` báo `VS Code connected` (không phải `not connected`); `@-mention` 1 file thì Claude trích đúng nội dung file đó. Thiếu bước nào → cài lại extension rồi chạy `/ide` trong đúng session của repo đó.
+
 ---
 
-## 3. WSL deep-dive (Windows nhưng chạy Linux)
+## 3. Đi sâu về WSL (Windows nhưng chạy Linux)
+
+Mục này trả lời câu: dev Windows vì sao nên chạy Claude Code trong WSL, cài ra sao và hay vấp lỗi nào?
 
 ### 3.1. Vì sao dev Windows nên dùng WSL?
 
@@ -213,7 +241,7 @@ tất cả chạy mượt trên Linux, gãy ngẫu nhiên trên PowerShell/CMD. 
 thật trong Windows, nên toàn bộ series này (đặc biệt bài 07 hooks, bài 11 worktrees) viết
 cho Linux/macOS shell và chạy 1:1 trong WSL.
 
-### 3.2. Cài WSL + Claude step-by-step (copy-paste)
+### 3.2. Cài WSL + Claude từng bước (copy-paste)
 
 ```powershell
 # PowerShell (Admin) — bật WSL + cài Ubuntu:
@@ -256,7 +284,7 @@ code .
 claude
 ```
 
-### 3.4. Pitfalls WSL hay gặp
+### 3.4. Bẫy WSL hay gặp
 
 | Triệu chứng | Nguyên nhân | Fix |
 |---|---|---|
@@ -267,15 +295,15 @@ claude
 
 ---
 
-## 4. Version matrix — chọn bản nào?
+## 4. So sánh version — chọn bản nào?
+
+Mục này trả lời câu: mình đang chạy bản nào, nên cài qua kênh nào, và lệnh nào thì cần bản tối thiểu bao nhiêu?
 
 ```bash
 # Xem version hiện tại + channel:
 claude --version
 /status    # trong session: version, model, account
 ```
-
-> **Kỳ vọng / Verify:** `claude --version` ra số (vd `2.1.215`); `/status` trong session hiện đúng model + account. Nếu `/cd` báo `Unknown command` → version <2.1.169 → `claude update`.
 
 | Kênh / cách cài | Lệnh | Khi dùng | Lưu ý |
 |---|---|---|---|
@@ -304,18 +332,21 @@ claude --version         # xác nhận sau update
 brew upgrade --cask claude-code
 ```
 
-> **Kỳ vọng / Verify:** sau update `claude --version` tăng số. Nếu `claude update` báo đã mới nhất mà vẫn thiếu lệnh → kiểm tra provider (mục 5), không phải version.
+**Kiểm tra nhanh:**
+
+- `claude --version` ra số (vd `2.1.292`); `/status` trong session hiện đúng model + account. Nếu `/cd` báo `Unknown command` → version <2.1.169 → `claude update`.
+- Sau update `claude --version` tăng số. Nếu `claude update` báo đã mới nhất mà vẫn thiếu lệnh → kiểm tra provider (mục 5), không phải version.
 
 ---
 
 ## 5. Đăng nhập / đổi tài khoản / providers
 
+Mục này trả lời câu: bạn có gì trong tay (subscription / API key / Bedrock...) thì login kiểu gì, và mất gì?
+
 ```bash
 claude login     # đăng nhập (mở browser OAuth)
 claude logout    # đăng xuất
 ```
-
-> **Kỳ vọng / Verify:** `claude login` mở browser, xong báo `Logged in as you@example.com`. `/status` trong session hiện đúng account. Vòng lặp OAuth không dứt → `claude logout` rồi login lại, đổi browser.
 
 Trong session: `/login` (đổi account / re-auth), `/logout`, `/status` (xem version, model, account),
 `/exit` thoát REPL.
@@ -342,25 +373,28 @@ claude -p "summarize git diff" --output-format text
 /status
 ```
 
-> **Kỳ vọng / Verify:** CI chạy `claude -p` in tóm tắt diff ra stdout, exit 0. Đổi account xong `/status` hiện account mới. API key mất Web/Routines/Remote — đó là bình thường, không phải bug (bài 10).
-
 > Chi tiết full availability theo plan/provider: bài 10. Gặp "lệnh không tồn tại" → check
 > provider + version trước khi kết luận bug.
 
+**Kiểm tra nhanh:**
+
+- `claude login` mở browser, xong báo `Logged in as you@example.com`. `/status` trong session hiện đúng account. Vòng lặp OAuth không dứt → `claude logout` rồi login lại, đổi browser.
+- CI chạy `claude -p` in tóm tắt diff ra stdout, exit 0. Đổi account xong `/status` hiện account mới. API key mất Web/Routines/Remote — đó là bình thường, không phải bug (bài 10).
+
 ---
 
-## 6. Session đầu tiên trong 1 repo (walkthrough)
+## 6. Session đầu tiên trong 1 repo, đi từng bước
+
+Mục này trả lời câu: mở repo đầu tiên thì gõ những lệnh nào, theo thứ tự nào?
 
 ```bash
 cd /path/to/repo
 claude            # mở session
 ```
 
-> **Kỳ vọng / Verify:** prompt `>` hiện trong đúng repo (`pwd` ra repo bạn). Gõ `/status` thấy working dir đúng. Sai folder → `exit` rồi `cd` lại, không dùng session nhầm chỗ.
-
 Rồi trong session chạy tuần tự (lần đầu duy nhất):
 
-```
+```text
 /init        → sinh CLAUDE.md nháp từ codebase (set CLAUDE_CODE_NEW_INIT=1 để có flow interactive hỏi cả skills/hooks/memory)
 /memory      → tinh chỉnh memory files, bật/tắt auto-memory
 /mcp         → setup server cần thiết (GitHub, DB...), xem bài 08
@@ -370,7 +404,7 @@ Rồi trong session chạy tuần tự (lần đầu duy nhất):
 > `/init` cho project có sẵn (Claude tự phân tích conventions). Project mới thì dùng template trong
 > `templates/CLAUDE.md` của repo này rồi sửa (chi tiết bài 03).
 
-### Walkthrough 15 phút cho repo chưa có gì
+### Đi từng bước 15 phút cho repo chưa có gì
 
 ```bash
 # Bước 1: vào repo + mở session
@@ -411,15 +445,17 @@ claude
 # Xong: /cost để xem tốn bao nhiêu, /export để lưu nếu cần.
 ```
 
+**Kiểm tra nhanh:** prompt `>` hiện trong đúng repo (`pwd` ra repo bạn). Gõ `/status` thấy working dir đúng. Sai folder → `exit` rồi `cd` lại, không dùng session nhầm chỗ.
+
 ---
 
 ## 7. `claude doctor` và `/doctor` — bác sĩ của mọi lỗi setup
 
+Mục này trả lời câu: lệnh khám sức khỏe nào dùng khi nào, và từng dòng output nói gì?
+
 ```bash
 claude doctor     # ngoài terminal: in read-only diagnostics, không mở session
 ```
-
-> **Kỳ vọng / Verify:** in ra 8–10 dòng `[✓]/[!]` như mẫu mục 7.1. Không sửa gì — chỉ đọc. Muốn sửa thì vào session gõ `/doctor`.
 
 Trong session: `/doctor` (alias `/checkup`) — skill chẩn đoán + **có thể sửa** (luôn hỏi trước khi đổi):
 
@@ -432,7 +468,7 @@ Trong session: `/doctor` (alias `/checkup`) — skill chẩn đoán + **có th�
 
 Khi báo lỗi cho người khác/Anthropic: dùng `/bug` (gửi conversation cho Anthropic), `/status`, `/doctor`.
 
-### 7.1. Output mẫu `claude doctor` (đọc từng dòng)
+### 7.1. Kết quả mẫu của `claude doctor` (đọc từng dòng)
 
 ```text
 $ claude doctor
@@ -447,8 +483,6 @@ $ claude doctor
 [✓] Git: repo clean, gh CLI authenticated as <user>
 ```
 
-> **Kỳ vọng / Verify:** bạn đọc được dòng nào ok (`[✓]` bỏ qua), dòng nào cần làm (`[!]`). Ví dụ trên: cần trim CLAUDE.md xuống <200 dòng, reconnect postgres, thu hẹp hook lint chỉ file vừa sửa.
-
 Cách đọc:
 
 | Dòng | Ý nghĩa | Hành động |
@@ -460,7 +494,7 @@ Cách đọc:
 | MCP disconnected | Token/URL/OAuth? | `/mcp reconnect <name>` (bài 08) |
 | Hooks slow | Hook nào >2s? | Thu hẹp scope lint (chỉ file vừa edit, không `lint .`) |
 
-### 7.2. Ví dụ `/doctor` fix mẫu (copy-paste flow)
+### 7.2. Ví dụ `/doctor` tự sửa lỗi (copy-paste)
 
 ```text
 # Trong session:
@@ -475,15 +509,20 @@ Cách đọc:
 # 4. Đề xuất: pre-approve `Bash(pnpm test:*)` để đỡ bị hỏi mỗi lần test.
 ```
 
+**Kiểm tra nhanh:**
+
+- `claude doctor` in ra 8–10 dòng `[✓]/[!]` như mẫu mục 7.1. Nó không sửa gì — chỉ đọc. Muốn sửa thì vào session gõ `/doctor`.
+- Bạn đọc được dòng nào ok (`[✓]` bỏ qua), dòng nào cần làm (`[!]`). Ví dụ trên: cần trim CLAUDE.md xuống <200 dòng, reconnect postgres, thu hẹp hook lint chỉ file vừa sửa.
+
 ---
 
-## 8. Update & biến môi trường hữu ích
+## 8. Cập nhật & biến môi trường hữu ích
+
+Mục này trả lời câu: update bằng lệnh nào, và 3 biến môi trường nào dùng để debug?
 
 ```bash
 claude update     # lên bản mới nhất
 ```
-
-> **Kỳ vọng / Verify:** báo `Updated to 2.1.x` hoặc `Already up to date`. Xong chạy `claude --version` xác nhận số mới.
 
 ```bash
 # Load CLAUDE.md từ --add-dir paths (mặc định không load)
@@ -494,9 +533,7 @@ export CLAUDE_CODE_SIMPLE=1
 export CLAUDE_CODE_NEW_INIT=1
 ```
 
-> **Kỳ vọng / Verify:** `echo $CLAUDE_CODE_SIMPLE` ra `1` sau export. Chạy `CLAUDE_CODE_SIMPLE=1 claude -p "đọc package.json"` mà chạy được, còn normal gãy → lỗi nằm ở MCP/hook/skill.
-
-### 8.1. Khi nào dùng từng biến? (why)
+### 8.1. Khi nào dùng từng biến?
 
 | Biến | Khi nào bật | Ví dụ |
 |---|---|---|
@@ -514,36 +551,32 @@ CLAUDE_CODE_NEW_INIT=1 claude
 # Trong session: /init → trả lời từng câu hỏi (memory? skills? hooks?) → file chuẩn team.
 ```
 
+**Kiểm tra nhanh:**
+
+- `claude update` báo `Updated to 2.1.x` hoặc `Already up to date`. Xong chạy `claude --version` xác nhận số mới.
+- `echo $CLAUDE_CODE_SIMPLE` ra `1` sau export. Chạy `CLAUDE_CODE_SIMPLE=1 claude -p "đọc package.json"` mà chạy được, còn normal gãy → lỗi nằm ở MCP/hook/skill.
+
 ---
 
-## 9. Bảng thuật ngữ
+## 9. Hiểu nhầm thường gặp
 
-| Thuật ngữ | Là gì (hiểu nôm na) | Ví dụ cụ thể | Khi nào dùng |
-|---|---|---|---|
-| Native binary | Quạt cây cắm điện là chạy, không cần pin riêng | `curl .../install.sh \| bash` rồi `claude --version` ra `2.1.x` | Cài mặc định cho mọi OS |
-| PATH | Danh sách đường mà terminal đi tìm lệnh | `~/.local/bin` phải có trong `echo $PATH` | Khi gặp `command not found: claude` |
-| Duplicate install | Nhà có 2 chìa khóa, không biết ổ nào đúng | `which -a claude` ra 2 dòng (brew + native) | Khi version check rối, `claude doctor` báo duplicate |
-| Provider | Nhà mạng cung cấp model + tính tiền | Subscription → `claude login`; CI → `ANTHROPIC_API_KEY` | Chọn trước khi thắc mắc "sao thiếu lệnh?" |
-| claude doctor | Phiếu khám sức khỏe chỉ đọc, không chích thuốc | `claude doctor` in `[✓] Auth`, `[!] MCP` | Chạy đầu tiên khi lỗi lạ |
-| /doctor | Bác sĩ vừa khám vừa hỏi có cho mổ không | `/doctor` hỏi `remove duplicate? [y/N]` | Khi muốn sửa luôn duplicate/trim CLAUDE.md |
-| WSL | Phòng Linux nằm trong nhà Windows | `wsl --install -d Ubuntu` rồi cài Claude trong Ubuntu | Dev Windows cần hooks/symlink/docker Linux |
-| gh CLI | Chìa khóa ra GitHub từ terminal | `gh auth login` rồi `gh auth status` thấy `Logged in` | Trước `/web-setup` + cloud sessions |
-
-## 10. Hiểu nhầm thường gặp
+Mục này trả lời câu: những lầm tưởng nào khiến bạn cài sai hoặc kết luận nhầm "Claude Code hỏng"?
 
 | Hiểu nhầm | Sự thật | Cách kiểm tra |
 |---|---|---|
 | Cài bằng npm cũng như native | npm phụ thuộc Node global, dễ xung đột, `doctor` báo duplicate; native bundle runtime riêng, update atomic | `which -a claude` ra 2 dòng → gỡ npm, giữ native: `npm uninstall -g @anthropic-ai/claude-code` |
 | Login rồi là full feature | API key/Bedrock/Vertex bị cắt Web/Routines/fast mode... theo bảng bài 10 | Thiếu lệnh → check `/status` + provider trước khi kết luận bug |
-| `claude doctor` sẽ tự sửa | Ngoài terminal nó chỉ đọc (read-only). Muốn sửa phải vào session gõ `/doctor` | Cần fix duplicate/trim → vào session `/doctor`, duyệt từng hunk `y/N` |
+| `claude doctor` sẽ tự sửa | Ngoài terminal lệnh chỉ đọc (read-only). Muốn sửa phải vào session gõ `/doctor` | Cần fix duplicate/trim → vào session `/doctor`, duyệt từng hunk `y/N` |
 | Repo để đâu cũng nhanh như nhau | Repo trong `/mnt/c` qua bridge chậm 5–10x, hook mất +x, CRLF gãy | Clone vào `~/code` trong WSL, `chmod +x .claude/hooks/*.sh`, `core.autocrlf input` |
 | Update là xong mọi lỗi lệnh | Lệnh còn bị chặn bởi provider + version floor (`/cd` ≥2.1.169, `/effort` ≥2.1.205...) | `claude --version` + `/status` + gõ `/` xem list thực tế ở máy bạn |
 
 ---
 
-## 11. Checklist, pitfalls, bài tập
+## 10. Checklist, bẫy thường gặp và bài tập
 
-### 11.1. Checklist sau cài đặt (copy-paste)
+Mục này trả lời câu: sau khi cài xong thì check gì, lỗi nào hay gặp nhất, và làm bài nào để chắc tay?
+
+### 10.1. Checklist sau cài đặt (copy-paste)
 
 - [ ] `claude --version` ≥ 2.1.x, `claude doctor` không báo đỏ.
 - [ ] `which -a claude` chỉ ra 1 binary (không duplicate npm + native).
@@ -551,9 +584,9 @@ CLAUDE_CODE_NEW_INIT=1 claude
 - [ ] Đã `/permissions` đặt allow/ask/deny (đặc biệt `Bash`, `Write` ngoài repo).
 - [ ] Đã `/mcp` thêm 3–6 servers thực dùng (đừng quá 10 tools visible).
 - [ ] Đã test 1 task nhỏ end-to-end: prompt → edit → test → commit.
-- [ ] Đã đọc bài 02 (chọn surface) và bài 03 (viết CLAUDE.md tốt).
+- [ ] Đã đọc bài 02 (chọn bề mặt sử dụng) và bài 03 (viết CLAUDE.md tốt).
 
-### 11.2. Lỗi cài đặt hay gặp (bản đầy đủ hơn FAQ rút gọn)
+### 10.2. Lỗi cài đặt hay gặp (bản đầy đủ hơn FAQ rút gọn)
 
 | Triệu chứng | Nguyên nhân likely | Fix (copy-paste) |
 |---|---|---|
@@ -567,7 +600,7 @@ CLAUDE_CODE_NEW_INIT=1 claude
 | WSL chậm khi repo ở `/mnt/c` | I/O bridge | Clone lại vào `~/code` trong WSL |
 | `/login` vòng lặp OAuth | Browser/session cũ | `claude logout` → `claude login` lại, thử browser khác |
 
-### 11.3. Bài tập thực hành
+### 10.3. Bài tập thực hành
 
 **Bài 1 (10 phút) — Verify cài đặt:**
 Chạy `claude --version`, `which -a claude`, `claude doctor`. Chụp output, giải thích từng
@@ -575,7 +608,7 @@ dòng `[✓]/[!]` cho đồng nghiệp. Fix hết `[!]` trước khi sang bài 2
 
 **Bài 2 (15 phút) — Multi-OS check:**
 Nếu team có cả macOS + Linux + WSL, lập bảng: mỗi OS cài bằng cách nào, PATH nào,
-verify bằng lệnh nào. Ghi vào team wiki (dùng bảng version matrix mục 4 làm khung).
+verify bằng lệnh nào. Ghi vào team wiki (dùng bảng so sánh version mục 4 làm khung).
 
 **Bài 3 (20 phút) — Session đầu chuẩn:**
 Trên 1 repo thật, chạy đủ `/init → /memory → /mcp → /permissions` + 1 task end-to-end
@@ -587,13 +620,15 @@ Bật `CLAUDE_CODE_SIMPLE=1` chạy 1 prompt, so với chạy normal. Viết 3 d
 
 ---
 
-## 12. Link chéo
+## 11. Link chéo
 
-- **Bài 00 — Tổng quan**: nếu chưa hiểu agentic loop/token economics, quay lại đọc trước.
-- **Bài 02 — Surfaces**: chọn terminal/IDE/desktop/web/mobile + CLI flags + cloud env setup.
-- **Bài 03 — CLAUDE.md**: file `/init` vừa sinh cần cắt <200 dòng — sang bài 03 làm ngay.
-- **Bài 04 — Slash commands**: tra cứu `/memory /mcp /permissions /doctor /status...`.
-- **Bài 07 — Hooks**: khi `/doctor` báo hook chậm/không chạy.
-- **Bài 08 — MCP**: setup từng server GitHub/Playwright/Postgres/Notion chi tiết.
-- **Bài 10 — Permissions & availability**: rules allow/ask/deny + khác biệt plan/provider.
-- **FAQ (03-FAQ/)**: lỗi lạ không có trong bảng mục 9 → tra FAQ trước khi hỏi.
+Mục này trả lời câu: bài nào trong khóa trả lời câu hỏi tiếp theo của bạn?
+
+- **[Bài 00 — Tổng quan](./00-tong-quan-claude-code.md)**: nếu chưa hiểu vòng lặp agent / token economics, quay lại đọc trước.
+- **[Bài 02 — Các bề mặt sử dụng](./02-cac-be-mat-terminal-ide-web-desktop.md)**: chọn terminal/IDE/desktop/web/mobile + CLI flags + cloud env setup.
+- **[Bài 03 — CLAUDE.md](./03-claude-md-memory-rules.md)**: file `/init` vừa sinh cần cắt <200 dòng — sang bài 03 làm ngay.
+- **[Bài 04 — Slash commands](./04-slash-commands-toan-tap.md)**: tra cứu `/memory /mcp /permissions /doctor /status...`.
+- **[Bài 07 — Hooks](./07-hooks-tu-dong-hoa.md)**: khi `/doctor` báo hook chậm/không chạy.
+- **[Bài 08 — MCP](./08-mcp-ket-noi-cong-cu-ngoai.md)**: setup từng server GitHub/Playwright/Postgres/Notion chi tiết.
+- **[Bài 10 — Permissions & availability](./10-permissions-modes-availability.md)**: rules allow/ask/deny + khác biệt plan/provider.
+- **[FAQ (03-cau-hoi-thuong-gap/)](../03-cau-hoi-thuong-gap/)**: lỗi lạ không có trong bảng mục 10.2 → tra FAQ trước khi hỏi.

@@ -1,16 +1,15 @@
 # /cd — Chuyển thư mục làm việc: giữ prompt cache, trust prompt, Cd permission
 
-> Loại Built-in · Nhóm Settings · Nguy hiểm Có (chuyển vào thư mục untrusted là tự rước CLAUDE.md + hooks + MCP lạ vào session — đọc kỹ trust prompt trước khi Yes)
-
-> Nói nôm na: `/cd` đổi working directory của session đang chạy mà không mất context: history chat giữ nguyên, prompt cache giữ được phần lớn (đỡ tốn tiền nạp lại), nhưng Claude sẽ hỏi trust prompt nếu thư mục mới chưa từng tin tưởng. Hiểu `/cd` là hiểu "chuyển phòng làm việc trong cùng toà nhà" — người (context) vẫn là mình, nhưng phòng mới có luật mới. Khác `add-dir` (mở thêm phòng, giữ phòng cũ) và khác `cd` của shell (shell đổi là mất hết).
+> Loại Built-in · Nhóm Settings · Mức rủi ro Có (chuyển vào thư mục untrusted là tự rước CLAUDE.md + hooks + MCP lạ vào session — đọc kỹ trust prompt trước khi Yes)
+> **Nói nôm na:** `/cd` đổi working directory của session đang chạy mà không mất context: history chat giữ nguyên, prompt cache giữ được phần lớn (đỡ tốn tiền nạp lại), nhưng Claude sẽ hỏi trust prompt nếu thư mục mới chưa từng tin tưởng. Hiểu `/cd` là hiểu "chuyển phòng làm việc trong cùng toà nhà" — người (context) vẫn là mình, nhưng phòng mới có luật mới. Khác `add-dir` (mở thêm phòng, giữ phòng cũ) và khác `cd` của shell (shell đổi là mất hết).
 
 ## Khi nào dùng
 
-- Dùng /cd khi bạn cần chỉnh môi trường/tài khoản/cài đặt (login, IDE, config, remote, sandbox).
-- Dùng /cd **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng /cd thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng khi bạn cần đổi nơi làm việc của session đang chạy mà không mất history/prompt cache: từ root xuống `packages/api`, từ repo này sang repo kia.
+- Dùng **trước khi** task bắt đầu ăn sâu vào một thư mục mới (đầu task, đầu session, trước việc chạy test đúng dir) — cần ≥2.1.169; chọn đúng `/cd` sớm rẻ hơn sửa path lộn xộn sau.
+- Không dùng `/cd` thay cho đọc kỹ trust prompt: thư mục untrusted có CLAUDE.md/hooks/MCP lạ — bạn vẫn phải tự đọc trước khi Yes.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/cd <đường-dẫn>`
@@ -20,7 +19,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -40,7 +39,7 @@ Kết quả mong đợi:
 - Claude trả đúng việc của /cd (không lan man), nêu rõ bước tiếp theo.
 - Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
 
-Verify (30 giây):
+**Kiểm tra nhanh:**
 
 ```bash
 # trong session: /status hoặc /context để chắc mode/context còn sạch
@@ -48,7 +47,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `Blocked by Cd deny rule` | Path nằm trong deny (≥2.1.169) | Đúng thiết kế — đừng vào đó; cần thật thì sửa settings (và chịu trách nhiệm) |
 | Trust prompt hỏi mỗi lần vào dù đã Trust | Chọn `Trust once` thay vì `Trust & remember`, hoặc trust store bị xoá | Chọn remember; kiểm tra config trust store còn không |

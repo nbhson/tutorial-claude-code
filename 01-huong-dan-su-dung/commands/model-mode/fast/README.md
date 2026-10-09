@@ -1,16 +1,16 @@
 # /fast — Chế độ nhanh: trả lời gấp cho việc dễ, không chờ suy luận sâu
 
-> Loại Built-in · Nhóm Model & Mode · Nguy hiểm Không (chỉ giảm độ sâu suy luận / về model nhẹ; không sửa file ngoài ý muốn)
-
-> Nói nôm na: `/fast` là nút "tăng tốc": ép phiên về chế độ nhanh (thường tương đương Sonnet + effort thấp, ít vòng tool-call). Dùng khi cần trả lời ngay — giải thích code, tra cứu, việc vặt — chứ không phải lúc cần suy luận sâu.
+> Loại Built-in · Nhóm Model & Mode · Mức rủi ro Không (chỉ giảm độ sâu suy luận / về model nhẹ; không sửa file ngoài ý muốn)
+>
+> **Nói nôm na:** `/fast` là nút "tăng tốc": ép phiên về chế độ nhanh (thường tương đương Sonnet + effort thấp, ít vòng tool-call) để trả lời ngay cho việc dễ — giải thích code, tra cứu, việc vặt. Trên Opus 5.5, fast mode tính giá riêng $8/$40 (~2.5× nhanh) và cần ≥2.1.280.
 
 ## Khi nào dùng
 
-- Dùng /fast khi bạn muốn đổi cách model suy nghĩ/chạy (model, effort, mode, mục tiêu, quyền) trước khi làm task khó.
+- Dùng /fast khi cần trả lời gấp cho việc dễ (giải thích code, tra cứu, việc vặt) — đổi tốc độ lấy độ sâu suy luận.
 - Dùng /fast **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
 - Không dùng /fast thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
 
-## Cách gọi (copy-paste)
+## Cách gọi
 
 ```bash
 `/fast`
@@ -20,7 +20,7 @@
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
-## Ví dụ prompt thật + kết quả mong đợi + verify
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
 Prompt thật (paste vào Claude Code):
 
@@ -41,7 +41,7 @@ Verify (30 giây):
 
 ## Lỗi thường gặp
 
-| Triệu chứng | Vì sao | Cách fix |
+| Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/fast` báo `unknown command` | Bản không có lệnh riêng | Dùng `/effort low` thay thế |
 | Fast trả lời ẩu, sai | Dùng fast cho bài khó | Lên `/effort medium`/`high` |
