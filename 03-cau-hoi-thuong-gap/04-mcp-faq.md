@@ -96,8 +96,9 @@ flowchart TD
 
 ## 0. MCP server có 3 thành phần gì? (đồng bộ với bài 08)
 
-> **Câu hỏi:** Tools / Resources / Prompts nghe giống nhau — khác nhau thế nào, đụng tới cái nào trước?
-> **Trả lời 1 câu:** Tools là hàm gọi được, Resources là dữ liệu đọc theo URI, Prompts là template hiện thành lệnh `/mcp__...` — cả 3 đều do 1 MCP server phơi ra.
+> **Hỏi ngắn gọn:** Tools / Resources / Prompts nghe giống nhau — khác nhau chỗ nào, đụng tới cái nào trước?
+>
+> **Trả lời 1 câu:** Tools là hàm gọi được, Resources là dữ liệu đọc theo URI, Prompts là template hiện thành lệnh `/mcp__...` — cả 3 do 1 server phơi ra.
 
 **Giải thích:** Cùng 1 server nhưng phơi ra 3 thứ, phân biệt nhanh bằng cột "thấy ở đâu":
 
@@ -109,7 +110,7 @@ flowchart TD
 
 **Khi nào áp dụng:** lần đầu onboard 1 server mới — ngồi liệt kê nó phơi ra tools gì, resources gì, prompts gì, trước khi gõ lệnh gọi.
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```bash
 # Thử ngay trong session để phân biệt 3 loại:
@@ -133,7 +134,8 @@ claude mcp add --scope local --transport stdio db -- npx -y @db/mcp
 
 ## 1. Thêm server thế nào? (`add --transport stdio|sse|http`)
 
-> **Câu hỏi:** Thêm MCP server vào Claude Code thì gõ lệnh gì, và khi nào chọn stdio, khi nào chọn http?
+> **Hỏi ngắn gọn:** thêm MCP server vào Claude Code thì gõ lệnh gì, khi nào chọn stdio, khi nào chọn http?
+>
 > **Trả lời 1 câu:** Gõ `claude mcp add --transport <stdio|sse|http> <tên> ...` — stdio cho server chạy trên máy bạn, http/sse cho server ở xa (cần URL + token).
 
 **Giải thích:** 3 transports:
@@ -145,7 +147,7 @@ Version theo [WRITING-STYLE — Phần B](../WRITING-STYLE.md#phần-b--dữ-ki�
 
 **Khi nào áp dụng:** setup repo mới (bước `/mcp`) + mỗi khi cần data ngoài repo.
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```bash
 # stdio (chạy local):
@@ -166,7 +168,8 @@ Team dùng Linear + Postgres local → add Linear bằng http (token env), Postg
 
 ## 2. Scope project / local / user — chọn sao cho đúng?
 
-> **Câu hỏi:** Thêm server mà không để ý `--scope` thì xảy ra gì, 3 scope khác nhau lúc nào?
+> **Hỏi ngắn gọn:** thêm server mà quên để ý `--scope` thì xảy ra gì, 3 scope khác nhau lúc nào?
+>
 > **Trả lời 1 câu:** Scope quyết định server lưu ở đâu và ai thấy — project thì cả team thấy (commit `.mcp.json`), local/user thì chỉ mình bạn.
 
 **Giải thích:** Chọn sai scope là cách nhanh nhất để lọt token. Bảng dưới là bản đồ "lưu ở đâu → ai thấy → dùng khi nào":
@@ -179,7 +182,7 @@ Team dùng Linear + Postgres local → add Linear bằng http (token env), Postg
 
 **Khi nào áp dụng:** mỗi lần add — dừng 5 giây hỏi "cái này team thấy được không".
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```bash
 claude mcp add --scope project --transport stdio db -- npx -y @db/mcp
@@ -195,14 +198,15 @@ Add server test với token cá nhân mà quên `--scope local` → token vào `
 
 ## 3. Secrets trong MCP: env vars, không commit token
 
-> **Câu hỏi:** Token của tôi có dính vào git cùng `.mcp.json` không?
+> **Hỏi ngắn gọn:** token của mình có dính vào git cùng `.mcp.json` không?
+>
 > **Trả lời 1 câu:** Có thể bị — `.mcp.json` được commit git, nên token phải nằm ở env `${VAR}`, không ghi thẳng vào file.
 
 **Giải thích:** `.mcp.json` commit git → hardcode token trong đó là lộ cho cả thế giới (`claude doctor` báo đỏ). Chuẩn: dùng `${VAR}` + export từ shell/env manager.
 
 **Khi nào áp dụng:** luôn. Thêm check CI: `git grep -E 'ghp_|sk-ant_|lin_' -- .mcp.json` phải rỗng.
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```json
 {
@@ -227,14 +231,15 @@ Onboard member mới → họ chỉ cần `export 2 VAR` là chạy, không cầ
 
 ## 4. Xem / sửa connections (`/mcp`, `reconnect`, `enable/disable`, CLI)
 
-> **Câu hỏi:** Muốn xem server nào đang sống, nối lại, hoặc tắt/bật thì gõ gì?
+> **Hỏi ngắn gọn:** muốn xem server nào đang sống, nối lại, hoặc tắt/bật thì gõ gì?
+>
 > **Trả lời 1 câu:** Trong session thì `/mcp` kèm `reconnect` / `enable` / `disable`; ngoài terminal thì `claude mcp list|get|remove|reset-project-choices`.
 
 **Giải thích:** Bộ lệnh quản lý hàng ngày chia 2 nơi — trong session quản lý trạng thái, ngoài terminal quản lý config. Lưu ý version: `-p` ≥2.1.205 mới có `/mcp` no-arg in text (headless); cũ hơn thì dùng CLI `claude mcp list`.
 
 **Khi nào áp dụng:** đầu tuần `/mcp` 1 lần; sau sleep/reconnect mạng thì reconnect ngay.
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```bash
 /mcp                        # list + trạng thái + tools count
@@ -260,7 +265,8 @@ Sáng mở máy thấy 2 servers vàng → `/mcp reconnect github` + `/mcp recon
 
 ## 5. Server disconnected — check gì? (token / URL / OAuth)
 
-> **Câu hỏi:** Server MCP tự nhiên báo disconnected thì check gì trước, reconnect liên tục có được không?
+> **Hỏi ngắn gọn:** server MCP tự nhiên báo disconnected thì check gì trước, reconnect liên tục có được không?
+>
 > **Trả lời 1 câu:** Check lần lượt: token env hết hạn/sai → URL sai hoặc server chết → OAuth chưa xong; hết cả 3 mới tính chuyện khác.
 
 **Giải thích:** 3 nguyên nhân theo thứ tự hay gặp:
@@ -271,7 +277,7 @@ Sáng mở máy thấy 2 servers vàng → `/mcp reconnect github` + `/mcp recon
 
 **Khi nào áp dụng:** disconnected → token → URL → OAuth → reconnect, đừng xóa server vội.
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```bash
 echo ${GITHUB_TOKEN:+token-set}
@@ -288,14 +294,15 @@ Laptop sleep dậy → stdio servers chết (process bị kill) → `/mcp reconn
 
 ## 6. MCP prompts là gì? (`/mcp__<server>__<prompt>`)
 
-> **Câu hỏi:** Việc lặp đi lặp lại với 1 server phải gõ y chang nhau hoài — có cách nào lưu sẵn không?
+> **Hỏi ngắn gọn:** việc lặp đi lặp lại với 1 server phải gõ y chang nhau hoài — có cách nào lưu sẵn không?
+>
 > **Trả lời 1 câu:** Có — server nào có prompt thì tự hiện thành lệnh động `/mcp__<server>__<prompt>`, gõ `/` là thấy danh sách.
 
-**Giải thích:** Prompt là template việc chuẩn do server đăng ký — mỗi lần gọi, nó đưa sẵn 1 kịch bản việc vào session thay cho bạn tự gõ. 1 số servers expose **prompts** (template tác vụ) bên cạnh tools; chúng hiện thành slash command động `/mcp__<server>__<prompt>`. Gõ `/` trong session để discover — không cần nhớ tên.
+**Giải thích:** Prompt là template việc chuẩn do server đăng ký — mỗi lần gọi, nó đưa sẵn 1 kịch bản việc vào session thay cho bạn tự gõ. 1 số servers expose **prompts** (template tác vụ) bên cạnh tools; chúng hiện thành slash command động. Gõ `/` trong session để discover — không cần nhớ tên.
 
 **Khi nào áp dụng:** onboard server mới → gõ `/` xem nó có prompts gì, thử từng cái 1 lần.
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```bash
 # Gõ / rồi tìm:
@@ -312,7 +319,8 @@ Server DB expose prompt `query-template` → gõ `/mcp__db__query-template` ra f
 
 ## 7. Khi nào cần MCP vs đọc repo trực tiếp?
 
-> **Câu hỏi:** Repo đã có sẵn code và README thì có cần cắm MCP thêm không?
+> **Hỏi ngắn gọn:** repo đã có sẵn code và README thì có cần cắm MCP thêm không?
+>
 > **Trả lời 1 câu:** Không cần cho data trong repo — MCP chỉ dành cho data ngoài repo: DB, tickets, docs SaaS, browser, API internal, CI logs.
 
 **Giải thích:** Quy tắc vàng:
@@ -327,7 +335,7 @@ Cần biết hàm login viết sao? → Read trực tiếp (trong repo)
 
 **Khi nào áp dụng:** trước khi add server mới, hỏi "data này có trong repo không". Có → đừng add.
 
-**Ví dụ:** gắn MCP GitHub chỉ để đọc file trong repo đã clone → tốn 2k tokens/session vô ích (**ví dụ sai**). Đúng: dùng MCP GitHub để xem PR comments, CI status (ngoài repo).
+**Ví dụ sai đúng:** gắn MCP GitHub chỉ để đọc file trong repo đã clone → tốn 2k tokens/session vô ích (**ví dụ sai**). Đúng: dùng MCP GitHub để xem PR comments, CI status (ngoài repo).
 
 **Đào sâu:** [bài 08 — skill + MCP cặp bài trùng](../01-huong-dan-su-dung/08-mcp-ket-noi-cong-cu-ngoai.md) · [FAQ 02 — MCP nhiều có sao không](02-model-context-token.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-mcp)
 
@@ -335,7 +343,8 @@ Cần biết hàm login viết sao? → Read trực tiếp (trong repo)
 
 ## 8. Bao nhiêu server là đủ? (3–6 thực dùng, >10 tools visible thì loãng)
 
-> **Câu hỏi:** Cắm bao nhiêu MCP server thì vừa, nhiều hơn có tốt hơn không?
+> **Hỏi ngắn gọn:** cắm bao nhiêu MCP server thì vừa, nhiều hơn có tốt hơn không?
+>
 > **Trả lời 1 câu:** 3–6 servers thực dùng là vừa — quá ~10 tools visible thì model chọn sai tool, bỏ sót tool.
 
 **Giải thích:** Mỗi server thêm tools vào context ngay cả khi bạn không gọi tới, nên cắm thêm không phải lúc nào cũng mạnh hơn: vượt ngưỡng ~10 tools visible là model bắt đầu gọi nhầm, bỏ sót (xem số liệu [FAQ 02](02-model-context-token.md)). Sweet spot team thực tế:
@@ -348,7 +357,7 @@ Server 30+ tools mà tuần dùng 1 lần → disable tạm thời, enable khi c
 
 **Khi nào áp dụng:** mỗi tháng rà 1 lần. Quy tắc: server 3 tháng không gọi → remove.
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```bash
 /mcp                    # đếm servers + tools
@@ -364,14 +373,15 @@ Server 30+ tools mà tuần dùng 1 lần → disable tạm thời, enable khi c
 
 ## 9. Lên cloud mất MCP local — xử lý sao? (`/web-setup` + environment)
 
-> **Câu hỏi:** Đang làm local ngon lành mà mở bản Web/remote lên thì MCP biến mất — sao vậy?
-> **Trả lời 1 câu:** Đúng — cloud session chỉ thấy repo + cloud environment, nên MCP local của laptop (stdio + env vars) không đi theo; phải khai lại trong environment.
+> **Hỏi ngắn gọn:** đang làm local ngon lành mà mở bản Web/remote lên thì MCP biến mất — sao vậy?
+>
+> **Trả lời 1 câu:** Cloud session chỉ thấy repo + cloud environment, nên MCP local của laptop (stdio + env vars) không đi theo; phải khai lại trong environment.
 
 **Giải thích:** Cloud session không thấy process local: stdio chết (không có binary trên môi trường cloud), env vars trên laptop cũng không tồn tại ở đó. Phải cấu hình lại servers/vars/setup script trong environment.
 
 **Khi nào áp dụng:** trước lần `--cloud` đầu tiên của repo. Checklist: servers → vars → setup script → chạy thử.
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```bash
 # Trong terminal đã login Sub:
@@ -388,14 +398,15 @@ Local có Postgres stdio → cloud không có → trong environment khai DB URL 
 
 ## 10. Skill vs MCP — khi nào viết skill kèm? (MCP = kết nối, skill = cách dùng đúng)
 
-> **Câu hỏi:** Team dùng chung 1 MCP mà mỗi người gọi 1 kiểu, sai schema hoài — làm sao cho đồng nhất?
+> **Hỏi ngắn gọn:** team dùng chung 1 MCP mà mỗi người gọi 1 kiểu, sai schema hoài — làm sao cho đồng nhất?
+>
 > **Trả lời 1 câu:** Viết kèm 1 skill — MCP cho bạn *kết nối* (gọi được API), skill dạy model gọi đúng chuẩn.
 
 **Giải thích:** Team dùng sâu 1 MCP mà không có skill kèm thì mỗi người gọi 1 kiểu, sai schema liên tục. Skill ghi rõ schema nào, format nào, limit nào, lỗi nào bỏ qua — model đọc 1 lần là khỏi đoán.
 
 **Khi nào áp dụng:** MCP nào team gọi >5 lần/tuần + hay sai schema → viết skill. MCP dùng 1 lần/tháng → khỏi.
 
-**Ví dụ:** skill `linear-triage` (kèm MCP Linear):
+**Kiểm tra nhanh:** skill `linear-triage` (kèm MCP Linear):
 
 ```markdown
 ---
@@ -421,13 +432,15 @@ Section này trả lời câu: đi hết 10 câu trên mà server vẫn không l
 4. `claude doctor` — quét `.mcp.json` hardcode secret, tools thừa.
 5. `/debug` — session vẫn lạ → chẩn đoán; `/bug` nếu nghi lỗi core.
 
-Thứ tự debug chung cho mọi lỗi (không chỉ lỗi MCP): `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` — chi tiết ở [FAQ 08 — lỗi thường gặp](08-loi-thuong-gap-troubleshooting.md).
+**Kiểm tra nhanh:**
 
 ```bash
 /mcp
 /mcp reconnect github
 claude mcp get github
 ```
+
+Thứ tự debug chung cho mọi lỗi (không chỉ lỗi MCP): `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` — chi tiết ở [FAQ 08 — lỗi thường gặp](08-loi-thuong-gap-troubleshooting.md).
 
 ---
 

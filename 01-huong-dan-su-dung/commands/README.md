@@ -1,14 +1,45 @@
-# Index 78 lệnh Claude Code (theo nhóm)
+# /commands — index 78 lệnh slash Claude Code chia theo 5 nhóm
 
-> **Bài này cho ai:** bạn đã quen Claude Code và cần tra nhanh một lệnh slash cụ thể.
-> **Cần gì trước:** đã đọc [04 — slash commands toàn tập](../04-slash-commands-toan-tap.md).
-> **Đọc xong bạn làm được:** biết lệnh nào thuộc nhóm nào, mức rủi ro ra sao, và mở đúng file để đọc chi tiết.
-> **Thời gian:** tra 1 lệnh ~10 giây.
+> **Loại:** index nhóm lệnh · **Nhóm:** commands · **Mức rủi ro:** không (chỉ trỏ đường vào)
+> **Nói nôm na:** file này cho bạn tra nhanh: lệnh nào thuộc nhóm nào, rủi ro ra sao, mở file nào đọc chi tiết. Không chạy gì cả, chỉ là bản đồ.
 
-Cách tra 10 giây: biết tên lệnh → `Ctrl+F` tìm `/tên` trong file này → mở `commands/<nhóm>/<lệnh>/`.
-Chưa biết tên → đọc mô tả nhóm bên dưới → vào README nhóm → chọn lệnh.
-Mỗi lệnh 1 file ~60 dòng theo 7 mục: nói nôm na → khi nào dùng → cách gọi → ví dụ thật + cách kiểm tra → lỗi hay gặp → tham khảo.
-Trong session gõ `/` để xem lệnh nào hiện ở môi trường của bạn (version/provider khác nhau hiện khác nhau).
+## Khi nào dùng
+
+- Bạn biết tên lệnh rồi (vd `/compact`) → `Ctrl+F` tìm `/compact` trong file này → mở `commands/<nhóm>/<lệnh>/` đọc chi tiết.
+- Bạn chưa biết tên → đọc 1 dòng mô tả của từng nhóm bên dưới → vào README nhóm → chọn lệnh.
+- Bạn không cần học hết 78 lệnh: đọc 3 lệnh trụ của mỗi nhóm ("Bộ 3 phải nhớ") trước, còn lại tra khi gặp việc thật.
+
+## Cách gọi
+
+```bash
+# gõ / trong session Claude Code: máy bạn hiện lệnh nào theo version/provider
+/
+# ngoài session: Ctrl+F file này để tìm tên lệnh
+```
+
+Kiểm tra lệnh có ở máy bạn không: mở session, gõ `/`, cuộn xem danh sách — version/provider khác nhau hiện lệnh khác nhau.
+
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
+
+- Bạn cần biết `/rewind` rủi ro thế nào và đọc chi tiết ở đâu: `Ctrl+F` tìm `/rewind` trong file này → thấy nhóm **session-context**, rủi ro "Có" → mở `commands/session-context/rewind/README.md`.
+- Mong đợi: file chi tiết 7 mục đầy đủ, có mục "Lỗi thường gặp".
+- Kiểm tra (≤30 giây): mở file đó, xem có bảng `Triệu chứng | Vì sao | Cách sửa` không; xem xong `Ctrl+F` tiếp lệnh khác, thấy mỗi lệnh 1 file riêng.
+
+## Lỗi thường gặp
+
+| Triệu chứng | Vì sao | Cách sửa |
+|---|---|---|
+| Bạn tìm `/ultraplan` trong file này mà không thấy | Lệnh này bị gỡ w32/2026, thay bằng plan mode | Dùng `/plan`, xem group model-mode |
+| Bạn mở 1 file lệnh mà không có mục "Lỗi thường gặp" | File cũ chưa cập nhật khung 7 mục (A6) | Chạy `claude update` rồi đọc lại, hoặc báo repo thiếu mục 6 |
+| Bạn thấy lệnh không hiện khi gõ `/` trong session | Version Claude Code máy bạn thấp hơn version tối thiểu của lệnh | Chạy `claude --version`, update bằng `claude update` rồi thử lại |
+
+## Tham khảo
+
+- [01 — hướng dẫn sử dụng](../README.md)
+- [04 — slash commands toàn tập](../04-slash-commands-toan-tap.md)
+- [Nhóm session-context](./session-context/README.md) · [Nhóm model-mode](./model-mode/README.md) · [Nhóm code-repo](./code-repo/README.md) · [Nhóm knowledge-system](./knowledge-system/README.md) · [Nhóm auth-settings](./auth-settings/README.md)
+
+> Mẹo 1 dòng: _biết tên lệnh thì Ctrl+F trong file này là đủ, không cần đọc hết 5 nhóm._
 
 ## Phiên làm việc & Context (18 lệnh) — [`session-context/`](./session-context/README.md)
 

@@ -96,6 +96,8 @@ claude update && claude --version
 # Mở session MỚI rồi gõ lại (session cũ giữ bản cũ)
 ```
 
+**Kiểm tra nhanh:** `claude update` + `claude --version` (bên ngoài) + mở session MỚI + gõ lại lệnh X → thấy X hoạt động là xong.
+
 **Đào sâu:** [Bài 04 — slash commands toàn tập](../01-huong-dan-su-dung/04-slash-commands-toan-tap.md) · [WRITING-STYLE — B6 lệnh theo bản](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-07102026).
 
 ## 2. Hook không chạy
@@ -113,6 +115,8 @@ claude update && claude --version
 echo '{"tool_name":"Bash","tool_input":{"command":"git push origin main"}}' | ./scripts/guard-no-push-main.sh
 /status    # version đổi schema?
 ```
+
+**Kiểm tra nhanh:** `/hooks` thấy hook đã list → dry-run `echo '{...}' | ./hook.sh` trả đúng JSON → `/status` khớp version schema là xong.
 
 **Đào sâu:** [FAQ 05 — hooks](05-hooks-faq.md) · [lệnh `hooks`](../01-huong-dan-su-dung/commands/knowledge-system/hooks/README.md).
 
@@ -133,6 +137,8 @@ echo ${GITHUB_TOKEN:+token-set}
 claude mcp get github
 ```
 
+**Kiểm tra nhanh:** `/mcp` thấy server xanh → `claude mcp get <name>` thấy token/URL đúng là xong.
+
 **Đào sâu:** [FAQ 04 — MCP](04-mcp-faq.md) · [lệnh `mcp`](../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md).
 
 ## 4. Permission deny liên tục
@@ -151,6 +157,8 @@ claude mcp get github
 /permissions
 # → allow: Read, Glob, Grep, Bash(git status:*), Bash(git diff:*)
 ```
+
+**Kiểm tra nhanh:** `/permissions` thấy bản merged sạch (không deny ẩn) + pre-approve read-only đã đủ → tool chạy không bị deny là xong.
 
 **Đào sâu:** [FAQ 03 — permissions & modes](03-permissions-modes.md) · [lệnh `permissions`](../01-huong-dan-su-dung/commands/model-mode/permissions/README.md).
 
@@ -171,6 +179,8 @@ claude mcp get github
 /clear              # + paste plan đã xuất trước đó
 ```
 
+**Kiểm tra nhanh:** `/context` thấy % giảm → `/compact [focus]` chạy xong context co lại → tiếp tục mạch mà không quên rule là xong.
+
 **Đào sâu:** [FAQ 02 — model, context & token](02-model-context-token.md) · [01-context-hygiene.md](../02-tips-thuc-chien/01-context-hygiene.md) · [lệnh `context`](../01-huong-dan-su-dung/commands/session-context/context/README.md) · [lệnh `rewind`](../01-huong-dan-su-dung/commands/session-context/rewind/README.md).
 
 ## 6. Claude đọc hàng trăm file (quét loãng)
@@ -188,6 +198,8 @@ claude mcp get github
 ✅ "Chỉ đọc 5 files mày sẽ sửa: liệt kê trước, đọc sau. Không đọc node_modules, dist, docs."
 ✅ "Dùng subagent Explore quét auth, trả 10 dòng + 5 file chính"
 ```
+
+**Kiểm tra nhanh:** re-prompt scope hẹp (list 5 file sửa trước) → Claude chỉ đọc đúng files đó, không tràn vào node_modules là xong.
 
 **Đào sâu:** [07-subagents-teams-workflows.md](07-subagents-teams-workflows.md) · [01-context-hygiene.md](../02-tips-thuc-chien/01-context-hygiene.md).
 
@@ -207,6 +219,8 @@ claude mcp get github
 # "Hàm X phải trả A khi input B (hiện trả C). Chỉ sửa file Y, giữ signature. VD: input B → A."
 ```
 
+**Kiểm tra nhanh:** Double-Esc rewind về checkpoint trước khi sai → re-prompt gọn (đúng + sai + mong muốn + 1 ví dụ) → Claude trả đúng là xong.
+
 **Đào sâu:** [03-plan-first-workflow.md](../02-tips-thuc-chien/03-plan-first-workflow.md) · [lệnh `rewind`](../01-huong-dan-su-dung/commands/session-context/rewind/README.md).
 
 ## 8. Reviewer dễ dãi / khắt khe (calibration)
@@ -223,6 +237,8 @@ claude mcp get github
 "Review theo chuẩn này: [paste 3 diffs + quyết định của team].
 Chỉ báo: security, sai logic, perf >2x. Bỏ qua: style, naming trừ khi gây hiểu nhầm."
 ```
+
+**Kiểm tra nhanh:** paste 3 diffs lịch sử + định nghĩa finding explicit vào prompt review → reviewer chỉ báo đúng nhóm chuẩn (security/logic/perf), bỏ qua style là xong.
 
 **Đào sâu:** [07-subagents-teams-workflows.md](07-subagents-teams-workflows.md) · [lệnh `code-review`](../01-huong-dan-su-dung/commands/code-repo/code-review/README.md).
 
@@ -244,6 +260,8 @@ Chỉ báo: security, sai logic, perf >2x. Bỏ qua: style, naming trừ khi gâ
 npm test -- --retries 3  # hoặc loop tay 3 lần
 ```
 
+**Kiểm tra nhanh:** `npm test -- --retries 3` (hoặc loop tay 3 lần) → test xanh cả 3 lần là flaky (ghi FLAKY + tên test); đỏ cả 3 là mới debug là xong.
+
 **Đào sâu:** [04-verification-done-that.md](../02-tips-thuc-chien/04-verification-done-that.md) · [lệnh `verify`](../01-huong-dan-su-dung/commands/code-repo/verify/README.md).
 
 ## 10. 2 bản Claude / PATH lỗi / settings parse lỗi
@@ -263,6 +281,8 @@ npm uninstall -g @anthropic-ai/claude-code  # nếu duplicate (giữ native)
 python3 -c "import json; json.load(open('.claude/settings.json'))"  # check JSON
 ```
 
+**Kiểm tra nhanh:** `which -a claude` chỉ còn 1 bản + `claude doctor` báo clean + JSON settings parse được → version nhất quán, update chạy ăn là xong.
+
 **Đào sâu:** [FAQ 01 — câu 5](01-tai-khoan-pricing-cai-dat.md#5-duplicate-install-2-bản-claude-song-song--phát-hiện-và-dọn) · [lệnh `doctor`](../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md).
 
 ## 11. Cloud thiếu config local
@@ -279,6 +299,8 @@ python3 -c "import json; json.load(open('.claude/settings.json'))"  # check JSON
 /web-setup    # dựng environment từ repo
 claude --cloud "task thử"   # chạy thử trước task thật
 ```
+
+**Kiểm tra nhanh:** `/web-setup` tạo environment cloud đầy đủ → `claude --cloud "task thử"` chạy xanh (không báo thiếu X) → chạy task thật là xong.
 
 **Đào sâu:** [FAQ 04 — MCP](04-mcp-faq.md) · [FAQ 10 — CI, SDK, routines, web](10-ci-sdk-routines-web.md).
 
@@ -297,6 +319,8 @@ claude --cloud "task thử"   # chạy thử trước task thật
 /model haiku   # việc rẻ chuyển hết sang Haiku
 ```
 
+**Kiểm tra nhanh:** `/usage` thấy trần + cái gì ngốn → `/model haiku` chuyển việc rẻ sang Haiku → không còn chạm trần khi chạy tiếp là xong.
+
 **Đào sâu:** [08-tiet-kiem-cost-token.md](../02-tips-thuc-chien/08-tiet-kiem-cost-token.md) · [lệnh `usage`](../01-huong-dan-su-dung/commands/session-context/usage/README.md).
 
 ## 13. Session treo / chậm lạ
@@ -313,6 +337,8 @@ claude --cloud "task thử"   # chạy thử trước task thật
 /debug
 # Thử nhẹ → nặng: rewind → /compact → /clear → thoát mở session mới
 ```
+
+**Kiểm tra nhanh:** `/debug` chỉ ra bệnh (context/hook/MCP) → thử nhẹ → nặng: rewind → `/compact` → `/clear` → session mới chạy mượt lại là xong.
 
 **Đào sâu:** [10-debugging-power-moves.md](../02-tips-thuc-chien/10-debugging-power-moves.md) · [lệnh `debug`](../01-huong-dan-su-dung/commands/knowledge-system/debug/README.md).
 
@@ -331,6 +357,8 @@ claude --cloud "task thử"   # chạy thử trước task thật
 /bug
 claude doctor   # ngoài terminal, paste kèm
 ```
+
+**Kiểm tra nhanh:** `/status` + `/bug` (gói conversation) + `claude doctor` (bên terminal) đủ context → report gửi được lên Anthropic là xong.
 
 **Đào sâu:** [lệnh `bug`](../01-huong-dan-su-dung/commands/knowledge-system/bug/README.md) · [FAQ 01 — tài khoản, pricing & cài đặt](01-tai-khoan-pricing-cai-dat.md).
 

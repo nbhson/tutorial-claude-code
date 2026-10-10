@@ -1,6 +1,43 @@
-# Nhóm: Tri thức & Hệ thống (16 lệnh)
+# /knowledge-system — nhóm 16 lệnh tra cứu, chẩn đoán và mở rộng hệ thống
 
-> Tra cứu, chẩn đoán, mở rộng: agents, MCP, hooks, skills, debug, doctor.
+> **Loại:** index nhóm lệnh · **Nhóm:** Tri thức & Hệ thống · **Mức rủi ro:** trung bình (đụng config: hooks, MCP, plugin, skill)
+> **Nói nôm na:** nhóm này là nơi Claude "khám bệnh, mở rộng sức mạnh" — agents, MCP, hooks, skills, debug, doctor. Lệnh /hooks, /mcp, /plugin cấu hình ẩu làm mọi lệnh khác chạy sai, nên coi rủi ro là thật.
+
+## Khi nào dùng
+
+- Bạn muốn mở rộng sức mạnh Claude: cắm tool ngoài bằng /mcp, chạy subagent song song bằng /agents, biến rule hay quên thành luật cứng bằng /hooks.
+- Bạn gặp lỗi lạ (treo, chậm, trả lời vô lý) và cần "khám tổng" bằng /doctor, /debug — không tự đoán.
+- Bạn muốn dọn hệ thống tri thức: CLAUDE.md phình, skill ế, plugin lỗi — dùng /skill-doctor, /plugin-validate, /simplify.
+
+## Cách gọi
+
+```bash
+# go / trong session, go chu dau lenh de loc
+/mcp
+/hooks
+/doctor
+```
+
+Kiểm tra lệnh có ở máy bạn không: mở session, gõ `/` rồi gõ tiếp chữ đầu lệnh — version/provider khác nhau hiện lệnh khác nhau.
+
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
+
+Bạn thấy session chạy chậm / trả lời lạ, không rõ vì sao:
+
+```bash
+/doctor
+```
+
+- Mong đợi: /doctor audit repo — CLAUDE.md, permissions, MCP, hooks, plugin; báo từng mục đạt/chưa + gợi ý sửa.
+- Kiểm tra (≤30 giây): đọc output, đếm số mục "cảnh báo"; sửa rồi /doctor lại, thấy số cảnh báo giảm.
+
+## Lỗi thường gặp
+
+| Triệu chứng | Vì sao | Cách sửa |
+|---|---|---|
+| Skill không load, /skill-doctor báo "chết lâm sàng" | Skill cũ, mất body, hoặc không ai dùng (vẫn tốn context mọi turn) | Đọc output /skill-doctor, xóa skill ế, tách checklist dài khỏi CLAUDE.md sang skill |
+| MCP "disconnected" — tool ngoài không hiện, gọi tool báo lỗi | Cấu hình MCP sai, server không chạy, hoặc >~10 tool hiển thị | Gõ /mcp xem trạng thái, tắt server thừa, chạy lại; /doctor mục MCP |
+| CLAUDE.md phình tốn token mỗi turn, hoặc plugin lỗi làm lệnh chạy sai | CLAUDE.md nạp lại mọi turn (phình >200 dòng); plugin/mod không audit | Trim CLAUDE.md <200 dòng, audit bằng /plugin-validate trước khi cài plugin |
 
 ## Bộ 3 phải nhớ
 
@@ -38,9 +75,15 @@ Gõ / trong session để xem lệnh nào hiện ở máy bạn.
 ## Cách dùng nhóm này cho đúng
 
 ```bash
-# 1. Học 3 lệnh trụ trước (xem "Bộ 3 phải nhớ" ở trên)
-# 2. Còn lại tra khi gặp việc thật, đừng học hết 1 lúc
-# 3. Lỗi lạ trong nhóm này -> /status -> /doctor -> đọc lệnh tương ứng
+# 1. Hoc 3 lenh tru truoc (xem "Bo 3 phai nho" o tren)
+# 2. Con lai tra khi gap viec that, dung hoc het 1 luc
+# 3. Loi la trong nhom nay -> /status -> /doctor -> doc lenh tuong ung
 ```
 
-[← Về index tất cả lệnh](../README.md)
+## Tham khảo
+
+- [← Về index tất cả lệnh](../README.md)
+- [04 — slash commands toàn tập](../../04-slash-commands-toan-tap.md)
+- [Nhóm model-mode](../model-mode/README.md) · [Nhóm code-repo](../code-repo/README.md) · [Nhóm session-context](../session-context/README.md)
+
+> Mẹo 1 dòng: _lỗi lạ thì /doctor trước, đừng đoán — nó audit CLAUDE.md, MCP, hooks, plugin một lần._

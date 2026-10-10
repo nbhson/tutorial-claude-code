@@ -73,7 +73,7 @@ Quy tắc 1 dòng: **dữ kiện luôn nạp → CLAUDE.md, luật theo path →
 
 ## 1. Custom command và skill có phải một thứ?
 
-> **Câu hỏi:** Em thấy `.claude/commands/x.md` với `.claude/skills/x/SKILL.md` — hai thứ này giống nhau hay khác, viết mới thì dùng cái nào?
+> **Hỏi ngắn gọn:** `.claude/commands/` và `.claude/skills/` có giống nhau không, viết mới thì chọn cái nào?
 > **Trả lời 1 câu:** Cùng tạo ra `/x`, nhưng nên viết mới bằng skill vì skill thêm được auto-trigger và support files.
 
 **Giải thích:** `.claude/commands/x.md` ≡ `.claude/skills/x/SKILL.md` → cùng ra `/x`. File command cũ vẫn chạy, không vỡ. Nhưng skill mới hơn ở 3 điểm: frontmatter giàu hơn, mang được support files (scripts/references), và **auto-trigger** (model tự gọi khi description khớp, không cần bạn gõ).
@@ -93,7 +93,7 @@ Quy tắc 1 dòng: **dữ kiện luôn nạp → CLAUDE.md, luật theo path →
 
 ## 2. Skill đặt ở đâu?
 
-> **Câu hỏi:** Viết skill mới thì để ở đâu — máy em, trong repo, hay trong plugin?
+> **Hỏi ngắn gọn:** Viết skill mới thì để ở thư mục nào, đặt sao cho đúng phạm vi?
 > **Trả lời 1 câu:** 3 vị trí với phạm vi khác nhau: personal (máy bạn), project (cả team), plugin (ai cài plugin).
 
 **Giải thích:** chọn chỗ theo "ai dùng":
@@ -103,6 +103,8 @@ Quy tắc 1 dòng: **dữ kiện luôn nạp → CLAUDE.md, luật theo path →
 | Personal | `~/.claude/skills/<tên>/` | Mọi project của bạn | Workflow cá nhân (review style của bạn) |
 | Project | `.claude/skills/<tên>/` | Cả team (commit) | Chuẩn team (deploy, migrate, triage) |
 | Plugin | `<plugin>/skills/<tên>/` | Ai cài plugin | Phân phối rộng, gọi theo namespace `/plugin:skill` |
+
+**Kiểm tra nhanh:**
 
 ```bash
 ls ~/.claude/skills/
@@ -119,7 +121,7 @@ ls .claude/skills/
 
 ## 3. Frontmatter của skill gồm những gì?
 
-> **Câu hỏi:** Trong file `SKILL.md`, khối `---` ở đầu ghi được những field nào, field nào quan trọng nhất?
+> **Hỏi ngắn gọn:** Trong file `SKILL.md`, khối `---` ở đầu cần viết những gì, field nào bắt buộc?
 > **Trả lời 1 câu:** Frontmatter là "mặt tiền" model đọc để quyết định có gọi skill hay không; quan trọng nhất là `name` + `description`.
 
 **Giải thích:** bảng field đầy đủ:
@@ -156,7 +158,7 @@ allowed-tools: Bash(npm run deploy:*), Bash(npm run migrate:*), Read
 
 ## 4. `$ARGUMENTS`, `!cmd` và `${VARS}` dùng sao?
 
-> **Câu hỏi:** Làm sao đưa input động vào skill — truyền tham số, nhét output lệnh, hay trỏ đường dẫn?
+> **Hỏi ngắn gọn:** `$ARGUMENTS`, `!cmd` và `${VARS}` khác nhau thế nào, mỗi cái dùng cho việc gì?
 > **Trả lời 1 câu:** Ba cơ chế riêng: `$ARGUMENTS` nhận tham số khi gọi, `` !`cmd` `` nhét output shell thật, `${CLAUDE_SKILL_DIR}` / `${CLAUDE_PROJECT_DIR}` trỏ đường dẫn tuyệt đối.
 
 **Giải thích:** 3 cơ chế đưa input động vào skill:
@@ -178,9 +180,14 @@ Trạng thái hiện tại: !`git status --short`
 Script: ${CLAUDE_SKILL_DIR}/scripts/smoke.sh
 ```
 
+**Kiểm tra nhanh:**
+
 ```bash
+# Chạy skill thật rồi xác nhận 3 cơ chế hoạt động:
 /deploy staging
-# → $ARGUMENTS=staging, git status thật được nhét vào, smoke.sh chạy đúng path
+# → thấy "Env: staging" (=$ARGUMENTS)
+# → thấy output git status thật (không phải model đoán)
+# → smoke.sh chạy đúng path, không báo "file not found"
 ```
 
 **Khi nào áp dụng:** skill nào cũng nên có `$ARGUMENTS` (linh hoạt) + `` !`cmd` `` cho context tươi (tránh model đoán).
@@ -191,7 +198,7 @@ Script: ${CLAUDE_SKILL_DIR}/scripts/smoke.sh
 
 ## 5. Skill không auto-trigger — debug sao?
 
-> **Câu hỏi:** Viết skill xong mà model không bao giờ tự gọi — bắt đầu kiểm từ đâu?
+> **Hỏi ngắn gọn:** Tại sao skill mình viết lại không bao giờ tự chạy, chỉ chạy khi gõ tay?
 > **Trả lời 1 câu:** Kiểm 3 nguyên nhân theo thứ tự: description không khớp, `disable-model-invocation: true`, rồi `skillOverrides` tắt.
 
 **Giải thích:** 3 nguyên nhân theo thứ tự:
@@ -218,6 +225,7 @@ when_to_use: Khi user nhắc deploy/staging/prod/release/rollback.
 # Check 2 cái còn lại:
 git grep -n 'disable-model-invocation' -- .claude/skills/<tên>/
 git grep -n 'skillOverrides' -- .claude/settings*.json
+# → 2 lệnh RỖNG nghĩa: không có gì chặn auto-trigger, lỗi ở description (bước 1)
 ```
 
 **Ví dụ:** skill `triage` không bao giờ tự gọi → sửa description từ "Issue management optimization" thành "Lấy ticket Linear/Jira về tóm tắt + tạo branch. Dùng khi bắt đầu task từ ticket" → trigger ngay.
@@ -230,7 +238,7 @@ git grep -n 'skillOverrides' -- .claude/settings*.json
 
 ## 6. Có skill nào đi kèm (bundled) đáng dùng?
 
-> **Câu hỏi:** Claude Code có sẵn skill nào không phải cài, cái nào đáng thử trước?
+> **Hỏi ngắn gọn:** Có skill nào đi kèm sẵn trong Claude Code không, cái nào đáng thử trước?
 > **Trả lời 1 câu:** Có — bộ skill bundled khỏi cài; mới onboard thì thử `/doctor` + `/verify` trước.
 
 **Giải thích:** đọc bảng này khi cần biết gọi skill nào cho việc gì:
@@ -251,8 +259,9 @@ git grep -n 'skillOverrides' -- .claude/settings*.json
 
 ```bash
 /doctor
-/code-review
 /verify
+# /doctor: bảng điểm xanh → setup repo OK; có dòng đỏ → vá trước khi dùng skill khác
+# /verify: "PASS: 3/3 endpoints" → skill chạy đúng
 ```
 
 **Khi nào áp dụng:** mới onboard → thử `/doctor` + `/verify` trước. PR lớn → `/code-review`, thấy chưa đủ sâu → `/ultrareview`.
@@ -263,7 +272,7 @@ git grep -n 'skillOverrides' -- .claude/settings*.json
 
 ## 7. CLAUDE.md và skill — ranh giới ở đâu?
 
-> **Câu hỏi:** Cái gì nên để trong CLAUDE.md, cái gì tách ra skill — làm sao biết file mình đã quá dài?
+> **Hỏi ngắn gọn:** Làm sao biết CLAUDE.md của mình đã dày quá mức, nên chuyển phần nào ra ngoài?
 > **Trả lời 1 câu:** CLAUDE.md nạp lại mọi turn nên chỉ giữ dữ kiện luôn nạp; mọi thứ dài hơn đẩy sang skill/rules/hook.
 
 **Giải thích:** CLAUDE.md load mọi turn → chỉ giữ dữ kiện luôn nạp (<200 dòng). Còn lại:
@@ -291,7 +300,7 @@ wc -l CLAUDE.md
 
 ## 8. `/init` hay viết tay CLAUDE.md?
 
-> **Câu hỏi:** Repo đã có code thì dùng `/init` hay tự viết CLAUDE.md, còn project trống thì sao?
+> **Hỏi ngắn gọn:** Repo đã có code sẵn rồi thì nên tự gõ CLAUDE.md hay dùng lệnh gì?
 > **Trả lời 1 câu:** Có code → `/init` để nó quét thật rồi cắt bớt; repo trống → copy `templates/CLAUDE.md`.
 
 **Giải thích:**
@@ -318,7 +327,7 @@ cp templates/CLAUDE.md ./CLAUDE.md
 
 ## 9. `context: fork` là gì?
 
-> **Câu hỏi:** `context: fork` trong skill khác gì chạy bình thường, khi nào nên bật?
+> **Hỏi ngắn gọn:** `context: fork` khác chạy skill bình thường ở điểm nào, khi nào nên bật?
 > **Trả lời 1 câu:** Skill `context: fork` chạy trong subagent cô lập, không thấy history của phiên chính.
 
 **Giải thích:** Skill `context: fork` chạy trong subagent cô lập — không thấy history main. Agent `Explore`/`Plan` khi fork còn skip CLAUDE.md + git status để gọn. Hợp cho skill research ồn (quét 50 files, chỉ trả tóm tắt). Không hợp cho skill cần history (VD: tiếp tục implement đang dở).
@@ -337,13 +346,20 @@ model: haiku
 
 **Khi nào áp dụng:** skill đọc nhiều + trả ít (research, audit, quét) → fork. Skill viết/sửa tiếp mạch đang làm → không fork.
 
+**Kiểm tra nhanh:**
+
+```bash
+/deploy   # gọi skill có context: fork
+# → "subagent" chạy riêng rồi trả tóm tắt; session chính không bị ngập log quét
+```
+
 **Đào sâu:** [FAQ 07 — subagents & teams](07-subagents-teams-workflows.md) · [lệnh `fork`](../01-huong-dan-su-dung/commands/session-context/fork/README.md) · [Tip 07 — thiết kế skills](../02-tips-thuc-chien/07-thiet-ke-skills.md)
 
 ---
 
 ## 10. `allowed-tools` trong skill để làm gì?
 
-> **Câu hỏi:** `allowed-tools` có phải để skill chạy lệnh không bị hỏi quyền không?
+> **Hỏi ngắn gọn:** `allowed-tools` có ý nghĩa gì, không điền thì skill chạy bị hỏi quyền liên tục phải không?
 > **Trả lời 1 câu:** `allowed-tools` pre-approve sẵn tool skill cần, để trong lượt gọi model đỡ bị hỏi/deny.
 
 **Giải thích:** `allowed-tools` pre-approve sẵn tools skill cần → trong lượt gọi skill, model đỡ bị hỏi/deny. Không phải bypass org — deny/managed vẫn thắng.
@@ -360,6 +376,13 @@ allowed-tools: Read, Glob, Grep, Bash(git checkout:*), Bash(gh issue:*)
 
 Skill deploy cần `npm run migrate` mà không pre-approve → headless deny (xem [FAQ 03 câu 6](03-permissions-modes.md)). Thêm `allowed-tools` đúng → chạy mượt.
 
+**Kiểm tra nhanh:**
+
+```bash
+claude -p "chạy skill triage ticket 123"
+# → không hiện dialog hỏi quyền nào, chạy xong; thiếu tool → log báo deny
+```
+
 **Khi nào áp dụng:** skill nào chạy `-p`/background → điền `allowed-tools` hẹp-đúng, test 1 lần.
 
 **Đào sâu:** [FAQ 03 — permissions & modes](03-permissions-modes.md) · [lệnh `permissions`](../01-huong-dan-su-dung/commands/model-mode/permissions/README.md) · [Bài 05 — skills & custom commands](../01-huong-dan-su-dung/05-skills-custom-commands.md)
@@ -368,7 +391,7 @@ Skill deploy cần `npm run migrate` mà không pre-approve → headless deny (x
 
 ## 11. `${CLAUDE_SKILL_DIR}` để làm gì?
 
-> **Câu hỏi:** Skill có kèm script thì làm sao trỏ đúng chỗ dù skill nằm trên máy hay trong plugin?
+> **Hỏi ngắn gọn:** Skill có script kèm thì làm sao trỏ đúng thư mục của skill dù nó ở đâu?
 > **Trả lời 1 câu:** Skill mang được support files; `${CLAUDE_SKILL_DIR}` trỏ đúng thư mục skill ở bất kỳ vị trí nào.
 
 **Giải thích:** Skill có thể mang support files: `scripts/`, `references/`, `templates/`. `${CLAUDE_SKILL_DIR}` trỏ đúng folder skill dù nó đặt ở personal/project/plugin → scripts chạy đúng chỗ.
@@ -385,6 +408,14 @@ Skill deploy cần `npm run migrate` mà không pre-approve → headless deny (x
 ```markdown
 Smoke: `${CLAUDE_SKILL_DIR}/scripts/smoke.sh $ARGUMENTS`
 Chi tiết: xem `${CLAUDE_SKILL_DIR}/references/runbook.md`
+```
+
+**Kiểm tra nhanh:**
+
+```bash
+# Di skill (personal/project/plugin) rồi gọi lại:
+/deploy staging
+# → smoke.sh + runbook.md đều resolve đúng chỗ, không "file not found"
 ```
 
 **Khi nào áp dụng:** skill có script/checklist dùng lại → đóng gói chung, đừng để script lang thang ngoài repo.

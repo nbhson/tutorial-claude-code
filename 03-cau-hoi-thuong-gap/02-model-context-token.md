@@ -94,8 +94,9 @@ flowchart TD
 
 ## 1. Đổi model giữa session thế nào (`/model`, `/effort`, `/fast`)?
 
-> **Câu hỏi:** Đang chạy dở session mà muốn đổi sang model khác thì gõ gì, có cần thoát ra không?
-> **Trả lời 1 câu:** Không cần thoát session — gõ `/model` để chọn họ model, `/effort` chỉnh độ suy nghĩ sâu, `/fast` ép nhanh khi việc đơn giản.
+> **Hỏi ngắn gọn:** đang chạy dở session muốn chuyển sang model khác thì gõ gì, có phải thoát ra không?
+>
+> **Trả lời 1 câu:** Không cần thoát — gõ `/model` đổi họ model, `/effort` chỉnh độ suy nghĩ sâu, `/fast` ép nhanh khi việc đơn giản.
 
 **Giải thích:** Ba lệnh làm 3 việc khác nhau và đổi được bất cứ lúc nào, không restart:
 
@@ -105,7 +106,7 @@ flowchart TD
 
 Đổi theo phase công việc, không đổi theo cảm xúc — route chuẩn ở [câu 2](#2-route-model-chuẩn-haiku--sonnet--opus-khi-nào).
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```bash
 /model              # xem model hiện tại
@@ -125,7 +126,8 @@ Session đang Sonnet, gặp bug race condition 3 ngày chưa ra → `/model opus
 
 ## 2. Route model chuẩn: Haiku / Sonnet / Opus khi nào?
 
-> **Câu hỏi:** Việc nào thì xài Haiku, việc nào xài Sonnet, việc nào phải để Opus?
+> **Hỏi ngắn gọn:** việc gì thì xài Haiku, việc gì xài Sonnet, việc gì phải để Opus?
+>
 > **Trả lời 1 câu:** Haiku quét việc ồn, Sonnet code việc thường, Opus soi việc khó — mỗi họ sinh ra cho 1 việc khác nhau.
 
 **Giải thích:** Dùng sai model = vừa đắt vừa dở:
@@ -136,7 +138,7 @@ Session đang Sonnet, gặp bug race condition 3 ngày chưa ra → `/model opus
 
 Feature nào cũng đi đủ 3 phase. Đừng dùng Opus để rewrite comment, đừng dùng Haiku để thiết kế auth.
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```bash
 # Phase research (rẻ): Haiku quét
@@ -169,12 +171,13 @@ Opus:   review security + race condition (đắt, xứng đáng)
 
 ## 3. Context đầy thì cứu thế nào? (4 cách cứu chuẩn)
 
-> **Câu hỏi:** Context sắp hết thì làm sao, có cách nào cứu mà không mất việc đang làm không?
+> **Hỏi ngắn gọn:** context sắp hết thì làm sao, có cách nào cứu mà không mất việc đang làm không?
+>
 > **Trả lời 1 câu:** Cứu theo thứ tự nhẹ → nặng: `/compact [focus]` → `/clear` + paste plan → rewind double-Esc → đẩy research sang subagent.
 
-**Giải thích:** Dấu hiệu context đầy không phải model dở — Claude quên rule đầu session, trả lời lan man, sửa A hỏng B, đọc lại file vừa đọc. Thấy 1 trong các dấu hiệu này là context đang loãng, và có 4 cách cứu theo thứ tự nhẹ → nặng: giữ session bằng tóm tắt (`/compact`), reset sạch rồi dán lại plan (`/clear`), quay về checkpoint (`rewind`), hoặc đẩy việc ồn sang subagent để main context khỏi phình từ đầu. Thấy dấu hiệu loãng thì chạy `/context` trước để xác nhận, rồi mới compact — đừng cố "nói thêm cho nó nhớ" khi đã đầy, càng nói càng loãng.
+**Giải thích:** Dấu hiệu context đầy không phải model dở — Claude quên rule đầu session, trả lời lan man, sửa A hỏng B, đọc lại file vừa đọc. Thấy 1 trong các dấu hiệu này là context đang loãng. Thấy dấu hiệu thì chạy `/context` trước để xác nhận rồi mới compact — đừng cố "nói thêm cho nó nhớ" khi đã đầy, càng nói càng loãng.
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 Cách 1 — `/compact [focus]` (nhẹ nhất, giữ session):
 
@@ -213,14 +216,15 @@ Cách 4 — Đẩy research sang subagent (phòng bệnh):
 
 ## 4. Giới hạn subagent descriptions 15k tokens là gì?
 
-> **Câu hỏi:** Lúc mở Claude Code có warning nói gì đó về subagent description, ý nó là gì?
+> **Hỏi ngắn gọn:** lúc mở Claude Code có warning nhắc về subagent description — ý nó là gì?
+>
 > **Trả lời 1 câu:** Tổng `description` của tất cả custom subagents vượt ~15k tokens thì bị cảnh báo lúc startup.
 
 **Giải thích:** Mỗi subagent có `description` — dòng mô tả "lúc nào thì gọi nó". Descriptions của TẤT CẢ custom subagents (trừ built-in) được nạp 1 lần lúc khởi động và nằm yên đó suốt session, nên chúng là khoản bạn trả ngay cả khi không gọi agent nào. Description kể cả cách implement (300 chữ) làm phình nhanh hơn nhiều so với 1 câu use case, đồng thời làm model chọn agent sai (đọc nhiều, dễ nhầm). Thấy warning xuất hiện lúc startup là cắt ngay.
 
 Quy tắc: description = "khi nào gọi", body = "làm thế nào".
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```markdown
 ---  # ❌ DÀI: description 300 chữ kể cả cách implement
@@ -246,12 +250,13 @@ Mong đợi: 20 agents × 800 tokens description = 16k → warning. Cắt mỗi 
 
 ## 5. Multi-agent tốn bao nhiều token? (overhead ~20k, ~3–4x)
 
-> **Câu hỏi:** Chia việc cho nhiều agent chạy song song có tốn kém hơn làm tay không?
-> **Trả lời 1 câu:** Tốn hơn — mỗi lần spawn subagent mất ~20k tokens overhead, và multi-agent hay gấp ~3–4x tokens so với làm tuần tự 1 luồng.
+> **Hỏi ngắn gọn:** chia việc cho nhiều agent chạy song song có tốn kém hơn làm tay không?
+>
+> **Trả lời 1 câu:** Tốn hơn — mỗi lần spawn subagent mất ~20k tokens overhead, và multi-agent gấp ~3–4x so với làm tuần tự 1 luồng.
 
-**Giải thích:** Mỗi lần spawn subagent phải đóng gói system prompt riêng + copy context + bộ tools → ~20k tokens overhead trước khi làm việc thật (đây là số ước tính cộng đồng, không phải số chính thức của Anthropic). Multi-agent song song vì thế tốn ~3–4x so với làm tuần tự. Trần thực tế: 3–5 concurrent — hơn nữa thì tiền tăng mà tốc độ không tăng (model + API limits). Trước khi spawn, hỏi "việc này có đủ ồn/độc lập để đáng 20k không" — không thì làm trực tiếp.
+**Giải thích:** Mỗi lần spawn subagent phải đóng gói system prompt riêng + copy context + bộ tools → ~20k tokens overhead trước khi làm việc thật (số ước tính cộng đồng, không phải số chính thức của Anthropic). Multi-agent song song vì thế tốn ~3–4x so với tuần tự. Trần thực tế: 3–5 concurrent — hơn nữa thì tiền tăng mà tốc độ không tăng (model + API limits). Trước khi spawn, hỏi "việc này có đủ ồn/độc lập để đáng 20k không" — không thì làm trực tiếp.
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```text
 1 subagent research nhỏ  = ~20k overhead + ~5k việc thật  ≈ 25k
@@ -271,12 +276,13 @@ Single-thread đọc 10 files gọn = ~10-15k (RẺ HƠN NHIỀU)
 
 ## 6. MCP nhiều có sao không? (trần ~10 tools, sweet spot 3–6 servers)
 
-> **Câu hỏi:** Cài thêm MCP server có làm Claude mạnh thêm không?
+> **Hỏi ngắn gọn:** cài thêm MCP server có làm Claude mạnh thêm không?
+>
 > **Trả lời 1 câu:** Không — quá ~10 tools visible là model chọn sai tool, bỏ sót tool; sweet spot là 3–6 servers thực dùng.
 
-**Giải thích:** Mỗi MCP server expose tools vào context ngay cả khi bạn không gọi tới, nên không phải "càng nhiều càng mạnh" mà là "càng nhiều càng loãng": quá ~10 tools visible thì model bắt đầu chọn sai tool, bỏ sót tool, gọi thừa. Sweet spot: **3–6 servers thực dùng** (ví dụ GitHub + Playwright + DB + search + tickets). Server nào 30+ tools mà tuần dùng 1 lần thì disable khi không cần; mỗi tháng mở `/mcp` 1 lần, tắt server 3 tháng không đụng.
+**Giải thích:** Mỗi MCP server expose tools vào context ngay cả khi bạn không gọi tới, nên không phải "càng nhiều càng mạnh" mà là "càng nhiều càng loãng": quá ~10 tools visible thì model bắt đầu chọn sai tool, bỏ sót tool, gọi thừa. Server nào 30+ tools mà tuần dùng 1 lần thì disable khi không cần; mỗi tháng mở `/mcp` 1 lần, tắt server 3 tháng không đụng.
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```bash
 /mcp                # list servers + tools count
@@ -292,7 +298,8 @@ Gắn 12 servers (120 tools) → `/usage` thấy MCP ngốn 8k/session mà accur
 
 ## 7. CLAUDE.md bao nhiều dòng là đủ? (<200 dòng)
 
-> **Câu hỏi:** CLAUDE.md viết bao nhiều dòng là vừa, dài thêm có sao không?
+> **Hỏi ngắn gọn:** CLAUDE.md viết bao nhiêu dòng là vừa, dài thêm có sao không?
+>
 > **Trả lời 1 câu:** Giữ dưới 200 dòng — vì nó được nạp lại mỗi turn, nên mỗi dòng thừa là tiền bạn trả mãi mãi.
 
 **Giải thích:** CLAUDE.md load MỌI turn → dài hơn 200 dòng là vừa loãng signal vừa tốn token mỗi session. Quy tắc tách:
@@ -304,7 +311,7 @@ Gắn 12 servers (120 tools) → `/usage` thấy MCP ngốn 8k/session mà accur
 
 Mỗi tháng `wc -l` 1 lần: vượt 150 → vàng, vượt 300 → đỏ, tách ngay.
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```bash
 wc -l CLAUDE.md
@@ -319,8 +326,9 @@ CLAUDE.md 320 dòng → `/doctor` báo đỏ → tách 4 khối theo thư mục 
 
 ## 8. Skills tốn bao nhiều token? (~100 tokens, rẻ nhất)
 
-> **Câu hỏi:** Thêm skill vào project có tốn thêm token không?
-> **Trả lời 1 câu:** Skill chưa trigger chỉ tốn tên + description (~100 tokens lúc start), body chỉ load khi model thật sự gọi.
+> **Hỏi ngắn gọn:** thêm skill vào project có tốn thêm token không?
+>
+> **Trả lời 1 câu:** Chưa trigger, skill chỉ tốn tên + description (~100 tokens lúc start); body chỉ load khi model thật sự gọi.
 
 **Giải thích:** Đây là lý do skill là extension RẺ NHẤT: MCP tools thì luôn visible trong context, subagent mỗi lần spawn ~20k, CLAUDE.md dài thì load mọi turn — còn skill chỉ trả tiền khi dùng. So ra:
 
@@ -332,7 +340,7 @@ CLAUDE.md 320 dòng → `/doctor` báo đỏ → tách 4 khối theo thư mục 
 
 Có procedure mới thì viết skill đầu tiên, đừng nhét vào CLAUDE.md, đừng spawn agent chỉ để "nhớ quy trình".
 
-**Ví dụ:** Ba dòng trên copy-paste được — tự đếm trong project của bạn: mở `/agents` và `/mcp` để xem mỗi extension đang chiếm bao nhiều dòng mô tả, rồi đối chiếu với số token startup ở trên.
+**Kiểm tra nhanh:** Ba dòng trên copy-paste được — tự đếm trong project của bạn: mở `/agents` và `/mcp` để xem mỗi extension đang chiếm bao nhiều dòng mô tả, rồi đối chiếu với số token startup ở trên.
 
 **Đào sâu:** [FAQ 06 — skills, commands, CLAUDE.md](06-skills-commands-claude-md.md) · [bài 05 — skills & custom commands](../01-huong-dan-su-dung/05-skills-custom-commands.md) · [bài 07 tips — thiết kế skills](../02-tips-thuc-chien/07-thiet-ke-skills.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-contexttoken)
 
@@ -340,12 +348,13 @@ Có procedure mới thì viết skill đầu tiên, đừng nhét vào CLAUDE.md
 
 ## 9. Hooks tốn tokens không? (0 model tokens + bắt buộc thực thi)
 
-> **Câu hỏi:** Quy tắc viết vào hook có tốn token như viết vào CLAUDE.md không?
-> **Trả lời 1 câu:** Không — hook shell chạy hoàn toàn ngoài model nên tốn 0 model tokens, và là thứ DUY NHẤT vừa miễn phí vừa bắt buộc thực thi.
+> **Hỏi ngắn gọn:** quy tắc viết vào hook có tốn token như viết vào CLAUDE.md không?
+>
+> **Trả lời 1 câu:** Không — hook shell chạy ngoài model nên tốn 0 model tokens, và là thứ DUY NHẤT vừa miễn phí vừa bắt buộc thực thi.
 
 **Giải thích:** Hook là script do CLI tự chạy mỗi lần tool chạy, model không nhìn thấy và không thể "quên" như một rule trong CLAUDE.md. Luật nào quan trọng + check được bằng script thì viết hook thay vì gõ chữ rồi cầu mong model nhớ. Rule nào đã nhắc 3 lần mà model vẫn quên (format, không commit secret, chạy test sau sửa) → chuyển thành hook.
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```json
 {
@@ -363,20 +372,21 @@ Mỗi lần sửa file tự lint, tốn 0 token model, không bao giờ miss.
 
 ## 10. `/usage` vs `/cost` vs `/context` — xem cái nào khi nào?
 
-> **Câu hỏi:** Ba lệnh `/context`, `/cost`, `/usage` khác nhau lúc nào, nên gõ cái nào?
-> **Trả lời 1 câu:** `/context` xem context đầy bao nhiều, `/cost` xem session tốn bao nhiều tiền, `/usage` xem hạng mục nào ngốn nhất và rate limit còn bao nhiều.
+> **Hỏi ngắn gọn:** ba lệnh `/context`, `/cost`, `/usage` khác nhau chỗ nào, nên gõ cái nào?
+>
+> **Trả lời 1 câu:** `/context` xem context đầy bao nhiêu, `/cost` xem session tốn bao nhiêu tiền, `/usage` xem hạng mục nào ngốn nhất và rate limit còn bao nhiêu.
 
 **Giải thích:** 3 lệnh đo 3 thứ khác nhau, đừng xem 1 mà đoán 3:
 
 | Lệnh | Trả lời câu hỏi | Dùng khi nào |
 |---|---|---|
-| `/context` | Context đầy bao nhiều %? Cái gì ngốn? | Thấy Claude loãng, quên rule |
-| `/cost` | Session này tốn bao nhiều tiền? | Cuối session, muốn biết bill |
+| `/context` | Context đầy bao nhiêu %? Cái gì ngốn? | Thấy Claude loãng, quên rule |
+| `/cost` | Session này tốn bao nhiêu tiền? | Cuối session, muốn biết bill |
 | `/usage` | Breakdown theo skills/subagents/plugins/MCP + rate limits? | Cuối tuần, tìm chỗ tốn để cắt |
 
 Xem `/context` trong session (khi bắt đầu loãng), `/cost` cuối session, `/usage` cuối tuần — xem cả `/cost` và `/usage` chứ không xem 1 cái rồi đoán.
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```bash
 /context    # đầy >70% → compact ngay
@@ -400,12 +410,14 @@ Section này trả lời câu: làm theo 10 câu trên mà vẫn không ổn th�
 4. `/compact [focus]` hoặc `/clear` + paste plan — cứu session.
 5. `/debug` — session vẫn lạ sau khi đã gọn → chẩn đoán sâu.
 
-Thứ tự debug chung cho mọi lỗi (không chỉ lỗi context): `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` — chi tiết ở [FAQ 08](08-loi-thuong-gap-troubleshooting.md).
+**Kiểm tra nhanh:**
 
 ```bash
 /context
 /compact auth-flow
 ```
+
+Thứ tự debug chung cho mọi lỗi (không chỉ lỗi context): `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` — chi tiết ở [FAQ 08](08-loi-thuong-gap-troubleshooting.md).
 
 ---
 
@@ -413,7 +425,7 @@ Thứ tự debug chung cho mọi lỗi (không chỉ lỗi context): `/status` �
 
 - Lệnh liên quan:
   - [../01-huong-dan-su-dung/commands/model-mode/model/README.md](../01-huong-dan-su-dung/commands/model-mode/model/README.md) — đổi model giữa session
-  - [../01-huong-dan-su-dung/commands/session-context/context/README.md](../01-huong-dan-su-dung/commands/session-context/context/README.md) — xem context đầy bao nhiều
+  - [../01-huong-dan-su-dung/commands/session-context/context/README.md](../01-huong-dan-su-dung/commands/session-context/context/README.md) — xem context đầy bao nhiêu
   - [../01-huong-dan-su-dung/commands/session-context/compact/README.md](../01-huong-dan-su-dung/commands/session-context/compact/README.md) — cứu context nhẹ nhất
   - [../01-huong-dan-su-dung/commands/session-context/clear/README.md](../01-huong-dan-su-dung/commands/session-context/clear/README.md) — reset sạch + paste plan
   - [../01-huong-dan-su-dung/commands/session-context/cost/README.md](../01-huong-dan-su-dung/commands/session-context/cost/README.md) — tiền session hiện tại

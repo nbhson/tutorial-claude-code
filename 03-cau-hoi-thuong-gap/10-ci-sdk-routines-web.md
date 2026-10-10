@@ -108,6 +108,8 @@ jobs:
       - run: python3 -c "import json; print(json.load(open('review.json'))['result'])"
 ```
 
+**Kiểm tra nhanh:** chạy `claude -p "ping" --output-format json --permission-mode dontAsk --allowedTools "Read"` → JSON trả về ping, exit code 0 là xong.
+
 **Đào sâu:** [FAQ 01 — tài khoản, pricing & cài đặt](01-tai-khoan-pricing-cai-dat.md) · [FAQ 03 — permissions & modes](03-permissions-modes.md) · [FAQ 09 — bảo mật & riêng tư](09-bao-mat-quyen-rieng-tu.md).
 
 ## 2. `Setup` hook event để làm gì?
@@ -135,6 +137,8 @@ claude -p "review diff" --init --output-format json --permission-mode dontAsk \
 claude -p "" --init-only
 ```
 
+**Kiểm tra nhanh:** `claude -p "" --init-only` exit 0 (env đủ, không tốn task) → chạy task thật với `--init` xanh là xong.
+
 **Đào sâu:** [FAQ 05 — hooks](05-hooks-faq.md) · [FAQ 08 — lỗi thường gặp](08-loi-thuong-gap-troubleshooting.md).
 
 ## 3. Routines (`/schedule`) là gì?
@@ -161,6 +165,8 @@ Mỗi sáng 8h: tóm tắt PRs mở + CI đỏ + issues mới (repo X).
 Verify: mỗi mục kèm link. Không tự merge. Gửi digest về Slack #dev.
 ```
 
+**Kiểm tra nhanh:** `/schedule` tạo xong → routine chạy đúng giờ theo prompt → digest ra đủ mục kèm link, không tự merge là xong.
+
 **Đào sâu:** [FAQ 01 — tài khoản, pricing & cài đặt](01-tai-khoan-pricing-cai-dat.md) · [FAQ 09 — bảo mật & riêng tư](09-bao-mat-quyen-rieng-tu.md).
 
 ## 4. Bắt đầu cloud session từ terminal?
@@ -183,6 +189,8 @@ claude --cloud "migrate endpoint X sang v2, mở PR"
 # → cloud tự sửa + push branch (Accept edits) hoặc trình plan (Plan)
 ```
 
+**Kiểm tra nhanh:** `/web-setup` tạo environment (token sync, MCP + vars khai xong) → `claude --cloud "task thử"` chạy xanh (không báo thiếu đồ) → chạy task thật là xong.
+
 **Đào sâu:** [Bài 02 — các bề mặt: terminal/IDE/web/desktop](../01-huong-dan-su-dung/02-cac-be-mat-terminal-ide-web-desktop.md) · [FAQ 03 — permissions & modes](03-permissions-modes.md).
 
 ## 5. Teleport là gì?
@@ -203,6 +211,8 @@ claude --cloud "migrate endpoint X sang v2, mở PR"
 # Ở nhà mở claude.ai → resume session sáng nay
 /teleport
 ```
+
+**Kiểm tra nhanh:** `/teleport` lên cloud → session hiện y mạch trên claude.ai (đủ context) → chạy tiếp xanh là xong.
 
 **Đào sâu:** [lệnh `teleport`](../01-huong-dan-su-dung/commands/auth-settings/teleport/README.md) · [Bài 02 — các bề mặt](../01-huong-dan-su-dung/02-cac-be-mat-terminal-ide-web-desktop.md).
 
@@ -225,6 +235,8 @@ agent = ClaudeAgent(
 result = agent.run("triage ticket X")
 ```
 
+**Kiểm tra nhanh:** build agent SDK với `tools`/`permissions` hẹp + `setting_sources=["project"]` → agent chạy đúng scope config, không load `~/.claude/` là xong.
+
 **Đào sâu:** [Bài 12 — Agent SDK, CI/CD](../01-huong-dan-su-dung/12-agent-sdk-ci-cd-automation.md) · [lệnh `claude-api`](../01-huong-dan-su-dung/commands/knowledge-system/claude-api/README.md).
 
 ## 7. `claude mcp serve` là gì?
@@ -242,6 +254,8 @@ result = agent.run("triage ticket X")
 claude mcp serve --transport stdio
 # → hệ khác add như 1 MCP server stdio bình thường
 ```
+
+**Kiểm tra nhanh:** chạy `claude mcp serve --transport stdio` → hệ khác add được như 1 MCP server stdio + gọi được tool là xong.
 
 **Đào sâu:** [FAQ 04 — MCP](04-mcp-faq.md) · [lệnh `mcp-serve`](../01-huong-dan-su-dung/commands/knowledge-system/mcp-serve/README.md).
 
@@ -268,6 +282,8 @@ claude mcp serve --transport stdio
 /insights    # thói quen team (HTML)
 /extra-usage  # usage vượt gói?
 ```
+
+**Kiểm tra nhanh:** `/stats` (token cá nhân) + `/insights` (habits HTML) + `/extra-usage` (vượt gói) → thấy đủ chỉ số theo plan là xong.
 
 **Đào sâu:** [lệnh `insights`](../01-huong-dan-su-dung/commands/knowledge-system/insights/README.md) · [lệnh `stats`](../01-huong-dan-su-dung/commands/knowledge-system/stats/README.md) · [FAQ 09 — bảo mật & riêng tư](09-bao-mat-quyen-rieng-tu.md).
 
@@ -313,6 +329,8 @@ jobs:
         env: { ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }} }
 ```
 
+**Kiểm tra nhanh:** chạy workflow trên PR thật → job `secrets` ra "secrets clean" + `doctor-gate` ra điểm ≥70 + `review` ra `review.json` hợp lệ là xong.
+
 **Đào sâu:** [lệnh `doctor`](../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md) · [FAQ 08 — lỗi thường gặp](08-loi-thuong-gap-troubleshooting.md) · [FAQ 03 — permissions & modes](03-permissions-modes.md).
 
 ## 10. Checklist automation mới trước khi bật?
@@ -337,6 +355,8 @@ claude -p "<task>" --output-format json --permission-mode dontAsk --allowedTools
 # 5. Verify gắn chưa? (ai check output? tests? human?)
 /verify
 ```
+
+**Kiểm tra nhanh:** `/permissions` (allowlist hẹp, không bypass ngoài sandbox) → `git grep -E 'ghp_|sk-ant_' -- .mcp.json .claude/ .` ra rỗng → `claude -p` chạy tay 1 lần xanh → `/hooks` + `/verify` OK → bật được automation là xong.
 
 **Đào sâu:** [FAQ 05 — hooks](05-hooks-faq.md) · [FAQ 03 — permissions & modes](03-permissions-modes.md) · [FAQ 08 — lỗi thường gặp](08-loi-thuong-gap-troubleshooting.md).
 

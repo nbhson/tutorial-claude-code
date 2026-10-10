@@ -74,7 +74,7 @@ flowchart TD
 
 ## 1. Claude Code có đọc hết máy tôi không? (working dirs + `--add-dir`)
 
-> **Câu hỏi:** Claude Code có thấy và đọc được mọi file trên máy tôi không, hay nó bị giới hạn ở đâu đó?
+> **Hỏi ngắn gọn:** Claude Code có thể tự đọc mọi file trên máy tôi không, hay chỉ đọc trong phạm vi nào?
 > **Trả lời 1 câu:** Không — nó chỉ chạm được các thư mục nằm trong working dirs; ngoài danh sách đó nó không đọc được, muốn mở rộng thì phải thêm bằng `--add-dir`.
 
 **Giải thích:** Danh sách working dirs được quản lý ở `/permissions` (mục working directories). Nguyên tắc an toàn là giữ danh sách hẹp nhất có thể: đừng `--add-dir` cả home chỉ để phục vụ một task nhỏ, và đừng `bypassPermissions` trên máy dev. Thêm dir thừa đúng bằng mở rộng vùng nổ (blast radius) khi có lệnh ngáo chạy trong session.
@@ -85,6 +85,7 @@ flowchart TD
 
 ```bash
 /permissions    # xem working dirs hiện tại
+# → danh sách chỉ có repo hiện tại (hoặc 1-2 thư mục phụ), không thấy ~/
 ```
 
 ```bash
@@ -101,7 +102,7 @@ Task chỉ cần `api/` mà bạn mở cả repo + home → chỉ cần 1 lệnh
 
 ## 2. Deny nào không bypass được? (hook deny + deny rules + org ask)
 
-> **Câu hỏi:** Tôi muốn chạy CI không có ai ngồi bấm phím, mà dùng bypass thì mấy phanh allow/ask có bị vô hiệu hóa hết không?
+> **Hỏi ngắn gọn:** Bật bypass cho CI không ai bấm phím, có phải mọi quyền allow/ask đều bị bỏ qua hết không?
 > **Trả lời 1 câu:** Không phải hết — đúng 3 thứ sống sót qua `--dangerously-skip-permissions`: `PreToolUse` hook deny, deny rules + org `ask` cho connector/MCP nhạy cảm, và managed policy của org.
 
 **Giải thích:** Deny rule thường trong settings vẫn bị bypass bỏ qua, nên đừng trông cậy vào nó khi đã bật bypass.
@@ -112,7 +113,7 @@ Task chỉ cần `api/` mà bạn mở cả repo + home → chỉ cần 1 lệnh
 
 **Khi nào áp dụng:** lúc thiết kế phanh cho CI/cloud — việc critical thì dùng hook, đừng tin mỗi rule.
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```bash
 # Guard mẫu sống qua bypass:
@@ -130,7 +131,7 @@ Muốn cấm `push main` kể cả khi CI chạy sandbox bypass → đặt hook 
 
 ## 3. Secrets trong MCP/settings: env vars + `reset-project-choices`?
 
-> **Câu hỏi:** MCP server của tôi cần token API, tôi định bỏ thẳng vào `.mcp.json` rồi push lên git — nguy hiểm không?
+> **Hỏi ngắn gọn:** Token API cho MCP server có nên viết thẳng vào `.mcp.json` rồi push lên git không?
 > **Trả lời 1 câu:** Nguy hiểm — token chui thẳng vào git. Secret chỉ khai qua env vars kiểu `${TOKEN}`, giá trị thật đặt ngoài repo, không bao giờ commit vào `.mcp.json`/settings.
 
 **Giải thích:** Khai qua biến môi trường nên file cấu hình commit lên git được mà không lộ token. Một việc hay quên nữa: khi đổi approvals hoặc policy của project, chạy `claude mcp reset-project-choices` để xóa lựa chọn cũ — nếu không, approvals cũ vẫn còn hiệu lực và người đến sau có thể dùng ké token của người cũ.
@@ -151,9 +152,10 @@ Muốn cấm `push main` kể cả khi CI chạy sandbox bypass → đặt hook 
 export GITHUB_TOKEN="ghp_xxx"
 git grep -E 'ghp_|sk-ant_|xoxb-|lin_' -- .mcp.json .claude/  # phải RỖNG
 claude mcp reset-project-choices   # khi đổi approvals project
+# → grep ra RỖNG = token không nằm trong repo, .mcp.json chỉ trỏ ${GITHUB_TOKEN}
 ```
 
-Onboard member mới → họ tự export env của họ rồi chạy `reset-project-choices` → không ai dùng ké token của người cũ.
+**Kiểm tra nhanh:** Onboard member mới → họ tự export env của họ rồi chạy `reset-project-choices` → không ai dùng ké token của người cũ.
 
 **Đào sâu:** [lệnh `mcp`](../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md) · [FAQ 04 — MCP](04-mcp-faq.md) · [FAQ 10 — CI an toàn](10-ci-sdk-routines-web.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-bảo-mật)
 
@@ -161,14 +163,14 @@ Onboard member mới → họ tự export env của họ rồi chạy `reset-pro
 
 ## 4. Zero Data Retention (ZDR) — ai được, hỏi ai?
 
-> **Câu hỏi:** Khách hàng hỏi tôi "anh có đảm bảo không lưu dữ liệu của em không" — tôi trả lời sao, gói nào có ZDR?
+> **Hỏi ngắn gọn:** Khách hỏi "bạn có đảm bảo không lưu data của tôi không" — trả lời sao, gói nào có ZDR?
 > **Trả lời 1 câu:** ZDR có cho: **Enterprise qualified (Sub)** / **qualified Console accounts** / **AWS Platform qualified** — nhưng đừng tự suy ra từ blog, hỏi admin/contract của bạn để xác nhận scope.
 
 **Giải thích:** Bên cạnh ZDR, telemetry và error-reporting mặc định khác nhau theo provider: với Bedrock/GCP/Foundry/AWS-Platform thì mặc định **tắt gửi về Anthropic**. Tuy nhiên đừng tin mặc định — hãy đọc provider docs để xác nhận, default có thể đổi theo version.
 
 **Khi nào áp dụng:** hợp đồng yêu cầu "không lưu data" → xác nhận bằng văn bản với admin + đọc provider docs, đừng tin trí nhớ.
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```bash
 # Checklist trước khi cam kết với khách hàng:
@@ -176,6 +178,7 @@ Onboard member mới → họ tự export env của họ rồi chạy `reset-pro
 # 2. Đọc provider docs hiện tại (Bedrock/GCP/Foundry trang data-handling)
 # 3. /status xem provider đang dùng thật là gì
 /status
+# → provider thật (vd Bedrock) + admin xác nhận ZDR = mới trả lời khách được
 ```
 
 Team dùng Bedrock: mặc định không gửi về Anthropic, nhưng nếu error-reporting đang bật ở client thì vẫn gửi crash log → tắt đi khi contract yêu cầu.
@@ -186,14 +189,14 @@ Team dùng Bedrock: mặc định không gửi về Anthropic, nhưng nếu erro
 
 ## 5. Skill, plugin, hook có nguy hiểm không? (rủi ro supply-chain)
 
-> **Câu hỏi:** Tải skill, plugin hay hook từ cộng đồng về dùng thì có bị dính mã độc không?
+> **Hỏi ngắn gọn:** Cài skill, plugin, hook từ cộng đồng thì có nguy cơ dính code độc không?
 > **Trả lời 1 câu:** Có — skill, plugin, hook là code chạy thật trên máy bạn; cài bừa là mời rủi ro supply-chain vào máy.
 
 **Giải thích:** Một plugin cộng đồng có thể xin cùng lúc quyền đọc file + chạy shell + gọi mạng = full access. Vì vậy chỉ cài nguồn tin cậy, và trước khi cài hãy mở `/plugin` đọc Browse (xem nó xin commands/agents/skills/hooks/MCP gì); review script của hook như code production.
 
 **Khi nào áp dụng:** mọi lần cài plugin/skill/agent lấy từ ngoài team.
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```bash
 # Trước khi cài plugin lạ:
@@ -205,6 +208,7 @@ Team dùng Bedrock: mặc định không gửi về Anthropic, nhưng nếu erro
 # Sau khi cài, rà nhanh:
 ls .claude/hooks/ && cat .claude/hooks/*.sh
 git grep -E 'curl|rm -rf|sudo|exfil|ngrok' -- .claude/
+# → git grep RỖNG = không có script nào exfil ra ngoài
 ```
 
 Plugin "theme đẹp" kèm hook `PostToolUse` âm thầm gửi các file đã sửa về một URL lạ → đúng kiểu supply-chain exfil (đánh cắp dữ liệu). Đọc Browse 2 phút là bắt được.
@@ -215,7 +219,7 @@ Plugin "theme đẹp" kèm hook `PostToolUse` âm thầm gửi các file đã s�
 
 ## 6. Review code AI viết thế nào? (fresh-reviewer + `/code-review` + human + tests)
 
-> **Câu hỏi:** Claude viết xong một loạt code, tôi merge thẳng lên main có ổn không?
+> **Hỏi ngắn gọn:** Code do Claude viết xong, merge thẳng lên main được không?
 > **Trả lời 1 câu:** Đừng merge thẳng — coi output của AI như code của intern giỏi nhưng cần giám sát, và chạy đủ 4 lớp review bên dưới.
 
 **Giải thích:** Pipeline 4 lớp:
@@ -227,13 +231,14 @@ Plugin "theme đẹp" kèm hook `PostToolUse` âm thầm gửi các file đã s�
 
 **Khi nào áp dụng:** mọi code AI viết trước khi merge; PR càng critical thì càng phải đủ 4 lớp.
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```bash
 # "Dùng fresh subagent review diff này, chỉ báo security + sai logic, bỏ qua style"
 /code-review
 /verify
 npm test
+# → review sạch + verify PASS + tests xanh = đủ điều kiện merge
 ```
 
 Chạy đủ `/code-review` → `/verify` → `npm test` trước mỗi merge; nếu PR đụng tới auth hay migrate, bắt buộc thêm 1 lượt human đọc diff.
@@ -244,18 +249,19 @@ Chạy đủ `/code-review` → `/verify` → `npm test` trước mỗi merge; n
 
 ## 7. Chỉ được dùng `--dangerously-skip-permissions` khi nào? (sandbox CI cô lập)
 
-> **Câu hỏi:** Thấy người ta hay thêm `--dangerously-skip-permissions` vào lệnh cho chạy nhanh, tôi dùng trên máy dev được không?
+> **Hỏi ngắn gọn:** Dùng `--dangerously-skip-permissions` trên máy dev cá nhân có an toàn không?
 > **Trả lời 1 câu:** Không — chỉ được dùng khi nơi chạy là CI sandbox cô lập thật sự: container dùng 1 lần, không secrets thật, không network ra ngoài.
 
 **Giải thích:** Trên máy dev hay cloud session bình thường: không bao giờ. Nhớ rõ một điểm: hook deny vẫn thắng được flag này, nhưng mọi câu hỏi quyền khác đều bị bỏ qua — nghĩa là đúng kiểu "tắt toàn bộ phanh".
 
 **Khi nào áp dụng:** gần như không khi nào. Cứ thấy mình định gõ flag này trên máy dev là dừng lại, chuyển sang allowlist hẹp.
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```bash
 # ✅ Sandbox dùng 1 lần, không secrets thật:
 claude -p "migrate test" --dangerously-skip-permissions
+# → lệnh chạy không có prompt hỏi quyền nào (bypass chỉ hợp lệ trong sandbox cô lập)
 
 # ❌ Máy dev / cloud / máy có .env thật: KHÔNG BAO GIỜ
 # Thay bằng: --permission-mode dontAsk + allowlist hẹp (FAQ 10)
@@ -267,19 +273,20 @@ claude -p "migrate test" --dangerously-skip-permissions
 
 ## 8. Telemetry và error-reporting tắt ở đâu? (theo provider)
 
-> **Câu hỏi:** Công ty tôi không muốn gửi data về Anthropic, tắt telemetry bằng lệnh gì?
+> **Hỏi ngắn gọn:** Company không muốn gửi data về Anthropic — có một lệnh nào tắt hết telemetry không?
 > **Trả lời 1 câu:** Không có công tắc chung — mặc định telemetry/error-reporting theo provider đang dùng; với Bedrock/GCP/Foundry/AWS-Platform thì tắt gửi về Anthropic theo default.
 
 **Giải thích:** Ngoài phần provider, bản thân client vẫn có telemetry/error-reporting riêng của nó — nên không có một lệnh tắt duy nhất. Việc của bạn: đọc provider docs + xem settings hiện tại, đừng đoán.
 
 **Khi nào áp dụng:** mỗi lần onboard máy cho enterprise/compliance, và sau mỗi `claude update` (default có thể đổi theo version).
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```bash
 /status          # provider đang dùng?
 /config          # xem telemetry/error-reporting settings
 claude doctor    # có cảnh báo config lạ không
+# → thấy provider + các dòng telemetry đúng với provider docs = config sạch
 ```
 
 **Đào sâu:** [FAQ 01 — provider](01-tai-khoan-pricing-cai-dat.md) · [lệnh `doctor`](../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-bảo-mật)
@@ -288,14 +295,14 @@ claude doctor    # có cảnh báo config lạ không
 
 ## 9. Lộ secret rồi — xử lý sao? (rotate + reset + rà git history)
 
-> **Câu hỏi:** Tôi lỡ commit token vào git rồi, giờ chỉ cần xóa file đi thôi đúng không?
+> **Hỏi ngắn gọn:** Lỡ commit token vào git rồi, xóa file đi là xong chứ?
 > **Trả lời 1 câu:** Không — secret đã commit là coi như lộ, git history giữ mãi. Xử lý theo 4 bước: rotate token trước, xóa approvals cũ, rà còn sót, rồi mới dọn history.
 
 **Giải thích:** Đừng chỉ ngồi xóa file. Thứ tự đúng là 4 bước trong block dưới — lưu ý bước 1 và 2 đảo ngược so với việc dọn git: vô hiệu token cũ càng sớm, thời gian token lộ càng ngắn.
 
 **Khi nào áp dụng:** ngay khi phát hiện; quy tắc cố định: rotate trước, dọn sau, luôn luôn.
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```bash
 # 1. Rotate NGAY (vô hiệu token cũ) — làm trước, dọn sau
@@ -303,6 +310,7 @@ claude doctor    # có cảnh báo config lạ không
 claude mcp reset-project-choices
 # 3. Rà còn sót:
 git grep -E 'ghp_|sk-ant_|xoxb-|AKIA' -- .mcp.json .claude/ .
+# → grep RỖNG = token đã sạch, token cũ đã vô hiệu, mới vào bước 4
 # 4. Dọn history (nếu đã push): BFG/filter-repo + force-push + báo team rotate tiếp
 ```
 
@@ -314,7 +322,7 @@ Commit nhầm `GITHUB_TOKEN` vào `.mcp.json` → rotate token trên GitHub trư
 
 ## 10. Checklist bảo mật repo mới (5 phút)
 
-> **Câu hỏi:** Repo mới sắp cho Claude vào làm, làm thế nào để nó không phá lung tung và không làm lộ secret?
+> **Hỏi ngắn gọn:** Repo mới sắp cho Claude vào làm — bước nào cần chạy trước để nó không phá lung tung?
 > **Trả lời 1 câu:** Chạy checklist 5 bước này trong ~5 phút trước khi để Claude động tay — dirs hẹp, secrets sạch, mcp/hooks sạch, doctor xanh.
 
 **Giải thích:** Ý nghĩa từng bước:
@@ -327,7 +335,7 @@ Commit nhầm `GITHUB_TOKEN` vào `.mcp.json` → rotate token trên GitHub trư
 
 **Khi nào áp dụng:** mỗi lần setup repo mới, dọn mỗi tháng 1 lần, và trước khi onboard member mới.
 
-**Ví dụ:**
+**Kiểm tra nhanh:**
 
 ```bash
 /permissions              # 1. dirs hẹp? deny rm-rf/sudo/.env có?
@@ -335,6 +343,7 @@ git grep -E 'ghp_|sk-ant_' -- .mcp.json .claude/   # 2. secrets sạch?
 /mcp                     # 3. servers thừa? tắt cái không dùng
 /hooks                   # 4. hooks lạ? đọc scripts
 /doctor                  # 5. điểm security? đỏ thì vá trước
+# → 5 bước hết, grep RỖNG + doctor không có cảnh báo đỏ = repo sạch để làm việc
 ```
 
 ```json

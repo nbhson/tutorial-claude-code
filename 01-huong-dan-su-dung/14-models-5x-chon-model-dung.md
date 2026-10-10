@@ -1,8 +1,27 @@
 # 14 — Models 5.x: Chọn Model Đúng (Fable / Opus / Sonnet / Haiku)
 
-> Bài 14 của series. Đọc xong bạn chọn đúng model cho từng task, hiểu IDs +
-> aliases + `/model`, và không còn trả tiền Opus cho việc Haiku làm được.
-> Thời gian: ~35 phút.
+> **Bài này cho ai:** dev chọn model trong `/model` mỗi ngày, và tech lead muốn gate model + kiểm soát chi phí cho team.
+> **Cần gì trước:** đã cài + login Claude Code (bài 01); biết đọc `/cost` (Tips 08). Chưa cần, bài tự giải thích từ model.
+> **Đọc xong bạn làm được:**
+> - Chọn đúng model cho từng task (Haiku/Sonnet/Opus/Fable), không trả tiền Opus cho việc Haiku làm được.
+> - Dùng `opusplan` (plan Opus + execute Sonnet) cho task multi-file, tiết kiệm ~40% so full-Opus.
+> - Đọc `/cost` hiểu được vì sao cache reads chiếm đa số bill agentic.
+> - Route model cho subagent trong frontmatter + xử lý 4 breaking changes khi lên Opus 5.5.
+> **Thời gian:** ~35 phút.
+
+## Thuật ngữ dùng trong bài này
+
+Đọc bảng này trước khi vào mục 1 — mọi thuật ngữ Anh trong bài đều được giải thích ở đây.
+
+| Thuật ngữ | Hiểu nôm na là gì | Ví dụ thấy ngay | Khi nào dùng |
+|---|---|---|---|
+| Model (Opus/Sonnet/Haiku/Fable) | 4 cỡ não: sâu—hàng ngày—việc vặt—siêu khó dài hơi | `/model sonnet` cho daily, `opus` cho kiến trúc | Chọn đầu mỗi task (mục 7) |
+| `/model` | Công tắc đổi não giữa session, giữ context | `/model sonnet` → chạy tiếp, không mất history | Giữa các phase (mục 3.4) |
+| `opusplan` | Kiến trúc sư vẽ bản vẽ (Opus) + thợ thi công (Sonnet) | `claude --model opusplan` cho task >3 files | Task multi-file (mục 3.3) |
+| Effort (low/medium/high) | Vặn mức "cố gắng suy luận" | `/effort low` cho rename, `high` cho đoạn khó | Theo độ khó (mục 4.1) |
+| Fast mode | Trả gấp đôi lấy latency, vẫn Opus 5.5 | `/fast` cho demo live | Cần phản hồi nhanh (mục 4.2) |
+| Cache reads | Phần context trùng tính giá rẻ ($0.20/1M) | `/cost` hiện `cache read` chiếm đa số | Tối ưu bill (mục 5) |
+| Breaking changes | Đổi model làm hỏng prompt cũ (thinking không tắt, ép-tool lỗi) | Opus 5.5 từ chối computer tool cũ | Trước khi upgrade (mục 6) |
 
 ## Mục lục
 
@@ -440,16 +459,7 @@ Bước 4: Spawn 3 haiku explore song song 1 câu hỏi codebase (bài 06). So t
 
 ---
 
-### 9.5. Thuật ngữ mới trong bài (nôm na + analogie + ví dụ + verify)
-
-| Thuật ngữ | Nôm na 1 câu | Analogie | Ví dụ kỹ thuật thật | Cách verify |
-|---|---|---|---|---|
-| Opus / Sonnet / Haiku / Fable | 4 cỡ não: siêu sâu, hàng ngày, việc vặt, siêu khó dài hơi. | Như đội thợ: kiến trúc sư (Opus), thợ chính (Sonnet), phụ việc nhanh (Haiku), giáo sư giải bài khó (Fable). | `/model opusplan` = plan Opus + execute Sonnet; `model: haiku` cho explorer | `/model` hiện đúng tên; `/cost` task vặt bằng Haiku rẻ hơn Opus 4-10x. |
-| Effort / Fast mode | Vặn não nghĩ sâu hay nghĩ nhanh; fast là trả thêm lấy tốc độ. | Như vặn bếp: lửa nhỏ (low) xào rau, lửa to (high) hầm xương; fast là bật tăng áp. | `/effort low` cho rename; `/fast` cho demo live Opus $8/$40 | Task cơ học + `low` vẫn xanh mà nhanh; `/cost` fast cao gấp đôi normal. |
-| Cache reads | Phần context trùng được tính giá rẻ, không tính giá đầy. | Như photo lại bài cũ được giảm giá, chỉ trang mới tính giá gốc. | Session 50 steps × 100K: cache 90% hit ≈ $3 thay vì $20 | `/cost` hiện `cache read` chiếm đa số; đổi model liên tục làm hit tụt. |
-| `opusplan` | Plan bằng Opus, làm bằng Sonnet cho rẻ mà vẫn đúng. | Như kiến trúc sư vẽ bản vẽ, thợ chính thi công — không thuê kiến trúc sư trộn vữa. | `claude --model opusplan` cho task 3+ files | Tokens plan (Opus 10%) + execute (Sonnet 90%) rẻ hơn full-Opus ~40%. |
-
-### 9.6. Mermaid: chọn model trong 30 giây
+### 9.5. Mermaid: chọn model trong 30 giây
 
 ```mermaid
 flowchart TD
@@ -479,7 +489,7 @@ Giải thích từng bước (đọc 30s từ trên xuống):
 5. **G→K:** task >3 files → `opusplan` (plan 10% Opus + execute 90% Sonnet ≈ rẻ hơn 40%).
 6. **→N:** sau mỗi run `/cost`: Haiku phải rẻ 4-10x Opus mà quality vẫn đủ; không đủ thì leo thang (sonnet→opus→fable).
 
-### 9.7. Bảng so sánh Opus/Sonnet/Haiku (+Fable) có cột Hiểu nôm na + Ví dụ
+### 9.6. Bảng so sánh Opus/Sonnet/Haiku (+Fable)
 
 | Model (giá input/output, context) | Mạnh ở gì | Tốn token/cost thế nào | Hiểu nôm na | Ví dụ task nên dùng |
 |---|---|---|---|---|
@@ -497,7 +507,7 @@ Giải thích từng bước (đọc 30s từ trên xuống):
 
 > Kỳ vọng thấy gì: `/model` hiện `sonnet (claude-sonnet-5-5)` + context giữ nguyên; `/cost` session explore bằng Haiku chỉ ~1/4-1/10 so với cùng task bằng Opus. Nếu báo `model not found` là thiếu date suffix Haiku (`claude-haiku-4-5-20251001`).
 
-### 9.8. Hiểu nhầm thường gặp
+### 9.7. Hiểu nhầm thường gặp
 
 | Hiểu nhầm | Sự thật | Ví dụ sửa |
 |---|---|---|

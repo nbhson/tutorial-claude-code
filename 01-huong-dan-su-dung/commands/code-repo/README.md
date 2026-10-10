@@ -1,6 +1,43 @@
-# Nhóm: Code & Repo (17 lệnh)
+# /code-repo — nhóm 17 lệnh làm việc với code và repo
 
-> Làm việc với code: xem diff, review, verify chạy thật, batch song song, khởi tạo.
+> **Loại:** index nhóm lệnh · **Nhóm:** Code & Repo · **Mức rủi ro:** trung bình (đụng code thật, có lệnh tốn quota)
+> **Nói nôm na:** nhóm này là nơi Claude "xem diff, review, chạy thật, chia việc song song" trên repo của bạn. Lệnh /batch, /loop chạy ẩu sẽ tốn quota thật, nên luôn đọc mức rủi ro trong bảng lệnh trước khi gõ.
+
+## Khi nào dùng
+
+- Bạn đang viết code và cần xem /diff sau mỗi bước, review bằng /code-review, hoặc chứng minh bằng /verify (build + chạy thật).
+- Bạn cần chia task lớn thành nhiều nhánh song song bằng /batch, /subtask — dùng khi 1 mạch không kịp, không phải chạy ẩu làm thiệt hại quota.
+- Bạn muốn khởi tạo CLAUDE.md cho repo mới bằng /init, hoặc chạy app local bằng /run — làm trước khi bắt đầu task, không làm giữa chừng.
+
+## Cách gọi
+
+```bash
+# go / trong session, go chu dau lenh de loc
+/diff
+/verify
+/batch
+```
+
+Kiểm tra lệnh có ở máy bạn không: mở session, gõ `/` rồi gõ tiếp chữ đầu lệnh — version/provider khác nhau hiện lệnh khác nhau.
+
+## Ví dụ thật + kết quả mong đợi + cách kiểm tra
+
+Bạn vừa để Claude sửa 1 file, muốn xem nó đổi gì:
+
+```bash
+/diff
+```
+
+- Mong đợi: panel diff hiện từng hunk thay đổi, bạn bấm chọn dòng nào thì prompt tiếp được dòng đó (feature ≥2.1.260, terminal ≥110 cột).
+- Kiểm tra (≤30 giây): xem diff có đúng chỗ bạn muốn không; nếu panel không hiện, xem terminal có đủ 110 cột và repo có phải git repo không.
+
+## Lỗi thường gặp
+
+| Triệu chứng | Vì sao | Cách sửa |
+|---|---|---|
+| Hook pre-commit "im": không chạy, hoặc không chặn được | Cấu hình hook trong settings sai, hoặc bản của bạn chưa hỗ trợ hook mới | Gõ `/hooks` (nhóm knowledge-system) xem cấu hình, đọc output hook trong terminal |
+| Session "hờn", model lặp lại 1 lỗi, context đầy giữa task | Context window đầy; /loop hoặc /batch chạy bypass ngốn quota liên tục | Dùng /compact để nén, /context xem ai tốn context, dừng /loop khi không cần |
+| /subtask kẹt (subagent không về), /code-review "dễ dãi" bỏ sót | Subagent context riêng nhưng spawn ẩu; review chỉ đọc + nhận xét, không verify | Chạy /verify (build + chạy thật) sau review; chia /subtask nhỏ hơn; /tasks để kill job kẹt |
 
 ## Bộ 3 phải nhớ
 
@@ -39,9 +76,15 @@ Gõ / trong session để xem lệnh nào hiện ở máy bạn.
 ## Cách dùng nhóm này cho đúng
 
 ```bash
-# 1. Học 3 lệnh trụ trước (xem "Bộ 3 phải nhớ" ở trên)
-# 2. Còn lại tra khi gặp việc thật, đừng học hết 1 lúc
-# 3. Lỗi lạ trong nhóm này -> /status -> /doctor -> đọc lệnh tương ứng
+# 1. Hoc 3 lenh tru truoc (xem "Bo 3 phai nho" o tren)
+# 2. Con lai tra khi gap viec that, dung hoc het 1 luc
+# 3. Loi la trong nhom nay -> /status -> /doctor -> doc lenh tuong ung
 ```
 
-[← Về index tất cả lệnh](../README.md)
+## Tham khảo
+
+- [← Về index tất cả lệnh](../README.md)
+- [04 — slash commands toàn tập](../../04-slash-commands-toan-tap.md)
+- [Nhóm session-context](../session-context/README.md) · [Nhóm knowledge-system](../knowledge-system/README.md)
+
+> Mẹo 1 dòng: _luôn /diff + /verify sau mỗi bước, đừng tích nhiều bước mới kiểm tra — lỗi 1 bước nhân lên các bước sau._
