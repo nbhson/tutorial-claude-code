@@ -61,14 +61,14 @@ Hai đường dẫn bạn sẽ dùng nhiều nhất:
 
 ## Phiên bản & nguồn
 
-- Claude Code **v2.1.x**, bản mới nhất tra soát lúc viết: **v2.1.292** (06/10/2026).
+- Claude Code **v2.1.x**, bản mới nhất tra soát lúc viết: **v2.1.296** (09/10/2026).
   Kiểm tra máy bạn: `claude doctor` hoặc trong session gõ `/doctor` / `/status`.
 - Docs gốc: https://code.claude.com/docs/en/ — file index: https://code.claude.com/docs/llms.txt
 - Changelog đầy đủ: https://code.claude.com/docs/en/changelog
 - Một số lệnh chỉ có ở bản mới hơn: `/verify` (≥2.1.145), `/cd` (≥2.1.169), `/goal` (≥2.1.139),
   `/skill-doctor` (≥2.1.252), trim CLAUDE.md trong `/doctor` (≥2.1.206).
   Gõ `/` trong session để xem lệnh nào hiện ở máy bạn — version và nhà cung cấp (provider) khác nhau thì thấy khác nhau.
-- Toàn bộ số liệu version/model/giá dùng trong repo được tập hợp tại [`WRITING-STYLE.md` — Phần B](./WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-07102026).
+- Toàn bộ số liệu version/model/giá dùng trong repo được tập hợp tại [`WRITING-STYLE.md` — Phần B](./WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-11102026).
 
 ## Cách dùng repo này
 

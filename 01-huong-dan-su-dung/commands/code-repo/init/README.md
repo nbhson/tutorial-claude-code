@@ -5,9 +5,9 @@
 
 ## Khi nào dùng
 
-- Dùng `/init` khi bạn đang làm việc với code/repo (xem diff, review, verify, chạy batch, khởi tạo).
-- Dùng `/init` **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng `/init` thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/init` ở repo chưa có `CLAUDE.md`, hoặc khi file cũ đã lệch hẳn so với code hiện tại.
+- Chạy `/init` **ngay đầu dự án**, trước khi nhét thêm quy tắc thủ công — để máy tự điền phần nó đọc được từ code.
+- Không dùng `/init` thay cho việc tự đọc code: nó chỉ tổng hợp những gì có trong repo, phần "việc cấm" bạn vẫn phải duyệt tay.
 
 ## Cách gọi
 
@@ -30,8 +30,8 @@ cấu trúc thư mục, và 5 việc cấm làm (nếu phát hiện được t�
 
 **Kết quả mong đợi:**
 
-- Claude trả đúng việc của `/init` (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Sinh `CLAUDE.md` ngắn gọn dưới 200 dòng, có mục lệnh dev/build/test, cấu trúc thư mục và vài việc cấm.
+- Claude liệt kê rõ file sẽ tạo trước khi ghi, để bạn duyệt chứ không tự ý đè file cũ.
 
 **Verify (30 giây):**
 

@@ -12,9 +12,9 @@
 ## Cách gọi
 
 ```bash
-`/add-dir <path>`
-`/add-dir <p1> <p2>...`
-`/add-dir --list`
+/add-dir <path>
+/add-dir <p1> <p2>...
+/add-dir --list
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -36,13 +36,14 @@ npm test
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /add-dir (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Dir mới được gắn thêm, dir cũ vẫn giữ; terminal báo `Added ...`.
+- CLAUDE.md/hooks/MCP trong dir mới được nạp theo (hỏi trust nếu chưa tin).
 
 **Kiểm tra nhanh:**
 
 ```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
+/add-dir --list
+# → danh sách root hiện đủ dir cũ + dir vừa thêm
 ```
 
 ## Lỗi thường gặp

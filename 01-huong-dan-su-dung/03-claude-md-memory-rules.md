@@ -44,7 +44,7 @@ Ba khái niệm này trả lời câu hỏi mở đầu: repo của bạn cần 
 
 - **CLAUDE.md là gì?** 1 câu: tờ dặn dò dán trên tủ lạnh, Claude đọc đầu mỗi session và nhớ suốt.
   - Ví dụ đời thường: như nội quy nhà dán cửa — ai vào cũng đọc: "đi giày để ngoài, mèo ăn lúc 7h".
-  - Ví dụ copy-paste: tạo `./CLAUDE.md` với 1 dòng `ALWAYS chạy pnpm --filter @acme/api test sau khi sửa apps/api/`, mở session mới hỏi `rules mày đang nhớ là gì?`.
+  - Ví dụ copy-paste: tạo `./CLAUDE.md` với 1 dòng `ALWAYS chạy pnpm --filter @acme/api test sau khi sửa apps/api/`, mở session mới hỏi `rules bạn đang nhớ là gì?`.
 - **`.claude/rules/*.md` là gì?** 1 câu: nội quy từng phòng, chỉ áp dụng khi bước vào phòng đó.
   - Ví dụ đời thường: như bảng "phòng bếp: rửa tay trước khi nấu" — không vào bếp thì không cần đọc.
   - Ví dụ copy-paste: tạo `.claude/rules/api.md` với frontmatter `paths: ["apps/api/**"]` + dòng `Mọi route mới phải có zod schema + test 401/422`.
@@ -354,7 +354,8 @@ Section con này trả lời: nội dung trong tay bạn nên đặt vào CLAUDE
 Section này trả lời: team vừa dùng Claude Code vừa dùng Cursor/Copilot thì giữ rules ở đâu cho không lệch?
 
 **AGENTS.md** là chuẩn mở (OpenAI khởi xướng, nhiều agent tools đọc: Cursor, Copilot, Codex, Windsurf...).
-Claude Code đọc CLAUDE.md; các tool khác đọc AGENTS.md. Team dùng nhiều tools → giữ 1 source of truth.
+Từ w34/2026, Claude Code đọc **trực tiếp** cả `AGENTS.md` lẫn `CLAUDE.md`; nhiều tool khác chỉ đọc `AGENTS.md`.
+Team dùng nhiều tools → giữ 1 source of truth.
 
 ### 5.1. Pattern khuyến nghị (3 options)
 
@@ -451,7 +452,7 @@ Section này trả lời: CLAUDE.md sắp vượt ngưỡng thì cắt ở đâu
 
 **Kiểm tra nhanh:**
 
-- `@path` là trỏ (lazy-load khi cần), không phải copy. Sửa `docs/architecture.md` 1 nơi, mọi session sau thấy ngay. Hỏi Claude `rules mày load từ import nào?` → Claude kể được tên file đã import.
+- `@path` là trỏ (lazy-load khi cần), không phải copy. Sửa `docs/architecture.md` 1 nơi, mọi session sau thấy ngay. Hỏi Claude `rules bạn load từ import nào?` → Claude kể được tên file đã import.
 - Root CLAUDE.md <60 dòng (chỉ commands + rules nóng), chi tiết nằm ở `docs/*.md`. `wc -l CLAUDE.md` phải <60 sau khi tách.
 
 ---
@@ -571,7 +572,7 @@ Section này gom lỗi người Việt hay mắc, checklist dán vào PR review,
 
 | Sai | Đúng | Vì sao |
 |---|---|---|
-| CLAUDE.md 500 dòng copy wiki | <200 dòng, front-load rule hay sai nhất lên đầu | Token × turns; Claude skim đầu file kỹ hơn cuối |
+| CLAUDE.md 500 dòng copy wiki | <200 dòng, đặt rule hay sai nhất lên đầu | Token × turns; Claude đọc đầu file kỹ hơn cuối |
 | Ghi "chạy test" chung chung | Ghi lệnh focused test chính xác | "Chạy test" → Claude chạy full 10 phút hoặc sai package |
 | Ghi conventions của framework mặc định | Chỉ ghi cái **khác** default + lý do | Default Claude đã biết; ghi thừa tốn token |
 | Nhét deployment checklist dài vào CLAUDE.md | Tách thành skill `/deploy` (load khi cần) | Checklist 20 bước × mọi turn = lãng phí |

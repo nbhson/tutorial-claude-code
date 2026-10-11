@@ -231,7 +231,7 @@ claude -p "review git diff main...HEAD, in tối đa 10 findings dạng checklis
 **Shift+Tab**: xoay vòng permission modes `default → acceptEdits → plan → auto → bypassPermissions`.
 **Double-Esc** (prompt rỗng): mở rewind menu (checkpointing) — khôi phục cả code + conversation (bài 11).
 **Ctrl+X Ctrl+K ×2 trong 3s**: kill toàn bộ background subagents (khi fan-out lỗi).
-**Ctrl+R**: search history. **Ctrl+C**: interrupt turn hiện tại (Stop hook không lửa khi interrupt).
+**Ctrl+R**: search history. **Ctrl+C**: interrupt turn hiện tại (Stop hook không chạy khi interrupt).
 
 Flags quan trọng khác: `--mcp-config`, `--disable-slash-commands`, `--permission-mode`,
 `--model`, `--agents '{...}'` (định nghĩa agent inline JSON).
@@ -455,7 +455,7 @@ Ví dụ 3 — "Review PR 25 files của teammate" (cần mắt):
 
 ## 8. Lưu ý config theo bề mặt và pitfall
 
-Section này trả lời câu hay gặp nhất: "ở máy tôi chạy mà sao lên cloud mất mất?" — config nào đi theo bề mặt nào, và những pitfall thường gặp kèm cách fix.
+Section này trả lời câu hay gặp nhất: "ở máy tôi chạy mà sao lên cloud lại mất?" — config nào đi theo bề mặt nào, và những pitfall thường gặp kèm cách fix.
 
 - Local (CLI/IDE/Desktop-local/Remote): dùng `~/.claude/` + `.claude/` repo + env máy bạn.
 - Cloud (Web/Desktop-cloud): chỉ repo (+ cloud environment vars/setup script). Đừng ngạc nhiên khi

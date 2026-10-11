@@ -1,6 +1,6 @@
 # /claude-api — Vọc Anthropic API: migrate SDK, thử managed agents
 
-> Loại Skill (tích hợp API) · Nhóm Tri thức & Hệ thống · Mức rủi ro Không (chỉ sinh code; nhưng Có nhẹ khi code chạm API key/tiền thật — key vào env, test trên Haiku trước)
+> Loại Skill (tích hợp API) · Nhóm Tri thức & Hệ thống · Mức rủi ro Không (chỉ sinh code; nhưng Có nhẹ khi code chạm API key/tiền thật — key vào env, test trên Haiku 5.5 trước)
 > **Nói nôm na:** `/claude-api` là bộ subcommands giúp dev dùng Anthropic API/SDK: migrate code cũ sang SDK mới, onboard managed agents (Agent SDK chạy trên hạ tầng Anthropic), và tra cứu mẫu gọi API copy-paste được. Đặc biệt: khi bạn `import anthropic` trong code, skill này tự load (auto-load) để gợi ý đúng phiên bản SDK.
 
 ## Khi nào dùng
@@ -26,7 +26,7 @@ Prompt thật (paste vào Claude Code):
 ```bash
 /claude-api migrate src/llm_client.py
 # → phát hiện: dùng client.completion (cũ) + max_tokens thiếu
-# → diff: chuyển client.messages.create(model="claude-sonnet-4-6", max_tokens=1024, system=..., messages=[...])
+# → diff: chuyển client.messages.create(model="claude-sonnet-5-5", max_tokens=1024, system=..., messages=[...])
 # → duyệt diff → chạy pytest → xong
 ```
 
@@ -53,4 +53,4 @@ Kết quả mong đợi:
 - [../agents/README.md](../../knowledge-system/agents/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
-> Mẹo 1 dòng: _dán API key qua env, không hardcode; test trên Haiku trước cho rẻ._
+> Mẹo 1 dòng: _dán API key qua env, không hardcode; test trên Haiku 5.5 trước cho rẻ._

@@ -2,22 +2,39 @@
 
 > Loại Built-in · Nhóm Model & Mode · Mức rủi ro Không (không sửa file, chỉ đổi engine suy luận cho các turn tiếp theo; context cũ giữ nguyên)
 >
-> **Nói nôm na:** `/model` cho bạn đổi "bộ não" của Claude Code ngay giữa phiên: lúc cần nhanh-rẻ thì dùng Haiku/Sonnet, lúc cần suy luận sâu thì chuyển Opus 5.5 (mặc định ở hầu hết gói từ ≥2.1.280). Context hội thoại, file đã đọc, todos giữ nguyên — chỉ model phục vụ turn tiếp theo thay đổi.
+> **Nói nôm na:** `/model` cho bạn đổi "bộ não" của Claude Code ngay giữa phiên: lúc cần nhanh-rẻ thì dùng Haiku 5.5/Sonnet, lúc cần suy luận sâu thì chuyển Opus 5.5 (mặc định của tài khoản từ ≥2.1.280). Fable 5.1 mạnh nhất nhưng **không bao giờ** là default — muốn dùng phải gọi tay. Context hội thoại, file đã đọc, todos giữ nguyên — chỉ model phục vụ turn tiếp theo thay đổi.
 
 ## Khi nào dùng
 
-- Dùng /model khi cần đổi "bộ não" giữa phiên: nhanh-rẻ (Haiku/Sonnet) cho việc thường, suy luận sâu (Opus 5.5) cho bài khó.
+- Dùng /model khi cần đổi "bộ não" giữa phiên: nhanh-rẻ (Haiku 5.5/Sonnet) cho việc thường, suy luận sâu (Opus 5.5) cho bài khó.
 - Dùng /model **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
 - Không dùng /model thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
 
 ## Cách gọi
 
 ```bash
-`/model`
-`/model <tên>`
-`/model default`
+/model
+/model <tên>
+/model default
 ```
 
+Alias gõ được ngay bằng `/model <alias>`:
+
+| Alias | Trỏ tới | Ghi chú |
+|---|---|---|
+| `default` | model mặc định theo tài khoản/provider | Opus 5.5 từ ≥2.1.280 (Pro/Max/Team/Enterprise/API/Bedrock/GCP); Microsoft Foundry: Sonnet 4.5 |
+| `best` | Fable 5.1 nếu có, không thì `opus` | Fable không bao giờ tự thành default |
+| `fable` | Fable 5.1 | ≥2.1.257; $10/$50, cache $0.25 |
+| `opus` | Opus 5.5 | ≥2.1.280; $4/$20, cache $0.20 |
+| `sonnet` | Sonnet 5.5 | ≥2.1.284; $2/$10, cache $0.10 |
+| `haiku` | Haiku 5.5 trên Anthropic API; Haiku 4.5 trên Bedrock/GCP/AWS | Haiku 5.5 ≥2.1.293; 1M, $0.10/$0.50, cache $0.01 |
+| `opusplan` | plan bằng Opus, execute bằng Sonnet | |
+| `opus[1m]` | Opus 5.5 mở cửa sổ context 1M | |
+| `sonnet[1m]` | Sonnet 5.5 mở cửa sổ context 1M | |
+
+> Haiku 5.5 (`claude-haiku-5-5`, ≥2.1.293) đã thay Haiku 4.5 làm Haiku mặc định trên Anthropic API: 1M context, $0.10/$0.50 khi prompt ≤100K (trên 100K: $0.50/$2.50). Trên Bedrock/GCP/AWS vẫn là Haiku 4.5 (200K, $1/$5).
+> Fable 5.1 nằm ngoài hạn mức thường: trên Pro bill bằng usage credits, trên Max tốn ~50% hạn tuần mỗi lượt dùng — nên chỉ gọi tay khi thật cần.
+>
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
 ## Ví dụ thật + kết quả mong đợi + cách kiểm tra
@@ -36,10 +53,10 @@ rồi đề xuất fix bằng mutex hoặc atomic compare-and-swap.
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /model (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Claude nhận model mới và trả lời theo "não" mới; context, file đã đọc, todo giữ nguyên.
+- Chỉ turn tiếp theo đổi model — hội thoại cũ không bị viết lại.
 
-Verify (30 giây):
+**Kiểm tra nhanh:**
 
 ```bash
 # trong session: /status hoặc /context để chắc mode/context còn sạch

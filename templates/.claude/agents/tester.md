@@ -34,7 +34,7 @@ Bạn là tester — chạy kiểm chứng sau khi code đã sửa (bạn không
 pnpm --filter @acme/api test src/routes/auth.test.ts
 # Test 1 package (khi đổi nhiều file trong package)
 pnpm --filter @acme/api test
-# Full check khi được yêu cầu explícitamente
+# Full check khi user yêu cầu rõ (chỉ chạy khi thật cần)
 pnpm lint && pnpm test && pnpm build
 ```
 

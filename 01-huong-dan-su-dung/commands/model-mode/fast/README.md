@@ -2,7 +2,7 @@
 
 > Loại Built-in · Nhóm Model & Mode · Mức rủi ro Không (chỉ giảm độ sâu suy luận / về model nhẹ; không sửa file ngoài ý muốn)
 >
-> **Nói nôm na:** `/fast` là nút "tăng tốc": ép phiên về chế độ nhanh (thường tương đương Sonnet + effort thấp, ít vòng tool-call) để trả lời ngay cho việc dễ — giải thích code, tra cứu, việc vặt. Trên Opus 5.5, fast mode tính giá riêng $8/$40 (~2.5× nhanh) và cần ≥2.1.280.
+> **Nói nôm na:** `/fast` là nút "tăng tốc": ép phiên về chế độ nhanh (thường tương đương Sonnet + effort thấp, ít vòng tool-call) để trả lời ngay cho việc dễ — giải thích code, tra cứu, việc vặt. Trên Opus 5.5, fast mode tính giá riêng $8/$40 (nhanh hơn ~2.5×), cần ≥2.1.280 và **chỉ có trên Anthropic API** — không hỗ trợ trên Bedrock/GCP/AWS.
 
 ## Khi nào dùng
 
@@ -13,9 +13,10 @@
 ## Cách gọi
 
 ```bash
-`/fast`
-`/fast <câu hỏi>`
-`/model sonnet` + `/effort low`
+/fast
+/fast <câu hỏi>
+/model sonnet
+/effort low
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -30,10 +31,10 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /fast (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Trả lời nhanh, ít vòng tool-call — hợp việc dễ (giải thích code, tra cứu, việc vặt).
+- Không hợp bài cần suy luận sâu; xong việc nhớ về `/effort medium` cho phiên sau.
 
-Verify (30 giây):
+**Kiểm tra nhanh:**
 
 ```bash
 # trong session: /status hoặc /context để chắc mode/context còn sạch
@@ -44,6 +45,7 @@ Verify (30 giây):
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/fast` báo `unknown command` | Bản không có lệnh riêng | Dùng `/effort low` thay thế |
+| Fast không thấy nhanh hơn khi chạy Bedrock/GCP/AWS | Fast mode chỉ có trên Anthropic API | Dùng `/effort low` + `/model sonnet` thay thế |
 | Fast trả lời ẩu, sai | Dùng fast cho bài khó | Lên `/effort medium`/`high` |
 | Bật fast rồi quên, bài khó sau cũng ẩu | Fast còn hiệu lực session | `/effort medium` để về bình thường |
 

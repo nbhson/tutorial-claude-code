@@ -214,7 +214,7 @@ Rule: **correct 2 lần vẫn sai → dừng cãi, rewind.**
 Turn 1: "Sửa hàm login, đừng đổi API."
 → Claude đổi API + hỏng test.
 
-Turn 2: "Tao bảo đừng đổi API, sửa lại."
+Turn 2: "Tôi đã bảo đừng đổi API, sửa lại."
 → Claude vá thêm, test vẫn đỏ.
 
 STOP. Không gõ turn 3. Nhấn Esc Esc → chọn checkpoint trước turn 1 → re-prompt sạch:

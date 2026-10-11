@@ -12,9 +12,9 @@
 ## Cách gọi
 
 ```bash
-`/sandbox`
-`/sandbox on`
-`/sandbox off`
+/sandbox
+/sandbox on
+/sandbox off
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -36,13 +36,14 @@ npm test
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /sandbox (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Trạng thái cát hiện toolchain + network + mounts (`node 20 ✓ · network: blocked`).
+- Lệnh chạy trong cát không đụng máy thật; nổ thì `reset` là sạch.
 
 **Kiểm tra nhanh:**
 
 ```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
+/sandbox status
+# → network: blocked và mount /repo đúng như cấu hình mong muốn
 ```
 
 ## Lỗi thường gặp

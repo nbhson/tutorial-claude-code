@@ -5,9 +5,9 @@
 
 ## Khi nào dùng
 
-- Dùng `/subtask` khi bạn đang làm việc với code/repo (xem diff, review, verify, chạy batch, khởi tạo).
-- Dùng `/subtask` **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng `/subtask` thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/subtask` khi cần một subagent làm việc phụ ngắn (tra hàm, đọc 3 file, thử 1 hướng) rồi báo về ngay session này.
+- Giao subtask **giữa lúc đang code** để không phải rời mạch chính hay mở terminal khác.
+- Không dùng nó cho việc quá rộng ("tóm tắt cả module"): càng rộng càng chậm và dễ lệch scope.
 
 ## Cách gọi
 
@@ -32,8 +32,8 @@
 
 **Kết quả mong đợi:**
 
-- Claude trả đúng việc của `/subtask` (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Trả kết quả việc phụ ngay trong session, gọn 1–2 dòng, bạn viết tiếp luôn không mất bối cảnh.
+- Subagent tự compact sớm nếu frontmatter có `autoCompactWindow` (≥2.1.296); ép mọi workflow agent chạy 1 model bằng biến `CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL` (≥2.1.296).
 
 **Verify (30 giây):**
 

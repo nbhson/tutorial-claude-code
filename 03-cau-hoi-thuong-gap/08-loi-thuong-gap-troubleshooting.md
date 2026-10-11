@@ -68,7 +68,7 @@ Mục tiêu: tra nhanh triệu chứng → check/fix → nhảy tới câu chi t
 | 3 | MCP disconnected | `/mcp reconnect <name>`; token/URL/OAuth | [Câu 3](#3-mcp-disconnected), [FAQ 04](04-mcp-faq.md) |
 | 4 | Permission deny liên tục | `/permissions` merged + auto-mode denials | [Câu 4](#4-permission-deny-liên-tục), [FAQ 03](03-permissions-modes.md) |
 | 5 | Context đầy, quên rule | `/context` → `/compact [focus]` / `/clear` + plan | [Câu 5](#5-context-đầy-claude-quên-rule--lan-man--sửa-a-hỏng-b), [FAQ 02](02-model-context-token.md) |
-| 6 | Đọc hàng trăm file | Scope hẹp / subagent; "chỉ files mày sửa" | [Câu 6](#6-claude-đọc-hàng-trăm-file-quét-loãng) |
+| 6 | Đọc hàng trăm file | Scope hẹp / subagent; "chỉ files bạn sửa" | [Câu 6](#6-claude-đọc-hàng-trăm-file-quét-loãng) |
 | 7 | Sửa 2 lần vẫn sai | Dừng argue → double-Esc rewind → re-prompt | [Câu 7](#7-sửa-2-lần-vẫn-sai-argue-loop) |
 | 8 | Reviewer dễ dãi/khắt khe | Calibration 3 diffs + finding explicit | [Câu 8](#8-reviewer-dễ-dãi--khắt-khe-calibration) |
 | 9 | Flaky test đoán sai | "Flaky thì ghi flaky"; human verify | [Câu 9](#9-flaky-test-đoán-sai) |
@@ -98,7 +98,7 @@ claude update && claude --version
 
 **Kiểm tra nhanh:** `claude update` + `claude --version` (bên ngoài) + mở session MỚI + gõ lại lệnh X → thấy X hoạt động là xong.
 
-**Đào sâu:** [Bài 04 — slash commands toàn tập](../01-huong-dan-su-dung/04-slash-commands-toan-tap.md) · [WRITING-STYLE — B6 lệnh theo bản](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-07102026).
+**Đào sâu:** [Bài 04 — slash commands toàn tập](../01-huong-dan-su-dung/04-slash-commands-toan-tap.md) · [WRITING-STYLE — B6 lệnh theo bản](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-11102026).
 
 ## 2. Hook không chạy
 

@@ -5,9 +5,9 @@
 
 ## Khi nào dùng
 
-- Dùng `/security-review` khi bạn đang làm việc với code/repo (xem diff, review, verify, chạy batch, khởi tạo).
-- Dùng `/security-review` **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng `/security-review` thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/security-review` trước khi merge hoặc release để soi diff + file nhạy cảm tìm lỗ hổng.
+- Quét **trước khi push lên nhánh chung** hoặc trước khi phát hành — rẻ hơn sửa lỗi bảo mật đã lên production.
+- Không dùng nó thay cho pentest/kiểm tra chuyên sâu: đây là lượt quét tự động theo mẫu, bạn vẫn phải duyệt.
 
 ## Cách gọi
 
@@ -29,8 +29,8 @@
 
 **Kết quả mong đợi:**
 
-- Claude trả đúng việc của `/security-review` (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Báo cáo lỗ hổng xếp hạng kèm file:dòng và gợi ý patch cho từng chỗ.
+- Chỉ sửa khi bạn duyệt từng mục (mặc định chỉ đọc + báo cáo).
 
 **Verify (30 giây):**
 

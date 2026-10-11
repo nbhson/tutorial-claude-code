@@ -5,9 +5,9 @@
 
 ## Khi nào dùng
 
-- Dùng `/pr-comments` khi bạn đang làm việc với code/repo (xem diff, review, verify, chạy batch, khởi tạo).
-- Dùng `/pr-comments` **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng `/pr-comments` thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/pr-comments` khi PR của bạn có nhiều comment review cần xử lý từng cái rồi resolve.
+- Chạy **ngay khi review vừa xong** để khỏi để đống comment cũ mốc.
+- Không dùng nó thay cho việc tự hiểu góp ý: nó kéo thread về và hỗ trợ sửa, quyết định vẫn ở bạn.
 
 ## Cách gọi
 
@@ -24,15 +24,15 @@
 **Prompt thật (paste vào Claude Code):**
 
 ```bash
-/pr-comments --address
+/pr-comments --unresolved
 # → 8 threads gom theo 3 file.
 # Fix từng thread → git diff review → push → resolve hàng loạt.
 ```
 
 **Kết quả mong đợi:**
 
-- Claude trả đúng việc của `/pr-comments` (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Kéo về đủ thread, gom theo file, kèm trạng thái resolved/unresolved.
+- Sửa xong có `git diff` để bạn xem trước khi push và resolve hàng loạt.
 
 **Verify (30 giây):**
 

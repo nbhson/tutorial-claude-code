@@ -1,6 +1,6 @@
 # /background — Đẩy session đang chạy thành agent nền, rảnh tay làm việc khác
 
-> Loại Built-in · Nhóm Session & Song song · Mức rủi ro Thấp (chạy nền vẫn dùng quyền session hiện tại; nhưng Có nếu task nền ghi file/xóa/migrate mà bạn quên đang có nó chạy)
+> **Loại:** Built-in · **Nhóm:** Session & Song song · **Mức rủi ro:** Thấp (chạy nền vẫn dùng quyền session hiện tại; nhưng "Có" nếu task nền ghi file/xóa/migrate mà bạn quên đang có nó chạy)
 > **Nói nôm na:** `/background` detach session hiện tại thành một background agent: nó tự làm tiếp (code, test, research...), bạn rảnh terminal làm việc khác hoặc mở session mới. Muốn dừng: `Ctrl+X Ctrl+K` bấm 2 lần (kill background agent). Hiểu `/background` là hiểu "giao việc cho đàn em làm ở phòng bên, mình đi họp".
 
 ## Khi nào dùng
@@ -36,8 +36,8 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /background (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Session hiện tại được detach thành agent nền: terminal trả lại cho bạn, agent vẫn chạy tiếp task.
+- `/tasks` thấy agent ở trạng thái `running`; xong thì báo kết quả (report/log) trong phiên nền.
 
 Verify (30 giây):
 
@@ -61,4 +61,4 @@ Verify (30 giây):
 - [../permissions/README.md](../../model-mode/permissions/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
-> Mẹo 1 dòng: _chưa chắc thì gọi /background sớm — 1 lệnh đúng lúc rẻ hơn 10 prompt sửa sai._
+> Mẹo 1 dòng: _task đọc nhiều file hoặc test dài thì `/background` ngay từ đầu để rảnh tay, đừng ngồi nhìn tiến trình._

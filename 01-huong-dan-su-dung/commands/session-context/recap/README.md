@@ -1,6 +1,6 @@
 # /recap — Tóm tắt context khi quay lại session sau break
 
-> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (chỉ đọc + tóm tắt, không sửa gì)
+> **Loại:** Built-in · **Nhóm:** Session & Context · **Mức rủi ro:** Không (chỉ đọc + tóm tắt, không sửa gì)
 > **Nói nôm na:** `/recap` sinh context summary khi bạn quay lại session sau giờ nghỉ/ngắt quãng: đang làm gì, tới đâu, quyết định gì đã chốt, việc dở nào còn lại. Sinh ra để khỏi cuộn 200 tin nhắn đọc lại từ đầu. Hiểu `/recap` là hiểu "đồng nghiệp trực thay tóm tắt ca cho bạn lúc quay lại".
 
 ## Khi nào dùng
@@ -36,8 +36,8 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /recap (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Bản tóm tắt ngắn: đang làm gì, xong gì, dở gì, đã chốt gì, bước tiếp theo.
+- Quay lại sau break đọc recap là nắm tình hình, khỏi cuộn 200 tin nhắn.
 
 Verify (30 giây):
 
@@ -61,4 +61,4 @@ Verify (30 giây):
 - [../resume/README.md](../../session-context/resume/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
-> Mẹo 1 dòng: _chưa chắc thì gọi /recap sớm — 1 lệnh đúng lúc rẻ hơn 10 prompt sửa sai._
+> Mẹo 1 dòng: _quay lại sau break: `/recap` để nhớ mạch rồi `/todos` để nắm việc còn dở._

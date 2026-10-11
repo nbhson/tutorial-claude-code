@@ -432,6 +432,8 @@ Ma trận quyết định (dán cạnh bảng route model bài 14):
 # Ví dụ enforcement cứng cho secret (hook, không chỉ pattern gợi ý):
 # .claude/hooks/block-secrets.sh (PreToolUse Write|Edit) → exit 2 khi match
 # AKIA... / private key block. Kể cả bypassPermissions cũng không qua.
+# Bật onFailure: "block" (≥2.1.295): hook lỗi/timeout thì chặn, không thả qua —
+# guardrail phải fail closed.
 # Chi tiết viết hook: bài 07. Mẫu guard Bash: templates/.claude/hooks/bash-guard.sh.
 ```
 

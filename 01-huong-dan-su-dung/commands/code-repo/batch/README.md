@@ -5,9 +5,9 @@
 
 ## Khi nào dùng
 
-- Dùng `/batch` khi bạn đang làm việc với code/repo (xem diff, review, verify, chạy batch, khởi tạo).
-- Dùng `/batch` **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng `/batch` thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/batch` khi có ≥2 task độc lập và muốn mỗi task chạy trong worktree riêng, main branch vẫn sạch.
+- Dùng khi một mạch không kịp, cần chạy song song nhiều nhánh refactor/fix/doc khác nhau.
+- Không dùng `/batch` cho các task chung một file/config: chúng sẽ giẫm chân nhau rồi conflict.
 
 ## Cách gọi
 
@@ -29,8 +29,8 @@
 
 **Kết quả mong đợi:**
 
-- Claude trả đúng việc của `/batch` (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Mỗi task chạy trong worktree riêng, main branch không bị đụng.
+- Trả về diff/PR của từng nhánh để bạn duyệt.
 
 **Verify (30 giây):**
 

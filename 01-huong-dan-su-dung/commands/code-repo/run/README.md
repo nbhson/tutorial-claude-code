@@ -5,9 +5,9 @@
 
 ## Khi nào dùng
 
-- Dùng `/run` khi bạn đang làm việc với code/repo (xem diff, review, verify, chạy batch, khởi tạo).
-- Dùng `/run` **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng `/run` thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/run` khi bạn muốn thấy change chạy được bằng mắt: mở dev server/simulator rồi tự lái thử luồng.
+- Chạy `/run` **sau `/verify`** khi cần bằng chứng trực quan (click, xem màn hình) chứ không chỉ log.
+- Không dùng `/run` thay cho việc lái thử tay ở các luồng thanh toán/tiền thật.
 
 ## Cách gọi
 
@@ -30,8 +30,8 @@
 
 **Kết quả mong đợi:**
 
-- Claude trả đúng việc của `/run` (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- App thật mở lên và được lái thử theo luồng bạn chỉ; có log/screenshot làm bằng chứng.
+- Recipe chạy được thì lưu lại để lần sau gọi nhanh.
 
 **Verify (30 giây):**
 

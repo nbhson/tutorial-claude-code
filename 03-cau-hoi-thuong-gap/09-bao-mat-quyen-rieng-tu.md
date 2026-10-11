@@ -28,15 +28,15 @@
 
 - [Sơ đồ nhanh (nhìn 30 giây là nhớ)](#sơ-đồ-nhanh-nhìn-30-giây-là-nhớ)
 - [Bảng tổng hợp: 7 lớp phòng thủ](#bảng-tổng-hợp-7-lớp-phòng-thủ)
-- [1. Claude Code có đọc hết máy tôi không? (working dirs + --add-dir)](#1-claude-code-có-đọc-hết-máy-tôi-không-working-dirs---add-dir)
-- [2. Deny nào không bypass được? (hook deny + deny rules + org ask)](#2-deny-nào-không-bypass-được-hook-deny-deny-rules-org-ask)
-- [3. Secrets trong MCP/settings: env vars + reset-project-choices?](#3-secrets-trong-mcpsettings-env-vars-reset-project-choices)
-- [4. Zero Data Retention (ZDR) — ai được, hỏi ai?](#4-zero-data-retention-zdr-ai-được-hỏi-ai)
+- [1. Claude Code có đọc hết máy tôi không? (working dirs + --add-dir)](#1-claude-code-có-đọc-hết-máy-tôi-không-working-dirs----add-dir)
+- [2. Deny nào không bypass được? (hook deny + deny rules + org ask)](#2-deny-nào-không-bypass-được-hook-deny--deny-rules--org-ask)
+- [3. Secrets trong MCP/settings: env vars + reset-project-choices?](#3-secrets-trong-mcpsettings-env-vars--reset-project-choices)
+- [4. Zero Data Retention (ZDR) — ai được, hỏi ai?](#4-zero-data-retention-zdr--ai-được-hỏi-ai)
 - [5. Skill, plugin, hook có nguy hiểm không? (rủi ro supply-chain)](#5-skill-plugin-hook-có-nguy-hiểm-không-rủi-ro-supply-chain)
-- [6. Review code AI viết thế nào? (fresh-reviewer + /code-review + human + tests)](#6-review-code-ai-viết-thế-nào-fresh-reviewer-code-review-human-tests)
+- [6. Review code AI viết thế nào? (fresh-reviewer + /code-review + human + tests)](#6-review-code-ai-viết-thế-nào-fresh-reviewer--code-review--human--tests)
 - [7. Chỉ được dùng --dangerously-skip-permissions khi nào? (sandbox CI cô lập)](#7-chỉ-được-dùng---dangerously-skip-permissions-khi-nào-sandbox-ci-cô-lập)
 - [8. Telemetry và error-reporting tắt ở đâu? (theo provider)](#8-telemetry-và-error-reporting-tắt-ở-đâu-theo-provider)
-- [9. Lộ secret rồi — xử lý sao? (rotate + reset + rà git history)](#9-lộ-secret-rồi-xử-lý-sao-rotate-reset-rà-git-history)
+- [9. Lộ secret rồi — xử lý sao? (rotate + reset + rà git history)](#9-lộ-secret-rồi--xử-lý-sao-rotate--reset--rà-git-history)
 - [10. Checklist bảo mật repo mới (5 phút)](#10-checklist-bảo-mật-repo-mới-5-phút)
 - [Vẫn lỗi thì sao? (bảo mật)](#vẫn-lỗi-thì-sao-bảo-mật)
 - [Tham khảo chéo](#tham-khảo-chéo)
@@ -364,7 +364,7 @@ Chạy xong checklist mà `/doctor` không còn cảnh báo đỏ → mới cho 
 
 ## Vẫn lỗi thì sao? (bảo mật)
 
-1. Nghi lộ secret → **rotate trước, dọn sau** ([câu 9](#9-lộ-secret-rồi-xử-lý-sao-rotate-reset-rà-git-history)).
+1. Nghi lộ secret → **rotate trước, dọn sau** ([câu 9](#9-lộ-secret-rồi--xử-lý-sao-rotate--reset--rà-git-history)).
 2. Deny không ăn → mở `/permissions` xem merged rules + `/hooks` (hook nào allow nhầm?).
 3. Plugin/skill lạ → gỡ + rà `git grep` + `reset-project-choices`.
 4. ZDR/compliance → hỏi admin + đọc provider docs, đừng tự kết luận.

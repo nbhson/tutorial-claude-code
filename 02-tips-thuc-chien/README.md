@@ -75,7 +75,7 @@ Cần tra nhanh mà không muốn đọc bài dài → dùng các đường dẫ
 - **Gặp lỗi lạ:** [`03-cau-hoi-thuong-gap/08-loi-thuong-gap-troubleshooting.md`](../03-cau-hoi-thuong-gap/08-loi-thuong-gap-troubleshooting.md), rồi gõ `/doctor`.
 - **Bảng tra 1 trang:** [`CHEATSHEET.md`](../CHEATSHEET.md) — in ra dán cạnh màn hình.
 - **File mẫu copy-paste:** [`templates/`](../templates/) — `CLAUDE.md`, skills, agents, hooks, `.mcp.json`.
-- **Số version/model/giá chuẩn:** [`WRITING-STYLE.md` — Phần B](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-07102026).
+- **Số version/model/giá chuẩn:** [`WRITING-STYLE.md` — Phần B](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-11102026).
 
 **Kiểm tra nhanh:** mở được bảng 11 bài và 1 link chéo về `commands/`; chỉ ra được 3 bài nền tảng phải đọc trước; biết ngày 4–5 của lộ trình đọc tips nào.
 

@@ -5,9 +5,9 @@
 
 ## Khi nào dùng
 
-- Dùng `/verify` khi bạn đang làm việc với code/repo (xem diff, review, verify, chạy batch, khởi tạo).
-- Dùng `/verify` **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng `/verify` thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/verify` khi model khẳng định "xong rồi" và bạn muốn bằng chứng sống: build, chạy test, boot app, gọi endpoint.
+- Verify **sau mỗi bước lớn**, đừng dồn tới cuối — lỗi ở 1 bước sẽ lây sang các bước sau.
+- Không dùng `/verify` thay cho việc suy nghĩ về thiết kế: nó chứng minh code chạy được, không chứng minh code đúng ý bạn.
 
 ## Cách gọi
 
@@ -29,8 +29,8 @@
 
 **Kết quả mong đợi:**
 
-- Claude trả đúng việc của `/verify` (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Output build + chạy thật hiện trên màn hình, kết quả PASS/FAIL rõ ràng.
+- Model liệt kê lệnh nó sắp chạy (build/test/boot app) trước khi chạy, để bạn nắm được nó đã "chứng minh" bằng gì.
 
 **Verify (30 giây):**
 

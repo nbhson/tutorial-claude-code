@@ -58,6 +58,7 @@ claude -p "review diff và in findings dạng JSON" \
 ```
 
 - `PermissionRequest` hooks trong `-p` plain không có prompt (cần Agent SDK `canUseTool` callback hoặc `--permission-prompt-tool`); automate permission thì dùng **`PreToolUse`** hooks.
+- Hook `onFailure: "block"` (≥2.1.295): hook lỗi/timeout thì **chặn** hành động thay vì thả qua — CI nên bật để lỗi hook không âm thầm bỏ qua guardrail.
 - Frontmatter hooks của project subagents: `-p` không tính là trusted → có thể bị skip (log sẽ ghi rõ).
 
 ### 1.2. 3 ví dụ `-p` copy-paste
@@ -162,6 +163,8 @@ npx tsx examples/agent-review.ts
 python examples/agent_review.py
 # Kiểm tra: findings in ra; canUseTool block đúng lệnh lạ (thử prompt yêu cầu rm -rf → phải deny)
 ```
+
+> Trong CI, muốn ép mọi workflow agent chạy cùng 1 model (ổn định chi phí) → đặt env `CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL` (≥2.1.296) ở job env, cạnh `ANTHROPIC_MODEL`.
 
 **Kiểm tra nhanh:**
 

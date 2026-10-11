@@ -250,7 +250,7 @@ RESEARCH: Dùng subagent explore <phạm vi hẹp, vd src/payments/refund*>.
 - Trả về: (1) files liên quan (đường dẫn + 1 dòng vai trò),
   (2) flow hiện tại (5-8 bullet),
   (3) 2 phương án thay đổi (pros/cons mỗi cái 3 bullet).
-- Chỉ liệt kê files mày sẽ sửa/đọc nếu làm change tiếp theo. Không dump log dài.
+- Chỉ liệt kê files sẽ sửa/đọc nếu làm change tiếp theo. Không dump log dài.
 ```
 
 ### 4.5. Mẫu 5 — REVIEW (adversarial, có severity)

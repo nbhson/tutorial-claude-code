@@ -5,9 +5,9 @@
 
 ## Khi nào dùng
 
-- Dùng `/review` khi bạn đang làm việc với code/repo (xem diff, review, verify, chạy batch, khởi tạo).
-- Dùng `/review` **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng `/review` thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/review` khi bạn muốn ý kiến nhanh ngay tại chỗ từ model đang chạy, cùng context (không spawn subagent mới).
+- Gọi `/review` **sau mỗi thay đổi vừa viết** để bắt lỗi sớm — model còn nhớ mạch nên nhận xét sát hơn.
+- Không dùng `/review` làm chốt cuối: đây là cùng một agent tự chấm, dễ "khen" code của chính mình.
 
 ## Cách gọi
 
@@ -29,8 +29,8 @@
 
 **Kết quả mong đợi:**
 
-- Claude trả đúng việc của `/review` (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Danh sách nhận xét theo file:dòng: bug, style, chỗ thiếu test.
+- Không file nào bị sửa (review chỉ đọc rồi nhận xét).
 
 **Verify (30 giây):**
 

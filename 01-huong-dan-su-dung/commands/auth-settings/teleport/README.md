@@ -12,9 +12,9 @@
 ## Cách gọi
 
 ```bash
-`/teleport`
-`/teleport cloud`
-`/teleport local`
+/teleport
+/teleport cloud
+/teleport local
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -36,13 +36,14 @@ git add -A && git commit -m "WIP: teleport checkpoint"
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /teleport (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Session chạy tiếp ở đích; terminal báo link (cloud) hoặc kết quả pull (local).
+- History, todos, file đang sửa đi theo; code vẫn an toàn trong git.
 
 **Kiểm tra nhanh:**
 
 ```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
+/status
+# → cwd + session đúng như bên đích; /teleport --list thấy device hai đầu
 ```
 
 ## Lỗi thường gặp

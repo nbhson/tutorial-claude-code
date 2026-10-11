@@ -12,9 +12,9 @@
 ## Cách gọi
 
 ```bash
-`/config`
-`/settings`
-`/config <tab>`
+/config
+/settings
+/config <tab>
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -34,13 +34,14 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /config (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- UI cấu hình mở theo tab; đọc/ghi settings đúng scope (project/local/managed).
+- Sửa qua UI an toàn hơn sửa tay: JSON được kiểm cú pháp trước khi ghi.
 
 **Kiểm tra nhanh:**
 
 ```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
+/config --scope project
+# → thấy baseline team (deny/allow); đối chiếu thay đổi vừa rồi đã nằm đúng scope
 ```
 
 ## Lỗi thường gặp

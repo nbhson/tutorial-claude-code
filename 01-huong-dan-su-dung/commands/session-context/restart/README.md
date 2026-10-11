@@ -1,7 +1,7 @@
-# /restart — Khởi động lại CLI giữ nguyên session (kèm offer bản mới)
+# /restart — Khởi động lại CLI giữ nguyên session (kèm gợi ý lên bản mới)
 
-> Loại Built-in · Nhóm Session & Hệ thống · Mức rủi ro Không (giữ session; nhưng Có nhẹ nếu bạn restart giữa lúc tool đang ghi file — chờ nó xong hẳn rồi hẵng restart)
-> **Nói nôm na:** `/restart` (bí danh `/update` ở một số bản) khởi động lại tiến trình Claude Code mà KHÔNG mất hội thoại: update bản mới, nạp lại config/MCP/hooks, sửa treo lag — xong quay lại đúng chỗ đang làm. Bản mới còn offer nâng cấp version nếu có. Hiểu `/restart` là hiểu "khởi động lại máy mà không mất tab đang mở".
+> **Loại:** Built-in · **Nhóm:** Session & Hệ thống · **Mức rủi ro:** Không (giữ session; nhưng "Có" nhẹ nếu bạn restart giữa lúc tool đang ghi file — chờ nó xong hẳn rồi hẵng restart)
+> **Nói nôm na:** `/restart` (bí danh `/update` ở một số bản) khởi động lại tiến trình Claude Code mà KHÔNG mất hội thoại: update bản mới, nạp lại config/MCP/hooks, sửa treo lag — xong quay lại đúng chỗ đang làm. Bản mới còn gợi ý nâng cấp version nếu có. Hiểu `/restart` là hiểu "khởi động lại máy mà không mất tab đang mở".
 
 ## Khi nào dùng
 
@@ -36,8 +36,8 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /restart (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- CLI khởi động lại, nạp lại config/MCP/hooks; hội thoại (n messages) được phục hồi nguyên.
+- Nếu có bản mới, `/restart` đề nghị update luôn.
 
 Verify (30 giây):
 
@@ -49,9 +49,9 @@ Verify (30 giây):
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
-| `/update` báo unknown command | Bản bạn không có bí danh này | Dùng `/restart` (offer update nằm trong đó) |
+| `/update` báo unknown command | Bản bạn không có bí danh này | Dùng `/restart` (gợi ý nâng cấp nằm trong đó) |
 | Restart xong session trống | Snapshot fail (disk đầy / crash đúng lúc ghi) | `/resume` tìm session ID gần nhất; dọn disk; đừng restart khi máy báo disk full |
-| Restart xong vẫn lag | Bệnh ở model/provider mạng, không phải tiến trình local | Đổi model nhẹ (`/model haiku`), check mạng; `/status` xem provider |
+| Restart xong vẫn lag | Bệnh ở model/provider mạng, không phải tiến trình local | Đổi model nhẹ (`/model haiku`, nay là Haiku 5.5, ≥2.1.293), check mạng; `/status` xem provider |
 
 ## Tham khảo
 
@@ -61,4 +61,4 @@ Verify (30 giây):
 - [../resume/README.md](../../session-context/resume/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
-> Mẹo 1 dòng: _chưa chắc thì gọi /restart sớm — 1 lệnh đúng lúc rẻ hơn 10 prompt sửa sai._
+> Mẹo 1 dòng: _luôn chờ tool đang ghi file chạy xong hẳn trước khi `/restart` — cắt ngang dễ làm hỏng thao tác đang dở._

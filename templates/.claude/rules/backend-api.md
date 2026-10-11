@@ -13,7 +13,7 @@ paths: ["apps/api/**"]
   Không query DB trực tiếp, không chứa if-else nghiệp vụ dài trong controller.
 - Mỗi handler mới bắt buộc có test: 1 case happy + 1 case lỗi (401/403/400).
   Đặt cạnh source: `apps/api/src/routes/<ten>.test.ts`.
-- Validate input ở boundary bằng schema (vd zod): handler nào thiếu `schema.parse(req.body)` là FAIL review.
+- Validate input ở boundary (biên nhận dữ liệu vào hệ thống) bằng schema (vd zod): handler nào thiếu `schema.parse(req.body)` là FAIL review.
 - AuthZ trước logic: check `req.user` + quyền owner/role ngay đầu handler, trước mọi read/write.
 - Không log secret/PII (`password`, `token`, `authorization` header). Log chỉ ghi `userId`, `requestId`, `code`.
 - File handler >150 dòng thì tách service ra `packages/domain/src/<feature>.ts`.

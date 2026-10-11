@@ -132,7 +132,7 @@ Session đang Sonnet, gặp bug race condition 3 ngày chưa ra → `/model opus
 
 **Giải thích:** Dùng sai model = vừa đắt vừa dở:
 
-- **Haiku:** research, rewrite, tóm tắt, quét file ồn, việc song song số lượng lớn. Rẻ, nhanh, đủ tốt cho việc "đọc rồi nhả lại gọn".
+- **Haiku:** research, rewrite, tóm tắt, quét file ồn, việc song song số lượng lớn. Rẻ, nhanh, đủ tốt cho việc "đọc rồi nhả lại gọn". Trên Anthropic API alias `haiku` nay trỏ **Haiku 5.5** (1M context, $0.10/$0.50); các provider khác vẫn là Haiku 4.5 (200K).
 - **Sonnet:** implement thường, refactor, viết test, CRUD, glue code. Cân bằng giá/chất lượng — model mặc định 80% thời gian.
 - **Opus:** kiến trúc, security review, bug hiểm (race, memory, crypto), quyết định khó đảo ngược. Đắt nhưng đáng cho việc sai 1 ly đi 1 dặm.
 
@@ -155,17 +155,18 @@ Sonnet: implement 5 files chính (chuẩn, vừa tiền)
 Opus:   review security + race condition (đắt, xứng đáng)
 ```
 
-**Đào sâu:** Cần căn giá thật trước khi chọn model — giá API (USD / 1 triệu tokens, tra 07/10/2026, nguồn [WRITING-STYLE — Phần B](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-07102026)):
+**Đào sâu:** Cần căn giá thật trước khi chọn model — giá API (USD / 1 triệu tokens, tra 11/10/2026, nguồn [WRITING-STYLE — Phần B](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-11102026)):
 
 | Model | Input | Output | Cache read | Context | Ghi chú |
 |---|---|---|---|---|---|
-| Claude Fable 5.1 | $10 | $50 | $0.25 | 1M | Alias `fable`; cần ≥2.1.257; mạnh nhất, chậm nhất |
-| Claude Opus 5.5 | $4 | $20 | $0.20 | 1M | Cần ≥2.1.280; mặc định ở hầu hết gói (từ 22/09/2026) |
+| Claude Fable 5.1 | $10 | $50 | $0.25 | 1M | Alias `fable`; cần ≥2.1.257; mạnh nhất, chậm nhất; trên Pro bill usage credits, trên Max tốn ~50% hạn tuần |
+| Claude Opus 5.5 | $4 | $20 | $0.20 | 1M | Cần ≥2.1.280; **mặc định tài khoản** (Pro/Max/Team/Enterprise/API/Bedrock/GCP) |
 | Claude Opus 5.5 — fast mode | $8 | $40 | — | 1M | Gấp đôi giá thường, đổi lấy ~2.5× tốc độ |
-| Claude Sonnet 5.5 | $2 | $10 | $0.20 | 1M | Việc hằng ngày — cân bằng chất lượng/giá |
-| Claude Haiku 4.5 | $1 | $5 | $0.10 | 200K | Nhanh nhất, rẻ nhất; không hỗ trợ effort |
+| Claude Sonnet 5.5 | $2 | $10 | $0.10 | 1M | Cần ≥2.1.284; việc hằng ngày — cân bằng chất lượng/giá; cache đọc rẻ hơn Sonnet 5 |
+| Claude Haiku 5.5 | $0.10 | $0.50 | $0.01 | 1M | Cần ≥2.1.293; **mặc định Haiku trên API**; prompt >100K: $0.50/$2.50 |
+| Claude Haiku 4.5 | $1 | $5 | $0.10 | 200K | Nhanh, rẻ; mặc định Haiku trên Bedrock/GCP/AWS; không hỗ trợ effort |
 
-Đọc cột **Context** trước khi quét việc lớn: Haiku 4.5 chỉ có 200K, còn lại 1M. Chi tiết: [lệnh `/model`](../01-huong-dan-su-dung/commands/model-mode/model/README.md) · [bài 14 — models 5.x, chọn model đúng](../01-huong-dan-su-dung/14-models-5x-chon-model-dung.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-contexttoken)
+Đọc cột **Context** trước khi quét việc lớn: Haiku 4.5 chỉ có 200K, còn lại (Haiku 5.5, Sonnet 5.5, Opus 5.5, Fable 5.1) đều 1M. Chi tiết: [lệnh `/model`](../01-huong-dan-su-dung/commands/model-mode/model/README.md) · [bài 14 — models 5.x, chọn model đúng](../01-huong-dan-su-dung/14-models-5x-chon-model-dung.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-contexttoken)
 
 ---
 

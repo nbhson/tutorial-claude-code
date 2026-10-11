@@ -5,9 +5,9 @@
 
 ## Khi nào dùng
 
-- Dùng `/design-sync` khi bạn đang làm việc với code/repo (xem diff, review, verify, chạy batch, khởi tạo).
-- Dùng `/design-sync` **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng `/design-sync` thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/design-sync` khi design đã đổi và bạn muốn code UI khớp lại: màu, spacing, typography, component mapping.
+- Chạy khi **bắt đầu task UI**, trước khi tự sửa CSS bằng tay cho khớp mockup.
+- Không dùng nó cho logic: sync chỉ nên chạm file trình bày, đừng để nó ghi đè click/submit.
 
 ## Cách gọi
 
@@ -31,8 +31,8 @@
 
 **Kết quả mong đợi:**
 
-- Claude trả đúng việc của `/design-sync` (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Danh sách drift (design phiên bản nào vs code phiên bản nào) kèm file cần sửa.
+- Sinh/cập nhật code UI; không chạm logic nếu bạn không cho.
 
 **Verify (30 giây):**
 

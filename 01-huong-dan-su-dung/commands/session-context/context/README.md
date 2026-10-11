@@ -1,7 +1,7 @@
 # /context — Kính hiển vi context window: đang đầy bao nhiêu, nặng ở đâu
 
-> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (lệnh chỉ đọc, không xóa/sửa gì cả — an toàn tuyệt đối)
-> **Nói nôm na:** `/context` mở bảng "grid visualize": cho bạn thấy context window đã dùng bao nhiêu %, nặng ở chỗ nào (system, CLAUDE.md, history, tools, MCP), để quyết định nên `/compact`, `/clear` hay cứ làm tiếp.
+> **Loại:** Built-in · **Nhóm:** Session & Context · **Mức rủi ro:** Không (lệnh chỉ đọc, không xóa/sửa gì cả — an toàn tuyệt đối)
+> **Nói nôm na:** `/context` mở bảng trực quan dạng lưới: cho bạn thấy context window đã dùng bao nhiêu %, nặng ở chỗ nào (system, CLAUDE.md, history, tools, MCP), để quyết định nên `/compact`, `/clear` hay cứ làm tiếp.
 
 ## Khi nào dùng
 
@@ -33,8 +33,8 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /context (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Bảng cho biết context window đã dùng bao nhiêu % và nặng ở nhóm nào (system, `CLAUDE.md`, history, tools, MCP).
+- Từ số đó chọn `/compact` (cùng task) hay `/clear` (đổi task) hay cứ làm tiếp.
 
 Verify (30 giây):
 
@@ -58,4 +58,4 @@ Verify (30 giây):
 - [../usage/README.md](../../session-context/usage/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
-> Mẹo 1 dòng: _chưa chắc thì gọi /context sớm — 1 lệnh đúng lúc rẻ hơn 10 prompt sửa sai._
+> Mẹo 1 dòng: _thấy trả lời chậm dần là dấu hiệu context đầy — gõ `/context` trước khi model bắt đầu quên._

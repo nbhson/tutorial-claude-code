@@ -12,9 +12,9 @@
 ## Cách gọi
 
 ```bash
-`/statusline`
-`/statusline set <mẫu>`
-`/statusline exec <lệnh>`
+/statusline
+/statusline set <mẫu>
+/statusline exec <lệnh>
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -25,6 +25,7 @@ Prompt thật (paste vào Claude Code):
 
 ```bash
 /statusline set "[{acc}] {model} · {cwd}"
+# {model} hiện alias đang chạy; "default" = model mặc định tài khoản (Opus 5.5, ≥2.1.280)
 # Sáng: "[work] default · /repo" ✓
 # Trưa vọc side-project xong quên đổi: "[personal] default · /repo" ← thấy ngay!
 # → /login --account work trước khi push code công ty bằng quota túi
@@ -32,13 +33,14 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /statusline (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Thanh trạng thái hiện thường trực dưới prompt theo đúng mẫu đã set.
+- Biến `{acc}`/`{model}`/`{cwd}` đổi theo session, thấy ngay khi nhầm tài khoản.
 
 **Kiểm tra nhanh:**
 
 ```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
+/statusline
+# → xem cấu hình hiện tại; exec (nếu có) chạy nhẹ, mỗi Enter không bị chậm
 ```
 
 ## Lỗi thường gặp

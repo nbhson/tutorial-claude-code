@@ -9,7 +9,7 @@ allowed-tools: Bash, Read, Write, Edit
 
 > Ví dụ gọi: `/add-table profiles`.
 > Stack mẫu: Postgres + file migration SQL trong `db/migrations/`.
-> Comment trong file mẫu đều tiếng Việt để新人 cũng đọc được.
+> Comment trong file mẫu đều tiếng Việt để người mới cũng đọc được.
 
 ## Inputs
 

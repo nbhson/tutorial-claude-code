@@ -293,6 +293,8 @@ Mục này trả lời câu: metric nào đáng mở ra nhìn, và đọc bằng
 | `turn.tokens_in/out` + `turn.duration` | Turn nào phình? | tokens vọt sau 1 tool → tool đó dump quá nhiều |
 | `diagnostics.count` (per file) | File nào đỏ mãn tính? | 1 file đỏ hoài → tách file, fix types gốc |
 
+> Không phải mọi tín hiệu đều đi qua OTel: từ bản ≥2.1.295 terminal dùng Program Status Protocol (OSC 7501) để hiện đang làm / chờ bạn / xong — hữu ích để phân biệt session treo với session đang chạy trước khi kết luận cần OTel.
+
 ### 6.2. Ví dụ query khi có backend (Grafana/Jaeger khung)
 
 ```bash

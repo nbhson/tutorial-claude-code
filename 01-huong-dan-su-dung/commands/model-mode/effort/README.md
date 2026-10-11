@@ -13,9 +13,9 @@
 ## Cách gọi
 
 ```bash
-`/effort`
-`/effort low`
-`/effort medium`
+/effort
+/effort low
+/effort medium
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -36,10 +36,10 @@ rồi fix. Không đoán mò, phải có bằng chứng chạy được.
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /effort (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Cùng model nhưng trả lời sâu hơn (`high`/`max`) hoặc nhanh hơn (`low`) — không đổi model.
+- Effort cao tốn token suy luận và chậm hơn; cân nhắc trước khi để `max` cho cả phiên.
 
-Verify (30 giây):
+**Kiểm tra nhanh:**
 
 ```bash
 # trong session: /status hoặc /context để chắc mode/context còn sạch

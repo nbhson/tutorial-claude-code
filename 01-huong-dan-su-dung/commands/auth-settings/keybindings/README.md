@@ -12,9 +12,9 @@
 ## Cách gọi
 
 ```bash
-`/keybindings`
-`/keybindings set <hành-động> <phím>`
-`/keybindings reset`
+/keybindings
+/keybindings set <hành-động> <phím>
+/keybindings reset
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -33,13 +33,14 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /keybindings (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Danh sách phím tắt hiện ra; remap xong có hiệu lực ngay trong session.
+- Phím huỷ lệnh (Ctrl+C) vẫn giữ 1 cách để không tự khoá đường thoát.
 
 **Kiểm tra nhanh:**
 
 ```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
+/keybindings
+# → đối chiếu phím vừa đổi đã đúng; Ctrl+C vẫn huỷ được
 ```
 
 ## Lỗi thường gặp

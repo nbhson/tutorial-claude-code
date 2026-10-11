@@ -13,9 +13,9 @@
 ## Cách gọi
 
 ```bash
-`/permissions`
-`/allowed-tools`
-`Shift+Tab`
+/permissions
+/allowed-tools
+Shift+Tab
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -37,10 +37,10 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /permissions (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Bảng allow/ask/deny được cập nhật; tool đã allow chạy thẳng, không hỏi lại.
+- Mọi mode Shift+Tab (default/acceptEdits/plan/auto/bypass) chỉ là preset đè lên bảng này.
 
-Verify (30 giây):
+**Kiểm tra nhanh:**
 
 ```bash
 # trong session: /status hoặc /context để chắc mode/context còn sạch

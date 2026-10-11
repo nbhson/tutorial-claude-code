@@ -5,9 +5,9 @@
 
 ## Khi nào dùng
 
-- Dùng `/run-skill-generator` khi bạn đang làm việc với code/repo (xem diff, review, verify, chạy batch, khởi tạo).
-- Dùng `/run-skill-generator` **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng `/run-skill-generator` thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/run-skill-generator` khi bạn vừa mò ra "cách chạy app này" và muốn ghi lại thành skill để lần sau khỏi đoán.
+- Ghi recipe **một lần, sớm** ngay sau khi app chạy được — tránh mỗi session phải trả lời lại lệnh start/port.
+- Không dùng nó để hy vọng đoán đúng một project hoàn toàn lạ: monorepo vẫn cần bạn xác nhận lệnh start.
 
 ## Cách gọi
 
@@ -31,8 +31,8 @@ git add .claude/skills/run-web/ && git commit -m "chore: add run-web recipe"
 
 **Kết quả mong đợi:**
 
-- Claude trả đúng việc của `/run-skill-generator` (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Sinh `.claude/skills/run-<tên>/SKILL.md` ghi lệnh start, port, cách check sống và bước lái thử.
+- Recipe được chạy thử PASS trước khi ghi ra file.
 
 **Verify (30 giây):**
 

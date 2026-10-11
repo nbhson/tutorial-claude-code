@@ -7,9 +7,9 @@
 
 ## Khi nào dùng
 
-- Dùng `/ultrareview` khi bạn đang làm việc với code/repo (xem diff, review, verify, chạy batch, khởi tạo).
-- Dùng `/ultrareview` **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng `/ultrareview` thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/ultrareview` cho release lớn, code tiền thật hoặc phần bảo mật — cần audit đa agent trong sandbox cách ly.
+- Gọi khi một lượt `/review` + `/code-review` vẫn chưa đủ yên tâm.
+- Không dùng cho PR nhỏ hàng ngày: đây là lệnh chậm nhất và tốn quota nhất trong nhóm.
 
 ## Cách gọi
 
@@ -33,8 +33,8 @@
 
 **Kết quả mong đợi:**
 
-- Claude trả đúng việc của `/ultrareview` (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Một báo cáo audit tổng hợp từ nhiều subagent, kèm các phát hiện critical/high.
+- Có bằng chứng chạy race/repro trong sandbox khi tình huống cần mới thấy.
 
 **Verify (30 giây):**
 

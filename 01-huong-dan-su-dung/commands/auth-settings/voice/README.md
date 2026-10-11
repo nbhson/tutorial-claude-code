@@ -12,9 +12,9 @@
 ## Cách gọi
 
 ```bash
-`/voice`
-Giữ `Space`
-`/terminal-setup`
+/voice
+Giữ Space
+/terminal-setup
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -35,13 +35,14 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /voice (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Giữ Space thu giọng, thả ra transcript hiện trong khung nhập.
+- Enter mới gửi; bạn đọc lại transcript trước khi gửi.
 
 **Kiểm tra nhanh:**
 
 ```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
+/voice
+# → báo Voice ON/OFF; giữ Space thấy transcript xuất hiện là mic ổn
 ```
 
 ## Lỗi thường gặp

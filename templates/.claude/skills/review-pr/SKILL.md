@@ -63,6 +63,8 @@ allowed-tools: Bash, Read, Grep, Glob
 
 ## Output format (bắt buộc theo mẫu này)
 
+> Thang findings: `[BLOCKER]` = phải sửa mới merge; `[SHOULD-FIX]` = nên sửa; `[NIT]` = góp ý nhỏ, không chặn.
+
 ```markdown
 ## Kết quả review PR <số/range>
 

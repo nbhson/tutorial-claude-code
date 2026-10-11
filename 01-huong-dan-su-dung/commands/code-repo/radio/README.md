@@ -5,9 +5,9 @@
 
 ## Khi nào dùng
 
-- Dùng `/radio` khi bạn đang làm việc với code/repo (xem diff, review, verify, chạy batch, khởi tạo).
-- Dùng `/radio` **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng `/radio` thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/radio` khi bạn muốn một "kênh phụ" hỏi-đáp realtime, brainstorm phương án mà không chèn vào transcript chính.
+- Bật `/radio` **trước khi** task phình to: gom câu hỏi nhỏ vào kênh này thay vì rải nhiều turn chính.
+- Không dùng `/radio` để chốt thiết kế cuối: nó là kênh trao đổi, mọi quyết định vẫn nên ghi lại ở luồng chính.
 
 ## Cách gọi
 
@@ -31,8 +31,8 @@
 
 **Kết quả mong đợi:**
 
-- Claude trả đúng việc của `/radio` (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Có phản hồi ngay trong kênh radio; transcript chính vẫn gọn.
+- Bạn chủ động `/radio off` để đóng kênh khi trao đổi xong.
 
 **Verify (30 giây):**
 

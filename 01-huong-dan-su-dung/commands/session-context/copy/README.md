@@ -1,6 +1,6 @@
 # /copy — Copy đoạn hội thoại ra clipboard để paste nhanh sang Slack/PR/docs
 
-> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (chỉ đọc + ghi clipboard, không xóa/sửa code hay history)
+> **Loại:** Built-in · **Nhóm:** Session & Context · **Mức rủi ro:** Không (chỉ đọc + ghi clipboard, không xóa/sửa code hay history)
 > **Nói nôm na:** `/copy` là "chụp nhanh 1 đoạn": copy phần hội thoại (hoặc câu trả lời cuối) ra clipboard hệ điều hành để paste vào Slack, PR, docs mà không cần xuất cả file như `/export`.
 
 ## Khi nào dùng
@@ -30,8 +30,8 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /copy (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Đoạn hội thoại/câu trả lời vào clipboard hệ điều hành, giữ định dạng markdown/code.
+- Dán sang Slack/PR/docs được ngay, không cần xuất cả file.
 
 Verify (30 giây):
 
@@ -54,4 +54,4 @@ Verify (30 giây):
 - [../todos/README.md](../../session-context/todos/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
-> Mẹo 1 dòng: _chưa chắc thì gọi /copy sớm — 1 lệnh đúng lúc rẻ hơn 10 prompt sửa sai._
+> Mẹo 1 dòng: _nói rõ phạm vi trước khi `/copy` ("chỉ copy 20 dòng patch + 3 bullet") để không dính cả đoạn dài._

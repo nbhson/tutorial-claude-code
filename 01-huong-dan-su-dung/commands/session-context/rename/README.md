@@ -1,6 +1,6 @@
 # /rename — Đặt tên dễ nhớ cho session hiện tại để mai resume 1 phát trúng
 
-> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (chỉ đổi tên hiển thị trong index, không xóa/sửa code hay history)
+> **Loại:** Built-in · **Nhóm:** Session & Context · **Mức rủi ro:** Không (chỉ đổi tên hiển thị trong index, không xóa/sửa code hay history)
 > **Nói nôm na:** `/rename` là "dán nhãn hộp đồ": đặt tên gợi nhớ (`payments-fix`, `migration-ca-dem`) cho session ID khô khan, để `/resume` / picker tìm thấy trong 3 giây.
 
 ## Khi nào dùng
@@ -34,8 +34,8 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /rename (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Session được gắn tên gợi nhớ, hiện trong picker `/resume`.
+- Sáng hôm sau `/resume <tên>` trúng ngay, khỏi lướt danh sách.
 
 Verify (30 giây):
 
@@ -59,4 +59,4 @@ Verify (30 giây):
 - [../todos/README.md](../../session-context/todos/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
-> Mẹo 1 dòng: _chưa chắc thì gọi /rename sớm — 1 lệnh đúng lúc rẻ hơn 10 prompt sửa sai._
+> Mẹo 1 dòng: _đặt tên kebab-case kèm ngày/phạm vi (vd `payments-webhook-2026-10-11`) — tên chung chung dễ trùng._

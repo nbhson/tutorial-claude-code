@@ -12,9 +12,9 @@
 ## Cách gọi
 
 ```bash
-`/ide`
-`/ide connect`
-`/ide disconnect`
+/ide
+/ide connect
+/ide disconnect
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -34,13 +34,14 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /ide (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Terminal báo đã kết nối IDE; Claude đọc được file + selection đang mở.
+- Diff hiện inline trong editor để bạn duyệt từng hunk.
 
 **Kiểm tra nhanh:**
 
 ```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
+/ide
+# → hiện trạng thái kết nối + tên IDE, không còn "No IDE detected"
 ```
 
 ## Lỗi thường gặp

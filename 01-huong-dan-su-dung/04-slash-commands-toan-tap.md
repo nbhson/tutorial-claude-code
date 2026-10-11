@@ -24,7 +24,7 @@
 1. [Slash command là gì?](#1-slash-command-là-gì)
 2. [Nhóm 1 — Session & Context (18)](#2-nhóm-1--session--context-18)
 3. [Nhóm 2 — Model & Mode + Code (22)](#3-nhóm-2--model--mode--code-22)
-4. [Nhóm 3 — Tri thức & Hệ thống (18)](#4-nhóm-3--tri-thức--hệ-thống-18)
+4. [Nhóm 3 — Tri thức & hệ thống (18)](#4-nhóm-3--tri-thức--hệ-thống-18)
 5. [Nhóm 4 — Auth/Remote/Settings (20)](#5-nhóm-4--authremotesettings-20)
 6. [Công thức 5 lệnh mỗi repo và 5 lệnh hằng ngày](#6-công-thức-5-lệnh-mỗi-repo-và-5-lệnh-hằng-ngày)
 7. [Hiểu nhầm thường gặp](#7-hiểu-nhầm-thường-gặp)
@@ -50,7 +50,7 @@ Mục tiêu section này: trả lời 3 câu nền trong 2 phút — slash comma
 |---|---|---|---|
 | 1 — Session & Context | Não của session: mở, dọn, nén, xem tiền | `/clear` task mới, `/compact` khi 75%, `/cost` xem tiền | Đầu/cuối mỗi task, khi context đầy |
 | 2 — Model & Mode + Code | Cách "suy" của Claude + soi code | `/model opus` việc khó, `/plan` duyệt trước, `/review` + `/verify` sau code | Đổi model/effort, review/verify, chia batch |
-| 3 — Tri thức & Hệ thống | Trí nhớ + đồ nghề ngoài | `/memory` sửa CLAUDE.md, `/mcp` nối DB, `/hooks` xem sự kiện, `/doctor` khám tổng | Setup repo, nối tools, lỗi lạ |
+| 3 — Tri thức & hệ thống | Trí nhớ + đồ nghề ngoài | `/memory` sửa CLAUDE.md, `/mcp` nối DB, `/hooks` xem sự kiện, `/doctor` khám tổng | Setup repo, nối tools, lỗi lạ |
 | 4 — Auth/Remote/Settings | Tài khoản + cửa ra vào | `/login` đổi account, `/add-dir` thêm folder, `/ide` nối VS Code | Đổi account, thêm dir, pair mobile/IDE |
 
 ```mermaid
@@ -78,7 +78,7 @@ Giải thích từng bước ngay dưới sơ đồ:
 
 Mỗi khái niệm ở mục 1 theo khung 3 dòng: **Nôm na 1 câu** → **Ví dụ đời thường** → **Ví dụ kỹ thuật copy-paste được**. 4 bảng tra ở mục 2–5 mỗi dòng là 1 lệnh: `/lệnh` — mô tả 1 dòng — cột **Bản tối thiểu** (để `—` nếu mọi bản Claude Code đều có) — link file chi tiết. Chi tiết từng lệnh nằm ở `commands/<nhóm>/<slug>/README.md` (mỗi file ~60 dòng: nôm na → khi nào dùng → cách gọi → prompt thật + verify → lỗi hay gặp).
 
-- Tổng 78 folders, chia 4 nhóm: Session & Context (18) · Model & Mode + Code (22) · Tri thức & Hệ thống (18) · Auth/Remote/Settings (20).
+- Tổng 78 folders, chia 4 nhóm: Session & Context (18) · Model & Mode + Code (22) · Tri thức & hệ thống (18) · Auth/Remote/Settings (20).
 - Nhóm 2 gộp folder `model-mode/` + phần lớn `code-repo/`; riêng `/pr_comments` và `/run-skill-generator` nằm ở `code-repo/` nhưng xếp vào nhóm 3 cho đúng việc dùng.
 - Nếu link nào 404 ở máy bạn (lệnh vắng mặt) → làm theo mục 9 [Lưu ý version/provider](#9-lưu-ý-versionprovider).
 
@@ -197,7 +197,7 @@ Chưa sửa gì, chờ tao duyệt."
 - Tình huống 2: Claude chỉ đọc + trình plan (files sẽ sửa, giải pháp, rủi ro), `git status` sạch (không file nào đổi); duyệt xong mới cho code. Chi tiết: [plan](./commands/model-mode/plan/README.md).
 - Tình huống 3: `/review` (cùng agent, nhanh) chỉ ra lỗi nông; `/code-review` (mắt mới, sâu) chỉ thêm lỗi security/thiếu test; `/verify` build + chạy app thật, quan sát hành vi (không chỉ đọc code). Từ ≥2.1.215 cả hai chỉ chạy khi gọi tay — không tự trigger tốn token.
 
-## 4. Nhóm 3 — Tri thức & Hệ thống (18)
+## 4. Nhóm 3 — Tri thức & hệ thống (18)
 
 Mục tiêu nhóm này: cấu hình "trí nhớ và đồ nghề" của Claude Code và chẩn đoán khi có lỗi — 18 lệnh cho memory, rules, MCP, plugin, subagent, doctor/debug.
 

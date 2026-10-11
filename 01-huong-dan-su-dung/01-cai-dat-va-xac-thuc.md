@@ -218,8 +218,8 @@ Verify IDE:
 
 - Hầu hết bề mặt sử dụng cần **Claude subscription** (Pro/Max/Team/Enterprise) hoặc **Anthropic Console API key**. Giá gói hiện tại: tra tại claude.com/pricing.
 - Terminal CLI + VS Code còn hỗ trợ **third-party providers** (Bedrock, Google Agent Platform, Microsoft Foundry...).
-- Web/Mobile/Desktop-cloud/Slack/Routines/Remote Control/Chrome extension... **bắt buộc** sign-in `claude.ai`
-  (xem bảng phân biệt theo provider ở bài 10).
+- Các bề mặt gắn với hạ tầng Anthropic (Web/Mobile/Desktop-cloud/Slack/Routines/Remote Control/Chrome extension...)
+  **bắt buộc** sign-in `claude.ai` (xem bảng phân biệt theo provider ở bài 10).
 
 **Kiểm tra nhanh:**
 
@@ -334,7 +334,7 @@ brew upgrade --cask claude-code
 
 **Kiểm tra nhanh:**
 
-- `claude --version` ra số (vd `2.1.292`); `/status` trong session hiện đúng model + account. Nếu `/cd` báo `Unknown command` → version <2.1.169 → `claude update`.
+- `claude --version` ra số (vd `2.1.296`, bản mới nhất 09/10/2026); `/status` trong session hiện đúng model + account. Nếu `/cd` báo `Unknown command` → version <2.1.169 → `claude update`.
 - Sau update `claude --version` tăng số. Nếu `claude update` báo đã mới nhất mà vẫn thiếu lệnh → kiểm tra provider (mục 5), không phải version.
 
 ---
@@ -588,7 +588,7 @@ Mục này trả lời câu: sau khi cài xong thì check gì, lỗi nào hay g�
 
 ### 10.2. Lỗi cài đặt hay gặp (bản đầy đủ hơn FAQ rút gọn)
 
-| Triệu chứng | Nguyên nhân likely | Fix (copy-paste) |
+| Triệu chứng | Nguyên nhân thường gặp | Fix (copy-paste) |
 |---|---|---|
 | `Unknown command: /cd` | Version < 2.1.169 | `claude update` rồi `/status` xác nhận |
 | `command not found: claude` sau cài | PATH chưa có `~/.local/bin` | `export PATH="$HOME/.local/bin:$PATH"` + restart shell |

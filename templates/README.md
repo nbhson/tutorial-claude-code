@@ -1,7 +1,8 @@
 # Templates — copy-paste dùng ngay
 
-> Thư mục này chứa bộ khung `.claude/` + `CLAUDE.md` + `.mcp.json` mẫu.
-> Copy vào project thật, sửa tên/lệnh cho khớp repo là chạy được. Tổng thời gian setup: ~15 phút.
+> Thư mục này chứa bộ khung `.claude/` + `CLAUDE.md` + `.mcp.json` (kèm workflow CI mẫu, tùy chọn) để copy vào project thật.
+> **Cho ai:** dev/tech lead muốn dựng nhanh cấu hình Claude Code cho một repo mà chưa muốn viết từ đầu.
+> **Cách dùng:** copy khung về repo đích, sửa tên/lệnh cho khớp repo là chạy được. Setup mất ~15 phút.
 
 ## Từng file/folder là gì (đọc bảng này trước khi copy)
 
@@ -22,6 +23,10 @@
 | `.claude/hooks/guard-sensitive-paths.sh` | PreToolUse Write: chặn ghi vào path nhạy cảm | Tự chạy trước Write |
 | `.claude/hooks/cost-ledger.sh` | Stop: ghi sổ token/cost mỗi turn | Tự chạy khi turn kết thúc |
 | `.claude/hooks/test-gate.sh` | Stop: chạy `pnpm test` focused, đỏ thì exit 2 để block | Tự chạy khi turn kết thúc |
+| `.claude/hooks/bash-guard.sh` | PreToolUse Bash: tách câu lệnh + chặn lệnh khớp pattern cấm | Tự chạy trước lệnh Bash nguy hiểm |
+| `.claude/security-patterns.json` | Rule pattern cho plugin `security-guidance` (secrets, code rủi ro) | Sửa khi thêm/bớt rule security |
+| `.claude/claude-security-guidance.md` | Threat model + checklist bảo mật của repo bạn | Điền khi dựng stack security |
+| `.github/workflows/*.yml` | Workflow CI mẫu (review PR, triage issue) — **tùy chọn** | Copy riêng khi muốn CI đọc PR tự động |
 | `.mcp.json` | Khai báo MCP servers (DB, GitHub...) — secrets qua env, không hardcode | Sửa URL/token theo môi trường |
 
 ## Cách copy vào project (3 bước copy-paste)
@@ -31,6 +36,8 @@
 cp -r /path/to/tutorial-claude-code/templates/.claude ./
 cp /path/to/tutorial-claude-code/templates/CLAUDE.md ./
 cp /path/to/tutorial-claude-code/templates/.mcp.json ./
+# Tùy chọn: copy workflow CI mẫu (chỉ khi dùng GitHub Actions)
+# cp -r /path/to/tutorial-claude-code/templates/.github ./
 
 # 2. Cho quyền chạy hooks (bắt buộc trên macOS/Linux)
 chmod +x .claude/hooks/*.sh

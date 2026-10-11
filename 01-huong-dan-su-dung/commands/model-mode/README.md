@@ -1,11 +1,11 @@
 # /model-mode — nhóm 7 lệnh đổi cách model suy nghĩ và chạy
 
 > **Loại:** index nhóm lệnh · **Nhóm:** Model & Permission Modes · **Mức rủi ro:** thấp (đụng mode/quota, /permissions cấu hình ẩu là rủi ro)
-> **Nói nôm na:** nhóm này là nơi bạn "vặn não và dựng phanh" cho model — đổi model, độ sâu suy luận, chế độ nhanh, đặt mục tiêu, khóa quyền. /extra-usage tốn tiền thật, nên coi quota là thật.
+> **Nói nôm na:** nhóm này là nơi bạn "vặn não và dựng phanh" cho model — đổi model, độ sâu suy luận, chế độ nhanh, đặt mục tiêu, khóa quyền. Mặc định tài khoản là Opus 5.5 (≥2.1.280); Fable 5.1 mạnh nhất nhưng không bao giờ là default. /extra-usage tốn tiền thật, nên coi quota là thật.
 
 ## Khi nào dùng
 
-- Bạn muốn đổi "não" model giữa phiên: /model (Haiku/Sonnet/Opus 5.5), /effort (độ sâu suy luận), /fast (việc dễ).
+- Bạn muốn đổi "não" model giữa phiên: /model (Haiku 5.5/Sonnet/Opus 5.5, thêm alias `best`), /effort (độ sâu suy luận), /fast (việc dễ).
 - Bạn cần khóa "chỉ đọc + viết plan" trước task lớn bằng /plan, và dựng phanh allow/ask/deny bằng /permissions.
 - Bạn muốn đặt tiêu chí "xong là gì" để agent tự chạy tiếp bằng /goal (cần ≥2.1.139), hoặc mua thêm quota bằng /extra-usage khi trần hạn mức.
 
@@ -29,7 +29,7 @@ Bạn muốn đổi sang model mạnh hơn giữa phiên:
 # chon "Opus 5.5" (can >=2.1.280) hoac "fable" (can >=2.1.257)
 ```
 
-- Mong đợi: picker hiện danh sách model (Haiku/Sonnet/Opus 5.5, fable), bạn chọn model mới, phiên chuyển sang model đó.
+- Mong đợi: picker hiện danh sách model (Haiku 5.5/Sonnet/Opus 5.5, fable), bạn chọn model mới, phiên chuyển sang model đó.
 - Kiểm tra (≤30 giây): /status xem "Model" đã đổi chưa; model không hiện thì `claude --version` kiểm tra version floor.
 
 ## Lỗi thường gặp
@@ -42,7 +42,7 @@ Bạn muốn đổi sang model mạnh hơn giữa phiên:
 
 ## Bộ 3 phải nhớ
 
-> /plan khóa ghi trước task lớn | /model đổi não (Opus 5.5/Sonnet/Haiku) | /permissions dựng phanh allow/ask/deny
+> /plan khóa ghi trước task lớn | /model đổi não (Opus 5.5/Sonnet/Haiku 5.5) | /permissions dựng phanh allow/ask/deny
 
 ## Các lệnh (7)
 
@@ -52,7 +52,7 @@ Bạn muốn đổi sang model mạnh hơn giữa phiên:
 | [/extra-usage](./extra-usage/README.md) | Không (tốn tiền thật) | Mua thêm quota khi hết hạn mức gói |
 | [/fast](./fast/README.md) | Không | Chế độ nhanh cho việc dễ, không chờ suy luận sâu |
 | [/goal](./goal/README.md) | Không (cần ≥2.1.139) | Đặt điều kiện hoàn thành, evaluator check mỗi turn |
-| [/model](./model/README.md) | Không | Đổi model giữa phiên (Haiku/Sonnet/Opus 5.5) |
+| [/model](./model/README.md) | Không | Đổi model giữa phiên (Haiku 5.5/Sonnet/Opus 5.5) |
 | [/permissions](./permissions/README.md) | Có nếu cấu hình ẩu | Dựng phanh allow/ask/deny cho tool |
 | [/plan](./plan/README.md) | Không | Chỉ đọc + viết plan, cấm sửa code tới khi duyệt |
 

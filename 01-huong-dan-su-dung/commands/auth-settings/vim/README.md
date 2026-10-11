@@ -12,9 +12,9 @@
 ## Cách gọi
 
 ```bash
-`/vim`
-`/vim on`
-`/vim off`
+/vim
+/vim on
+/vim off
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -32,13 +32,14 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /vim (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Khung nhập sang kiểu vim: `Esc` về normal, `hjkl`/`w/b`/`dd` hoạt động.
+- `i/a/o` vào insert gõ tiếp; Enter mới gửi prompt.
 
 **Kiểm tra nhanh:**
 
 ```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
+/vim --status
+# → báo vim mode đang ON/OFF đúng như ý bạn
 ```
 
 ## Lỗi thường gặp

@@ -206,7 +206,7 @@ claude --agents '{"reviewer":{"description":"review PR","tools":["Read","Grep","
 > **Hỏi ngắn gọn:** Subagent có được quyền tự sinh subagent con không, sâu nhất được bao nhiêu cấp?
 > **Trả lời 1 câu:** Được, nhưng token CỘNG DỒN (cháu 20k + con 20k + main...) — giới hạn cấp mặc định 3, trần tối đa 5 cấp (w24/2026).
 
-**Giải thích:** Được, nhưng token CỘNG DỒN (cháu 20k + con 20k + main...). Không giới hạn → cháy bill + loãng. Harness cho phép depth mặc định **3**, trần tối đa **5 cấp** (w24/2026); hạ về 1 bằng `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1`. Quy tắc thực dụng: tiết chế, luôn đặt `maxTurns`, dặn con "không tự đẻ thêm".
+**Giải thích:** Được, nhưng token CỘNG DỒN (cháu 20k + con 20k + main...). Không giới hạn → cháy bill + loãng. Harness cho phép depth mặc định **3**, trần tối đa **5 cấp** (w24/2026); hạ về 1 bằng `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1`. Từ ≥2.1.296, frontmatter subagent khai được `autoCompactWindow` để subagent tự compact sớm hơn cửa sổ chính — hữu ích cho agent research chạy dài. Quy tắc thực dụng: tiết chế, luôn đặt `maxTurns`, dặn con "không tự đẻ thêm".
 
 ```text
 main → con (Explore, maxTurns 10) → hết. Con không đẻ cháu.
@@ -363,6 +363,8 @@ Phase 1 — Research song song (Haiku, fresh, worktree riêng nếu cần):
 Phase 2 — Implement (Sonnet, main): gắt từng file theo tóm tắt
 Phase 3 — Verify: fresh-reviewer + /verify (chạy app thật) + tests xanh
 ```
+
+Muốn ép mọi workflow agent chạy chung một model thì đặt biến môi trường `CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL=<model>` (≥2.1.296) thay vì sửa từng agent file.
 
 **Khi nào áp dụng:** mọi feature vừa-trở-lên. Task 5 phút thì khỏi (overhead không đáng).
 

@@ -23,7 +23,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
+```text
 # Gõ 1 câu, model tự fan-out 3 đứa:
 # "Song song tìm hiểu repo này: đứa 1 đọc api/ (stack + entry point),
 #  đứa 2 đọc web/ (framework + state), đứa 3 đọc migrations/ + README (schema + cách chạy).

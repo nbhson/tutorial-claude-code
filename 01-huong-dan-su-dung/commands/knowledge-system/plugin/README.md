@@ -29,7 +29,7 @@ Prompt thật (paste vào Claude Code):
 /plugin install commit-commands
 /plugin install pr-review-toolkit
 
-# File .claude/settings.json:
+# -> ghi vào .claude/settings.json, commit để cả team dùng chung
 ```
 
 Kết quả mong đợi:

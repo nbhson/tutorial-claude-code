@@ -1,6 +1,6 @@
 # /compact — Nén lịch sử hội thoại thành tóm tắt, giữ đà task mà nhẹ context
 
-> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (không xóa/sửa file code; chỉ thay conversation dài bằng bản tóm tắt — chi tiết gốc không khôi phục trong phiên)
+> **Loại:** Built-in · **Nhóm:** Session & Context · **Mức rủi ro:** Không (không xóa/sửa file code; chỉ thay conversation dài bằng bản tóm tắt — chi tiết gốc không khôi phục trong phiên)
 > **Nói nôm na:** `/compact` là "nén RAM có chọn lọc": thay vì xóa trắng như `/clear`, nó tóm tắt toàn bộ hội thoại thành 1 bản summary gọn rồi tiếp tục task từ đó. Dùng khi context đầy nhưng bạn vẫn đang làm dở cùng 1 task.
 
 ## Khi nào dùng
@@ -18,6 +18,7 @@ Auto-compact
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
+> Từ ≥2.1.296, subagent có `autoCompactWindow` để tự compact sớm hơn cửa sổ chính — hữu ích khi bạn giao việc phụ dài.
 
 ## Ví dụ thật + kết quả mong đợi + cách kiểm tra
 
@@ -36,8 +37,8 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /compact (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Hội thoại dài được thay bằng một bản tóm tắt gọn; task tiếp tục từ đó, không cần đọc lại file.
+- Chi tiết gốc (log, đoạn đã nén) không khôi phục được trong phiên.
 
 Verify (30 giây):
 
@@ -61,4 +62,4 @@ Verify (30 giây):
 - [../todos/README.md](../../session-context/todos/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
-> Mẹo 1 dòng: _chưa chắc thì gọi /compact sớm — 1 lệnh đúng lúc rẻ hơn 10 prompt sửa sai._
+> Mẹo 1 dòng: _chủ động `/compact <focus>` ở ~60% (nêu rõ file + quyết định cần giữ), đừng đợi auto-compact ở ~80% cho summary xấu._

@@ -5,9 +5,9 @@
 
 ## Khi nào dùng
 
-- Dùng `/fewer-permission-prompts` khi bạn đang làm việc với code/repo (xem diff, review, verify, chạy batch, khởi tạo).
-- Dùng `/fewer-permission-prompts` **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng `/fewer-permission-prompts` thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/fewer-permission-prompts` khi bạn thấy bị hỏi xin quyền lặp lại nhiều lần cho cùng loại lệnh read-only.
+- Quét **sau vài ngày dùng thật** để đủ mẫu transcript — quét ngay ngày đầu sẽ ít đề xuất.
+- Không dùng nó để mở quyền ghi/chạy: nó chỉ đề xuất allowlist read-only, bạn vẫn duyệt từng cái.
 
 ## Cách gọi
 
@@ -33,8 +33,8 @@
 
 **Kết quả mong đợi:**
 
-- Claude trả đúng việc của `/fewer-permission-prompts` (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Danh sách đề xuất allowlist read-only kèm số lần bị hỏi, mỗi mục là một lựa chọn Yes/No.
+- Không quyền ghi hay chạy nào được tự thêm vào cấu hình.
 
 **Verify (30 giây):**
 

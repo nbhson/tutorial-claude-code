@@ -1,6 +1,6 @@
 # Đóng góp cho Khóa Học Claude Code
 
-Cảm ơn bạn muốn đóng góp! Repo này là tài liệu tiếng Việt, mọi code block copy-paste được.
+Cảm ơn bạn muốn đóng góp! Repo này là tài liệu tiếng Việt, mọi code block đều copy-paste được.
 Đọc 2 file này trước khi mở PR:
 
 1. [`WRITING-STYLE.md`](./WRITING-STYLE.md) — **quy chuẩn viết** (khung mở đầu, glossary đầu file,
@@ -39,8 +39,8 @@ Viết theo `WRITING-STYLE.md` là bắt buộc; các mục dưới đây mô t�
 
 ### Lệnh mới trong `01-huong-dan-su-dung/commands/<slug>/README.md`
 
-- 1 folder = 1 lệnh, chỉ 1 file `README.md`. Độ dài **tối thiểu 30–50 dòng súc tích** (~60 dòng tối đa).
-- Format 7 mục cố định (xem `commands/model-mode/plan/README.md` sau đợt rewrite):
+- 1 folder = 1 lệnh, chỉ 1 file `README.md`. Độ dài **30–60 dòng súc tích** (đủ 7 mục, không dài hơn).
+- Format 7 mục cố định (xem `commands/model-mode/plan/README.md` làm mẫu chuẩn):
   1. `# /tên-lệnh — mô tả 1 dòng` + quote loại/nhóm/nguy hiểm + `> Nói nôm na:` 1–2 câu.
   2. `## Khi nào dùng` (3 bullets: đúng việc + trước khi phình to + không thay review tay).
   3. `## Cách gọi (copy-paste)` (code block 2–3 dạng gọi + ghi chú `/` discover/version-gated).
@@ -55,14 +55,14 @@ Viết theo `WRITING-STYLE.md` là bắt buộc; các mục dưới đây mô t�
 
 - File/kebab-case không dấu: `NN-ten-tieng-viet.md`, folder lệnh 1 từ: `design-sync/`.
 - Tiếng Việt, xưng "bạn", code comments tiếng Việt không dấu (tránh lỗi encoding CI).
-- Tiêu đề bài 01: `# NN — Tên Bài (...)`. Tips 02: `# Tips NN — Tên (...)`.
+- Tiêu đề bài 01: `# NN — Tên bài (...)`. Tips 02: `# Tips NN — Tên (...)`.
 - FAQ: giữ nguyên nội dung lệnh đã verify, chỉ thêm khung 5 bước + mermaid, không rút gọn ý.
 - Không sửa nội dung file `.md` hiện có khi thêm bài mới (trừ link index ở lượt dọn riêng).
 
 ## PR checklist (tick hết mới merge)
 
 - [ ] Tên file/số thứ tự đúng (không trùng, không nhảy số).
-- [ ] Đủ số dòng: bài 300–450, lệnh 30–50+, FAQ mỗi câu đủ 5 khối + file có mermaid.
+- [ ] Đủ số dòng: bài 300–450, lệnh 30–60, FAQ mỗi câu đủ 5 khối + file có mermaid.
 - [ ] Code block đã chạy thử (ghi rõ đã verify ở đâu trong PR mô tả).
 - [ ] Có pitfalls (bảng) + bài tập (có thời gian) + link chéo (≥3, không 404).
 - [ ] Lệnh mới: đủ 7 mục + version/provider + cách kiểm tra `/`.

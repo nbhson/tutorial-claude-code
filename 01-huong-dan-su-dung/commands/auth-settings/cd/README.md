@@ -12,9 +12,9 @@
 ## Cách gọi
 
 ```bash
-`/cd <đường-dẫn>`
-`/cd ..`
-`/cd -`
+/cd <đường-dẫn>
+/cd ..
+/cd -
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -36,13 +36,14 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /cd (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Cwd đổi; history giữ nguyên, prompt cache được tái dùng phần lớn.
+- Vào dir chưa tin thì hiện trust prompt trước khi nạp CLAUDE.md/hooks.
 
 **Kiểm tra nhanh:**
 
 ```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
+/status
+# → dòng cwd hiện đường dẫn mới; cache reused > 0%
 ```
 
 ## Lỗi thường gặp

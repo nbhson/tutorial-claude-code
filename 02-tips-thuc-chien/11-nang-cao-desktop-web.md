@@ -489,7 +489,7 @@ Mục này trả lời câu: muốn đi sâu từng lệnh hoặc từng chủ �
   - [../01-huong-dan-su-dung/commands/code-repo/radio/README.md](../01-huong-dan-su-dung/commands/code-repo/radio/README.md) — kênh discuss realtime
   - [../01-huong-dan-su-dung/commands/auth-settings/mobile/README.md](../01-huong-dan-su-dung/commands/auth-settings/mobile/README.md) — điều khiển từ điện thoại
   - [../01-huong-dan-su-dung/commands/session-context/export/README.md](../01-huong-dan-su-dung/commands/session-context/export/README.md) — xuất conversation trước teleport/clear
-  - [../01-huong-dan-su-dung/04-slash-commands-toan-tap.md](../01-huong-dan-su-dung/04-slash-commands-toan-tap.md) — index 64 lệnh, gõ `/` kiểm tra availability
+  - [../01-huong-dan-su-dung/04-slash-commands-toan-tap.md](../01-huong-dan-su-dung/04-slash-commands-toan-tap.md) — index 78 lệnh, gõ `/` kiểm tra availability
   - [../01-huong-dan-su-dung/10-permissions-modes-availability.md](../01-huong-dan-su-dung/10-permissions-modes-availability.md) — availability theo gói/provider
   - [Tips 10](./10-debugging-power-moves.md) — cloud ≠ local, debug L1→L4 khi desktop/web lỗi
 

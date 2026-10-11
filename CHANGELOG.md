@@ -1,5 +1,17 @@
 # Changelog — Khóa Học Claude Code (tiếng Việt)
 
+## [Unreleased] — đợt soát dữ kiện & dễ đọc (11/10/2026)
+
+- Toàn bộ **141 file `.md`**: soát lại dữ kiện theo tài liệu chính thức và tinh chỉnh câu chữ cho dễ đọc,
+  giữ nguyên cấu trúc (khung 7 mục của file lệnh, 5 khối FAQ, khối "lối vào" A2), không mất bảng/ví dụ/lệnh/bài tập/link.
+- Cập nhật dữ kiện phiên bản/model: bản mới nhất **v2.1.296** (09/10/2026); thêm **Haiku 5.5**
+  (`claude-haiku-5-5`, ≥2.1.293, context 1M, $0.10/$0.50) thay Haiku 4.5 làm Haiku mặc định trên Anthropic API;
+  sửa cache read **Sonnet 5.5 = $0.10**; nêu rõ **Opus 5.5 là model mặc định tài khoản** và **Fable không bao giờ mặc định**.
+- Bổ sung tính năng mới: hook `onFailure: "block"` (≥2.1.295), Program Status Protocol OSC 7501 (≥2.1.295),
+  `autoCompactWindow` và `CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL` (≥2.1.296).
+- Sửa lỗi trình bày: bỏ backtick thừa trong code fence `bash` của nhóm lệnh, sửa anchor mục lục lệch heading,
+  chuẩn hóa giọng "bạn" và tiêu đề tiếng Việt viết thường.
+
 ## [Unreleased] — đợt biên tập hiểu-nhanh (10/2026)
 
 - `03-cau-hoi-thuong-gap/01–10`: chuẩn hóa mỗi câu hỏi theo khung 5 bước

@@ -56,7 +56,7 @@ Cần chọn nhanh bài hợp với hoàn cảnh của mình → dùng bảng n�
 | 11 | Git worktrees & Checkpoints | Làm việc song song, quay lui an toàn | 30' | [11-git-worktrees-checkpoints.md](./11-git-worktrees-checkpoints.md) |
 | 12 | Agent SDK, CI/CD, Automation | Tự động hóa bằng SDK và pipeline CI/CD | 40' | [12-agent-sdk-ci-cd-automation.md](./12-agent-sdk-ci-cd-automation.md) |
 | 13 | Code intelligence, LSP, OpenTelemetry | Hiểu code sâu (LSP) và quan sát hành vi (OTel) | 30' | [13-code-intelligence-lsp-opentelemetry.md](./13-code-intelligence-lsp-opentelemetry.md) |
-| 14 | Models 5.x: chọn model đúng | Fable / Opus 5.5 / Sonnet 5.5 / Haiku: giá, IDs, khi nào dùng | 20' | [14-models-5x-chon-model-dung.md](./14-models-5x-chon-model-dung.md) |
+| 14 | Models 5.x: chọn model đúng | Fable / Opus 5.5 / Sonnet 5.5 / Haiku 5.5, 4.5: giá, IDs, khi nào dùng | 20' | [14-models-5x-chon-model-dung.md](./14-models-5x-chon-model-dung.md) |
 | 15 | Security stack 5 tầng | Defense-in-depth cho agent: xếp đúng thứ tự 5 tầng | 30' | [15-security-stack-5-tang.md](./15-security-stack-5-tang.md) |
 | 16 | Mods: bảo mật & validate | Mod in-process JS/TS nguy hiểm tới đâu, validate trước khi cài | 30' | [16-mods-bao-mat-validate.md](./16-mods-bao-mat-validate.md) |
 

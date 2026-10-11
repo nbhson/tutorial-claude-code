@@ -12,9 +12,9 @@
 ## Cách gọi
 
 ```bash
-`/exit`
-`/quit`
-`Ctrl+C` ×2
+/exit
+/quit
+Ctrl+C ×2
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -35,13 +35,14 @@ claude --resume
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /exit (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Thoát về shell; terminal báo `Session ... saved`.
+- Token + history giữ nguyên; mai `claude --resume` vào lại đúng chỗ.
 
 **Kiểm tra nhanh:**
 
 ```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
+claude --resume --list
+# → session vừa thoát còn trong danh sách để resume
 ```
 
 ## Lỗi thường gặp

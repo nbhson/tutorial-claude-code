@@ -113,7 +113,7 @@ sequenceDiagram
 
 **Giải thích từng bước:**
 
-1. **`tools/list` (chào hàng):** lúc session start (và khi `/mcp reconnect`), Claude hỏi mỗi server "mày biết làm gì?". Server trả catalog kèm JSON schema đầu vào.
+1. **`tools/list` (chào hàng):** lúc session start (và khi `/mcp reconnect`), Claude hỏi mỗi server xem nó biết làm gì. Server trả catalog kèm JSON schema đầu vào.
 2. **Chọn tool:** Claude match ý định "liệt kê PRs" với `list_prs` (không phải `create_pr`). Nếu có 10 tools tên na ná → đây là chỗ accuracy giảm khi cài quá nhiều server (xem prune mục 6).
 3. **Approval:** harness đối chiếu [quyền permissions](./10-permissions-modes-availability.md) + `ask` — read-only thường auto-allow, write (create_pr/merge) thì hỏi. Bạn thấy dòng `Allow?` chính là bước này.
 4. **`tools/call`:** Claude gọi tool với arguments đã điền (owner/repo/limit). Arguments sai schema → server trả lỗi validation, Claude sửa và gọi lại.
@@ -213,7 +213,7 @@ github://repos/acme/api/files/main/src/auth.ts
 
 | Khái niệm | Là gì (nôm na) | Ví dụ thật | Claude dùng khi nào |
 |---|---|---|---|
-| **Tools** | Hàm Claude gọi ( có input/output schema) | `github.create_pr`, `postgres.query` | Cần *hành động*: tạo PR, chạy query, mở browser |
+| **Tools** | Hàm Claude gọi (có input/output schema) | `github.create_pr`, `postgres.query` | Cần *hành động*: tạo PR, chạy query, mở browser |
 | **Resources** | Dữ liệu đọc (URI-addressable) | `github://repos/acme/api/issues/123` | Cần *đọc* 1 thực thể cụ thể |
 | **Prompts** | Templates hiện thành `/mcp__<server>__<prompt>` | `/mcp__github__review_pr` | Cần *workflow chuẩn* server đóng gói sẵn |
 
@@ -223,8 +223,8 @@ Transports: **stdio** (Claude spawn process local — nhanh, cần binary local)
 **Kiểm tra nhanh:**
 
 - `claude mcp list` → thấy 4 dòng github/postgres/playwright/notion + scope + connected (mới cài thì 1–2 dòng là bình thường, cài tới đâu hiện tới đó — làm tiếp mục 3). Chưa connected → mục 6 debug + bài tập 4.
-- Trong session đã cài github, gõ: "liệt kê 5 PRs mở gần nhất của repo này + tóm tắt mỗi PR 1 dòng" → Claude gọi `list_prs` (bạn thấy tool call), trả 5 dòng + link PR. Nếu Claude hỏi "owner/repo là gì?" → nó thiếu context repo, trả lời tên repo rồi hỏi lại.
-- Gõ: "liệt kê MCP tools mày đang thấy + server nào expose. Server nào thừa?" → Claude liệt kê tên tools theo server (github: list_prs...; postgres: query...). Quá ~10 tools visible → accuracy giảm, prune theo mục 6.
+- Trong session đã cài github, gõ: "liệt kê 5 PRs mở gần nhất của repo này + tóm tắt mỗi PR 1 dòng" → Claude gọi `list_prs` (bạn thấy tool call), trả 5 dòng + link PR. Nếu Claude hỏi "owner/repo là gì?" → nghĩa là Claude thiếu context repo, trả lời tên repo rồi hỏi lại.
+- Gõ: "liệt kê MCP tools đang thấy + server nào expose. Server nào thừa?" → Claude liệt kê tên tools theo server (github: list_prs...; postgres: query...). Quá ~10 tools visible → accuracy giảm, prune theo mục 6.
 - Gõ: "đọc issue #123 của repo này" → Claude fetch resource URI tương ứng, tóm tắt title + labels + comments mới nhất. Báo "không tìm thấy resource" → server github chưa connected (`/mcp` kiểm tra).
 - Gõ `/` → tìm dòng bắt đầu `/mcp__` → có là server expose prompts thành công. Không thấy → server đó không expose prompts (bình thường, không phải lỗi).
 
@@ -290,6 +290,11 @@ CLI: `claude mcp list|get <name>|remove <name>|reset-project-choices|serve`
 Non-interactive `-p` (≥2.1.205): `/mcp` no-arg in text summary thay vì mở dialog.
 
 (06/10/2026, Claude Code ≥2.1.292) MCP mặc định negotiate protocol `2026-07-28` — tương tác MCP mới hơn với mọi provider.
+Quy tắc này áp cho **cả** connector claude.ai lẫn MCP local `stdio` và remote (`sse`/`http`), không riêng remote.
+Muốn quay lại giao thức cũ thì đặt biến môi trường `MCP_PROTOCOL_NEGOTIATION=legacy`.
+
+> Mô tả tool MCP cũng được nới: mặc định 2.048 → 4.096 ký tự, và tới 16.384 ký tự qua tool search (≥2.1.295).
+> Tool được mô tả đầy đủ hơn → model chọn đúng tool hơn, nhất là khi có nhiều server.
 
 **Kiểm tra nhanh:**
 
@@ -531,7 +536,7 @@ description: Post message Slack đúng format team. Dùng khi user nói post/not
 
 ## 6. Prune guide — giữ MCP khỏe
 
-Mục này trả lời câu: giữ bao nhiêu server là vừa, dọn định kỳ thế nào, và checklist thế nào算 là khỏe?
+Mục này trả lời câu: giữ bao nhiêu server là vừa, dọn định kỳ thế nào, và checklist thế nào thì coi là khỏe?
 
 **Nôm na 1 câu:** prune là *dọn tủ lạnh* định kỳ — món nào 2 tuần không ai ăn thì bỏ, kẻo chật tủ + đồ thiu lây đồ tươi (tools nhiễu làm Claude chọn sai).
 

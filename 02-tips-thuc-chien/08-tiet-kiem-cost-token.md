@@ -73,7 +73,7 @@ Bill = (input tokens × giá input) + (output × giá output) + (retry vì sai) 
 
 → Tiết kiệm = đánh cả 3 thuế cùng lúc, không phải chỉ "chọn model rẻ".
 
-### 1.3. Bảng giá làm căn cứ (07/10/2026)
+### 1.3. Bảng giá làm căn cứ (11/10/2026)
 
 Mục này trả lời câu: mỗi triệu token và mỗi gói tháng giá bao nhiêu, để đọc bill và route model không bị nhầm giá?
 
@@ -82,10 +82,14 @@ Giá model API (USD / 1 triệu tokens):
 | Model | Input | Output | Cache read | Context | Ghi chú |
 |---|---|---|---|---|---|
 | Claude Fable 5.1 | $10 | $50 | $0.25 | 1M | Alias `fable`; cần Claude Code ≥2.1.257; mạnh nhất, chậm nhất |
-| Claude Opus 5.5 | $4 | $20 | $0.20 | 1M | Cần ≥2.1.280; mặc định ở hầu hết gói (từ 22/09/2026) |
+| Claude Opus 5.5 | $4 | $20 | $0.20 | 1M | Cần ≥2.1.280; **mặc định tài khoản** trên Pro/Max/Team/Enterprise/API/Bedrock/GCP |
 | Claude Opus 5.5 — fast mode | $8 | $40 | — | 1M | Gấp đôi giá thường, đổi lấy ~2.5× tốc độ |
-| Claude Sonnet 5.5 | $2 | $10 | $0.20 | 1M | Việc hằng ngày — cân bằng chất lượng/giá |
-| Claude Haiku 4.5 | $1 | $5 | $0.10 | 200K | Nhanh nhất, rẻ nhất; không hỗ trợ effort |
+| Claude Sonnet 5.5 | $2 | $10 | $0.10 | 1M | Cần ≥2.1.284; **mặc định Sonnet trên API**; cache đọc rẻ hơn Sonnet 5 (0.05×) |
+| Claude Sonnet 5 | $2 | $10 | $0.20 | 1M | Mặc định Sonnet trên gói đời cũ (trước 2.1.280) |
+| Claude Haiku 5.5 | $0.10 | $0.50 | $0.01 | 1M | Cần ≥2.1.293; **mặc định Haiku trên API**; prompt >100K: $0.50/$2.50 (cache $0.05) |
+| Claude Haiku 4.5 | $1 | $5 | $0.10 | 200K | Nhanh, rẻ; mặc định Haiku trên Bedrock/GCP/AWS; không hỗ trợ effort |
+
+> Alias `haiku` trên Anthropic API trỏ tới Haiku 5.5; các provider khác (Bedrock/GCP/AWS) vẫn dùng Haiku 4.5 cho tới khi cập nhật.
 
 Gói subscription (claude.com/pricing):
 
@@ -100,7 +104,7 @@ Gói subscription (claude.com/pricing):
 
 - Hạn mức tính theo **phiên 5 giờ cuộn** + **hạn tuần**; chat web + Claude Code dùng chung 1 hạn mức.
 - Hết hạn mức → chờ reset, nâng gói, hoặc bật **usage credits** (trả theo giá API).
-- Nguồn: platform.claude.com/docs/en/about-claude/pricing + claude.com/pricing (tra 07/10/2026).
+- Nguồn: platform.claude.com/docs/en/about-claude/pricing + claude.com/pricing (tra 11/10/2026).
 
 ---
 
@@ -167,7 +171,7 @@ Mục này trả lời câu: 4 nhóm việc phổ biến nên giao cho model nà
 
 | Việc | Model | Vì sao |
 |---|---|---|
-| Research/explore rộng, phân loại, viết lại đơn giản | Haiku 4.5 ($1/$5) | Rẻ, nhanh, đủ — sai thì retry rẻ |
+| Research/explore rộng, phân loại, viết lại đơn giản | Haiku 5.5 ($0.10/$0.50) | Rẻ nhất dòng 5.x, nhanh, đủ — sai thì retry rẻ |
 | Implement feature, refactor, debug thường | Sonnet 5.5 ($2/$10) | Cân bằng chất lượng/giá, mặc định hằng ngày |
 | Kiến trúc khó, security review, bug hiểm production | Opus 5.5 ($4/$20) | Đáng tiền — sai ở đây đắt gấp 100 lần |
 | Cần Opus mà muốn nhanh (fast mode) | `/fast` + `/extra-usage` → Opus 5.5 fast mode ($8/$40, ~2.5× nhanh) | Khi deadline dí, chấp nhận trả thêm cho tốc độ |

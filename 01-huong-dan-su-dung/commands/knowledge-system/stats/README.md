@@ -12,9 +12,10 @@
 ## Cách gọi
 
 ```bash
-/stats          # số hôm nay
-/stats --week   # gộp tuần
-/stats --month  # gộp tháng
+/stats            # số hôm nay
+/stats --week     # gộp tuần
+/stats --month    # gộp tháng
+/stats --by-task  # gom theo tên session
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).

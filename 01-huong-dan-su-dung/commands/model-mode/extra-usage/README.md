@@ -13,9 +13,9 @@
 ## Cách gọi
 
 ```bash
-`/extra-usage`
-`/extra-usage on`
-`/extra-usage off`
+/extra-usage
+/extra-usage on
+/extra-usage off
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -37,10 +37,10 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /extra-usage (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Trần quota được nới trong session; task dài chạy tiếp thay vì bị chặn giữa chừng.
+- Phần vượt hạn mức tính pay-as-you-go theo giá API — nhớ tắt khi xong việc để về lại quota gói.
 
-Verify (30 giây):
+**Kiểm tra nhanh:**
 
 ```bash
 # trong session: /status hoặc /context để chắc mode/context còn sạch

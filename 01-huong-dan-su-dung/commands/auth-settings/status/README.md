@@ -12,9 +12,9 @@
 ## Cách gọi
 
 ```bash
-`/status`
-`/status --short`
-`/status --quota`
+/status
+/status --short
+/status --quota
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -33,13 +33,14 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /status (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Một màn hình đầy đủ: account + plan, model đang chạy, cwd + roots, cache hit, token/quota, version CLI.
+- Không sửa file, không gọi model — gõ bao nhiêu lần cũng được.
 
 **Kiểm tra nhanh:**
 
 ```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
+/status --short
+# → đọc account + model + cwd trong ~3 giây, thấy ngay khi đang nhầm tài khoản
 ```
 
 ## Lỗi thường gặp

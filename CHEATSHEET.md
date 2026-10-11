@@ -1,7 +1,7 @@
-# Cheatsheet Claude Code v2.1.292 (1 trang — in ra dán cạnh màn hình)
+# Cheatsheet Claude Code v2.1.296 (1 trang — in ra dán cạnh màn hình)
 
 > Mọi dòng đều copy-paste được. Gõ `/` trong session để xem lệnh nào hiện ở máy bạn (version/provider khác nhau hiện khác nhau).
-> Cập nhật 10/2026: Opus 5.5 là mặc định phần lớn gói, Fable 5.1 cho việc khó nhất, MCP protocol `2026-07-28`.
+> Cập nhật 10/2026: Opus 5.5 là mặc định tài khoản, Fable 5.1 cho việc khó nhất, Haiku 5.5 (1M context) thay Haiku 4.5, MCP protocol `2026-07-28`.
 
 ## CLI (ngoài terminal)
 

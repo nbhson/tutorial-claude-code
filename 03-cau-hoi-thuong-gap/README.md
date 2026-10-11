@@ -64,7 +64,22 @@ Mọi câu hỏi trong 10 file đều xếp đúng 5 khối này — bạn đọ
 
 ## Gặp lỗi X → đọc bài nào?
 
-Chưa biết lỗi thuộc nhóm nào → bám 10 dòng dưới đây, mỗi dòng trỏ đúng 1 file.
+Chưa biết lỗi thuộc nhóm nào → nhìn sơ đồ dưới đây rồi bám 10 dòng bên dưới, mỗi dòng trỏ đúng 1 file.
+
+```mermaid
+flowchart TD
+  L[Gặp vấn đề] --> Q{Việc gì?}
+  Q -->|Tài khoản / giá / cài| B1[bài 01]
+  Q -->|Model / context / token| B2[bài 02]
+  Q -->|Quyền / mode| B3[bài 03]
+  Q -->|MCP không nối| B4[bài 04]
+  Q -->|Hook không chạy| B5[bài 05]
+  Q -->|Skill / command / CLAUDE.md| B6[bài 06]
+  Q -->|Subagent / team / worktree| B7[bài 07]
+  Q -->|Lỗi lạ chưa rõ| B8[bài 08]
+  Q -->|Bảo mật / secret| B9[bài 09]
+  Q -->|CI / SDK / routines / Web| B10[bài 10]
+```
 
 - Không đăng nhập / lỗi cài đặt / thắc mắc giá → **bài 01**
 - Hết token, tràn context, chọn model nào → **bài 02**
@@ -88,7 +103,7 @@ Cần tra nhanh mà không muốn mở file FAQ dài → dùng các đường d�
 - **Thói quen làm việc:** [`02-tips-thuc-chien/README.md`](../02-tips-thuc-chien/README.md).
 - **Bảng tra 1 trang:** [`CHEATSHEET.md`](../CHEATSHEET.md) — in ra dán cạnh màn hình.
 - **File mẫu copy-paste:** [`templates/`](../templates/) — `CLAUDE.md`, skills, agents, hooks, `.mcp.json`.
-- **Số version/model/giá chuẩn:** [`WRITING-STYLE.md` — Phần B](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-07102026).
+- **Số version/model/giá chuẩn:** [`WRITING-STYLE.md` — Phần B](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-11102026).
 
 **Kiểm tra nhanh:** mở được bảng 10 file FAQ và 1 link chéo về `commands/`; chỉ ra được file trả lời cho lỗi bạn đang gặp; nhớ được thứ tự debug 6 bước.
 

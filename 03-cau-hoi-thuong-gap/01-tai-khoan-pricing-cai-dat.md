@@ -80,7 +80,7 @@ flowchart TD
 
 Terminal CLI + VS Code extension hỗ trợ thêm **third-party providers**: Bedrock, GCP Agent Platform (Vertex), Foundry... — model chạy qua cloud của bạn thay vì trực tiếp Anthropic.
 
-Giá gói subscription (tra 07/10/2026, nguồn [WRITING-STYLE — Phần B](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-07102026)):
+Giá gói subscription (tra 11/10/2026, nguồn [WRITING-STYLE — Phần B](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-11102026)):
 
 | Gói | Giá /tháng | Claude Code? | Ghi chú |
 |---|---|---|---|
@@ -91,9 +91,9 @@ Giá gói subscription (tra 07/10/2026, nguồn [WRITING-STYLE — Phần B](../
 | Team (Standard) | $20 (trả trước năm) hoặc $25 | ✅ | Tối thiểu 2 ghế, tối đa 150 ghế |
 | Team (Premium) | $100 (trả trước năm) hoặc $125 | ✅ | 5× Standard |
 
-Hạn mức tính theo **phiên 5 giờ cuộn** + hạn tuần; chat web và Claude Code dùng chung 1 hạn mức.
+Hạn mức tính theo **phiên 5 giờ cuộn** + hạn tuần; chat web và Claude Code dùng chung 1 hạn mức. Riêng **Fable 5.1 không nằm trong hạn mức thường**: trên gói Pro nó bill bằng usage credits, còn trên Max tốn ~50% hạn tuần cho mỗi lượt dùng.
 
-Trả theo API key thì giá tính theo model (USD / 1 triệu tokens): **Fable 5.1** $10/$50 · **Opus 5.5** $4/$20 (đọc cache $0.20) · **Sonnet 5.5** $2/$10 · **Haiku 4.5** $1/$5 với context 200K.
+Trả theo API key thì giá tính theo model (USD / 1 triệu tokens): **Fable 5.1** $10/$50 · **Opus 5.5** $4/$20 (đọc cache $0.20) · **Sonnet 5.5** $2/$10 (đọc cache $0.10) · **Haiku 5.5** $0.10/$0.50 (đọc cache $0.01, context 1M, cần ≥2.1.293) · **Haiku 4.5** $1/$5 với context 200K (mặc định Haiku trên Bedrock/GCP/AWS).
 
 **Kiểm tra nhanh:**
 
@@ -278,9 +278,9 @@ claude logout
 >
 > **Trả lời 1 câu:** Đừng cài thêm — chạy `claude update` rồi mở session mới: 90% "lệnh lạ" là do bản cũ.
 
-**Giải thích:** Claude Code phát triển nhanh (2025–2026 đổi API liên tục). Gõ lệnh mới trên bản cũ → `Unknown command`. Quy tắc: **update trước, debug sau**. Bản mới nhất tại thời điểm viết: **v2.1.292** (phát hành 06/10/2026).
+**Giải thích:** Claude Code phát triển nhanh (2025–2026 đổi API liên tục). Gõ lệnh mới trên bản cũ → `Unknown command`. Quy tắc: **update trước, debug sau**. Bản mới nhất tại thời điểm viết: **v2.1.296** (phát hành 09/10/2026).
 
-Bảng version floor hay gặp — đọc khi cần biết 1 lệnh/tính năng đòi bản nào (kiểm tra bằng `/status` + release notes); bảng đầy đủ tra ở [WRITING-STYLE — B6](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-07102026):
+Bảng version floor hay gặp — đọc khi cần biết 1 lệnh/tính năng đòi bản nào (kiểm tra bằng `/status` + release notes); bảng đầy đủ tra ở [WRITING-STYLE — B6](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-11102026):
 
 | Lệnh / tính năng | Cần bản tối thiểu | Ghi chú |
 |---|---|---|
@@ -292,8 +292,10 @@ Bảng version floor hay gặp — đọc khi cần biết 1 lệnh/tính năng 
 | `/mcp` no-arg in text trong `-p` | ≥2.1.205 | Headless mới có |
 | Full `/doctor` 6 mục | v2.x | Bản 1.x chỉ 2 mục |
 | `/skill-doctor` | ≥2.1.252 | Tìm skill không dùng |
-| `fable` → Fable 5.1 | ≥2.1.257 | Model mạnh nhất, chậm nhất |
-| Opus 5.5 (mặc định ở hầu hết gói) | ≥2.1.280 | Từ 22/09/2026 |
+| `fable` → Fable 5.1 | ≥2.1.257 | Model mạnh nhất, chậm nhất; trên Pro bill usage credits, trên Max tốn ~50% hạn tuần |
+| Opus 5.5 (mặc định tài khoản) | ≥2.1.280 | Mặc định trên Pro/Max/Team/Enterprise/API/Bedrock/GCP |
+| Sonnet 5.5 | ≥2.1.284 | Mặc định Sonnet trên API; cache đọc $0.10 |
+| Haiku 5.5 | ≥2.1.293 | Mặc định Haiku trên API; 1M context, $0.10/$0.50; prompt >100K: $0.50/$2.50 |
 
 **Kiểm tra nhanh:**
 
@@ -308,7 +310,7 @@ Gõ `/cd web` → `Unknown command: /cd`. Đừng sửa config gì cả: `claude
 
 **Khi nào áp dụng:** mọi lỗi "lệnh không tồn tại" — luôn là bước 1 trong thứ tự debug (xem [FAQ 08](08-loi-thuong-gap-troubleshooting.md)).
 
-**Đào sâu:** [Bài 04 — slash commands toàn tập](../01-huong-dan-su-dung/04-slash-commands-toan-tap.md) · [WRITING-STYLE — B6 lệnh theo bản](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-07102026) · [FAQ 08 — lỗi thường gặp](08-loi-thuong-gap-troubleshooting.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-thứ-tự-debug-chuẩn)
+**Đào sâu:** [Bài 04 — slash commands toàn tập](../01-huong-dan-su-dung/04-slash-commands-toan-tap.md) · [WRITING-STYLE — B6 lệnh theo bản](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-11102026) · [FAQ 08 — lỗi thường gặp](08-loi-thuong-gap-troubleshooting.md) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-thứ-tự-debug-chuẩn)
 
 ---
 

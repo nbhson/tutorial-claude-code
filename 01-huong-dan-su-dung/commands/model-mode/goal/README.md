@@ -13,9 +13,9 @@
 ## Cách gọi
 
 ```bash
-`/goal <điều kiện>`
-`/goal`
-`/goal clear`
+/goal <điều kiện>
+/goal
+/goal clear
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -32,10 +32,10 @@ ruff + mypy sạch, và grep "old_login" không còn kết quả trong src/.
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /goal (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Evaluator (model phụ) check sau mỗi turn; task chỉ dừng khi điều kiện đạt, hoặc khi bạn ngắt.
+- Điều kiện càng đo được (test pass, lint sạch) thì evaluator càng ít PASS ẩu.
 
-Verify (30 giây):
+**Kiểm tra nhanh:**
 
 ```bash
 # trong session: /status hoặc /context để chắc mode/context còn sạch

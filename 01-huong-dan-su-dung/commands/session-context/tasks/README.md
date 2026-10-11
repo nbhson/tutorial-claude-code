@@ -1,6 +1,6 @@
 # /tasks — Quản lý background jobs đang chạy ngầm (alias /bashes)
 
-> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (chỉ liệt kê/theo dõi jobs; kill job có thể dừng việc đang chạy — không xóa code)
+> **Loại:** Built-in · **Nhóm:** Session & Context · **Mức rủi ro:** Không (chỉ liệt kê/theo dõi jobs; kill job có thể dừng việc đang chạy — không xóa code)
 > **Nói nôm na:** `/tasks` (alias `/bashes`) là "trình quản lý tác vụ nền": xem jobs nào đang chạy (test suite, dev server, agent Explore dài), kiểm tra output, hoặc dừng job kẹt.
 
 ## Khi nào dùng
@@ -34,8 +34,8 @@ Hãy chạy npm test ở background, tôi làm docs trong lúc chờ.
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /tasks (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Danh sách job nền kèm trạng thái (running/done) và thời gian đã chạy.
+- Kiểm tra output hoặc kill job kẹt ngay trong session.
 
 Verify (30 giây):
 
@@ -59,4 +59,4 @@ Verify (30 giây):
 - [../export/README.md](../../session-context/export/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
-> Mẹo 1 dòng: _chưa chắc thì gọi /tasks sớm — 1 lệnh đúng lúc rẻ hơn 10 prompt sửa sai._
+> Mẹo 1 dòng: _job nền nên chạy non-interactive để đỡ kẹt — test với `--watchAll=false` / `--reporter=min`._

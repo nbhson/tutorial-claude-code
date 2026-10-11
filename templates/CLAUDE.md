@@ -1,4 +1,5 @@
 # Project: <Ten> — one-liner mô tả
+<!-- MẪU CLAUDE.md để copy sang repo mới: thay mọi <...> bằng giá trị thật, xóa comment khi đã quen. -->
 <!-- SỬA DÒNG TRÊN ĐẦU TIÊN: tên repo + 1 câu repo này làm gì. VD: Project: shop-api — API bán hàng Node+Postgres -->
 
 ## Tech Stack
@@ -30,6 +31,6 @@
 - DB change → bắt buộc migration trong `db/migrations/`
 
 ---
-<!-- GIỮ FILE NÀY <200 DÒNG. Procedures dài → .claude/skills/. Rules theo path → .claude/rules/. -->
+<!-- GIỮ FILE NÀY <200 DÒNG. Claude nạp lại CLAUDE.md MỖI TURN, nên file càng dài càng tốn token — đây là lý do kinh tế, không phải thẩm mỹ. Procedures dài → .claude/skills/. Rules theo path → .claude/rules/. -->
 Giữ file này <200 dòng. Procedures dài → `.claude/skills/`. Rules theo path → `.claude/rules/`.
 Rule hay bị miss → nâng thành hook trong `.claude/settings.json`.

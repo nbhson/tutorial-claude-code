@@ -1,6 +1,6 @@
 # /fork — Tách conversation hiện tại thành nhánh mới, giữ bản gốc nguyên vẹn
 
-> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (không xóa/sửa file; chỉ copy context sang session mới — bản gốc giữ nguyên)
+> **Loại:** Built-in · **Nhóm:** Session & Context · **Mức rủi ro:** Không (không xóa/sửa file; chỉ copy context sang session mới — bản gốc giữ nguyên)
 > **Nói nôm na:** `/fork` là "rẽ nhánh không sợ hỏng": copy toàn bộ (hoặc 1 phần) context hiện tại sang 1 conversation mới để thử hướng khác, trong khi bản gốc vẫn an toàn.
 
 ## Khi nào dùng
@@ -31,8 +31,8 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /fork (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Có session mới mang context bản gốc để thử hướng khác; bản gốc vẫn còn nếu hướng thử thua.
+- Hai nhánh chung filesystem — muốn tách code phải dùng `git worktree`/`git branch`.
 
 Verify (30 giây):
 
@@ -56,4 +56,4 @@ Verify (30 giây):
 - [../rename/README.md](../../session-context/rename/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
-> Mẹo 1 dòng: _chưa chắc thì gọi /fork sớm — 1 lệnh đúng lúc rẻ hơn 10 prompt sửa sai._
+> Mẹo 1 dòng: _fork khi session còn nhẹ; session đã ~80% thì `/compact` trước để nhánh mới không đầy ngay._

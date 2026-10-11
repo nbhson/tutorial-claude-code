@@ -143,7 +143,7 @@ claude mcp add --scope local --transport stdio db -- npx -y @db/mcp
 - **stdio:** server chạy local (npx/uvx/binary). Nhanh, hợp DB local, CLI tools, browser.
 - **sse (legacy) / http (streamable):** server remote (URL + token). Hợp GitHub, tickets, docs SaaS.
 
-Version theo [WRITING-STYLE — Phần B](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-07102026): từ Claude Code **≥2.1.292** (06/10/2026), MCP mặc định negotiate protocol `2026-07-28` — tương tác MCP mới hơn với mọi provider.
+Version theo [WRITING-STYLE — Phần B](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-11102026): từ Claude Code **≥2.1.292** (06/10/2026), MCP mặc định negotiate protocol `2026-07-28` — áp cho cả connector claude.ai lẫn MCP local stdio và remote. Muốn tắt để quay về cách cũ thì đặt `MCP_PROTOCOL_NEGOTIATION=legacy`.
 
 **Khi nào áp dụng:** setup repo mới (bước `/mcp`) + mỗi khi cần data ngoài repo.
 

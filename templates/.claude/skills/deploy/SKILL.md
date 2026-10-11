@@ -20,3 +20,4 @@ allowed-tools: Bash, Read
 
 ## References
 - `references/endpoints.md`, script `${CLAUDE_SKILL_DIR}/scripts/migrate.sh`, repo root `${CLAUDE_PROJECT_DIR}`.
+- `${CLAUDE_SKILL_DIR}` = thư mục chứa skill này; `${CLAUDE_PROJECT_DIR}` = root repo (Claude Code tự set sẵn).

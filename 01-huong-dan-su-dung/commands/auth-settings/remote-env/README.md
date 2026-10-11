@@ -12,9 +12,9 @@
 ## Cách gọi
 
 ```bash
-`/remote-env`
-`/remote-env set <K> <V>`
-`/remote-env unset <K>`
+/remote-env
+/remote-env set <K> <V>
+/remote-env unset <K>
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -36,13 +36,14 @@ npm run build
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /remote-env (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Xem/sửa env + runtime phía remote; `diff` chỉ ra biến còn thiếu.
+- Biến set xong áp cho process remote mới; process đang chạy phải restart.
 
 **Kiểm tra nhanh:**
 
 ```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
+/remote-env diff
+# → danh sách "Missing on remote" rút ngắn sau khi set
 ```
 
 ## Lỗi thường gặp

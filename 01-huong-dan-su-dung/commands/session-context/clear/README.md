@@ -1,6 +1,6 @@
 # /clear — Xóa sạch lịch sử hội thoại, bắt đầu phiên mới trắng tinh
 
-> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (không xóa/sửa file code, chỉ xóa conversation context trong bộ nhớ phiên hiện tại; không thể undo)
+> **Loại:** Built-in · **Nhóm:** Session & Context · **Mức rủi ro:** Không (không xóa/sửa file code, chỉ xóa conversation context trong bộ nhớ phiên hiện tại; không thể undo)
 > **Nói nôm na:** `/clear` là nút "reset não" của Claude Code: xóa toàn bộ lịch sử hội thoại khỏi context window, giữ nguyên file trên đĩa, giữ nguyên CLAUDE.md / memory, và cho bạn một phiên trắng để bắt đầu task mới.
 
 ## Khi nào dùng
@@ -36,8 +36,8 @@ Hãy đọc docs/payment-spec.md và triển khai POST /api/payments theo spec.
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /clear (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Context về gần 0: model không còn nhớ hội thoại cũ; file trên đĩa và `CLAUDE.md`/memory giữ nguyên.
+- Prompt ngay sau `/clear` là turn đầu của phiên trắng.
 
 Verify (30 giây):
 
@@ -61,4 +61,4 @@ Verify (30 giây):
 - [../fork/README.md](../../session-context/fork/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
-> Mẹo 1 dòng: _chưa chắc thì gọi /clear sớm — 1 lệnh đúng lúc rẻ hơn 10 prompt sửa sai._
+> Mẹo 1 dòng: _đổi hẳn task thì `/clear`; còn cùng task mà phình thì `/compact` — đừng để rác task cũ trộn sang việc mới._

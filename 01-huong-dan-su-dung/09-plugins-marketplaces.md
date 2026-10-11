@@ -47,7 +47,7 @@ Mục tiêu: trả lời 2 câu trong 3 phút — plugin đóng gói những gì
 
 **Nôm na 1 câu:** Plugin là *combo cơm trưa văn phòng* — thay vì mỗi người tự đi chợ mua skills/hooks/agents/MCP lẻ tẻ, bếp nấu sẵn 1 khay (1 lệnh cài) ai cũng ăn giống nhau.
 
-**Analogie đời thường:** như bộ đồ nghề sửa xe: lẻ thì tua-vít chỗ này, cờ-lê chỗ kia; plugin là vali đồ nghề đóng sẵn — thợ mới vào chỉ xách 1 vali (`/plugin install acme-standard`) là có đủ `/acme:deploy`, `/acme:review`, hooks guard, agents.
+**Analogie đời thường:** như bộ đồ nghề sửa xe: lẻ thì tua-vít chỗ này, cờ-lê chỗ kia; plugin là vali đồ nghề đóng sẵn — thợ mới vào chỉ xách 1 vali (`/plugin install acme-standard`) là có đủ `/acme-standard:deploy`, `/acme-standard:review`, hooks guard, agents.
 
 **Ví dụ kỹ thuật copy-paste (nhìn cấu trúc là hiểu):**
 
@@ -96,7 +96,7 @@ mỗi repo setup lại skills/hooks/agents/MCP = drift. Plugin giải quyết cr
 
 ```text
 Không plugin:  teammate mới → clone 5 repos → mỗi repo /mcp setup tay + copy hooks + hỏi "skill deploy ở đâu?"
-Có plugin:     teammate mới → /plugin install acme-standard → 5 repos đều có /acme:deploy, /acme:review, hooks guard, agents.
+Có plugin:     teammate mới → /plugin install acme-standard → 5 repos đều có /acme-standard:deploy, /acme-standard:review, hooks guard, agents.
 Update:        bump plugin version 1 nơi → cả team sync (thay vì sửa 5 repos).
 ```
 

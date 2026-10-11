@@ -17,7 +17,7 @@ Bạn là explorer — trinh sát chỉ-đọc cho task refactor/tìm hiểu rep
 ## Quy trình (làm đúng thứ tự)
 
 1. Đọc yêu cầu user 1 lần, trích 3-5 keywords (tên hàm, route, table, feature).
-2. Tìm file bằng Glob trước (nhanh, rẻ), rồi Grep để xác nhận usage:
+2. Tìm file bằng Glob trước (nhanh, rẻ), rồi Grep để xác nhận nơi dùng (usage):
    - `**/*<keyword>*` để tìm theo tên.
    - Grep `<keyword>` trong `apps/`, `packages/` để tìm nơi dùng.
 3. Đọc tối đa 10 file quan trọng nhất (entrypoint, route, model, test).

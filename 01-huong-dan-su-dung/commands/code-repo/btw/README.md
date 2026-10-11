@@ -5,9 +5,9 @@
 
 ## Khi nào dùng
 
-- Dùng `/btw` khi bạn đang làm việc với code/repo (xem diff, review, verify, chạy batch, khởi tạo).
-- Dùng `/btw` **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng `/btw` thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/btw` khi bạn cần câu trả lời ngắn ngay giữa mạch code — hỏi định nghĩa, cú pháp, khác biệt giữa 2 lựa chọn.
+- Hỏi `/btw` **trước khi** câu hỏi đó kéo bạn khỏi luồng chính (mở file mới, lội tài liệu dài) — trả lời gọn, history chính vẫn sạch.
+- Không dùng `/btw` khi cần đọc file hay sửa code: nó chỉ trả lời từ context đang có, không chạy tool.
 
 ## Cách gọi
 
@@ -29,8 +29,8 @@
 
 **Kết quả mong đợi:**
 
-- Claude trả đúng việc của `/btw` (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Trả lời gọn 2–3 dòng, đúng câu hỏi, không kéo dài mạch chính đang viết.
+- Không file nào bị sửa; câu trả lời không đi vào transcript chính.
 
 **Verify (30 giây):**
 

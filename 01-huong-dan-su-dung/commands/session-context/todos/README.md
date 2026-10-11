@@ -1,6 +1,6 @@
 # /todos — Xem và quản lý danh sách việc cần làm của session hiện tại
 
-> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (chỉ đọc/ghi todo list trong memory session, không xóa/sửa code)
+> **Loại:** Built-in · **Nhóm:** Session & Context · **Mức rủi ro:** Không (chỉ đọc/ghi todo list trong memory session, không xóa/sửa code)
 > **Nói nôm na:** `/todos` là "bảng việc dán tường": liệt kê các đầu việc model đang theo (pending/in-progress/done), để bạn kiểm tra tiến độ, bổ sung, hoặc chốt trước khi compact/clear/bàn giao.
 
 ## Khi nào dùng
@@ -31,8 +31,8 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /todos (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Danh sách đầu việc model đang theo (pending/in-progress/done) hiện trong session.
+- Dùng để nắm tiến độ trước khi `/compact`, `/clear` hay bàn giao.
 
 Verify (30 giây):
 
@@ -56,4 +56,4 @@ Verify (30 giây):
 - [../resume/README.md](../../session-context/resume/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
-> Mẹo 1 dòng: _chưa chắc thì gọi /todos sớm — 1 lệnh đúng lúc rẻ hơn 10 prompt sửa sai._
+> Mẹo 1 dòng: _dặn "tạo todo list 5 bước" và "mỗi todo done phải kèm lệnh test đã chạy" — đừng tin tick suông._

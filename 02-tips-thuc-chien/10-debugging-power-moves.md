@@ -110,7 +110,6 @@ Check:
 ### `/doctor` + `claude doctor`: khám tổng quát
 
 ```bash
-/do upto
 /doctor
 # → skills/MCP/plugins cài mà không dùng vs context cost + hooks chậm + version mới + permissions lạ
 

@@ -12,9 +12,9 @@
 ## Cách gọi
 
 ```bash
-`/setup-vertex`
-`/setup-vertex --check`
-`/status`
+/setup-vertex
+/setup-vertex --check
+/status
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -36,13 +36,14 @@ gcloud auth application-default login --project my-team-123
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /setup-vertex (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Wizard ghi config Vertex (project + region + auth) rồi test 1 câu chào.
+- `/status` báo đang chạy qua Vertex AI thay vì tài khoản claude.ai.
 
 **Kiểm tra nhanh:**
 
 ```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
+/status
+# → provider = Vertex AI, project + region đúng
 ```
 
 ## Lỗi thường gặp

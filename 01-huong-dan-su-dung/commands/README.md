@@ -76,7 +76,7 @@ Kiểm tra lệnh có ở máy bạn không: mở session, gõ `/`, cuộn xem d
 | [/extra-usage](./model-mode/extra-usage/README.md) | Không (tốn tiền thật) | Mua thêm quota khi hết hạn mức gói |
 | [/fast](./model-mode/fast/README.md) | Không | Chế độ nhanh cho việc dễ, không chờ suy luận sâu |
 | [/goal](./model-mode/goal/README.md) | Không (cần ≥2.1.139) | Đặt điều kiện hoàn thành, evaluator check mỗi turn |
-| [/model](./model-mode/model/README.md) | Không | Đổi model giữa phiên (Haiku/Sonnet/Opus 5.5) |
+| [/model](./model-mode/model/README.md) | Không | Đổi model giữa phiên (Haiku 5.5/Sonnet/Opus 5.5) |
 | [/permissions](./model-mode/permissions/README.md) | Có nếu cấu hình ẩu | Dựng phanh allow/ask/deny cho tool |
 | [/plan](./model-mode/plan/README.md) | Không | Chỉ đọc + viết plan, cấm sửa code tới khi duyệt |
 

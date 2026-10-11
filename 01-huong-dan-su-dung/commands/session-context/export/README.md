@@ -1,6 +1,6 @@
 # /export — Xuất toàn bộ hội thoại ra file text để lưu trữ, bàn giao, đối soát
 
-> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (chỉ đọc + ghi 1 file export mới, không xóa/sửa code hay history)
+> **Loại:** Built-in · **Nhóm:** Session & Context · **Mức rủi ro:** Không (chỉ đọc + ghi 1 file export mới, không xóa/sửa code hay history)
 > **Nói nôm na:** `/export` là "nút in báo cáo": gom transcript hiện tại thành 1 file text/markdown gọn gàng để gửi đồng đội, lưu docs, hoặc đọc lại sau khi `/clear`.
 
 ## Khi nào dùng
@@ -31,8 +31,8 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /export (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Transcript được ghi ra một file text/markdown (Claude báo đường dẫn ngay sau lệnh).
+- File đủ gọn để đồng đội đọc vài phút là tiếp việc.
 
 Verify (30 giây):
 
@@ -56,4 +56,4 @@ Verify (30 giây):
 - [../clear/README.md](../../session-context/clear/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
-> Mẹo 1 dòng: _chưa chắc thì gọi /export sớm — 1 lệnh đúng lúc rẻ hơn 10 prompt sửa sai._
+> Mẹo 1 dòng: _`/compact` rồi mới `/export` để file bàn giao gọn; export ngay cuối ca trước khi `/clear`._

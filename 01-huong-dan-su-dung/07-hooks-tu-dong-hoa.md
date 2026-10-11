@@ -196,6 +196,8 @@ exit 0
   (frontmatter hooks project-level cần trust dialog; `-p` session không tính là trusted).
 - Bảo mật: hook deny thắng cả `bypassPermissions`/`--dangerously-skip-permissions`; ngược lại hook allow
   KHÔNG nới được deny rules hay `ask` của org — hooks chỉ siết, không nới.
+- Hook lỗi thì sao: mặc định hook lỗi/timeout vẫn để hành động đi tiếp (thả qua). Đặt `onFailure: "block"`
+  (≥2.1.295) nếu muốn **chặn** hành động khi hook lỗi — hữu ích cho hook guard bảo mật.
 
 **Kiểm tra nhanh:**
 

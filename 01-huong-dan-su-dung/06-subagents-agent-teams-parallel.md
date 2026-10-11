@@ -273,7 +273,7 @@ mkdir -p .claude/agents
 
 - Gõ `/agents` → tab Library thấy đủ 4 agent vừa tạo, mỗi agent có đúng model khai báo (explorer/planner sonnet, security-reviewer opus, tester haiku).
 - Gọi `"dùng subagent explorer tìm ..."` → output tối đa 30 dòng, ra đúng khung 4 mục đã khai báo (`Files sẽ sửa / Files chỉ đọc tham khảo / Không liên quan — bỏ qua / Rủi ro`).
-- Thử gậy explorer sửa file (vd "sửa luôn giúp anh") → explorer từ chối hoặc không làm được (`disallowedTools` + `permissionMode: plan`).
+- Thử dụ explorer sửa file (vd "sửa luôn giúp anh") → explorer từ chối hoặc không làm được (`disallowedTools` + `permissionMode: plan`).
 
 ---
 
@@ -336,9 +336,11 @@ Ghép 4 người trên thành 4 mẫu điều phối (nghiên cứu song song, c
 
 Nâng cao: worker nền/tương tác (`/agents` tab Running; dừng bằng Ctrl+X Ctrl+K ×2),
 quét output, worker tạo worker — giới hạn cấp (depth) mặc định **3**, trần tối đa **5 cấp** (w24/2026);
-dùng tiết chế vì token cộng dồn, hạ về 1 bằng `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1`; ngoài ra có giới hạn số worker chạy song song.
+dùng có chừng mực vì token cộng dồn, hạ về 1 bằng `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1`; ngoài ra có giới hạn số worker chạy song song.
 Skill khai `context: fork` chạy **background mặc định** (từ v2.1.218; `background: false` trong SKILL.md để chờ trong turn — [05 — Skills](./05-skills-custom-commands.md)).
 TEXT output forward: `--forward-subagent-text` (kèm env) để hiện text của worker trực tiếp ở luồng chính.
+Tự compact sớm: khai `autoCompactWindow` trong frontmatter subagent (≥2.1.296) để worker nén context trước khi đầy;
+ép mọi workflow agent chạy 1 model bằng `CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL` (≥2.1.296).
 Xem `/agents`, worktrees ([11 — Worktrees](./11-git-worktrees-checkpoints.md)), `/batch`, `/background`, `/subtask`.
 
 ### 5.2. Các mẫu điều phối (khi nào xếp thế nào)

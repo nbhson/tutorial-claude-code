@@ -92,6 +92,7 @@ flowchart TD
 | Matcher đúng case chưa? | `Edit` ≠ `edit`, `Bash` ≠ `bash` |
 | Folder trusted chưa? | Mở lại folder → trust dialog |
 | Headless (`-p`) có cần prompt? | Thiết kế headless, không prompt |
+| Hook lỗi/timeout thì sao? | `onFailure: "block"` (≥2.1.295) = chặn luôn; mặc định là thả qua |
 | Version đổi schema? | `/status` + release notes |
 
 ---
@@ -213,7 +214,7 @@ echo '{"tool_name":"Bash","tool_input":{"command":"git push origin main"}}' | ./
 >
 > **Trả lời 1 câu:** Vì headless không có người bấm Yes/No, nên hook nào chờ nhập liệu sẽ treo tới khi fail mờ.
 
-**Giải thích:** Bệnh #4. Hook nào `read -p`, mở editor, gọi OAuth browser → treo tới timeout rồi fail mờ. Quy tắc hook headless-safe:
+**Giải thích:** Bệnh #4. Hook nào `read -p`, mở editor, gọi OAuth browser → treo tới timeout rồi fail mờ. Từ ≥2.1.295, bạn khai được `onFailure: "block"` để khi hook lỗi/timeout thì **chặn** hành động thay vì thả qua — dùng cho guard critical trong CI, để lỗi không âm thầm mở toang. Quy tắc hook headless-safe:
 
 **Kiểm tra nhanh:**
 
@@ -388,7 +389,7 @@ git grep -E 'curl|rm -rf|sudo|chmod \+x' -- .claude/hooks/
 >
 > **Trả lời 1 câu:** Hook API từng đổi (`tools` frontmatter, PreToolUse stdin schema...), nên sau mỗi `claude update` phải dry-run lại hook quan trọng.
 
-**Giải thích:** Hook chặn CI push mà viết theo schema cũ → fail mờ sau update. Quy tắc: trước khi đặt hook chặn việc quan trọng, đối chiếu release notes với version đang chạy ([Phần B](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-07102026) — bản mới nhất v2.1.292, 06/10/2026).
+**Giải thích:** Hook chặn CI push mà viết theo schema cũ → fail mờ sau update. Với guard critical, khai thêm `onFailure: "block"` (≥2.1.295) để hook lỗi là chặn luôn, không thả qua. Quy tắc: trước khi đặt hook chặn việc quan trọng, đối chiếu release notes với version đang chạy ([Phần B](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-11102026) — bản mới nhất v2.1.296, 09/10/2026).
 
 **Kiểm tra nhanh:**
 
@@ -408,7 +409,7 @@ echo '{"tool_name":"Bash","tool_input":{"command":"ls"}}' | ./scripts/guard-shel
 
 **Khi nào áp dụng:** sau MỖI `claude update` + trước khi gắn hook vào CI gate.
 
-**Đào sâu:** [lệnh `/status`](../01-huong-dan-su-dung/commands/auth-settings/status/README.md) · [WRITING-STYLE — Phần B](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-07102026) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-hooks)
+**Đào sâu:** [lệnh `/status`](../01-huong-dan-su-dung/commands/auth-settings/status/README.md) · [WRITING-STYLE — Phần B](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-11102026) · [thứ tự debug cuối file](#vẫn-lỗi-thì-sao-hooks)
 
 ---
 

@@ -12,9 +12,9 @@
 ## Cách gọi
 
 ```bash
-`/setup-bedrock`
-`/setup-bedrock --check`
-`/status`
+/setup-bedrock
+/setup-bedrock --check
+/status
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -36,13 +36,14 @@ aws sso login --profile team-dev
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /setup-bedrock (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Wizard ghi config Bedrock (region + auth + model) rồi test 1 câu chào.
+- `/status` báo đang chạy qua Bedrock thay vì tài khoản claude.ai.
 
 **Kiểm tra nhanh:**
 
 ```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
+/status
+# → provider = Bedrock, region + model đã enable đúng
 ```
 
 ## Lỗi thường gặp

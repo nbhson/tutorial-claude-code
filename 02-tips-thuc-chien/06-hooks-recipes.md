@@ -75,6 +75,7 @@ Mục này trả lời câu: hook can thiệp vào đâu giữa "định làm g�
 
 - Hooks chạy **ngoài model** (shell script, LLM 1-turn, agent, HTTP, MCP) → 0 tokens cho rule lặp lại.
 - Hook có thể: **cho qua**, **chặn + báo lý do**, **sửa input** (`updatedInput`), **ghi log**.
+- Hook lỗi hoặc timeout mặc định **không chặn** (thả qua); muốn lỗi cũng chặn thì đặt `"onFailure": "block"` (cần Claude Code ≥2.1.295).
 - Hooks là production code (chạy với quyền của bạn): review như code, version như code.
 
 ### 1.3. Khi nào hook vs skill vs prompt?
@@ -267,7 +268,7 @@ set -euo pipefail
 DAILY_CAP_USD="${DAILY_CAP_USD:-20}"
 LEDGER_DIR="${CLAUDE_PROJECT_DIR:-.}/.claude/ledger"
 WEBHOOK_URL="${SLACK_WEBHOOK_URL:-}"
-# Giá mặc định theo Sonnet 5.5 ($2 input / $10 output per 1M tokens, 07/10/2026)
+# Giá mặc định theo Sonnet 5.5 ($2 input / $10 output per 1M tokens, 11/10/2026)
 # — đối chiếu pricing hiện tại của provider trước khi dùng
 PRICE_INPUT_PER_1K="${PRICE_INPUT_PER_1K:-0.002}"
 PRICE_OUTPUT_PER_1K="${PRICE_OUTPUT_PER_1K:-0.01}"
@@ -457,7 +458,7 @@ Config copy-paste để subagent thật đọc diff + chạy test trước khi c
 }
 ```
 
-> Rule: **production ưu tiên `command`.** `prompt`/`agent` để judgment, `http`/`mcp_tool` để tích hợp ngoài.
+> Rule: **production ưu tiên `command`.** `prompt`/`agent` để judgment, `http`/`mcp_tool` để tích hợp ngoài. Hook lỗi/timeout mặc định thả qua; thêm `"onFailure": "block"` (≥2.1.295) để lỗi cũng chặn hành động.
 
 ---
 

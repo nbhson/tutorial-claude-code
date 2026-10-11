@@ -7,7 +7,7 @@
 
 - Bạn cần vào/ra (login/logout), đổi môi trường (remote-env, setup-bedrock, setup-vertex), hay nối IDE/mobile/teleport.
 - Bạn muốn dò nhanh tài khoản/quota/version hiện tại bằng `/status`, hoặc thử đồ lạ trong sandbox an toàn.
-- Bạn chưa sửa code gì cả mà session đã chạy sai/không đăng nhập được → nhóm này xử lý trước, không cần group khác.
+- Bạn chưa sửa code gì cả mà session đã chạy sai/không đăng nhập được → nhóm này xử lý trước, không cần nhóm khác.
 
 ## Cách gọi
 
@@ -44,6 +44,8 @@ Bạn mới clone repo, chưa login:
 > /login cắm chìa khóa 1 lần dùng nhiều tháng | /status soi account/provider/version | /sandbox thử đồ lạ trong cát
 
 ## Các lệnh (20)
+
+Bảng dưới là toàn bộ 20 lệnh trong nhóm — bấm vào tên lệnh để mở bài chi tiết. Đọc cột "Một dòng" trước, chỉ mở bài khi cần.
 
 | Lệnh | Mức rủi ro | Một dòng |
 |---|---|---|

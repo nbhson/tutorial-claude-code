@@ -60,7 +60,7 @@ Mục này trả lời 3 câu nền trong 2 phút — Claude Code là gì, vòng
   - Ví dụ kỹ thuật copy-paste: bạn giao `Fix test login đang đỏ trong apps/api`, Claude tự `Read` file → `Edit` → `Bash(pnpm test)` → thấy còn đỏ → sửa tiếp.
 - **Tool là gì?** 1 câu: cái tay để Claude chạm vào máy bạn (đọc file, sửa file, chạy lệnh, lên mạng).
   - Ví dụ đời thường: như bộ đồ nghề — tua-vít (Read), kìm (Edit), máy khoan (Bash).
-  - Ví dụ kỹ thuật copy-paste: trong session gõ `liệt kê tất cả tools mày đang có + 1 câu mô tả mỗi tool` để thấy danh sách tay nghề của Claude.
+  - Ví dụ kỹ thuật copy-paste: trong session gõ `liệt kê tất cả tools bạn đang có + 1 câu mô tả mỗi tool` để thấy danh sách tay nghề của Claude.
 
 ---
 
@@ -201,6 +201,8 @@ Tổng 7 turns, ~5 tool calls song song mỗi turn. Bạn chỉ gõ 1 prompt + 1
 
 ### 2.4. Vòng lặp agent so với workflow script
 
+Mục nhỏ này so sánh hai cách chạy: để model tự quyết từng bước (agentic loop) hay đi theo script cố định (workflow).
+
 ```text
 Agentic loop  = model tự quyết định bước tiếp theo (linh hoạt, tốn token, đôi khi lạc).
 Workflow      = script/skeleton cố định bước (vd skill /ship: merge→test→review→changelog),
@@ -212,7 +214,7 @@ Kinh nghiệm: việc mới/lạ → để agent tự explore. Việc lặp >3 l
 
 **Kiểm tra nhanh:**
 
-- Trace xong 1 task thật: bạn đếm được 7 turns, thấy pattern lặp lại Read → Edit → Bash → đọc lỗi → sửa. Sau task, hỏi Claude `liệt kê từng turn mày đã làm` và đối chiếu, số turns phải khớp logic này.
+- Trace xong 1 task thật: bạn đếm được 7 turns, thấy pattern lặp lại Read → Edit → Bash → đọc lỗi → sửa. Sau task, hỏi Claude `liệt kê từng turn bạn đã làm` và đối chiếu, số turns phải khớp logic này.
 - Trả lời được câu "việc mới lạ dùng gì, việc lặp >3 lần dùng gì?" đúng theo kinh nghiệm ở trên; cách đóng thành skill xem chi tiết ở bài 05.
 
 ---
@@ -583,7 +585,7 @@ Mục này trả lời câu: những lỗi khiến task rơi vào vòng lặp th
 Mục này trả lời câu: làm 4 bài nào để biến lý thuyết mục 1–8 thành thao tác tay?
 
 **Bài 1 (15 phút) — Trace vòng lặp agent:**
-Giao 1 task nhỏ, sau khi xong hỏi Claude: *"liệt kê từng turn mày đã làm: reasoning gì,
+Giao 1 task nhỏ, sau khi xong hỏi Claude: *"liệt kê từng turn bạn đã làm: reasoning gì,
 tool gì, observation gì"*. So sánh với sơ đồ mục 2.1. Ghi lại số turns + số tool calls.
 
 **Bài 2 (15 phút) — Đo token economics:**

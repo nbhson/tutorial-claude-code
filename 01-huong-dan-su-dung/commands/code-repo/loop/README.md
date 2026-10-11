@@ -5,9 +5,9 @@
 
 ## Khi nào dùng
 
-- Dùng `/loop` khi bạn đang làm việc với code/repo (xem diff, review, verify, chạy batch, khởi tạo).
-- Dùng `/loop` **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng `/loop` thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/loop` khi task cần chạy đi chạy lại tới khi đạt một tiêu chí rõ ràng (pass lint, hết flake...).
+- Đặt `/loop` **kèm điều kiện dừng và `--max`** trước khi rời máy, để tránh loop vô hạn.
+- Không dùng `/loop` khi chưa viết được tiêu chí "xong là gì" — không có đích thì không biết dừng ở đâu.
 
 ## Cách gọi
 
@@ -24,14 +24,14 @@
 **Prompt thật (paste vào Claude Code):**
 
 ```bash
-/goal Toàn bộ src/legacy/ pass ruff check + mypy (0 errors), không đổi logic
+/loop Toàn bộ src/legacy/ pass ruff check + mypy (0 errors), không đổi logic
 # (verify bằng pytest legacy/ vẫn pass sau mỗi 10 file)
 ```
 
 **Kết quả mong đợi:**
 
-- Claude trả đúng việc của `/loop` (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Mỗi vòng: làm → check → chưa đạt thì sửa tiếp; dừng khi đạt hoặc chạm `--max`.
+- Bạn xem được log từng vòng để biết vì sao dừng.
 
 **Verify (30 giây):**
 

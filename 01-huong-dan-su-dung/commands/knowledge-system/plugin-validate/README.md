@@ -1,7 +1,7 @@
 # /plugin-validate — Audit plugin/mod trước khi cài: nó xin hooks gì, gọi calls gì
 
 > Loại CLI (`claude plugin validate`) · Nhóm Plugin & Bảo mật · Mức rủi ro Không (chỉ đọc + in báo cáo; nhưng Có nếu bạn bỏ qua red flags rồi cài — mod độc đọc file + gọi mạng + chạy shell cùng lúc là mất máy)
-> **Nói nôm na:** `claude plugin validate <mod>` audit 1 plugin/mod TRƯỚC khi cài: in ra `hooks:` nó đăng ký (tool.check/tool.call/prompt.submit/session.append/ui.render) và `calls:` nó được phép gọi (`$.process.run/spawn`, `$.fs.read/write`, `$.http.fetch`, `$.env.get`, `$.settings.read`, `$.model.complete`, `$.prompt.submit`). Gặp red flags (đọc env + ghi file + gọi mạng + chạy shell cùng lúc, prompt.submit lén, ui.render giả mạo...) thì đọc code từng dòng trước khi quyết. Kèm `claude plugin test` để thử mod trong lồng (no-hooks module vs hooks-off). Hiểu `plugin-validate` là hiểu "soi giấy phép lái xe trước khi cho lên xe".
+> **Nói nôm na:** `claude plugin validate <mod>` audit 1 plugin/mod TRƯỚC khi cài. Nó in ra `hooks:` mà plugin đăng ký (tool.check/tool.call/prompt.submit/session.append/ui.render) và `calls:` mà nó được phép gọi (`$.process.run/spawn`, `$.fs.read/write`, `$.http.fetch`, `$.env.get`, `$.settings.read`, `$.model.complete`, `$.prompt.submit`). Gặp red flags (đọc env + ghi file + gọi mạng + chạy shell cùng lúc, prompt.submit lén, ui.render giả mạo...) thì đọc code từng dòng trước khi quyết. Kèm `claude plugin test` để thử mod trong lồng (no-hooks module vs hooks-off). Hiểu `plugin-validate` là hiểu "soi giấy phép lái xe trước khi cho lên xe".
 
 ## Khi nào dùng
 

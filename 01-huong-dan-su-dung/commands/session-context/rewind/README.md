@@ -1,6 +1,6 @@
 # /rewind — Quay ngược conversation + code về checkpoint an toàn (nút undo của cả não lẫn tay)
 
-> Loại Built-in · Nhóm Session & Context · Mức rủi ro Có — có thể xóa đoạn hội thoại sau checkpoint và revert file code về trạng thái checkpoint (mất việc sau checkpoint nếu không sao lưu; checkpoint sau bị bỏ)
+> **Loại:** Built-in · **Nhóm:** Session & Context · **Mức rủi ro:** Có — có thể xóa đoạn hội thoại sau checkpoint và revert file code về trạng thái checkpoint (mất việc sau checkpoint nếu không sao lưu; checkpoint sau bị bỏ)
 > **Nói nôm na:** `/rewind` (kết hợp phím **Esc × 2 / double-Esc** mở checkpoint picker) là "cỗ máy thời gian toàn diện": quay cả **trí nhớ hội thoại** lẫn **file code** về 1 điểm checkpoint trước đó, khi bạn nhận ra 30 phút vừa rồi đi sai hướng.
 
 ## Khi nào dùng
@@ -36,8 +36,8 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /rewind (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Hội thoại sau checkpoint bị cắt; file code revert về trạng thái của checkpoint đã chọn.
+- Việc sau checkpoint mất nếu bạn không sao lưu (file untracked/rename có thể không về như cũ).
 
 Verify (30 giây):
 
@@ -61,4 +61,4 @@ Verify (30 giây):
 - [../branch/README.md](../../session-context/branch/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
-> Mẹo 1 dòng: _chưa chắc thì gọi /rewind sớm — 1 lệnh đúng lúc rẻ hơn 10 prompt sửa sai._
+> Mẹo 1 dòng: _/rewind chỉ "cứu" được khi đã có checkpoint — chạy `/diff` sau mỗi bước để tạo mốc._

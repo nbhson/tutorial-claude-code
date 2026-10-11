@@ -1,7 +1,7 @@
 # Security guidance — MẪU (copy về .claude/claude-security-guidance.md rồi điền)
 
-> Mẫu threat model + checklist cho plugin security-guidance (bài 15).
-> KHÔNG secrets thật trong file này — chỉ tên env + quy tắc.
+> Mẫu threat model + checklist cho plugin `security-guidance` (xem bài 15 — security stack 5 tầng).
+> KHÔNG để secrets thật trong file này — chỉ ghi tên env + quy tắc.
 
 ## 1. Threat model (điền cho repo bạn)
 

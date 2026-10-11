@@ -12,9 +12,9 @@
 ## Cách gọi
 
 ```bash
-`/logout`
-`/logout --all`
-`/logout --account <tên>`
+/logout
+/logout --all
+/logout --account <tên>
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -35,13 +35,14 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /logout (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Token local bị xoá; terminal báo `Signed out of ...`.
+- Session đang mở mất quyền gọi model ngay; muốn dùng lại phải `/login`.
 
 **Kiểm tra nhanh:**
 
 ```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
+/status
+# → "Not signed in."; nếu vẫn còn tài khoản khác thì chạy /logout --all
 ```
 
 ## Lỗi thường gặp

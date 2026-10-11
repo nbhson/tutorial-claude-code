@@ -5,9 +5,9 @@
 
 ## Khi nào dùng
 
-- Dùng `/code-review` khi bạn đang làm việc với code/repo (xem diff, review, verify, chạy batch, khởi tạo).
-- Dùng `/code-review` **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng `/code-review` thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/code-review` khi cần "mắt mới": một subagent không biết lịch sử chat, soi diff/PR như người ngoài cuộc.
+- Chạy **trước khi mở PR** hoặc trước khi nhận một thay đổi lớn, để bắt bug/logic/bảo mật sớm.
+- Không dùng nó thay cho `/verify`: review chỉ đọc và nhận xét, không build chạy thật.
 
 ## Cách gọi
 
@@ -29,8 +29,8 @@
 
 **Kết quả mong đợi:**
 
-- Claude trả đúng việc của `/code-review` (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Báo cáo gom theo mức critical/high/low, mỗi mục có file:dòng cụ thể.
+- Không sửa code (chỉ đọc + nhận xét).
 
 **Verify (30 giây):**
 

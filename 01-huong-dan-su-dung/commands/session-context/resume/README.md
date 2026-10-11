@@ -1,6 +1,6 @@
 # /resume — Mở lại phiên cũ theo ID/tên hoặc picker, tiếp tục đúng chỗ dang dở
 
-> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (không xóa/sửa file; chỉ nạp lại transcript cũ vào context — an toàn, nhưng có thể tốn tokens để nạp lại)
+> **Loại:** Built-in · **Nhóm:** Session & Context · **Mức rủi ro:** Không (không xóa/sửa file; chỉ nạp lại transcript cũ vào context — an toàn, nhưng có thể tốn tokens để nạp lại)
 > **Nói nôm na:** `/resume` là "cỗ máy thời gian phiên làm việc": liệt kê các session trước (theo ID/tên), cho bạn mở lại đúng chỗ dang dở thay vì giải thích lại từ đầu. Cặp song sinh với CLI flags `--continue` / `--resume`.
 
 ## Khi nào dùng
@@ -36,8 +36,8 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /resume (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Transcript session cũ được nạp lại; model tiếp đúng chỗ dang dở, không cần giải thích lại.
+- Session dài có thể đẩy context lên cao → cân nhắc `/compact` ngay sau khi resume.
 
 Verify (30 giây):
 
@@ -61,4 +61,4 @@ Verify (30 giây):
 - [../rename/README.md](../../session-context/rename/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
-> Mẹo 1 dòng: _chưa chắc thì gọi /resume sớm — 1 lệnh đúng lúc rẻ hơn 10 prompt sửa sai._
+> Mẹo 1 dòng: _đặt tên session bằng `/rename` trước khi nghỉ; hôm sau `/resume <tên>` vào việc trong vài giây._

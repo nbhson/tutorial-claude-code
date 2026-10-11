@@ -12,9 +12,9 @@
 ## Cách gọi
 
 ```bash
-`/mobile`
-`/mobile --list`
-`/mobile --revoke <device>`
+/mobile
+/mobile --list
+/mobile --revoke <device>
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -35,13 +35,14 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /mobile (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- QR hiện ra; quét xong terminal báo `Paired: <device> ✓`.
+- Điện thoại nhận được prompt lẫn permission prompt (`Yes/No`) từ session desktop.
 
 **Kiểm tra nhanh:**
 
 ```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
+/mobile --list
+# → thấy device vừa pair kèm trạng thái online/offline
 ```
 
 ## Lỗi thường gặp

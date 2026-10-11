@@ -22,7 +22,7 @@
 | Fork mode | Chế độ subagent hưởng nguyên context của main thay vì bắt đầu trắng — bật mặc định từ ≥2.1.232 | Tắt bằng `CLAUDE_CODE_FORK_SUBAGENT=0` khi muốn reviewer thật sự "mới" |
 | Output contract | Dặn trước subagent được trả cái gì, để main không nhận rác | `"Trả quyết định + evidence, tối đa 15 bullet, không dump log"` |
 | Reviewer fresh | Reviewer sinh mới, chưa thấy reasoning của writer nên soi khách quan hơn | `git diff` → spawn reviewer → nhận `[SEVERITY] file:line — fix` |
-| Worktree | Bản saa repo ở thư mục khác để 2 luồng việc sửa song song không đè nhau | `git worktree add ../myrepo-worktrees/stream-refund -b feat/refund` |
+| Worktree | Bản sao repo ở thư mục khác để 2 luồng việc sửa song song không đè nhau | `git worktree add ../myrepo-worktrees/stream-refund -b feat/refund` |
 | `/batch` | Lệnh chia 1 việc lặp thành nhiều worktree-subagent, mỗi con 1 PR nhỏ | `/batch Thêm missing tests cho src/utils/*.ts` |
 | Agent teams | Chế độ 1 lead điều phối các thành viên agent song song (experimental) | Lead + 2 teammates security/perf/tests |
 | Concurrent | Số subagent đang chạy song song cùng lúc | Trần 3–5 concurrent, quá thì chuyển worktree/`/batch` |
@@ -114,7 +114,7 @@ Trả về:
 - Files liên quan (đường dẫn + 1 dòng vai trò, tối đa 8 files)
 - Flow hiện tại (5-8 bullet)
 - 2 phương án thay đổi (pros/cons 3 bullet mỗi cái)
-- "Chỉ files mày sẽ sửa/đọc nếu làm change tiếp theo"
+- "Chỉ liệt kê files sẽ sửa/đọc nếu làm change tiếp theo"
 Không dump log dài, không đọc src/legacy/.
 ```
 

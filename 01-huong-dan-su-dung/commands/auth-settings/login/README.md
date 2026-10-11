@@ -12,9 +12,9 @@
 ## Cách gọi
 
 ```bash
-`/login`
-`/login --sso`
-`/login --api-key`
+/login
+/login --sso
+/login --api-key
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -35,13 +35,14 @@ claude
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /login (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Trình duyệt mở trang xác thực; duyệt xong terminal báo `✓ Signed in as <email> (<plan>)`.
+- Token lưu vào `~/.claude/`; các session sau dùng luôn quota tài khoản vừa login.
 
 **Kiểm tra nhanh:**
 
 ```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
+/status
+# → dòng Account hiện đúng email + plan vừa login, không còn "not logged in"
 ```
 
 ## Lỗi thường gặp

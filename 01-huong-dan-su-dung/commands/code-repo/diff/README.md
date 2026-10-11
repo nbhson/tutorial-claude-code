@@ -5,9 +5,9 @@
 
 ## Khi nào dùng
 
-- Dùng `/diff` khi bạn đang làm việc với code/repo (xem diff, review, verify, chạy batch, khởi tạo).
-- Dùng `/diff` **trước khi** task phình to (đầu task, đầu session, trước việc nguy hiểm) — rẻ hơn sửa sai sau.
-- Không dùng `/diff` thay cho đọc code/review tay — nó là trợ lý, không phải người chịu trách nhiệm cuối.
+- Dùng `/diff` ngay sau mỗi bước model sửa code, để thấy từng hunk thêm/xóa trước khi nhận.
+- Mở `/diff` **sau mỗi bước nhỏ** — càng để nhiều bước mới xem càng khó tìm thủ phạm.
+- Không dùng `/diff` thay cho việc bạn hiểu thay đổi: nó chỉ hiện cái đã đổi, việc đánh giá đúng/sai là của bạn.
 
 ## Cách gọi
 
@@ -31,8 +31,8 @@
 
 **Kết quả mong đợi:**
 
-- Claude trả đúng việc của `/diff` (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Panel diff hiện từng hunk; bạn chọn giữ hay bỏ từng phần.
+- Không thay đổi nào bị nhận mà bạn chưa nhìn thấy.
 
 **Verify (30 giây):**
 

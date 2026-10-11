@@ -1,13 +1,13 @@
 # /session-context — nhóm 18 lệnh mở, dọn, lưu và chia nhánh phiên
 
-> **Loại:** index nhóm lệnh · **Nhóm:** Phiên làm việc & Context · **Mức rủi ro:** thấp (chỉ /rewind là mức "Có", còn lại đụng context phiên)
+> **Loại:** index nhóm lệnh · **Nhóm:** Phiên làm việc & Context · **Mức rủi ro:** thấp (chỉ /rewind là mức "Có" — xóa hội thoại + revert file; còn lại chỉ đụng context phiên, riêng /restart nên chờ tool ghi file xong)
 > **Nói nôm na:** nhóm này là nơi bạn "quản lý bộ nhớ tạm" của phiên — dọn context, lưu/bàn giao, thử nhánh, quay checkpoint — mà không đụng code trên đĩa. /rewind là lệnh duy nhất "có" rủi ro thật (xóa + revert).
 
 ## Khi nào dùng
 
-- Bạn muốn dọn context: /clear (đổi task), /compact (cùng task, phình), /context (xem đang tốn gì).
-- Bạn muốn lưu/thử nhánh: /export (bàn giao), /fork (thử hướng B giữ bản gốc), /rewind (quay checkpoint khi sai hướng).
-- Bạn cần quản lý phiên: /restart (treo/lag), /resume (nạp lại transcript cũ), /tasks (job nền), /background (chạy task dài ở nền).
+- Bạn muốn dọn context: `/clear` (đổi task), `/compact` (cùng task, phình), `/context` (xem đang tốn gì).
+- Bạn muốn lưu/thử nhánh: `/export` (bàn giao), `/fork` (thử hướng B giữ bản gốc), `/rewind` (quay checkpoint khi sai hướng).
+- Bạn cần quản lý phiên: `/restart` (treo/lag), `/resume` (nạp lại transcript cũ), `/tasks` (job nền), `/background` (chạy task dài ở nền).
 
 ## Cách gọi
 
@@ -36,15 +36,19 @@ Bạn sai hướng sau vài bước, muốn quay về mốc an toàn:
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
-| Session treo/lag, không phản hồi | Context phình quá, hoặc job nền /tasks kẹt | /restart để khởi động lại (giữ transcript); /tasks để kill job kẹt |
-| /fork / /branch "thiếu" context — bản sao không đủ như gốc, việc phụ sai hướng | Fork không sao lưu đủ context, hoặc tắt fork mode (CLAUDE_CODE_FORK_SUBAGENT=0) | Kiểm tra fork mode đang bật (≥2.1.232), /context trước khi fork để chắc đủ context |
-| /rewind báo lỗi "không có checkpoint", không quay được | Phiên chưa tạo checkpoint nào (chưa chạy /diff, chưa có mốc) | Tạo checkpoint trước (chạy /diff sau mỗi bước), sau đó /rewind mới quay được |
+| Session treo/lag, không phản hồi | Context phình quá, hoặc job nền `/tasks` kẹt | `/restart` để khởi động lại (giữ transcript); `/tasks` để kill job kẹt |
+| `/fork` hoặc `/branch` "thiếu" context — bản sao không đủ như gốc, việc phụ sai hướng | Fork không sao lưu đủ context, hoặc tắt fork mode (`CLAUDE_CODE_FORK_SUBAGENT=0`) | Kiểm tra fork mode đang bật (≥2.1.232), `/context` trước khi fork để chắc đủ context |
+| `/rewind` báo lỗi "không có checkpoint", không quay được | Phiên chưa tạo checkpoint nào (chưa chạy `/diff`, chưa có mốc) | Tạo checkpoint trước (chạy `/diff` sau mỗi bước), sau đó `/rewind` mới quay được |
 
 ## Bộ 3 phải nhớ
 
-> /clear trắng context khi đổi task | /compact nén khi cùng task | /rewind quay checkpoint khi sai hướng | /fork thử hướng B giữ bản gốc
+> /clear trắng context khi đổi task | /compact nén khi cùng task | /rewind quay checkpoint khi sai hướng
+
+Ngoài ra `/fork` (thử hướng B mà giữ nguyên bản gốc) cũng đáng nhớ khi cần rẽ nhánh.
 
 ## Các lệnh (18)
+
+Đọc bảng này khi cần tra nhanh: nhìn cột **Mức rủi ro** trước, chỉ `/rewind` là "Có", còn lại "Không" hoặc "Thấp". Bấm vào tên lệnh để mở bài chi tiết.
 
 | Lệnh | Mức rủi ro | Một dòng |
 |---|---|---|
@@ -65,13 +69,13 @@ Bạn sai hướng sau vài bước, muốn quay về mốc an toàn:
 | [/rewind](./rewind/README.md) | Có | Quay về checkpoint: xóa hội thoại sau đó + revert file |
 | [/tasks](./tasks/README.md) | Không | Liệt kê/theo dõi job nền, kill job khi kẹt |
 | [/todos](./todos/README.md) | Không | Xem/ghi todo list trong memory session |
-| [/usage](./usage/README.md) | Không | Xem thống kê chi tiết token/chi phí theo phiên |
+| [/usage](./usage/README.md) | Không | Token đốt vào skill/subagent/MCP nào, quota còn lại |
 
 ## Sơ đồ quyết định (30 giây)
 
 ```text
 Cần gì? -> Nhóm này cho gì? -> Lệnh nào?
-Đọc 3 lệnh trong "Bộ 3" trước, còn lại tra khi cần.
+Đọc 3 lệnh trong "Bộ 3 phải nhớ" trước, còn lại tra khi cần.
 Gõ / trong session để xem lệnh nào hiện ở máy bạn.
 ```
 

@@ -2,7 +2,7 @@
 
 > File này trả lời 2 câu hỏi: **(1) viết thế nào cho người đọc hiểu**, **(2) dữ kiện nào đang được coi là đúng**.
 > Mọi file `.md` trong repo phải tuân file này. Trước khi sửa hoặc thêm nội dung, đọc hết phần A.
-> Cần tra nhanh version/model/giá → nhảy thẳng [Phần B — Dữ kiện chuẩn](#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-07102026).
+> Cần tra nhanh version/model/giá → nhảy thẳng [Phần B — Dữ kiện chuẩn](#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-11102026).
 
 ---
 
@@ -33,7 +33,7 @@ Nguyên tắc chung: **viết cho người đọc nhóm 1, dày đủ cho nhóm 
    trong bản cũ phải còn — trừ khi trùng lặp *nội dung y hệt* thì gộp và ghi rõ đã gộp.
 4. **Không lặp cùng một nội dung 2 lần trong 1 file.** Bảng nào đã có ở mục A thì không hiện lại
    y hệt ở mục B; câu trả lời không được in ở cả "Trả lời 1 câu" và "Giải thích".
-5. **Dữ kiện phải có nguồn + ngày.** Xem [A9](#a9-quy-tắc-chống-out-date).
+5. **Dữ kiện phải có nguồn + ngày.** Xem [A10](#a10-quy-tắc-chống-out-date).
 
 ---
 
@@ -107,7 +107,7 @@ bảng hiểu nhầm. Nội dung đó phải là các mục riêng đứng ngang
 | `Claude tự đọc file` | `nó tự đọc file` | `nó` thiếu chủ ngữ rõ ràng |
 | Prompt mẫu bên trong code block giữ nguyên khẩu ngữ | — | Prompt là chuỗi lệnh, không phải văn viết |
 
-**Tiếng Anh和技术词:**
+**Tiếng Anh và thuật ngữ:**
 
 - Lệnh, tên tool, tên file, tên config: giữ nguyên tiếng Anh — `claude`, `/clear`, `CLAUDE.md`, `PreToolUse`, `subagent`, `worktree`, `hook`, `MCP`.
 - Thuật ngữ chuyên ngành lần đầu xuất hiện: **giải thích 1 câu ngay lần đầu**, sau đó dùng thoải mái.
@@ -214,16 +214,16 @@ Tick đủ trước khi kết thúc lượt sửa 1 file:
 
 ---
 
-## Phần B — Dữ kiện chuẩn (làm tròn thời gian: 07/10/2026)
+## Phần B — Dữ kiện chuẩn (làm tròn thời gian: 11/10/2026)
 
 > Mục này là **nguồn sự thật chung** cho mọi file trong repo. Khi viết lại nội dung, đối chiếu vào đây.
 > Cập nhật bằng cách thêm dòng mới **có ngày**, không xóa dòng cũ đang còn đúng.
 
 ### B1. Claude Code — phiên bản & tài liệu
 
-| Hạng mục | Giá trị chuẩn (07/10/2026) |
+| Hạng mục | Giá trị chuẩn (11/10/2026) |
 |---|---|
-| Phiên bản mới nhất | **v2.1.292** (phát hành 06/10/2026) |
+| Phiên bản mới nhất | **v2.1.296** (phát hành 09/10/2026) |
 | Docs chính thức | https://code.claude.com/docs/en/ |
 | Changelog | https://code.claude.com/docs/en/changelog |
 | What's new theo tuần | https://code.claude.com/docs/en/whats-new (vd `2026-w36`, `2026-w37`) |
@@ -236,17 +236,16 @@ Tick đủ trước khi kết thúc lượt sửa 1 file:
 
 | Model | Input | Output | Cache read | Context | API ID | Ghi chú |
 |---|---|---|---|---|---|---|
-| Claude Fable 5.1 | $10 | $50 | $0.25 | 1M | `claude-fable-5-1` | Alias `fable`; cần ≥2.1.257; mạnh nhất, chậm nhất |
-| Claude Opus 5.5 | $4 | $20 | $0.20 | 1M | `claude-opus-5-5` | Cần ≥2.1.280; **mặc định ở hầu hết gói** (từ 22/09/2026); fast mode $8/$40 (~2.5× nhanh) |
-| Claude Sonnet 5.5 | $2 | $10 | $0.20 | 1M | `claude-sonnet-5-5` | Mặc định Sonnet trên API; rẻ hơn tới 30%/task so Sonnet 5 |
-| Claude Sonnet 5 | $2 | $10 | $0.20 | 1M | `claude-sonnet-5` | Mặc định ở Pro/Team Standard/Employment seat |
-| Claude Haiku 4.5 | $1 | $5 | $0.10 | 200K | `claude-haiku-4-5-20251001` | Nhanh nhất, không hỗ trợ effort |
-| Claude Haiku 5.5 | — | — | — | — | — | Anthropic công bố "trong vài tuần" (từ 22/09/2026) — **chưa có giá, chưa dùng** |
+| Claude Fable 5.1 | $10 | $50 | $0.25 | 1M | `claude-fable-5-1` | Alias `fable`/`best`; cần ≥2.1.257; mạnh nhất, chậm nhất. Trên Pro bill bằng usage credits, trên Max tốn 50% hạn tuần |
+| Claude Opus 5.5 | $4 | $20 | $0.20 | 1M | `claude-opus-5-5` | Cần ≥2.1.280; **mặc định tài khoản** ở Pro/Max/Team/Enterprise/API/Bedrock/GCP; fast mode $8/$40 (~2.5× nhanh) |
+| Claude Sonnet 5.5 | $2 | $10 | $0.10 | 1M | `claude-sonnet-5-5` | Cần ≥2.1.284; mặc định Sonnet trên API; cache đọc rẻ hơn Sonnet 5 (0.05×) |
+| Claude Sonnet 5 | $2 | $10 | $0.20 | 1M | `claude-sonnet-5` | Mặc định ở Pro/Team Standard/Employment seat đời cũ (trước 2.1.280) |
+| Claude Haiku 5.5 | $0.10 | $0.50 | $0.01 | 1M | `claude-haiku-5-5` | Cần ≥2.1.293; **mặc định Haiku trên API**. Prompt >100K: $0.50/$2.50 (cache $0.05) |
+| Claude Haiku 4.5 | $1 | $5 | $0.10 | 200K | `claude-haiku-4-5-20251001` | Nhanh, rẻ; mặc định Haiku trên Bedrock/GCP/AWS; không hỗ trợ effort |
 
-Nguồn: platform.claude.com/docs/en/about-claude/pricing + anthropic.com/claude-opus-5-5 +
-anthropic.com/claude-sonnet-5-5 (tra 07/10/2026).
+Nguồn: platform.claude.com/docs/en/about-claude/pricing + code.claude.com/docs/en/model-config + claude.com/pricing (tra 11/10/2026).
 
-### B3. Gói subscription (claude.com/pricing, tra 07/10/2026)
+### B3. Gói subscription (claude.com/pricing, tra 11/10/2026)
 
 | Gói | Giá | Claude Code? | Ghi chú |
 |---|---|---|---|
@@ -259,6 +258,8 @@ anthropic.com/claude-sonnet-5-5 (tra 07/10/2026).
 
 - Hạn mức tính theo **phiên 5 giờ cuộn** + **hạn tuần**; chat web + Claude Code dùng chung 1 hạn mức.
 - Hết hạn mức → chờ reset, nâng gói, hoặc bật **usage credits** (trả theo giá API).
+- **Fable không nằm trong hạn mức thường**: trên Pro bill bằng usage credits, trên Max tốn ~50% hạn tuần
+  cho mỗi lượt dùng; Opus/Sonnet/Haiku đi theo hạn mức gói (Haiku/Sonnet có cả ở Free, Opus từ Pro).
 - (06/5/2026) Anthropic đã **nhân đôi** hạn mức 5 giờ của Claude Code cho Pro/Max/Team/Enterprise
   và bỏ giảm hạn mức giờ cao điểm.
 
@@ -280,8 +281,13 @@ anthropic.com/claude-sonnet-5-5 (tra 07/10/2026).
 | `AGENTS.md` đọc trực tiếp, không cần `CLAUDE.md` | w34/2026 | Chuẩn chéo công cụ (Cursor, Codex...) chạy song song |
 | Skill tên đúng `verify` → tự chạy trước mỗi commit | w34/2026 | Viết 1 skill `verify` = có pre-commit check |
 | `claude plugin eval`, `claude plugin install --marketplace` | ≥2.1.269 / ≥2.1.292 | Đánh giá plugin trước khi tin |
+| **Claude Haiku 5.5** ra mắt | ≥2.1.293 | Model Haiku mới: 1M context, $0.10/$0.50 (prompt ≤100K), rẻ nhất dòng 5.x |
+| Hook `onFailure: "block"` | ≥2.1.295 | Hook lỗi/timeout thì **chặn** hành động thay vì thả qua |
+| Program Status Protocol (OSC 7501) | ≥2.1.295 | Terminal hỗ trợ hiện đang làm / chờ bạn / xong |
+| `autoCompactWindow` cho subagent | ≥2.1.296 | Subagent tự compact sớm hơn cửa sổ chính |
+| MCP tool description mặc định 2.048→4.096 ký tự (16.384 qua tool search) | ≥2.1.295–2.1.296 | Tool MCP được mô tả đầy đủ hơn → model chọn đúng tool hơn |
 | Mods (plugin sửa giao diện Claude Code) | 2026 | Trust bar cao hơn plugin thường — chỉ cài đã audit |
-| MCP mặc định negotiate protocol `2026-07-28` | ≥2.1.292 | Tương tác MCP mới hơn với mọi provider |
+| MCP mặc định negotiate protocol `2026-07-28` | ≥2.1.292 | Áp cho cả connector claude.ai lẫn MCP local stdio/remote; `MCP_PROTOCOL_NEGOTIATION=legacy` để tắt |
 | **`/ultraplan` đã bị gỡ** | w32/2026 (03–07/8/2026) | Thay bằng plan mode hoặc Claude Code trên web |
 
 ### B5. Sự thật lâu dài (ít đổi, vẫn dùng)
@@ -310,7 +316,9 @@ anthropic.com/claude-sonnet-5-5 (tra 07/10/2026).
 | `fable` → Fable 5.1 | ≥2.1.257 | |
 | `/diff` panel | ≥2.1.260 | Cần terminal ≥110 cột + git repo |
 | `claude plugin eval` | ≥2.1.269 | |
-| Opus 5.5 (mặc định) | ≥2.1.280 | |
+| Opus 5.5 (mặc định tài khoản) | ≥2.1.280 | |
+| Sonnet 5.5 | ≥2.1.284 | |
+| Haiku 5.5 | ≥2.1.293 | Mặc định Haiku trên API |
 | Trim CLAUDE.md trong `/doctor` | ≥2.1.206 | |
 
 > Mọi lệnh: gõ `/` trong session để xem máy bạn có không — version/provider khác nhau hiện khác nhau.

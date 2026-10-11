@@ -13,9 +13,9 @@
 ## Cách gọi
 
 ```bash
-`/plan`
-`/plan <mô tả task>`
-`Shift+Tab`
+/plan
+/plan <mô tả task>
+Shift+Tab
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -33,10 +33,10 @@ Chỉ lập plan, chưa code.
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /plan (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Claude chỉ đọc file, search, vẽ kiến trúc và trả plan từng bước — mọi Edit/Write/Bash ghi đều bị chặn.
+- Bạn duyệt plan xong mới cho thực thi; đổi sang mode khác bằng Shift+Tab khi cần ghi.
 
-Verify (30 giây):
+**Kiểm tra nhanh:**
 
 ```bash
 # trong session: /status hoặc /context để chắc mode/context còn sạch

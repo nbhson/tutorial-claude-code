@@ -1,6 +1,6 @@
 # /help — Trợ giúp tại chỗ: tra cứu lệnh, cú pháp, phím tắt trong 5 giây
 
-> Loại Built-in · Nhóm Session & Context · Mức rủi ro Không (chỉ hiển thị tài liệu, không thay đổi gì)
+> **Loại:** Built-in · **Nhóm:** Session & Context · **Mức rủi ro:** Không (chỉ hiển thị tài liệu, không thay đổi gì)
 > **Nói nôm na:** `/help` là "bảng chỉ dẫn dán tường": liệt kê slash commands khả dụng, cú pháp ngắn, phím tắt (như double-Esc), để tra ngay trong terminal mà không cần mở docs web.
 
 ## Khi nào dùng
@@ -32,8 +32,8 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /help (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Danh sách slash commands + cú pháp ngắn + phím tắt (như Esc Esc) hiện ngay trong session.
+- Biết máy bạn đang có những lệnh nào mà không phải mở docs web.
 
 Verify (30 giây):
 
@@ -57,4 +57,4 @@ Verify (30 giây):
 - [../resume/README.md](../../session-context/resume/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
-> Mẹo 1 dòng: _chưa chắc thì gọi /help sớm — 1 lệnh đúng lúc rẻ hơn 10 prompt sửa sai._
+> Mẹo 1 dòng: _mới vào session gõ `/help` một lần để biết máy mình có gì; lệnh không hiện thì update CLI._

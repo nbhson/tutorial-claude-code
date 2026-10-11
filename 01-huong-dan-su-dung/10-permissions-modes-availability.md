@@ -151,8 +151,8 @@ Deny "Bash(rm:*)" nhưng agent chạy:
 > Nếu bạn ở bản <2.1.288: update trước khi tin deny rules. Kiểm tra:
 > `claude --version` + `npm view @anthropic-ai/claude-code dist-tags`
 > (lúc viết bài này bản fix nằm ở 2.1.288/289, bản mới nhất tra ở
-> [WRITING-STYLE — Phần B](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-07102026) —
-> ví dụ v2.1.292 ngày 06/10/2026 — `latest` thường chứa fix trước `stable`).
+> [WRITING-STYLE — Phần B](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-11102026) —
+> ví dụ v2.1.296 ngày 09/10/2026 — `latest` thường chứa fix trước `stable`).
 
 Các kiểu lách đã vá (compound/env-prefix/bare-assign/symlink/nested-mod):
 
@@ -313,7 +313,7 @@ default → acceptEdits → plan → auto → bypassPermissions
 | `bypassPermissions` (`--dangerously-skip-permissions`) | Bỏ hỏi | **Chỉ CI sandbox** — không dùng máy dev | CI runner ephemeral (bài 12) |
 
 > **Auto mode:** ra mắt từ w13/2026; từ **w34/2026 classifier duyệt quyền (thay bạn) chạy server-side** —
-> số liệu và mốc thời gian theo [WRITING-STYLE — Phần B](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-07102026).
+> số liệu và mốc thời gian theo [WRITING-STYLE — Phần B](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-11102026).
 
 Cloud sessions (Web): chỉ Accept edits / Plan (/Auto tùy bản) — không Manual/Bypass.
 

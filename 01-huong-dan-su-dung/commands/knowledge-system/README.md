@@ -45,6 +45,8 @@ Bạn thấy session chạy chậm / trả lời lạ, không rõ vì sao:
 
 ## Các lệnh (16)
 
+Bảng dưới liệt kê 16 lệnh trong nhóm — liếc cột **Mức rủi ro** trước khi gõ, rồi bấm vào tên lệnh để xem chi tiết.
+
 | Lệnh | Mức rủi ro | Một dòng |
 |---|---|---|
 | [/agents](./agents/README.md) | Có nếu batch ẩu | Quản lý subagent chạy song song, context riêng |

@@ -35,8 +35,8 @@ Bạn vừa để Claude sửa 1 file, muốn xem nó đổi gì:
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
-| Hook pre-commit "im": không chạy, hoặc không chặn được | Cấu hình hook trong settings sai, hoặc bản của bạn chưa hỗ trợ hook mới | Gõ `/hooks` (nhóm knowledge-system) xem cấu hình, đọc output hook trong terminal |
-| Session "hờn", model lặp lại 1 lỗi, context đầy giữa task | Context window đầy; /loop hoặc /batch chạy bypass ngốn quota liên tục | Dùng /compact để nén, /context xem ai tốn context, dừng /loop khi không cần |
+| Hook pre-commit "im": không chạy, hoặc không chặn được | Cấu hình hook trong settings sai, hoặc bản của bạn chưa hỗ trợ hook mới | Gõ `/hooks` (nhóm knowledge-system) xem cấu hình, đọc output hook trong terminal; muốn hook lỗi/timeout thì chặn hẳn, bật `onFailure: "block"` (≥2.1.295) |
+| Session "hờn", model lặp lại 1 lỗi, context đầy giữa task | Context window đầy; /loop hoặc /batch chạy bypass ngốn quota liên tục | Dùng /compact để nén, /context xem ai tốn context, dừng /loop khi không cần; đặt `autoCompactWindow` cho subagent (≥2.1.296) để tự compact sớm hơn |
 | /subtask kẹt (subagent không về), /code-review "dễ dãi" bỏ sót | Subagent context riêng nhưng spawn ẩu; review chỉ đọc + nhận xét, không verify | Chạy /verify (build + chạy thật) sau review; chia /subtask nhỏ hơn; /tasks để kill job kẹt |
 
 ## Bộ 3 phải nhớ

@@ -12,9 +12,9 @@
 ## Cách gọi
 
 ```bash
-`/terminal-setup`
-`/terminal-setup <app>`
-`/terminal-setup --check`
+/terminal-setup
+/terminal-setup <app>
+/terminal-setup --check
 ```
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
@@ -32,13 +32,14 @@ Prompt thật (paste vào Claude Code):
 
 Kết quả mong đợi:
 
-- Claude trả đúng việc của /terminal-setup (không lan man), nêu rõ bước tiếp theo.
-- Lệnh chỉ-đọc thì không sửa file; lệnh ghi/chạy thì liệt kê file sẽ chạm trước.
+- Chẩn đoán theo đúng app đang dùng và in bước fix cụ thể.
+- Không đụng code/auth; chỉ hướng dẫn đổi cấu hình terminal.
 
 **Kiểm tra nhanh:**
 
 ```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
+/terminal-setup --check
+# → Shift+Enter / truecolor / font báo ✓ sau khi làm theo hướng dẫn
 ```
 
 ## Lỗi thường gặp

@@ -366,7 +366,7 @@ Mục này trả lời câu: khi cần fix bảo mật nên ở npm stable hay l
   mới gồm fix này. Quy tắc: version = "có fix mình cần", đọc changelog từng bản.
 ```
 
-Con số stable/latest ở trên là ví dụ tại thời điểm viết bài. Theo changelog chính thức, bản mới nhất ngày 07/10/2026 là 2.1.292 (phát hành 06/10/2026) — dist-tags trên máy bạn có thể đã cao hơn, nên chạy 2 lệnh dưới đây để thấy bản thật.
+Con số stable/latest ở trên là ví dụ tại thời điểm viết bài. Theo changelog chính thức, bản mới nhất là v2.1.296 (phát hành 09/10/2026) — dist-tags trên máy bạn có thể đã cao hơn, nên chạy các lệnh dưới đây để thấy bản thật.
 
 ```bash
 # Kiểm tra dist-tags + changelog (copy-paste):
