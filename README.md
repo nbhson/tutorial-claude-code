@@ -21,7 +21,7 @@ Mỗi phần là một folder. Đọc theo thứ tự.
 
 | Folder | Giống một | Có trong đó |
 |---|---|---|
-| [`01-huong-dan-su-dung/`](./01-huong-dan-su-dung/) | Sổ tay thao tác | 17 bài từ cài đặt tới bảo mật + 84 lệnh, mỗi lệnh 1 trang nhỏ |
+| [`01-huong-dan-su-dung/`](./01-huong-dan-su-dung/) | Sổ tay thao tác | 18 bài từ cài đặt tới output styles + 84 lệnh, mỗi lệnh 1 trang nhỏ |
 | [`02-tips-thuc-chien/`](./02-tips-thuc-chien/) | Bài học sâu | 11 bài: giữ context sạch, viết prompt, plan, kiểm chứng, làm song song |
 | [`03-cau-hoi-thuong-gap/`](./03-cau-hoi-thuong-gap/) | Sổ tay chữa bệnh | 10 bài Q&A, tra khi gặp lỗi |
 | [`templates/`](./templates/) | File mẫu | Copy vào repo thật, sửa 20% là chạy |
@@ -38,7 +38,7 @@ Ngày 4: 02 tips 01 → 05 (context, prompt, plan, verify, parallel)
 Ngày 5: 02 tips 06 → 10 + 03 FAQ tra cứu khi gặp lỗi
 ```
 
-Nếu không có 5 ngày: đọc [`01-huong-dan-su-dung/00-tong-quan-claude-code.md`](./01-huong-dan-su-dung/00-tong-quan-claude-code.md) trước — nó giải thích toàn bộ khái niệm trong 25 phút.
+Nếu không có 5 ngày: đọc [`01-huong-dan-su-dung/00-tong-quan-claude-code.md`](./01-huong-dan-su-dung/00-tong-quan-claude-code.md) trước — bài này giải thích toàn bộ khái niệm trong 25 phút.
 
 ## 4 quy tắc vàng
 
@@ -55,6 +55,18 @@ Claude Code **v2.1.x**, bản mới nhất tại thời điểm viết: **v2.1.2
 
 Kiểm tra máy bạn: `claude doctor` hoặc trong session gõ `/doctor` / `/status`.
 
+> **Update 2026-10-28:** version data below was last pinned at v2.1.296 (09/10/2026). Before
+> relying on any version-gated command, re-check the current release:
+> `npm view @anthropic-ai/claude-code dist-tags` + `claude --version`, and the release notes at
+> https://support.claude.com/en/articles/12138966-release-notes . Version-sensitive 2026 facts already
+> covered in this repo: MCP protocol `2026-07-28` default negotiation (≥2.1.292), 4,096-char tool
+> descriptions via tool search (≥2.1.295), auto mode as default permission mode for new sessions on
+> Pro/Max/Team since w34/2026, and computer use / Remote Control (March 2026).
+> New in this update: advanced MCP content (now in Vietnamese) in
+> [`tool-use/mcp-advanced/README.md`](./tool-use/mcp-advanced/README.md), and a new lesson
+> [`01-huong-dan-su-dung/17-output-styles-doi-vai-tro-va-giong-tra-loi.md`](./01-huong-dan-su-dung/17-output-styles-doi-vai-tro-va-giong-tra-loi.md)
+> covering `/output-style`, built-in/custom styles and how they compare with CLAUDE.md/skills/hooks.
+
 Tất cả số liệu version/model/giá trong repo được tập hợp tại [`WRITING-STYLE.md`](./WRITING-STYLE.md).
 
 ## Cách dùng repo này
@@ -66,4 +78,4 @@ Tất cả số liệu version/model/giá trong repo được tập hợp tại 
 
 ---
 
-*Cập nhật lần cuối: 11/10/2026.*
+*Cập nhật lần cuối: 28/10/2026.*

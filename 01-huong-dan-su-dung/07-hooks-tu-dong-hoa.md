@@ -284,7 +284,7 @@ Mục này trả lời câu: 1 file settings.json đầy đủ cho team dùng tr
 **Kiểm tra nhanh:**
 
 - Dán file trên vào `.claude/settings.json` của repo sạch, mở session mới rồi gõ `/hooks` → phải thấy 6 event types (`SessionStart`, `PreToolUse`, `PostToolUse`, `Stop`, `Notification`, `SubagentStop`) với đúng matcher.
-- JSON parse lỗi thì mở `/doctor` — nó chỉ đúng file lỗi; sửa xong mở session mới (hooks load lúc start).
+- JSON parse lỗi thì mở `/doctor` — tool chỉ đúng file bị lỗi; sửa xong mở session mới (hooks load lúc start).
 
 ---
 

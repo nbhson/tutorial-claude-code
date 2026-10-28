@@ -340,7 +340,7 @@ Công thức:
 
 ### 4.3. Subagent descriptions >15K tokens → warning
 
-- Mỗi subagent có `description` (khi nào dùng nó). Tất cả descriptions cộng dồn lúc startup.
+- Mỗi subagent có `description` (khi nào dùng agent đó). Tất cả descriptions cộng dồn lúc startup.
 - Quá ~15K → Claude Code warning lúc khởi động, startup chậm, chọn agent sai.
 - Fix:
   - Rút gọn description còn 1–2 câu use-case + trigger keywords.

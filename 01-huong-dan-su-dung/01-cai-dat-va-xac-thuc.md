@@ -487,7 +487,7 @@ Cách đọc:
 
 | Dòng | Ý nghĩa | Hành động |
 |---|---|---|
-| Version/install/PATH | Binary có đúng 1 + PATH thấy nó? | `[✗]` → gỡ bản thừa, fix PATH, restart shell |
+| Version/install/PATH | Binary có đúng 1 + PATH thấy binary? | `[✗]` → gỡ bản thừa, fix PATH, restart shell |
 | Auth | Login còn hạn? đúng account? | Hết hạn → `/login`; sai account → `/login` đổi |
 | Settings | JSON parse được? | Lỗi → mở file được chỉ, sửa dấu phẩy ngoặc |
 | CLAUDE.md lines | Quá 200 dòng? | Chạy `/doctor` → trim theo gợi ý (bài 03) |
@@ -502,7 +502,7 @@ Cách đọc:
 
 # Output kỳ vọng (rút gọn):
 # 1. Duplicate install: found /opt/homebrew/bin/claude + ~/.local/bin/claude → remove one? [y/N]
-#    → gõ y, cho nó gỡ bản brew (giữ native).
+#    → gõ y, cho /doctor gỡ bản brew (giữ native).
 # 2. CLAUDE.md 342 → 178 lines: đề xuất xóa mục "directory layout" (Claude tự suy ra được),
 #    chuyển deploy checklist → skill /deploy. Duyệt từng hunk.
 # 3. MCP postgres disconnected → /mcp reconnect postgres (nhập lại password qua env).

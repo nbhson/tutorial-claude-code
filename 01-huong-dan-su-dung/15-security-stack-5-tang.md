@@ -165,7 +165,7 @@ SECURITY_GUIDANCE_DISABLE_ALL=1        # master: tắt cả plugin 1 session
 ```text
 ⚠ Tắt là NỢ security. Quy tắc:
 - Tắt layer nào → ghi lý do + bật lại trong cùng ngày.
-- Tắt master chỉ khi plugin BREAK workflow (bug), không phải vì "nó kêu nhiều".
+- Tắt master chỉ khi plugin BREAK workflow (bug), không phải vì "plugin kêu nhiều".
   Kêu nhiều mà đúng → sửa code, không tắt plugin.
 - CI (tầng 4) KHÔNG tắt theo — kill switch chỉ ảnh hưởng local session.
 ```

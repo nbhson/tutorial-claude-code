@@ -661,4 +661,5 @@ Mục này trả lời câu: đọc bài nào tiếp theo tùy việc bạn đan
 - **[Bài 09 — Plugins & marketplaces](./09-plugins-marketplaces.md)**: bundle MCP servers vào plugin share team.
 - **[Bài 10 — Permissions & availability](./10-permissions-modes-availability.md)**: MCP tools tuân permission rules; provider cắt web search.
 - **[Bài 12 — SDK & CI/CD](./12-agent-sdk-ci-cd-automation.md)**: MCP trong CI runners + Agent SDK custom tools.
+- **[tool-use/mcp-advanced](../tool-use/mcp-advanced/README.md)** (EN): cấu hình MCP nâng cao — protocol `2026-07-28`, viết MCP server custom, resource templates, orchestration multi-server, best practices 2025/2026.
 

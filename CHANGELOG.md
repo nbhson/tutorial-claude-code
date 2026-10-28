@@ -1,9 +1,35 @@
 # Changelog — Khóa Học Claude Code (tiếng Việt)
 
-## [Unreleased] — đợt soát dữ kiện & dễ đọc (11/10/2026)
+## [Unreleased] — 2026-10-28
 
-- Toàn bộ **141 file `.md`**: soát lại dữ kiện theo tài liệu chính thức và tinh chỉnh câu chữ cho dễ đọc,
-  giữ nguyên cấu trúc (khung 7 mục của file lệnh, 5 khối FAQ, khối "lối vào" A2), không mất bảng/ví dụ/lệnh/bài tập/link.
+- **Dịch** `tool-use/mcp-advanced/README.md` sang tiếng Việt (trước đây 100% tiếng Anh — vi phạm quy tắc A2/A5 của repo): thêm khung lối vào A2 + bảng thuật ngữ, giữ nguyên mọi dữ kiện kỹ thuật, comment code và link. Last verified: 2026-10-28.
+- **Bài mới** `01-huong-dan-su-dung/17-output-styles-doi-vai-tro-va-giong-tra-loi.md` (~260 dòng):
+  lệnh `/output-style`, 4 style built-in (Proactive/Concise/Explanatory/Learning), cách đổi style
+  (lệnh, `/config`, VS Code, settings `outputStyle`), custom output style + frontmatter
+  (`name`, `description`, `keep-coding-instructions`, `force-for-plugin`), bảng chọn output style
+  vs CLAUDE.md/skill/hook/subagent. Verify theo docs chính thức 28/10/2026 — output styles
+  **vẫn còn, không bị gỡ** trong v2.x.
+- Mục 6 của bài 17: note phân biệt **memory tool** (`memory_20250818` của Messages API — bạn tự
+  implement handler trên storage của mình, dùng khi build agent bằng API/SDK) với lệnh **`/memory`**
+  của Claude Code (quản lý CLAUDE.md + auto memory local).
+- `01-huong-dan-su-dung/12-agent-sdk-ci-cd-automation.md`: thêm mục 2.3 **TypeScript vs Python SDK**
+  — xác nhận Python SDK chính chủ (`claude-agent-sdk` trên PyPI, 0.2.174 ngày 24/10/2026, Python
+  ≥3.10, bundle sẵn CLI), bảng khác biệt naming/API (snake_case vs camelCase, `ClaudeSDKClient`,
+  `@tool` + `create_sdk_mcp_server`, Pydantic vs Zod).
+- Cập nhật index: `01-huong-dan-su-dung/README.md` và `README.md` gốc từ 17 bài → **18 bài**.
+- Sửa ~6 chỗ đại từ "nó" ngoài prompt mẫu (bài 01, 07, 15, tips 01, README gốc) theo quy tắc A5.
+- Vệ sinh repo: xóa `.DS_Store` (đã có trong `.gitignore`); sửa số file `.md` từ "141" thành
+  **143** (đếm lại 28/10/2026).
+
+## [v1.1.0] — 2026-10-28
+
+Gộp 2 đợt [Unreleased] trước đó thành bản phát hành v1.1.0.
+
+### Đợt soát dữ kiện & dễ đọc (11/10/2026)
+
+- Toàn bộ **143 file `.md`** (đếm lại 28/10/2026; số gốc ghi 141): soát lại dữ kiện theo tài liệu
+  chính thức và tinh chỉnh câu chữ cho dễ đọc, giữ nguyên cấu trúc (khung 7 mục của file lệnh,
+  5 khối FAQ, khối "lối vào" A2), không mất bảng/ví dụ/lệnh/bài tập/link.
 - Cập nhật dữ kiện phiên bản/model: bản mới nhất **v2.1.296** (09/10/2026); thêm **Haiku 5.5**
   (`claude-haiku-5-5`, ≥2.1.293, context 1M, $0.10/$0.50) thay Haiku 4.5 làm Haiku mặc định trên Anthropic API;
   sửa cache read **Sonnet 5.5 = $0.10**; nêu rõ **Opus 5.5 là model mặc định tài khoản** và **Fable không bao giờ mặc định**.
@@ -12,7 +38,7 @@
 - Sửa lỗi trình bày: bỏ backtick thừa trong code fence `bash` của nhóm lệnh, sửa anchor mục lục lệch heading,
   chuẩn hóa giọng "bạn" và tiêu đề tiếng Việt viết thường.
 
-## [Unreleased] — đợt biên tập hiểu-nhanh (10/2026)
+### Đợt biên tập hiểu-nhanh (10/2026)
 
 - `03-cau-hoi-thuong-gap/01–10`: chuẩn hóa mỗi câu hỏi theo khung 5 bước
   (Hỏi ngắn gọn → Trả lời 1 câu → Giải thích chi tiết + ví dụ → Steps copy-paste → Nếu vẫn lỗi thì...);

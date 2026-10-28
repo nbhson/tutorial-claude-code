@@ -3,7 +3,7 @@
 > **Bài này cho ai:** bạn cần một sổ tay thao tác cho Claude Code — biết bài nào đọc khi nào, tra lệnh ở đâu.
 > **Cần gì trước:** đã cài Claude Code (làm theo [01-cai-dat-va-xac-thuc.md](./01-cai-dat-va-xac-thuc.md)) và biết dùng terminal cơ bản (`cd`, `git clone`).
 > **Đọc xong bạn làm được:**
-> - Chọn đúng bài để đọc theo thứ tự 00 → 16, không phải đọc dàn trải 17 file.
+> - Chọn đúng bài để đọc theo thứ tự 00 → 17, không phải đọc dàn trải 18 file.
 > - Tra 1 lệnh bất kỳ trong `commands/` dưới 30 giây.
 > - Biết file nào trả lời câu hỏi của bạn: cài đặt, CLAUDE.md, permissions, lỗi thường gặp.
 > **Thời gian:** ~5 phút đọc mục lục + 15 phút chọn lộ trình
@@ -23,20 +23,20 @@
 ## Mục lục
 
 - [Mục tiêu folder](#mục-tiêu-folder)
-- [Danh sách bài (17 bài)](#danh-sách-bài-17-bài)
+- [Danh sách bài (18 bài)](#danh-sách-bài-18-bài)
 - [Cách đọc nhanh và lộ trình](#cách-đọc-nhanh-và-lộ-trình)
 - [Tra cứu lệnh chi tiết trong commands](#tra-cứu-lệnh-chi-tiết-trong-commands)
 
 ## Mục tiêu folder
 
-Section này trả lời câu: 17 bài trong folder gộp lại dạy cho bạn điều gì, và nên đọc theo thứ tự nào?
+Section này trả lời câu: 18 bài trong folder gộp lại dạy cho bạn điều gì, và nên đọc theo thứ tự nào?
 
-Đọc theo thứ tự **00 → 16**: từ tổng quan, cài đặt, bề mặt sử dụng, cấu hình nền tảng
+Đọc theo thứ tự **00 → 17**: từ tổng quan, cài đặt, bề mặt sử dụng, cấu hình nền tảng
 (`CLAUDE.md`, slash commands, skills, subagents, hooks, MCP, plugins, permissions),
 tới worktrees/checkpoints, automation (Agent SDK/CI-CD), code intelligence,
-models 5.x, security stack và mods bảo mật.
+models 5.x, security stack, mods bảo mật và output styles.
 
-## Danh sách bài (17 bài)
+## Danh sách bài (18 bài)
 
 Cần chọn nhanh bài hợp với hoàn cảnh của mình → dùng bảng này: mỗi dòng là 1 bài, có mô tả 1 dòng, thời gian ước tính và link.
 
@@ -59,10 +59,11 @@ Cần chọn nhanh bài hợp với hoàn cảnh của mình → dùng bảng n�
 | 14 | Models 5.x: chọn model đúng | Fable / Opus 5.5 / Sonnet 5.5 / Haiku 5.5, 4.5: giá, IDs, khi nào dùng | 20' | [14-models-5x-chon-model-dung.md](./14-models-5x-chon-model-dung.md) |
 | 15 | Security stack 5 tầng | Defense-in-depth cho agent: xếp đúng thứ tự 5 tầng | 30' | [15-security-stack-5-tang.md](./15-security-stack-5-tang.md) |
 | 16 | Mods: bảo mật & validate | Mod in-process JS/TS nguy hiểm tới đâu, validate trước khi cài | 30' | [16-mods-bao-mat-validate.md](./16-mods-bao-mat-validate.md) |
+| 17 | Output styles | Đổi vai trò/giọng trả lời của Claude, viết custom style | 30' | [17-output-styles-doi-vai-tro-va-giong-tra-loi.md](./17-output-styles-doi-vai-tro-va-giong-tra-loi.md) |
 
 ## Cách đọc nhanh và lộ trình
 
-Muốn đọc 17 bài mà không tốn cả tuần → bám nhịp đọc nhanh và lộ trình 5 ngày dưới đây.
+Muốn đọc 18 bài mà không tốn cả tuần → bám nhịp đọc nhanh và lộ trình 5 ngày dưới đây.
 
 > Cách đọc nhanh: mỗi bài ~30–40 phút (đọc 15' + chạy ví dụ 15' + làm bài tập 10').
 > Bận thì đọc lướt mục lục + chạy code block, rảnh thì đi từng bước phần walkthrough cuối bài.
@@ -88,6 +89,6 @@ Cần tra 1 lệnh cụ thể mà không muốn đọc bài dài → vào thẳn
   (thay `plan` bằng slug bất kỳ, vd `./commands/session-context/compact/README.md`, `./commands/knowledge-system/mcp/README.md`).
 - Trong session gõ `/` để xem lệnh nào hiện ở môi trường của bạn (version/provider khác nhau hiện khác nhau).
 
-**Kiểm tra nhanh:** mở được [00-tong-quan-claude-code.md](./00-tong-quan-claude-code.md) và [commands/README.md](./commands/README.md); tra được 1 lệnh bất kỳ (vd `/plan` → `commands/model-mode/plan/README.md`) dưới 30 giây; chỉ ra được file nào trả lời câu hỏi của bạn trong bảng 17 bài.
+**Kiểm tra nhanh:** mở được [00-tong-quan-claude-code.md](./00-tong-quan-claude-code.md) và [commands/README.md](./commands/README.md); tra được 1 lệnh bất kỳ (vd `/plan` → `commands/model-mode/plan/README.md`) dưới 30 giây; chỉ ra được file nào trả lời câu hỏi của bạn trong bảng 18 bài.
 
 > Mẹo 1 dòng: gặp lỗi lạ thì mở [`03-cau-hoi-thuong-gap/08-loi-thuong-gap-troubleshooting.md`](../03-cau-hoi-thuong-gap/08-loi-thuong-gap-troubleshooting.md) trước, rồi gõ `/doctor`.

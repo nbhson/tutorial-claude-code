@@ -164,6 +164,33 @@ python examples/agent_review.py
 # Kiểm tra: findings in ra; canUseTool block đúng lệnh lạ (thử prompt yêu cầu rm -rf → phải deny)
 ```
 
+### 2.3. TypeScript vs Python SDK — cùng năng lực, khác cách viết
+
+Mục này trả lời câu: Agent SDK có bản Python không, và khi chọn Python khác gì TypeScript về API?
+
+Python SDK **có thật và chính chủ**: package [`claude-agent-sdk`](https://pypi.org/project/claude-agent-sdk/) trên PyPI, do Anthropic phát hành (bản 0.2.174 tính 24/10/2026, cần Python ≥3.10, license MIT, repo `anthropics/claude-agent-sdk-python`). Không phải bản port cộng đồng — docs chính thức có hẳn quickstart riêng cho Python.
+
+Khác biệt chính khi chuyển từ TS sang Python (tra 28/10/2026):
+
+| Khía cạnh | TypeScript (`@anthropic-ai/claude-agent-sdk`) | Python (`claude-agent-sdk`) |
+|---|---|---|
+| Tên options | camelCase: `allowedTools`, `permissionMode`, `settingSources` | snake_case: `allowed_tools`, `permission_mode`, `setting_sources` trong `ClaudeAgentOptions` |
+| Gọi agent | `await query({prompt, options})` + `for await` qua message stream | `query()` là async generator (`async for msg in query(...)`, chạy qua anyio) |
+| Hội thoại 2 chiều | Streaming input mode | `ClaudeSDKClient` — `await client.query(...)`, nhận `receive_response()` |
+| Custom tools | In-process SDK MCP server (TypeScript) | `@tool` decorator + `create_sdk_mcp_server` — chạy in-process, không cần subprocess |
+| Hooks | Config JSON schema trong options | Hàm Python thật, gắn bằng `HookMatcher` trong `hooks={...}` |
+| Structured output | JSON Schema / Zod | JSON Schema / Pydantic |
+| CLI đi kèm | Cần cài Claude Code riêng | Wheel **bundle sẵn Claude Code CLI** — không cần cài riêng (override bằng `ClaudeAgentOptions(cli_path=...)`) |
+
+Quy tắc chuyển đổi: mọi khái niệm 1-1 (`canUseTool` ↔ `can_use_tool`, `settingSources` ↔ `setting_sources`, `permissionMode` ↔ `permission_mode`) — đọc được TS sample là viết được Python tương đương bằng cách đổi naming convention. Ví dụ Python ở khối trên chính là bản dịch của sample TypeScript mục 2.2.
+
+```bash
+# Cài và chạy bản Python (copy-paste):
+pip install claude-agent-sdk
+python examples/agent_review.py
+# Verify: import được claude_agent_sdk; CLI bundle chạy không cần cài Claude Code riêng
+```
+
 > Trong CI, muốn ép mọi workflow agent chạy cùng 1 model (ổn định chi phí) → đặt env `CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL` (≥2.1.296) ở job env, cạnh `ANTHROPIC_MODEL`.
 
 **Kiểm tra nhanh:**
