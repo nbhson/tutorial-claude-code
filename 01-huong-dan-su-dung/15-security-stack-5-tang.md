@@ -2,52 +2,25 @@
 
 > **Bài này cho ai:** dev hoặc tech lead muốn xếp lớp phòng thủ cho agent viết code, không phó mặc security cho đúng 1 công cụ.
 > **Cần gì trước:** đã cài và đăng nhập ([bài 01](./01-cai-dat-va-xac-thuc.md)); nên đọc [bài 07 — Hooks](./07-hooks-tu-dong-hoa.md) và [bài 10 — Permissions](./10-permissions-modes-availability.md) trước vì mục 7 lấy `PreToolUse` deny làm ví dụ enforcement cứng.
-> **Đọc xong bạn làm được:**
-> - Xếp được 5 tầng phòng thủ đúng thứ tự, biết tầng nào chạy real-time trong session, tầng nào là cửa cuối CI.
-> - Cài và debug được tầng 0 (plugin `security-guidance`): cấu hình, kill switch, tuning false positive.
-> - Chọn đúng chỗ gọi `/security-review`, deep scan và tầng Code Review có người.
-> - Phân biệt guidance (gợi ý bỏ qua được) với guardrail (hook/CI cấm cứng), rồi tự chấm stack bằng bài tập + bảng pitfall.
+> **Đọc xong bạn làm được:** xếp 5 tầng đúng thứ tự; cài + debug tầng 0 (`security-guidance`); biết chỗ gọi `/security-review` và deep scan; phân biệt guidance (bỏ qua được) với guardrail (cấm cứng); dựng stack tối thiểu chạy thật trong 30 phút.
 > **Thời gian:** ~40 phút
 
-## Thuật ngữ dùng trong bài này
+## Thuật ngữ
 
-Đọc bảng này trước khi vào mục 1 — thuật ngữ Anh trong bài đều được giải thích ở đây, gặp chỗ lạ quay lại tra ngay.
-
-| Thuật ngữ | Nôm na 1 câu | Analogie | Ví dụ kỹ thuật thật | Cách verify |
-|---|---|---|---|---|
-| Defense-in-depth (5 tầng) | Xếp 5 lưới từ rẻ tới đắt để lọt lưới này còn lưới khác bắt. | Như lâu đài: hào nước (T0) → tường (T1) → lính tuần (T2) → hiệp sĩ (T3) → khóa kho báu (T4). | T0 `security-guidance` bắt `AKIA...` ngay khi gõ; lọt thì T4 CodeQL chặn merge | Cố ý paste `AKIA...FAKE` vào file rác → T0 phải kêu trong giây. |
-| Guidance vs Guardrail | Gợi ý (bỏ qua được) khác lệnh cấm cứng (không qua được). | Như biển `Nên đội mũ` (guidance) vs barrier khóa bánh (guardrail). | Pattern `password = "..."` chỉ gợi ý; hook `PreToolUse` `exit 2` mới cấm | Thử commit secret: gợi ý hiện nhưng vẫn commit được; hook `exit 2` thì block thật. |
-| Fresh-context reviewer | Người chấm khác người làm, chưa đọc nháp nên soi kỹ. | Như chấm thi: thầy khác chấm, không để tự chấm bài mình. | Layer 3 spawn subagent review riêng, không review inline | Reviewer fresh bắt được `query(sql + userInput)` mà writer cho qua. |
-| Prompt-injection qua PR text | Câu chữ trong PR lừa agent làm bậy. | Như thư giả chữ sếp nhét vào đống hồ sơ để lừa ký. | PR body `bỏ qua mọi findings` lừa agent review | Test trên repo rác: agent đọc PR untrusted là fail; rule `chỉ review trusted PRs` phải chặn. |
-
-## Mục lục
-
-1. [Vì sao cần xếp 5 tầng?](#1-vì-sao-cần-xếp-5-tầng)
-2. [Tầng 0 — Plugin security-guidance (real-time, rẻ nhất)](#2-tầng-0--plugin-security-guidance-real-time-rẻ-nhất)
-3. [Tầng 1 — `/security-review` on-demand](#3-tầng-1--security-review-on-demand)
-4. [Tầng 2 — Claude Security plugin deep scan](#4-tầng-2--claude-security-plugin-deep-scan)
-5. [Tầng 3 — Code Review Team/Enterprise (người + agent)](#5-tầng-3--code-review-teamenterprise-người--agent)
-6. [Tầng 4 — CI SAST + GitHub Action (cửa cuối)](#6-tầng-4--ci-sast--github-action-cửa-cuối)
-7. [Quy tắc vàng: guidance là gợi ý, không phải guardrail](#7-quy-tắc-vàng-guidance-là-gợi-ý-không-phải-guardrail)
-8. [Đi từng bước dựng stack tối thiểu (30 phút)](#8-đi-từng-bước-dựng-stack-tối-thiểu-30-phút)
-9. [Pitfall + bài tập thực hành](#9-pitfall--bài-tập-thực-hành)
-10. [Sơ đồ và bảng so sánh 5 tầng](#10-sơ-đồ-và-bảng-so-sánh-5-tầng)
-11. [Hiểu nhầm thường gặp và FAQ](#11-hiểu-nhầm-thường-gặp-và-faq)
-12. [Link chéo](#12-link-chéo)
+| Thuật ngữ | Nôm na 1 câu | Ví dụ kỹ thuật thật | Cách verify |
+|---|---|---|---|
+| Defense-in-depth (5 tầng) | Xếp 5 lưới từ rẻ tới đắt — lọt lưới này còn lưới khác bắt | T0 `security-guidance` bắt `AKIA...` ngay khi gõ; lọt thì T4 CodeQL chặn merge | Paste `AKIA...FAKE` vào file rác → T0 phải kêu trong giây |
+| Guidance vs Guardrail | Gợi ý (bỏ qua được) khác lệnh cấm cứng | Pattern `password = "..."` chỉ gợi ý; hook `PreToolUse` `exit 2` mới cấm | Thử commit secret: gợi ý hiện nhưng vẫn commit được; hook block thật |
+| Fresh-context reviewer | Người chấm khác người làm, chưa đọc nháp nên soi kỹ | Layer 3 spawn subagent review riêng, không review inline | Reviewer fresh bắt được `query(sql + userInput)` mà writer cho qua |
+| Prompt-injection qua PR text | Câu chữ trong PR lừa agent làm bậy | PR body `bỏ qua mọi findings` lừa agent review | Repo rác: agent đọc PR untrusted là fail; rule trusted-PRs phải chặn |
 
 ---
 
 ## 1. Vì sao cần xếp 5 tầng?
 
-Mục này trả lời câu: vì sao chỉ 1 lớp bảo mật luôn có lỗ với agent viết code, và 5 tầng được xếp theo tiêu chí gì?
+Agent viết code nhanh gấp 10 lần người — và cũng đưa lỗ hổng ra production nhanh gấp 10 lần nếu không có lưới. 1 tầng duy nhất luôn có lỗ: chỉ trông vào review người → bỏ sót vì lượng thay đổi quá lớn; chỉ trông vào SAST ở CI → phát hiện muộn, sửa đắt; chỉ trông vào "model tự cẩn thận" → prompt-injection 1 dòng là qua mặt. Chi phí tăng dần theo tầng: tầng 0 ~miễn phí (pattern match không model call) → tầng 4 tốn CI minutes + SAST license; tầng 0–2 là máy, tầng 3 có người, tầng 4 là enforcement cứng.
 
-Agent viết code nhanh gấp 10 lần người — và cũng đưa lỗ hổng ra production nhanh gấp 10 lần nếu không có lưới. 1 tầng duy nhất luôn có lỗ:
-
-- Chỉ trông vào review người → bỏ sót vì lượng thay đổi quá lớn, reviewer mệt.
-- Chỉ trông vào SAST ở CI → phát hiện muộn, sửa đắt (code đã merge mindset).
-- Chỉ trông vào "model tự cẩn thận" → prompt-injection 1 dòng là qua mặt.
-
-Defense-in-depth (xếp nhiều lớp phòng thủ chồng lên nhau) = xếp 5 tầng từ rẻ-nhanh (real-time trong session) tới đắt-chậm (người + CI ở cửa cuối). Tầng trong bắt cái rẻ, tầng ngoài bắt cái sót:
+Defense-in-depth = xếp 5 tầng từ rẻ-nhanh (real-time trong session) tới đắt-chậm (người + CI ở cửa cuối):
 
 ```text
 Tầng 0: security-guidance plugin (real-time, trong session, rẻ nhất)
@@ -60,75 +33,34 @@ Quy tắc: tầng trong càng bắt sớm càng rẻ. Đừng để secret lọt
 mới phát hiện — tầng 0 đã phải kêu.
 ```
 
-- Chi phí tăng dần: tầng 0 ~miễn phí (pattern match không model call) → tầng 4 tốn CI minutes + SAST license.
-- Tầng 0–2 là máy; tầng 3 có người; tầng 4 là enforcement cứng (đọc xong làm bài tập mục 9 là có stack chạy được).
-
-**Kiểm tra nhanh:**
-
-- Kể lại được 5 tầng theo thứ tự từ rẻ-nhanh tới đắt-chậm, và chỉ đúng tầng nào làm bằng máy (0–2), tầng nào có người (3), tầng nào là cửa cuối (4).
-- Nói được vì sao "1 tầng luôn có lỗ" cho từng trường hợp: chỉ review người, chỉ SAST ở CI, chỉ "model tự cẩn thận".
-
 ---
 
 ## 2. Tầng 0 — Plugin security-guidance (real-time, rẻ nhất)
 
-Mục này trả lời câu: plugin `security-guidance` gồm những layer nào, cấu hình ở đâu, tắt/bật ra sao và debug ở đâu khi plugin im lặng?
-
-Plugin `security-guidance` là lưới đầu tiên: plugin nhìn code bạn/agent viết NGAY khi viết, không đợi review hay CI. Rẻ vì layer đầu không tốn model call.
+Lưới đầu tiên — plugin `security-guidance` nhìn code bạn/agent viết NGAY khi viết, không đợi review hay CI; rẻ vì layer đầu không tốn model call.
 
 ### 2.1. 3 layers bên trong plugin
 
 ```text
 Layer 1 — Per-edit pattern match (~25 patterns, hook Edit/Write/NotebookEdit):
-  - Chạy trên MỖI lần sửa file. Regex/pattern match secrets + risky code.
-  - KHÔNG gọi model → nhanh (~ms), không tốn tiền, không latency.
-  - Ví dụ bắt: AKIA... (AWS key), -----BEGIN PRIVATE KEY-----,
-    password = "..." hardcode, eval(userInput), innerHTML với biến lạ.
-
-Layer 2 — End-turn background diff review:
-  - Cuối mỗi turn, review DIFF ngầm (background, không chặn bạn gõ tiếp).
-  - Có model call nhẹ → bắt cái pattern match miss (logic auth sai,
-    intent đáng ngờ mà regex không diễn tả được).
-  - Kết quả hiện như gợi ý, không block.
-
-Layer 3 — Commit/push agentic review:
-  - Khi commit/push: agent đọc CALLERS + SANITIZERS (không chỉ dòng đổi).
-  - Ví dụ: bạn thêm `query(sql + userInput)` — layer 3 lần ngược xem
-    userInput đã qua sanitize ở caller nào chưa rồi mới kết luận.
-  - Đắt nhất trong 3 layers nhưng vẫn rẻ hơn 1 incident.
+  chạy MỖI lần sửa file, KHÔNG gọi model → ~ms, miễn phí. Bắt AKIA...,
+  -----BEGIN PRIVATE KEY-----, password = "..." hardcode, eval(userInput).
+Layer 2 — End-turn background diff review: cuối mỗi turn, review DIFF ngầm
+  (model call nhẹ) → bắt cái pattern miss (logic auth sai, intent đáng ngờ).
+Layer 3 — Commit/push agentic review: agent đọc CALLERS + SANITIZERS —
+  thêm `query(sql + userInput)` là lần ngược xem userInput đã sanitize chưa.
+  Đắt nhất trong 3 layers nhưng vẫn rẻ hơn 1 incident.
 ```
 
 ### 2.2. Files cấu hình (copy-paste khởi đầu)
 
-```text
-.claude/claude-security-guidance.md   (~8KB — threat model + checklist repo bạn)
-.claude/security-patterns.yaml  hoặc  security-patterns.json (≤50 rules)
-```
+Hai file cấu hình, đặt trong `.claude/`:
 
-`claude-security-guidance.md` (~8KB) chứa:
-
-```markdown
-# Security guidance — repo XYZ (MẪU, tự điền)
-## Threat model
-- Data nhạy cảm: PII users, Stripe keys, JWT secret (env nào? ai được đọc?)
-- Attack surface: public API /auth/*, webhook /stripe, admin panel
-- Không tin: mọi input từ client, webhook raw body, issue/PR text (prompt-injection!)
-## Checklist per-edit
-- [ ] Không secret hardcode (key vào env + secret manager)
-- [ ] SQL/query có parameterized? (grep `+ req.` trong query builder)
-- [ ] Auth check ở caller chưa? (đừng tin comment "đã check ở trên")
-- [ ] Log có lọt PII/token? (mask trước khi log)
-- [ ] Redirect/SSRF: URL có allowlist?
-## Checklist commit/push
-- [ ] Diff có file .env/key/cert? → block
-- [ ] Migration có xóa cột/table? → cần approve DBA
-- [ ] Endpoint mới có rate-limit + auth?
-```
-
-`security-patterns.yaml/json` (≤50 rules — quá nhiều là noise):
+- `claude-security-guidance.md` (~8KB): threat model + checklist repo bạn — data nhạy cảm là gì, attack surface ở đâu, không tin input nào (kể cả PR text — prompt-injection), checklist per-edit (secret hardcode, parameterized query, auth check ở caller, log PII, SSRF allowlist) và checklist commit/push (diff có .env/key? migration xóa cột? endpoint mới có rate-limit?). Copy từ `templates/.claude/claude-security-guidance.md` rồi điền.
+- `security-patterns.yaml/json` (≤50 rules — quá nhiều là noise):
 
 ```yaml
-# MẪU 3 rules (file thật xem templates/.claude/security-patterns.json)
+# MẪU 2 rules (file thật xem templates/.claude/security-patterns.json)
 - id: aws-key
   pattern: "AKIA[0-9A-Z]{16}"
   message: "Nghi AWS access key hardcode — dùng env/secret manager."
@@ -137,184 +69,96 @@ Layer 3 — Commit/push agentic review:
   pattern: "-----BEGIN (RSA )?PRIVATE KEY-----"
   message: "Private key trong code — xóa ngay, rotate key."
   severity: critical
-- id: todo-security
-  pattern: "TODO.*(secur|auth|sanitiz|inject)"
-  message: "TODO liên quan security — tạo issue, đừng để TODO trôi."
-  severity: medium
 ```
 
-> Mẫu đầy đủ để copy: `templates/.claude/claude-security-guidance.md` +
-> `templates/.claude/security-patterns.json` (5–8 rules mẫu, không secrets thật).
+> Mẫu đầy đủ: `templates/.claude/claude-security-guidance.md` + `templates/.claude/security-patterns.json` (5–8 rules mẫu, không secrets thật).
 
 ### 2.3. Kill switches (tắt từng layer + master)
 
-```text
-Mỗi layer có env kill switch riêng + 1 master switch tắt cả plugin.
-Dùng khi: debug false positive, benchmark overhead, hoặc incident cần
-chạy nhanh có kiểm soát (và bật lại ngay sau đó!).
-```
-
 ```bash
-# Mẫu (tên env chính xác xem README plugin — đừng đoán, check trước):
+# Tên env chính xác xem README plugin — đừng đoán:
 SECURITY_GUIDANCE_DISABLE_PER_EDIT=1   # tắt layer 1 (pattern match)
 SECURITY_GUIDANCE_DISABLE_END_TURN=1   # tắt layer 2 (background review)
 SECURITY_GUIDANCE_DISABLE_PRE_PUSH=1   # tắt layer 3 (commit/push review)
 SECURITY_GUIDANCE_DISABLE_ALL=1        # master: tắt cả plugin 1 session
-```
-
-```text
-⚠ Tắt là NỢ security. Quy tắc:
-- Tắt layer nào → ghi lý do + bật lại trong cùng ngày.
-- Tắt master chỉ khi plugin BREAK workflow (bug), không phải vì "plugin kêu nhiều".
-  Kêu nhiều mà đúng → sửa code, không tắt plugin.
-- CI (tầng 4) KHÔNG tắt theo — kill switch chỉ ảnh hưởng local session.
+# ⚠ Tắt là NỢ security: ghi lý do + bật lại trong cùng ngày. Tắt master chỉ
+# khi plugin BREAK workflow (bug) — kêu nhiều mà đúng thì sửa code, không tắt.
+# CI (tầng 4) KHÔNG tắt theo — kill switch chỉ ảnh hưởng local session.
 ```
 
 ### 2.4. Yêu cầu + debug + false positive tuning
 
 ```text
-Yêu cầu để plugin chạy:
-- Repo phải là GIT repo (plugin đọc diff qua git — folder không git init
-  là layer 2/3 mù).
-- Phải AUTH (claude login / API key hợp lệ — layer 2/3 cần model call).
-- Thiếu 1 trong 2 → chỉ còn layer 1 pattern match. Kiểm tra sớm đừng đoán.
-```
+Yêu cầu: repo phải là GIT repo (plugin đọc diff qua git) + đã AUTH (layer 2/3
+cần model call). Thiếu 1 trong 2 → chỉ còn layer 1 pattern match.
 
-```bash
-# Debug khi plugin im lặng bất thường:
+Debug khi plugin im lặng:
 claude --debug-file /tmp/sec-debug.log
-# → mở log, tìm: hook có chạy? pattern file load được? (lỗi YAML/JSON
-#    là nguyên nhân #1 plugin câm), git repo detect? auth ok?
+# → tìm: hook có chạy? pattern file load được? (lỗi YAML/JSON là nguyên nhân
+#    #1 plugin câm), git repo detect? auth ok?
+
+False positive tuning: ghi lại rule/file/vì sao oan → fix theo thứ tự
+(a) thu hẹp scope rule (chỉ scan src/, trừ fixtures/); (b) allowlist comment
+có chủ đích (# security-allow: test-fixture + link issue); (c) hạ severity
+thay vì xóa rule. KHÔNG xóa rule vì 1 false positive — xóa là mở cửa cho
+true positive sau này.
+
+Reviewer fresh-context (bắt buộc ở layer 3): agent review commit/push chạy ở
+CONTEXT MỚI, không reuse context vừa viết code — context cũ đã "tin" code đúng
+(confirmation bias), tự chấm bài mình luôn cho qua. Layer 3 spawn subagent
+review riêng (bài 06), không review inline trong cùng agent viết code.
 ```
-
-```text
-False positive tuning (plugin kêu oan):
-1. Ghi lại: rule nào, file nào, vì sao oan (vd: "AKIA..." trong test fixture).
-2. Fix theo thứ tự: (a) thu hẹp scope rule (chỉ scan src/, trừ fixtures/);
-   (b) thêm allowlist comment có chủ đích (vd: # security-allow: test-fixture
-   + link issue); (c) hạ severity thay vì xóa rule.
-3. KHÔNG xóa rule vì 1 false positive — xóa là mở cửa cho true positive sau này.
-4. Reviewer là FRESH-CONTEXT (xem dưới) — đừng để cùng 1 context vừa viết
-   vừa tự chấm.
-```
-
-```text
-Reviewer fresh-context (bắt buộc ở layer 3):
-- Agent review commit/push phải chạy ở CONTEXT MỚI (không reuse context
-  vừa viết code — tự chấm bài mình luôn cho qua).
-- Vì sao: context vừa viết đã "tin" code đó đúng (confirmation bias của
-  chính conversation). Fresh context đọc diff như người ngoài → bắt được
-  cái tác giả mù.
-- Thực hành: layer 3 spawn subagent review riêng (bài 06), không review
-  inline trong cùng agent viết code.
-```
-
-**Kiểm tra nhanh:**
-
-- `git status` chạy được trong repo và đã đăng nhập (`claude login`) — thiếu 1 trong 2 thì layer 2/3 mù, plugin chỉ còn layer 1.
-- `claude --debug-file /tmp/sec-debug.log` → mở log tìm 4 mục: hook có chạy?, pattern file load được (YAML/JSON lỗi là nguyên nhân #1), git repo detect?, auth ok?
-- Set env kill switch từng layer → warning của layer đó biến mất; nhớ bật lại ngay trong cùng ngày (quy tắc "tắt là nợ"), CI tầng 4 không tắt theo.
 
 ---
 
 ## 3. Tầng 1 — `/security-review` on-demand
 
-Mục này trả lời câu: khi nào tự gọi `/security-review`, nên scope rộng hay hẹp, và khác gì tầng 0?
-
 ```text
 /security-review = gọi review bảo mật khi BẠN muốn (không tự chạy như tầng 0).
 Dùng sau khi xong 1 feature nhạy cảm: auth, payments, upload file, SSRF-prone
-fetch, crypto, permissions.
-```
+fetch, crypto, permissions. Không cần cho: typo/docs/format, refactor cơ học
+đã có test, diff không đổi từ lần review trước.
 
-```bash
-# Trong session, sau khi code xong feature nhạy cảm:
+Trong session, sau khi code xong feature nhạy cảm:
 /security-review
-# → agent (fresh context) review diff + callers/sanitizers, trả về findings
-#   theo severity. Fix critical/high trước khi nghĩ tới merge.
+# → agent (fresh context) review diff + callers/sanitizers, trả findings theo
+#   severity. Fix critical/high trước khi nghĩ tới merge.
+/security-review src/auth/   # scope hẹp cho nhanh (đỡ tokens, đỡ noise)
 
-# Scope hẹp cho nhanh:
-/security-review src/auth/
-# → chỉ review folder đó (đỡ tốn tokens, đỡ noise).
+Tầng 0 vs tầng 1 (đừng nhầm): tầng 0 TỰ ĐỘNG, real-time, rẻ — dây an toàn
+thường trực; tầng 1 BẠN GỌI, sâu hơn (fresh context + đọc callers), tốn
+tokens hơn. Chi tiết lệnh: commands/security-review.
 ```
-
-| Khi gọi | Khi không cần |
-|---|---|
-| Endpoint mới, auth/crypto/payments | Sửa typo, docs, format |
-| Động tới sanitize/validate input | Refactor cơ học đã có test |
-| Trước khi nhờ người review (tầng 3) | Đã review ở tầng 1 rồi mà diff không đổi |
-
-```text
-Tầng 0 vs tầng 1 (đừng nhầm):
-- Tầng 0: TỰ ĐỘNG, real-time, rẻ — bắt cái hiển nhiên mỗi lần sửa.
-- Tầng 1: BẠN GỌI, sâu hơn (fresh context + đọc callers), tốn tokens hơn.
-→ Tầng 0 là dây an toàn thường trực; tầng 1 là lần soi kỹ trước khi
-  đưa cho người khác xem. Chi tiết lệnh: commands/security-review.
-```
-
-**Kiểm tra nhanh:**
-
-- Gõ `/security-review src/auth/` trong session → agent trả findings theo severity; bạn fix hết critical/high trước khi nghĩ tới merge.
-- Nói được 2 điểm khác tầng 0: tầng 0 tự chạy mỗi edit còn tầng 1 do bạn gọi; tầng 1 đọc callers/sanitizers với context mới, tốn tokens hơn.
 
 ---
 
 ## 4. Tầng 2 — Claude Security plugin deep scan
 
-Mục này trả lời câu: khi nào mới cần deep scan toàn repo, và kết quả deep scan nối ngược vào tầng 0 thế nào?
-
 ```text
 Claude Security plugin = scan CHUYÊN SÂU (sâu hơn /security-review):
 full-repo hoặc full-feature sweep, theo dõi data-flow qua nhiều files,
 check dependency vulns + secrets history (kể cả secret đã xóa khỏi HEAD
-nhưng còn trong git history!).
-```
+nhưng còn trong git history!). Khi dùng — không phải hàng ngày: trước
+release lớn/audit quý; sau khi merge nhiều PR từ contributors mới; khi nghi
+codebase có nợ security; sau incident để sweep cùng pattern lỗi.
 
-```bash
-# Khi dùng (không phải hàng ngày — tốn, chậm, nhưng xứng đáng):
-# - Trước release lớn / audit quý.
-# - Sau khi merge nhiều PR từ contributors mới.
-# - Khi nghi codebase có nợ security (legacy, TODO security nhiều).
-# - Sau incident: sweep xem còn chỗ nào cùng pattern lỗi.
-```
-
-| Tầng 1 (`/security-review`) | Tầng 2 (Security plugin) |
-|---|---|
-| On-demand, scope thường hẹp (diff/feature) | Deep scan, scope rộng (repo/release) |
-| Nhanh, rẻ — chạy mỗi feature xong | Chậm, đắt — chạy theo milestone |
-| Bắt lỗi ở code mới viết | Bắt cả nợ cũ + git history + deps |
-
-```text
-Thứ tự thực tế:
-  tầng 0 kêu hàng ngày → tầng 1 sau mỗi feature nhạy cảm →
-  tầng 2 trước release/audit → findings tầng 2 feed ngược thành rules
-  mới cho tầng 0 (security-patterns.yaml) để lần sau bắt ngay từ lúc viết.
+Thứ tự thực tế: tầng 0 kêu hàng ngày → tầng 1 sau mỗi feature nhạy cảm →
+tầng 2 trước release/audit → findings tầng 2 feed ngược thành rules mới cho
+tầng 0 (security-patterns.yaml) để lần sau bắt ngay từ lúc viết.
 → Vòng feedback này là lý do stack càng chạy càng thông minh.
 ```
-
-**Kiểm tra nhanh:**
-
-- Kể được 4 dịp chạy deep scan: trước release lớn/audit quý, sau nhiều PR từ contributors mới, khi nghi codebase có nợ security, sau incident.
-- Vẽ được vòng feedback: findings tầng 2 → rule mới vào `security-patterns.yaml` → tầng 0 bắt ngay từ lúc viết.
 
 ---
 
 ## 5. Tầng 3 — Code Review Team/Enterprise (người + agent)
 
-Mục này trả lời câu: sau 3 tầng máy vì sao vẫn cần người, và workflow tầng 3 sao không thành bottleneck?
-
 ```text
 Tầng 3 = review CÓ NGƯỜI (Team/Enterprise Code Review): agent làm pre-review
 + người approve. Chỉ có trên paid Team/Enterprise (check plan — bài 10 mục 6.2).
-```
-
-```text
-Vì sao cần người sau 3 tầng máy:
-- Máy bắt pattern + data-flow; người bắt BUSINESS LOGIC sai
-  ("ai được refund?", "role này xem được gì?") — máy không biết policy công ty.
-- Người chịu trách nhiệm cuối (accountability) — incident cần chủ sở hữu quyết định.
-- Prompt-injection tinh vi (issue text lừa agent) — mắt người thấy "lạ" mà
-  pattern không diễn tả được.
+Vì sao cần người sau 3 tầng máy: người bắt BUSINESS LOGIC sai ("ai được
+refund?", "role này xem được gì?") mà máy không biết; người chịu trách nhiệm
+cuối; và prompt-injection tinh vi — mắt người thấy "lạ" mà pattern không
+diễn tả được.
 ```
 
 ```bash
@@ -324,27 +168,13 @@ Vì sao cần người sau 3 tầng máy:
 # 3. Người review business logic + approve. Không approve khi còn findings
 #    critical/high chưa fix hoặc chưa ghi risk-acceptance.
 # 4. Merge → tầng 4 CI chạy cửa cuối (mục 6).
+# Không thành bottleneck: PR < 400 dòng diff; PR kèm output /security-review;
+# findings máy fix hết mới gọi người.
 ```
-
-```text
-Để tầng 3 không thành bottleneck:
-- PR nhỏ (< 400 dòng diff) — PR 2000 dòng không ai review kỹ được.
-- PR kèm /security-review output (chứng minh đã qua tầng 1) — reviewer
-  tin hơn, nhanh hơn.
-- Findings máy đã fix hết mới gọi người — đừng phí giờ người vào lỗi regex
-  bắt được.
-```
-
-**Kiểm tra nhanh:**
-
-- Kể được 4 bước workflow tầng 3, và 2 điều kiện không approve: còn findings critical/high chưa fix, hoặc chưa ghi risk-acceptance.
-- Chọn được 3 cách giữ tầng 3 không bottleneck: PR < 400 dòng, PR kèm output `/security-review`, findings máy fix hết mới gọi người.
 
 ---
 
 ## 6. Tầng 4 — CI SAST + GitHub Action (cửa cuối)
-
-Mục này trả lời câu: cửa cuối CI chặn được gì, và cấu hình GitHub Action mẫu ra sao?
 
 Tầng 4 là enforcement cứng: chạy trên máy CI (không phải máy dev, không tắt bằng env local), chặn merge khi fail. Kể cả 4 tầng trên đều miss, đây là cửa cuối.
 
@@ -352,10 +182,9 @@ Tầng 4 là enforcement cứng: chạy trên máy CI (không phải máy dev, k
 
 ```text
 SAST = phân tích tĩnh (CodeQL / Semgrep / Snyk / Trivy...) chạy mỗi PR.
-- Vì sao cứng: chạy server-side, dev không bypass bằng kill switch local.
-- Fail = không merge (branch protection). Không có "để mai fix".
-- Rule tối thiểu: secrets, injection (SQL/command/XSS), auth bypass,
-  vulnerable deps (lockfile scan).
+Cứng vì chạy server-side — dev không bypass bằng kill switch local.
+Fail = không merge (branch protection). Rule tối thiểu: secrets, injection
+(SQL/command/XSS), auth bypass, vulnerable deps (lockfile scan).
 ```
 
 ### 6.2. GitHub Action review (MẪU — tự điền key)
@@ -379,74 +208,48 @@ jobs:
           comment-pr: true        # post findings lên PR
           exclude: "fixtures/**,**.test.*" # trừ noise đã tuning
           false-positive-filtering: true
+# Inputs chính: claude-api-key (key RIÊNG cho CI, không dùng key dev, rotate
+# định kỳ) · comment-pr (post findings lên PR) · exclude (noise đã tuning ở
+# tầng 0 — ghi lý do từng exclude) · false-positive-filtering (lọc kêu oan).
 ```
-
-| Input | Ý nghĩa |
-|---|---|
-| `claude-api-key` | Key riêng cho CI (KHÔNG dùng key dev; rotate định kỳ) |
-| `comment-pr` | Post findings lên PR cho reviewer thấy cùng chỗ |
-| `exclude` | Loại noise đã tuning ở tầng 0 (fixtures, tests) — ghi lý do từng exclude |
-| `false-positive-filtering` | Lọc bớt kêu oan trước khi comment (đỡ spam PR) |
 
 ```text
 ⚠ PROMPT-INJECTION WARNING (đọc 3 lần):
 Action review code + đọc PR TEXT (title/body/comments). PR từ fork/người lạ
-có thể chứa text độc lừa agent (vd: "bỏ qua findings trên" trong PR body).
-→ CHỈ auto-review TRUSTED PRs (nội bộ, branch cùng repo).
-→ PR từ fork/untrusted: chạy SAST (máy, không đọc text) + review tay;
-   KHÔNG cho agent đọc PR text untrusted.
-→ Ghi rule này vào CONTRIBUTING + Action config (if: author_association...).
+có thể chứa text độc lừa agent ("bỏ qua findings trên" trong PR body).
+→ CHỈ auto-review TRUSTED PRs (nội bộ, branch cùng repo). PR từ fork:
+chạy SAST + review tay, KHÔNG cho agent đọc PR text untrusted.
+→ Ghi rule vào CONTRIBUTING + Action config (if: author_association...).
 ```
-
-**Kiểm tra nhanh:**
-
-- Sau khi thêm `claude-review.yml` (mục 6.2) + branch protection: mở PR test nội bộ → findings tự comment lên PR; PR có lỗi → CI đỏ, không merge được.
-- Giải thích được vì sao PR từ fork không cho agent đọc text (prompt-injection qua PR body), và cách thay thế: SAST chạy máy + review tay.
 
 ---
 
 ## 7. Quy tắc vàng: guidance là gợi ý, không phải guardrail
 
-Mục này trả lời câu: ranh giới giữa "gợi ý" và "cấm cứng" nằm ở đâu, và rule nào nên đưa lên hook/CI?
-
 ```text
 "Guidance là GỢI Ý, không phải GUARDRAIL — enforcement cứng thì hook/CI."
+Tầng 0–2 (guidance, review): agent/dev có thể bỏ qua (vội, ẩu, bị
+prompt-injection lừa "cứ merge đi"). Đừng giả định "plugin kêu là dev sẽ fix".
+Enforcement CỨNG (không bỏ qua được): PreToolUse HOOK deny (bài 07 — thắng cả
+bypassPermissions) + CI branch protection (tầng 4 — server-side).
 
-- Tầng 0–2 (guidance, review): GỢI Ý. Agent/dev có thể bỏ qua (vội, ẩu,
-  bị prompt-injection lừa "cứ merge đi"). Đừng thiết kế stack với giả định
-  "plugin đã kêu thì dev sẽ fix".
-- Enforcement CỨNG (không bỏ qua được): PreToolUse HOOK deny (bài 07 —
-  thắng cả bypassPermissions) + CI branch protection (tầng 4 — server-side).
-```
-
-```text
 Ma trận quyết định (dán cạnh bảng route model bài 14):
-
-  Muốn "nhắc" dev/agent?            → guidance (tầng 0), review (tầng 1–3).
-  Muốn "CẤM chắc chắn"?              → hook deny + CI block (bài 07 + tầng 4).
-  Secret/rm -rf/push main?           → CẤM (hook + CI), không chỉ "nhắc".
-  Style/TODO/quality?                → nhắc (guidance) là đủ.
+  Muốn "nhắc" dev/agent?    → guidance (tầng 0), review (tầng 1–3).
+  Muốn "CẤM chắc chắn"?      → hook deny + CI block (bài 07 + tầng 4).
+  Secret/rm -rf/push main?   → CẤM (hook + CI), không chỉ "nhắc".
+  Style/TODO/quality?        → nhắc (guidance) là đủ.
 ```
 
 ```bash
-# Ví dụ enforcement cứng cho secret (hook, không chỉ pattern gợi ý):
-# .claude/hooks/block-secrets.sh (PreToolUse Write|Edit) → exit 2 khi match
-# AKIA... / private key block. Kể cả bypassPermissions cũng không qua.
-# Bật onFailure: "block" (≥2.1.295): hook lỗi/timeout thì chặn, không thả qua —
-# guardrail phải fail closed.
-# Chi tiết viết hook: bài 07. Mẫu guard Bash: templates/.claude/hooks/bash-guard.sh.
+# Ví dụ enforcement cứng cho secret: .claude/hooks/block-secrets.sh
+# (PreToolUse Write|Edit) → exit 2 khi match AKIA... / private key — kể cả
+# bypassPermissions cũng không qua. Bật onFailure: "block" (≥2.1.295): hook
+# lỗi/timeout thì chặn — guardrail phải fail closed. Viết hook: bài 07.
 ```
-
-**Kiểm tra nhanh:**
-
-- Áp dụng ma trận quyết định vào 2 case: secret / `rm -rf` / push thẳng main → bạn chỉ ra hook deny + CI block; style/TODO/quality → guidance là đủ.
-- Chỉ được 2 enforcement không bỏ qua được: `PreToolUse` hook `exit 2` và branch protection phía CI (server-side).
 
 ---
 
 ## 8. Đi từng bước dựng stack tối thiểu (30 phút)
-
-Mục này trả lời câu: dựng stack bảo mật tối thiểu gồm 6 bước nào để có thứ chạy thật trong 30 phút?
 
 ```text
 Bước 1: Cài plugin + viết claude-security-guidance.md (copy templates/.claude/ mẫu rồi điền).
@@ -457,16 +260,11 @@ Bước 5: Thêm workflow claude-review.yml (mục 6.2) + branch protection. M�
 Bước 6: Ghi 1 false positive + cách tuning (mục 2.4) vào tuning log team.
 ```
 
-**Kiểm tra nhanh:**
-
-- Xong 6 bước trong 30 phút thì stack đã chạy thật: layer 1 kêu khi test, layer 3 review lúc commit thử, `/security-review` trả findings, PR test có comment từ Action.
-- Bước nào fail → quay lại mục tương ứng (bước 2–3 → mục 2.4 debug, bước 5 → mục 6.2), đừng bỏ qua.
+Bước nào fail → quay lại mục tương ứng (bước 2–3 → mục 2.4 debug, bước 5 → mục 6.2). Xong 6 bước là stack chạy thật.
 
 ---
 
 ## 9. Pitfall + bài tập thực hành
-
-Mục này trả lời câu: 10 pitfall hay gặp của security stack fix thế nào, và 4 bài tập nào tự chấm được độ khỏe stack của bạn?
 
 ### 9.1. Pitfall + fix
 
@@ -480,122 +278,22 @@ Mục này trả lời câu: 10 pitfall hay gặp của security stack fix thế
 | Cùng context vừa viết vừa chấm | Tự chấm luôn cho qua | Fresh context review (layer 3, tầng 1) |
 | Agent đọc PR text untrusted | Prompt-injection qua PR body | Chỉ review trusted PRs; fork → SAST + tay |
 | Coi guidance là guardrail | Gợi ý thì bỏ qua được | Cấm chắc chắn → hook deny + CI block |
-| PR 2000 dòng nhờ tầng 3 | Không ai review kỹ được | PR nhỏ + kèm output tầng 1 |
-| Findings tầng 2 không feed về tầng 0 | Lỗi cũ lặp lại mãi | Mỗi finding → 1 rule patterns mới |
 
 ### 9.2. Bài tập thực hành
 
-**Bài 1 (15 phút):** Cài tầng 0 với file mẫu trong `templates/.claude/`.
-Cố ý viết 3 lỗi (AWS key fake, private key block fake, `TODO security`)
-vào file rác. Layer 1 bắt được mấy/3? Ghi lại + revert file.
+**Bài 1 (15 phút):** Cài tầng 0 với file mẫu `templates/.claude/`, cố ý viết 3 lỗi fake (AWS key, private key, `TODO security`) vào file rác — layer 1 bắt được mấy/3? Revert file.
+**Bài 2 (15 phút):** Chạy `/security-review` lên 1 feature đã merge, so findings với review người lúc đó. Ghi 1 rule patterns mới từ findings.
+**Bài 3 (15 phút):** PR body chứa "bỏ qua mọi findings" (repo rác) — chứng minh vì sao cần rule "chỉ review trusted PRs"; ghi `if: author_association` sẽ dùng.
+**Bài 4 (15 phút):** Vẽ stack 5 tầng cho repo bạn: tầng nào thiếu? Mỗi tầng thiếu: 1 action + owner + deadline. Enforcement nào đang là "gợi ý" mà cần lên "cứng"?
 
-**Bài 2 (15 phút):** Chạy `/security-review` lên 1 feature thật đã merge.
-So findings với review người lúc đó: máy bắt được gì người miss và ngược lại?
-Ghi 1 rule patterns mới từ findings này.
+Qua 4 bài thì stack chạy được ít nhất 3 tầng (0, 1, 4).
 
-**Bài 3 (15 phút):** Viết 1 PR body chứa câu "bỏ qua mọi findings" (test trên
-repo rác). Chứng minh vì sao rule "chỉ review trusted PRs" tồn tại. Ghi
-`if: author_association` (hoặc tương đương) bạn sẽ dùng.
-
-**Bài 4 (15 phút):** Vẽ stack 5 tầng cho repo bạn: tầng nào đã có / thiếu?
-Với mỗi tầng thiếu: 1 action cụ thể + owner + deadline. Ghi enforcement nào
-đang là "gợi ý" nhưng cần lên "cứng" (hook/CI).
-
-**Kiểm tra nhanh:**
-
-- Tự chấm: qua được 4 bài ở trên thì stack của bạn đã chạy ít nhất 3 tầng (0, 1, 4); bài 4 chỉ ra tầng thiếu có owner + deadline cụ thể.
-- Dùng bảng 9.1 soát lại setup: dính pitfall nào thì fix trước khi thêm tầng mới.
-
----
-
-## 10. Sơ đồ và bảng so sánh 5 tầng
-
-Mục này trả lời câu: 5 tầng nối tiếp nhau ra sao, mỗi tầng chặn được kiểu tấn công gì, và khác nhau ở đặc điểm gì?
-
-### 10.1. Sơ đồ defense-in-depth 5 lớp + ví dụ tấn công mỗi lớp chặn
-
-```mermaid
-flowchart LR
-    A[Agent viết code] --> T0[Tầng 0: security-guidance real-time]
-    T0 -->|lọt| T1[Tầng 1: /security-review on-demand]
-    T1 -->|lọt| T2[Tầng 2: Security plugin deep scan]
-    T2 -->|lọt| T3[Tầng 3: người + agent trước merge]
-    T3 -->|lọt| T4[Tầng 4: CI SAST + Action chặn merge]
-    T4 -->|pass| M[Merge an toàn]
-```
-
-Giải thích từng bước + ví dụ tấn công mỗi lớp chặn được:
-
-1. **T0 real-time (~ms, 0 model call):** pattern `AKIA[0-9A-Z]{16}`, `-----BEGIN PRIVATE KEY-----`, `eval(userInput)` → chặn ngay khi `Edit/Write`. *Ví dụ chặn:* paste AWS key fake vào file → kêu trong giây.
-2. **T1 on-demand (fresh context):** `/security-review src/auth/` đọc callers/sanitizers. *Ví dụ chặn:* `query(sql + req.id)` chưa sanitize → flag dù regex không diễn tả được.
-3. **T2 deep scan (milestone):** sweep full-repo + git history + deps. *Ví dụ chặn:* secret đã xóa khỏi HEAD nhưng còn trong `git log -p` + `CVE` trong `lockfile`.
-4. **T3 người + agent:** bắt business logic máy không biết (`ai được refund?`). *Ví dụ chặn:* PR body `bỏ qua findings` (prompt-injection) — mắt người thấy lạ, SAST không đọc text.
-5. **T4 cửa cuối server-side:** CodeQL/Semgrep + branch protection, dev không bypass bằng env local. *Ví dụ chặn:* SQLi lọt 4 tầng trên → CI đỏ → không merge được.
-6. **Feedback loop:** findings T2→ rule mới `security-patterns.yaml` để lần sau T0 bắt ngay từ lúc viết.
-
-**Kiểm tra nhanh:**
-
-```bash
-echo 'aws_key = "AKIAIOSFODNN7EXAMPLE"' >> /tmp/sec-test.txt
-# rồi Edit file đó trong session có plugin
-claude --debug-file /tmp/sec-debug.log
-```
-
-- Sau khi Edit: layer 1 hiện warning `Nghi AWS access key hardcode` và `/tmp/sec-debug.log` có dòng `security-guidance` load + pattern `aws-key` match. Im lặng hoàn toàn → check git repo + auth + JSON/YAML parse (nguyên nhân #1 plugin câm).
-
-### 10.2. Bảng so sánh: hiểu nôm na + ví dụ
-
-| Tầng | Hiểu nôm na | Ví dụ |
-|---|---|---|
-| T0 guidance | Bảo vệ gác cổng nhắc ngay khi viết bậy | Gõ `password = "123"` → gợi ý `dùng env` trong giây |
-| T1 review tay | Gọi thầy soi trước khi nộp | Xong feature auth → `/security-review src/auth/` |
-| T2 deep scan | Tổng kiểm tra sức khỏe mỗi quý | Trước release chạy full sweep + history + deps |
-| T3 người duyệt | Sếp ký mới được ra kho | PR refund: agent pre-review + người duyệt business logic |
-| T4 CI chặn | Khóa cửa sắt, không chìa không qua | CodeQL đỏ → branch protection chặn merge |
-
----
-
-## 11. Hiểu nhầm thường gặp và FAQ
-
-Mục này trả lời câu: những lầm tưởng nào khiến người dùng security stack chủ quan, và 6 câu hỏi ngắn hay gặp trả lời ra sao?
-
-### 11.1. Hiểu nhầm thường gặp
-
-| Hiểu nhầm | Sự thật | Ví dụ sửa |
-|---|---|---|
-| Plugin kêu = đã an toàn | Guidance bỏ qua được; cấm phải hook `exit 2` + CI block | Secret vẫn commit được dù có warning → thêm `block-secrets.sh` PreToolUse |
-| Tắt plugin vì kêu nhiều | Kêu đúng mà tắt = mở cửa; phải sửa code/tune rule | Thu hẹp scope (trừ `fixtures/`), hạ severity, không xóa rule |
-| Kill switch tắt được CI | Env `DISABLE_*` chỉ local; CI server-side không tắt | Test: set `DISABLE_ALL=1` local vẫn thấy CI đỏ khi PR lỗi |
-| PR fork cho agent đọc thoải mái | PR text untrusted = prompt-injection | Fork → chỉ SAST + tay; `if: author_association` chặn agent đọc |
-
-### 11.2. FAQ security stack
-
-| Câu hỏi | Trả lời |
-|---|---|
-| Tầng nào quan trọng nhất? | Tầng 0 (rẻ, bắt sớm) + tầng 4 (cứng, cửa cuối) — 2 đầu |
-| Plugin im lặng = an toàn? | Không — check git repo, auth, pattern file load (mục 2.4) |
-| Kill switch có tắt được CI? | Không — chỉ local session. CI là server-side |
-| Guidance vs guardrail? | Gợi ý (bỏ qua được) vs cấm cứng (hook/CI) — mục 7 |
-| Reviewer fresh-context là gì? | Context mới chấm bài, không tự chấm (mục 2.4) |
-| PR fork xử lý sao? | SAST + tay; không cho agent đọc PR text untrusted |
-
-**Kiểm tra nhanh:**
-
-- Kể lại được 4 hiểu nhầm ở 11.1 mà không nhìn bảng, kèm ví dụ sửa cho từng cái.
-- Trả lời được 6 câu FAQ trong 11.2 trong vòng 1 phút — đó là mức tối thiểu khi review setup security stack với team.
-
----
-
-## 12. Link chéo
-
-Mục này trả lời câu: đọc gì tiếp theo tùy việc bạn đang làm?
+## 10. Link chéo
 
 - **[Bài 07 — Hooks](./07-hooks-tu-dong-hoa.md)**: `PreToolUse` deny thắng cả `bypassPermissions`; viết hook block secrets.
-- **[Bài 10 — Permissions](./10-permissions-modes-availability.md)**: deny rules + managed policy (org-level cấm); mục 6.2 xác nhận Code Review chỉ có Team/Enterprise.
-- **[Bài 06 — Subagents](./06-subagents-agent-teams-parallel.md)**: spawn subagent review riêng (fresh context) cho layer 3 và tầng 1.
+- **[Bài 10 — Permissions](./10-permissions-modes-availability.md)**: deny rules + managed policy; Code Review chỉ có Team/Enterprise.
+- **[Bài 06 — Subagents](./06-subagents-agent-teams-parallel.md)**: spawn subagent review riêng (fresh context).
 - **[Bài 14 — Models](./14-models-5x-chon-model-dung.md)**: bảng chọn model — dán cạnh ma trận quyết định mục 7.
+- **[Bài 16 — Mods: bảo mật & validate](./16-mods-bao-mat-validate.md)**: audit Mod lạ trước khi cài — Mods là lỗ hổng nằm TRONG stack.
 - **[commands/code-repo/security-review](./commands/code-repo/security-review/README.md)**: reference `/security-review` đầy đủ.
-- **templates/.claude/hooks/bash-guard.sh**: mẫu guard Bash (tách segments,
-  match deny patterns, fail-open đúng cách).
-- **templates/.claude/claude-security-guidance.md**: mẫu threat model + checklist.
-- **templates/.claude/security-patterns.json**: 5–8 rules mẫu copy-paste.
+- **templates/**: `hooks/bash-guard.sh` (mẫu guard Bash) · `claude-security-guidance.md` (threat model + checklist) · `security-patterns.json` (5–8 rules mẫu).

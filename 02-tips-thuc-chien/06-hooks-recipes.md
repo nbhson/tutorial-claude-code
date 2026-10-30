@@ -3,15 +3,11 @@
 > **Bài này cho ai:** dev đang dặn Claude "nhớ chạy lint / đừng push main" tới lần thứ hai, hoặc tech lead chuẩn hóa hooks cho team.
 > **Cần gì trước:** đã cài và đăng nhập ([bài 01](../01-huong-dan-su-dung/01-cai-dat-va-xac-thuc.md)); nên đọc [Tips 04 — Verification](./04-verification-done-that.md) trước vì recipe test-gate ở mục 3 nối tiếp vòng verify của Tips 04.
 > **Đọc xong bạn làm được:**
-> - Copy-paste 3 recipes bắt buộc (lint-on-write, branch-protect, cost-cap) kèm `settings.json` + script + ca test.
-> - Thêm 3 recipes nâng cao (guard-paths, test-gate, session-start) và chọn đúng 1 trong 5 loại hook cho việc cần.
-> - Lắp hooks cho repo mới trong 30 phút theo walkthrough 4 mốc, rồi tự chấm bằng checklist 7 ô.
-> - Tránh 7 bẫy hooks (matcher sai, chạy headless, hook chậm...) và 3 hiểu nhầm thường gặp.
+> - Copy-paste 3 recipes bắt buộc (lint-on-write, branch-protect, cost-cap) + 3 recipes nâng cao, lắp cho repo mới trong 30 phút.
+> - Tránh 7 bẫy hooks (matcher sai, chạy headless, hook chậm...).
 > **Thời gian:** ~45 phút
 
 ## Thuật ngữ dùng trong bài này
-
-Đọc bảng này trước khi vào mục 1 — mọi thuật ngữ Anh trong bài đều được giải thích ở đây.
 
 | Thuật ngữ | Hiểu nôm na là gì | Ví dụ thấy ngay |
 |---|---|---|
@@ -20,67 +16,24 @@
 | Stop / SessionStart / SessionEnd | Hook chạy lúc sắp kết thúc turn / mở session / đóng session | `Stop` → test-gate, `SessionStart` → nạp branch + `git status` |
 | Matcher | Chuỗi chọn tool nào bị áp luật — phân biệt hoa thường | `matcher: "Edit\|Write"` chỉ áp cho lệnh sửa/ghi file |
 | exit code | Đèn tín hiệu: `0` cho qua, `2` chặn và hiện lý do cho agent | `branch-protect.sh` trả `exit 2` khi push thẳng main |
-| `settings.json` | File cấu hình hooks của repo, commit được cho team | `"hooks": { "PreToolUse": [ ... ] }` |
-| `updatedInput` | Bản input Claude sẽ dùng thay nếu hook sửa trực tiếp | 2 hooks cùng sửa → kết quả khó đoán, gộp thành 1 script |
-| Recipe | Công thức copy-paste: config + script + ca test | 2a lint-on-write, 2b branch-protect |
-| Headless (chạy `-p`) | Chế độ không giao diện, không ai ngồi trả lời prompt | Hook chờ `read` hay mở editor là treo |
-
-## Mục lục
-
-1. [Triết lý + cơ chế hooks](#1-triết-lý--cơ-chế-hooks)
-2. [Ba recipes bắt buộc (code đầy đủ)](#2-ba-recipes-bắt-buộc-code-đầy-đủ)
-3. [Ba recipes nâng cao](#3-ba-recipes-nâng-cao)
-4. [Năm loại hook: command/prompt/agent/http/mcp](#4-năm-loại-hook-commandpromptagenthttpmcp)
-5. [Walkthrough: lắp hooks cho repo mới trong 30 phút](#5-walkthrough-lắp-hooks-cho-repo-mới-trong-30-phút)
-6. [Bảng chọn hook theo vấn đề + checklist](#6-bảng-chọn-hook-theo-vấn-đề--checklist)
-7. [Năm bẫy thường gặp (+ thêm 2 bẫy version)](#7-năm-bẫy-thường-gặp--thêm-2-bẫy-version)
-8. [Pitfalls + fix nhanh](#8-pitfalls--fix-nhanh)
-9. [Thuật ngữ chi tiết: nôm na + analogie + ví dụ + verify](#9-thuật-ngữ-chi-tiết-nôm-na--analogie--ví-dụ--verify)
-10. [Mermaid: hook chạy khi nào](#10-mermaid-hook-chạy-khi-nào)
-11. [Bảng so sánh có cột Hiểu nôm na + Ví dụ](#11-bảng-so-sánh-có-cột-hiểu-nôm-na--ví-dụ)
-12. [Before/After](#12-beforeafter)
-13. [Hiểu nhầm thường gặp](#13-hiểu-nhầm-thường-gặp)
-14. [Bài tập](#14-bài-tập)
-15. [Tham khảo chéo](#15-tham-khảo-chéo)
 
 ---
 
 ## 1. Triết lý + cơ chế hooks
 
-Mục này trả lời câu: khi nào phải biến rule thành hook thay vì nhắc bằng prompt hay viết skill, và hook can thiệp vào đâu trong vòng đời 1 tool call?
-
 ### 1.1. Triết lý 1 dòng
 
-Mục này trả lời câu: vì sao nhắc bằng lời 2 lần vẫn không đủ, phải nâng rule thành hook?
-
-> **Rule bị miss 2 lần → viết thành hook.**
-
-- Nhắc bằng lời lần 1: "nhớ chạy lint" → quên.
-- Nhắc lần 2: "tôi đã bảo chạy lint" → vẫn quên khi vội.
-- Lần 3: đừng nhắc nữa, viết hook tự chạy lint sau mỗi edit.
+**Rule bị miss 2 lần → viết thành hook.** Nhắc lần 1 quên, nhắc lần 2 vẫn quên khi vội; lần 3 đừng nhắc nữa — viết hook tự chạy lint sau mỗi edit.
 
 ### 1.2. Cơ chế: hooks chạy ở đâu?
 
-Mục này trả lời câu: hook can thiệp vào đâu giữa "định làm gì", "tool chạy xong" và "turn sắp kết thúc"?
-
-```text
-[Bạn/Claude định làm gì] --> [Hook PreToolUse: cho hay chặn?]
-        |
-[Tool chạy xong] --> [Hook PostToolUse: lint? format? ghi log?]
-        |
-[Turn định kết thúc] --> [Hook Stop: test xanh chưa? quá cost cap chưa?]
-        |
-[Session bắt đầu/kết thúc] --> [SessionStart/SessionEnd: nạp branch, tóm tắt, sync docs]
-```
+Hook can thiệp 4 mốc: **PreToolUse** (định chạy tool — cho hay chặn?), **PostToolUse** (tool xong — lint/format/log?), **Stop** (turn định kết thúc — test xanh chưa?), **SessionStart/SessionEnd** (mở/đóng session — nạp branch, tóm tắt).
 
 - Hooks chạy **ngoài model** (shell script, LLM 1-turn, agent, HTTP, MCP) → 0 tokens cho rule lặp lại.
-- Hook có thể: **cho qua**, **chặn + báo lý do**, **sửa input** (`updatedInput`), **ghi log**.
-- Hook lỗi hoặc timeout mặc định **không chặn** (thả qua); muốn lỗi cũng chặn thì đặt `"onFailure": "block"` (cần Claude Code ≥2.1.295).
+- Hook có thể: **cho qua**, **chặn + báo lý do**, **sửa input** (`updatedInput`), **ghi log**. Hook lỗi hoặc timeout mặc định **không chặn**; muốn lỗi cũng chặn thì đặt `"onFailure": "block"`.
 - Hooks là production code (chạy với quyền của bạn): review như code, version như code.
 
 ### 1.3. Khi nào hook vs skill vs prompt?
-
-Mục này trả lời câu: việc nào giao cho prompt, việc nào cho skill, việc nào bắt buộc là hook?
 
 | Dùng gì | Khi nào | Ví dụ |
 |---|---|---|
@@ -94,248 +47,131 @@ Mục này trả lời câu: việc nào giao cho prompt, việc nào cho skill,
 
 ## 2. Ba recipes bắt buộc (code đầy đủ)
 
-Mục này trả lời câu: 3 hooks nên lắp ngay cho mọi repo gồm những cái nào, dán config + script ở đâu, và test từng cái ra sao?
-
-Cả 3 đều sống trong `settings.json` (commit được) + scripts trong `hooks/` (commit được). Secrets chỉ qua env vars.
-
-### 2a. Lint-on-write — `PostToolUse` match `Edit|Write`
-
-**Mục tiêu:** sau mỗi edit, chạy prettier/eslint đúng file vừa đổi. Lỗi → trả cho agent fix ngay turn sau. Không bao giờ dồn thành cleanup 40 files cuối tuần.
-
-**`settings.json` (copy-paste):**
+Cả 3 cùng khuôn `settings.json` — đổi `matcher`, event và `command` cho từng recipe:
 
 ```json
 {
   "hooks": {
     "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          { "type": "command", "command": "${CLAUDE_PROJECT_DIR}/hooks/lint-on-write.sh" }
-        ]
-      }
+      { "matcher": "Edit|Write", "hooks": [{ "type": "command", "command": "${CLAUDE_PROJECT_DIR}/hooks/lint-on-write.sh" }] }
+    ],
+    "PreToolUse": [
+      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "${CLAUDE_PROJECT_DIR}/hooks/branch-protect.sh" }] }
+    ],
+    "Stop": [
+      { "matcher": "", "hooks": [{ "type": "command", "command": "${CLAUDE_PROJECT_DIR}/hooks/cost-cap.sh" }] }
     ]
   }
 }
 ```
 
-**`hooks/lint-on-write.sh` (copy-paste):**
+### 2a. Lint-on-write — `PostToolUse` match `Edit|Write`
+
+**Mục tiêu:** sau mỗi edit, chạy prettier/eslint đúng file vừa đổi. Lỗi → trả cho agent fix ngay turn sau, không dồn thành cleanup 40 files cuối tuần.
+
+**`hooks/lint-on-write.sh`:**
 
 ```bash
 #!/usr/bin/env bash
 # Lint file vừa edit. Đọc tool input từ stdin JSON, lấy file path.
 set -euo pipefail
+FILE=$(cat | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('file_path',''))")
 
-INPUT=$(cat)
-FILE=$(echo "$INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('file_path',''))")
-
-# Bỏ qua file không cần lint
+# Bỏ qua file không cần lint / ngoài project
 case "$FILE" in
-  ""|*.md|*.json|*generated*|*.min.js) exit 0 ;;
-esac
-
-# Chỉ lint file trong project
-case "$FILE" in
-  *node_modules*|*.git/*) exit 0 ;;
+  ""|*.md|*.json|*generated*|*.min.js|*node_modules*|*.git/*) exit 0 ;;
 esac
 
 if [[ "$FILE" == *.ts || "$FILE" == *.tsx || "$FILE" == *.js ]]; then
-  # Prettier check + eslint đúng file đó (nhanh, không full repo)
   npx prettier --check "$FILE" 2>&1 || npx prettier --write "$FILE" 2>&1
   npx eslint "$FILE" 2>&1 || exit 2
 fi
 
-if [[ "$FILE" == *.py ]]; then
-  ruff check "$FILE" 2>&1 || exit 2
-  ruff format --check "$FILE" 2>&1 || true
-fi
-
 exit 0
-# exit 0 = cho qua, exit 2 = báo lỗi cho agent (block + hiện output), exit !=0 khác = chặn
+# exit 0 = cho qua, exit 2 = báo lỗi cho agent (block + hiện output)
 ```
 
-**Kiểm tra nhanh:** 3 ca sau trước khi tin recipe này:
-
-```bash
-echo '{"tool_input":{"file_path":"src/a.ts"}}' | ./hooks/lint-on-write.sh; echo "exit=$?"
-# → sửa src/a.ts cho sai lint, edit lại, xem hook có báo không
-# → tạo file .md, edit, xem hook có bỏ qua không
-# → tạo file generated/foo.ts, edit, xem hook có bỏ qua không
-```
+**Kiểm tra nhanh:** `echo '{"tool_input":{"file_path":"src/a.ts"}}' | ./hooks/lint-on-write.sh` — sửa `src/a.ts` sai lint phải bị báo; file `.md` và `generated/foo.ts` phải được bỏ qua.
 
 ### 2b. Branch-protect — `PreToolUse` match `Bash`
 
 **Mục tiêu:** block push lên `main`, mọi force-push, xóa branch, `push origin HEAD:main`. **Match theo intent, không substring.**
 
-**`settings.json`:**
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          { "type": "command", "command": "${CLAUDE_PROJECT_DIR}/hooks/branch-protect.sh" }
-        ]
-      }
-    ]
-  }
-}
-```
-
-**`hooks/branch-protect.sh` (copy-paste, đã xử lý 4 ca push):**
+**`hooks/branch-protect.sh`:**
 
 ```bash
 #!/usr/bin/env bash
-# Chặn git nguy hiểm. Parse intent, không substring "main".
 set -euo pipefail
-
-INPUT=$(cat)
-CMD=$(echo "$INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('command',''))")
+CMD=$(cat | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('command',''))")
 
 # Không phải git → cho qua
 echo "$CMD" | grep -qE '(^|[;&| ])git ' || exit 0
 
-# Chuẩn hóa: tách lệnh nối bằng && ; || thành từng lệnh
-normalize() { echo "$1" | tr ';' '\n' | sed 's/&&/\n/g; s/||/\n/g'; }
-
-echo "$CMD" | while IFS= read -r line; do
-  # 1. Mọi force-push: -f, --force, --force-with-lease (kể cả dạng rút gọn)
+echo "$CMD" | tr ';' '\n' | sed 's/&&/\n/g; s/||/\n/g' | while IFS= read -r line; do
   if echo "$line" | grep -qE 'git\s+push\b.*(--force-with-lease|--force\b|-f\b)'; then
-    echo "BLOCKED: force-push bị cấm (dù ở branch nào). Dùng PR + merge thay vì push -f." >&2
-    exit 2
+    echo "BLOCKED: force-push bị cấm. Dùng PR + merge thay vì push -f." >&2; exit 2
   fi
-  # 2. Push trực tiếp lên main/master (mọi remote, mọi cú pháp HEAD:main)
   if echo "$line" | grep -qE 'git\s+push\b.*(\bmain\b|\bmaster\b|HEAD:main|HEAD:master)'; then
-    echo "BLOCKED: push thẳng main/master bị cấm. Push lên feature branch + mở PR." >&2
-    exit 2
+    echo "BLOCKED: push thẳng main/master bị cấm. Push feature branch + mở PR." >&2; exit 2
   fi
-  # 3. Xóa branch (local/remote)
   if echo "$line" | grep -qE 'git\s+(branch\s+-D|branch\s+--delete|push\b.*--delete)'; then
-    echo "BLOCKED: xóa branch cần human duyệt. Không tự xóa trong agent." >&2
-    exit 2
+    echo "BLOCKED: xóa branch cần human duyệt." >&2; exit 2
   fi
 done
-STATUS=${PIPESTATUS[1]:-0}
-exit "$STATUS"
 ```
 
-**Kiểm tra nhanh:** 4 ca bắt buộc (copy-paste):
+**Kiểm tra nhanh:** 4 ca blocked + 2 ca đối chứng (copy-paste):
 
 ```bash
 run() { echo "{\"tool_input\":{\"command\":\"$1\"}}" | ./hooks/branch-protect.sh; echo "[$1] exit=$?"; }
-run "git push -f origin feat/x"
-run "git push --force origin feat/x"
-run "git push --force-with-lease origin feat/x"
-run "git push origin HEAD:main"
-# Cả 4 phải exit=2 (blocked). Thêm ca đối chứng:
-run "git push origin feat/my-main-fix"
-# → phải exit=0 (cho qua — chứng minh không substring "main" bừa)
-run "git status"
-# → exit=0
+run "git push -f origin feat/x"; run "git push --force origin feat/x"; run "git push --force-with-lease origin feat/x"; run "git push origin HEAD:main"
+# Cả 4 phải exit=2. Đối chứng (phải exit=0 — chứng minh không substring "main" bừa):
+run "git push origin feat/my-main-fix"; run "git status"
 ```
 
 ### 2c. Cost-cap — `Stop`
 
-**Mục tiêu:** đọc token usage từ logs → quy $ theo pricing hiện tại → append daily ledger → quá cap ping Slack. Bảo hiểm rẻ nhất, add sớm bất kể project lớn nhỏ.
+**Mục tiêu:** đọc token usage từ hook input → quy $ theo pricing hiện tại → append daily ledger → quá cap cảnh báo. Bảo hiểm rẻ nhất, add sớm bất kể project lớn nhỏ.
 
-**`settings.json`:**
-
-```json
-{
-  "hooks": {
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          { "type": "command", "command": "${CLAUDE_PROJECT_DIR}/hooks/cost-cap.sh" }
-        ]
-      }
-    ]
-  }
-}
-```
-
-**`hooks/cost-cap.sh` (copy-paste, sửa CAP + webhook):**
+**`hooks/cost-cap.sh` (điền giá per-token theo bảng pricing hiện tại của provider, đừng hardcode số cũ):**
 
 ```bash
 #!/usr/bin/env bash
-# Append daily ledger + cảnh báo Slack khi quá cap.
 set -euo pipefail
-
-# --- Cấu hình (sửa cho team bạn) ---
 DAILY_CAP_USD="${DAILY_CAP_USD:-20}"
 LEDGER_DIR="${CLAUDE_PROJECT_DIR:-.}/.claude/ledger"
-WEBHOOK_URL="${SLACK_WEBHOOK_URL:-}"
-# Giá mặc định theo Sonnet 5.5 ($2 input / $10 output per 1M tokens, 11/10/2026)
-# — đối chiếu pricing hiện tại của provider trước khi dùng
-PRICE_INPUT_PER_1K="${PRICE_INPUT_PER_1K:-0.002}"
-PRICE_OUTPUT_PER_1K="${PRICE_OUTPUT_PER_1K:-0.01}"
+PRICE_INPUT_PER_1K="${PRICE_INPUT_PER_1K:?điền giá input/1K hiện tại}"
+PRICE_OUTPUT_PER_1K="${PRICE_OUTPUT_PER_1K:?điền giá output/1K hiện tại}"
 
-mkdir -p "$LEDGER_DIR"
-TODAY=$(date +%F)
-LEDGER="$LEDGER_DIR/cost-$TODAY.jsonl"
-
+mkdir -p "$LEDGER_DIR"; LEDGER="$LEDGER_DIR/cost-$(date +%F).jsonl"
 INPUT=$(cat)
-# Stop hook nhận transcript + usage tùy version — parse defensive
+# Stop hook nhận usage tùy version — parse defensive
 TOKENS_IN=$(echo "$INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('usage',{}).get('input_tokens',0))" 2>/dev/null || echo 0)
 TOKENS_OUT=$(echo "$INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('usage',{}).get('output_tokens',0))" 2>/dev/null || echo 0)
 
 COST=$(python3 -c "print($TOKENS_IN/1000*$PRICE_INPUT_PER_1K + $TOKENS_OUT/1000*$PRICE_OUTPUT_PER_1K)")
 echo "{\"ts\":\"$(date -Is)\",\"in\":$TOKENS_IN,\"out\":$TOKENS_OUT,\"cost_usd\":$COST}" >> "$LEDGER"
-
 TOTAL=$(python3 -c "import json; print(sum(json.loads(l).get('cost_usd',0) for l in open('$LEDGER')))")
-OVER=$(python3 -c "print(1 if $TOTAL > float($DAILY_CAP_USD) else 0)")
-
-if [[ "$OVER" == "1" ]]; then
-  MSG="Cost-cap: hôm nay đã $TOTAL USD (cap $DAILY_CAP_USD). Session tiếp theo nên /clear + Haiku cho explore."
-  echo "$MSG" >&2
-  if [[ -n "$WEBHOOK_URL" ]]; then
-    curl -s -X POST -H 'Content-type: application/json' --data "{\"text\":\"$MSG\"}" "$WEBHOOK_URL" >/dev/null || true
-  fi
-  # Không block (exit 0) — chỉ cảnh báo. Muốn chặn cứng thì exit 2.
+if python3 -c "import sys; sys.exit(0 if $TOTAL > float('$DAILY_CAP_USD') else 1)"; then
+  echo "Cost-cap: hôm nay đã $TOTAL USD (cap $DAILY_CAP_USD). Session tiếp nên /clear + model rẻ cho explore." >&2
+  # Không block (exit 0) — chỉ cảnh báo. Muốn chặn cứng thì exit 2, ping Slack bằng curl nếu cần.
 fi
 exit 0
 ```
 
-**Kiểm tra nhanh:**
-
-```bash
-DAILY_CAP_USD=0.01 ./hooks/cost-cap.sh < /dev/null; echo "exit=$?"
-cat .claude/ledger/cost-$(date +%F).jsonl | tail -n 3
-# → thấy ledger append + cảnh báo khi quá cap
-```
+**Kiểm tra nhanh:** `DAILY_CAP_USD=0.01 ./hooks/cost-cap.sh < /dev/null` → ledger append + cảnh báo khi quá cap.
 
 ---
 
 ## 3. Ba recipes nâng cao
 
-Mục này trả lời câu: bảo vệ vùng file cấm, chặn turn khi test còn đỏ, và nạp context mới mỗi session bằng hook nào?
-
-### 3.1. Guard sensitive paths (`PreToolUse` Write)
-
-Block writes vào `migrations/`, `*.pem`, `.env*`, `generated/`.
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [{ "type": "command", "command": "${CLAUDE_PROJECT_DIR}/hooks/guard-paths.sh" }]
-      }
-    ]
-  }
-}
-```
+### 3.1. Guard sensitive paths — `PreToolUse` match `Write|Edit`
 
 ```bash
 #!/usr/bin/env bash
+# hooks/guard-paths.sh — block writes vào vùng cấm
 set -euo pipefail
-INPUT=$(cat)
-FILE=$(echo "$INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('file_path',''))")
-case "$FILE" in
+FILE=$(cat | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('file_path',''))")case "$FILE" in
   *migrations/*|*.pem|*.key|.env*|*generated*|*dist/*)
     echo "BLOCKED: $FILE là vùng cấm. Muốn sửa cần human duyệt + ghi lý do vào PR." >&2
     exit 2 ;;
@@ -343,31 +179,15 @@ esac
 exit 0
 ```
 
-### 3.2. Test-gate (`Stop`)
-
-Script chạy focused tests, block turn-end tới khi xanh (tối đa 8 lần).
-
-```json
-{
-  "hooks": {
-    "Stop": [
-      { "matcher": "", "hooks": [{ "type": "command", "command": "${CLAUDE_PROJECT_DIR}/hooks/test-gate.sh" }] }
-    ]
-  }
-}
-```
+### 3.2. Test-gate — `Stop`
 
 ```bash
 #!/usr/bin/env bash
-# test-gate.sh — sửa lệnh test cho repo bạn. Tối đa 8 blocks là giới hạn của Claude Code.
+# hooks/test-gate.sh — test đỏ không cho kết thúc turn (tối đa 8 blocks là giới hạn)
 set -euo pipefail
 SCOPE="${TEST_SCOPE:-payments}"
 pnpm --filter "$SCOPE" test 2>&1 | tail -n 25
-STATUS=${PIPESTATUS[0]:-0}
-if [[ "$STATUS" != "0" ]]; then
-  echo "BLOCKED: test scope $SCOPE còn đỏ. Fix rồi mới được kết thúc turn (còn lại <8 blocks)." >&2
-  exit 2
-fi
+[[ "${PIPESTATUS[0]:-0}" != "0" ]] && { echo "BLOCKED: test $SCOPE còn đỏ. Fix rồi mới kết thúc turn." >&2; exit 2; }
 exit 0
 ```
 
@@ -375,276 +195,56 @@ exit 0
 
 ### 3.3. SessionStart inject
 
-Tự nạp branch hiện tại, ticket liên quan, `git status` tóm tắt vào context.
-
-```json
-{
-  "hooks": {
-    "SessionStart": [
-      { "matcher": "", "hooks": [{ "type": "command", "command": "${CLAUDE_PROJECT_DIR}/hooks/session-start.sh" }] }
-    ]
-  }
-}
-```
-
-```bash
-#!/usr/bin/env bash
-# session-start.sh — in context tươi ra stdout (Claude đọc được lúc mở session)
-set -euo pipefail
-echo "=== session-start ==="
-echo "branch: $(git branch --show-current 2>/dev/null || echo unknown)"
-echo "status:"
-git status --short 2>/dev/null | head -n 20 || true
-echo "recent:"
-git log --oneline -5 2>/dev/null || true
-echo "ticket: $(git branch --show-current 2>/dev/null | grep -oE '[A-Z]+-[0-9]+' | head -n 1 || echo none)"
-echo "rule: 1 task 1 session. Đổi task thì /clear."
-```
-
-Biến thể dynamic line trong skill (cần data tươi mà không cần hook):
-
-```markdown
-`!`git branch --show-current``
-```
+Tự nạp branch hiện tại, ticket, `git status` tóm tắt vào context lúc mở session: script in ra stdout vài dòng `git branch --show-current`, `git status --short | head -20`, `git log --oneline -5`, ticket parse từ tên branch, và rule "1 task 1 session, đổi task thì /clear". Biến thể dynamic line trong skill (data tươi mà không cần hook): `` `!`git branch --show-current`` ``.
 
 ---
 
 ## 4. Năm loại hook: command/prompt/agent/http/mcp
 
-Mục này trả lời câu: 5 loại hook chạy bằng gì, và việc nào nên giao cho loại nào?
-
-| Loại | Chạy bằng gì | Khi dùng | Ví dụ |
-|---|---|---|---|
-| `command` (shell, default) | Script bash/python | Mọi thứ deterministic — production ưu tiên | Lint, branch-protect, test-gate, cost-cap, guard-paths |
-| `prompt` (LLM 1-turn, Haiku default) | Model 1 turn đọc input | Quyết định cần judgment từ input data | Commit msg có leak secret? Diff này có đụng migrate không? |
-| `agent` (experimental, 60s/50 turns) | Subagent thật | Verify cần đọc code/chạy lệnh thật | Pre-push: đọc diff + chạy smoke rồi mới cho push |
-| `http` | POST ra ngoài | Báo tin / ghi ledger remote | Ping Slack khi cost quá cap, ghi audit log |
-| `mcp_tool` | Gọi MCP tool trong hook | Cần data từ MCP (tickets, CI) | SessionStart: lấy ticket Jira/Linear gắn branch |
-
-### Ví dụ `prompt` hook (commit-msg secret check)
-
-Config copy-paste để model 1 turn bắt secret lọt vào commit message:
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "Đọc command trong tool input. Nếu là `git commit` và message hoặc diff có vẻ chứa secret (AKIA, ghp_, sk-, -----BEGIN PRIVATE KEY, .pem, .env), trả về BLOCK với lý do. Còn lại ALLOW.",
-            "model": "haiku"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-### Ví dụ `agent` hook (pre-push smoke, experimental)
-
-Config copy-paste để subagent thật đọc diff + chạy test trước khi cho push:
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      { "matcher": "Bash", "hooks": [{ "type": "agent", "prompt": "Đọc `git diff main...HEAD --stat` + chạy `pnpm --filter payments test`. Chỉ ALLOW nếu test xanh và diff chỉ chạm src/payments/**.", "timeout": 60, "maxTurns": 50 }] }
-    ]
-  }
-}
-```
-
-> Rule: **production ưu tiên `command`.** `prompt`/`agent` để judgment, `http`/`mcp_tool` để tích hợp ngoài. Hook lỗi/timeout mặc định thả qua; thêm `"onFailure": "block"` (≥2.1.295) để lỗi cũng chặn hành động.
-
----
-
-## 5. Walkthrough: lắp hooks cho repo mới trong 30 phút
-
-Mục này trả lời câu: lắp đủ bộ hooks cho repo mới theo thứ tự nào, mốc nào mất bao nhiêu phút?
-
-| Phút | Việc | Lệnh |
+| Loại | Chạy bằng gì | Khi dùng |
 |---|---|---|
-| 0–5 | Tạo khung | `mkdir -p hooks .claude/ledger && chmod +x hooks/*.sh`, copy 3 scripts mục 2 |
-| 5–15 | Gắn settings + test | Ghép 3 blocks `settings.json` mục 2 → test 4 ca push + 3 ca lint → `/hooks` kiểm tra matcher/event |
-| 15–25 | Guard + test-gate | Copy `guard-paths.sh` + `test-gate.sh`, sửa `TEST_SCOPE`; làm đỏ 1 test → xác nhận block (exit 2) |
-| 25–30 | SessionStart + commit | Copy `session-start.sh`, mở session mới xem branch/status → `git add settings.json hooks/ && git commit` + 1 dòng vào `CLAUDE.md` |
+| `command` (shell, default) | Script bash/python | Mọi thứ deterministic — production ưu tiên (2a–3.2 ở trên) |
+| `prompt` (LLM 1-turn, Haiku default) | Model 1 turn đọc input | Judgment từ input: commit msg có leak secret? |
+| `agent` (experimental, ~60s/50 turns) | Subagent thật | Verify cần đọc code/chạy lệnh thật: pre-push smoke |
+| `http` | POST ra ngoài | Ping Slack khi cost quá cap, ghi audit log |
+| `mcp_tool` | Gọi MCP tool trong hook | SessionStart lấy ticket Jira/Linear gắn branch |
 
-Xong: mọi rule hay quên đã thành luật. Mai onboarding người mới chỉ cần pull là có.
-
----
-
-## 6. Bảng chọn hook theo vấn đề + checklist
-
-Mục này trả lời câu: vấn đề lặp lại của bạn tương ứng hook + event nào, và hooks đã đủ điều kiện commit chưa?
-
-| Vấn đề lặp lại | Hook + event | Recipe |
-|---|---|---|
-| Quên lint/format | `PostToolUse` Edit/Write | 2a lint-on-write |
-| Push nhầm main / force-push | `PreToolUse` Bash | 2b branch-protect |
-| Không biết tiền đi đâu | `Stop` | 2c cost-cap |
-| Sửa nhầm migrations/secrets | `PreToolUse` Write/Edit | 3.1 guard-paths |
-| Turn-end mà test còn đỏ | `Stop` | 3.2 test-gate |
-| Mở session quên branch/ticket | `SessionStart` | 3.3 session-start |
-| Commit leak secret | `prompt` PreToolUse Bash | Mục 4 ví dụ prompt hook |
-| Push cần smoke thật | `agent` PreToolUse Bash | Mục 4 ví dụ agent hook |
-
-**Checklist trước khi commit hooks:**
-
-- [ ] Matcher đúng (case-sensitive)? Event đúng (Pre vs Post vs Stop vs SessionStart)?
-- [ ] Test đủ ca (4 ca push, 3 ca lint, đỏ/xanh test-gate)?
-- [ ] `exit 0` (cho qua) vs `exit 2` (block) đúng ý?
-- [ ] Không overlap `updatedInput` giữa 2 hooks (mục 7)?
-- [ ] Chạy được headless (`-p` + background subagents)?
-- [ ] Secrets chỉ qua env vars, không hardcode webhook/token?
-- [ ] `chmod +x`, path dùng `${CLAUDE_PROJECT_DIR}` (không hardcode `/Users/...`)?
+> Rule: **production ưu tiên `command`.** `prompt`/`agent` để judgment, `http`/`mcp_tool` để tích hợp ngoài. Hook lỗi/timeout mặc định thả qua; thêm `"onFailure": "block"` để lỗi cũng chặn.
 
 ---
 
-## 7. Năm bẫy thường gặp (+ thêm 2 bẫy version)
+## 5. Lắp hooks cho repo mới trong 30 phút
 
-Mục này trả lời câu: những cách lắp hook sai nào thường gặp nhất, và từng cái fix ra sao?
-
-1. **Matcher case-sensitive, sai event.** `edit|write` không match `Edit|Write`. `Pre` vs `Post` ngược nhau → hook chạy sai thời điểm. Fix: `/hooks` kiểm tra + test từng event.
-2. **2 hooks cùng rewrite `updatedInput`.** Hook chạy sau cùng thắng (non-deterministic). Fix: đừng overlap — mỗi hook 1 field/input riêng, hoặc gộp thành 1 script.
-3. **`-p` non-interactive + background subagents không hiện prompt flows.** Hook chờ input người là treo. Fix: thiết kế hooks chạy headless (không `read`, không mở editor, timeout rõ).
-4. **Hooks là production code nhưng review như đồ chơi.** Hook chạy với quyền của bạn (xóa file, push, gửi webhook được). Fix: review như code, test như code, không curl pipe bash lạ vào hooks/.
-5. **Substring match (`main`).** `feat/my-main-fix` bị chặn oan, `HEAD:main` lọt. Fix: match intent bằng regex (mục 2b) + test 4 ca + 2 ca đối chứng.
-6. **Bẫy version (2025–2026 đổi schema).** `tools` frontmatter, PreToolUse stdin schema từng đổi — hook chặn CI push viết năm ngoái có thể lặng lẽ không chạy năm nay. Fix: đối chiếu release notes trước khi đặt hook chặn CI/push; pin version Claude trong team ([Tips 09](./09-teamwork-chuan-hoa.md)).
-7. **Hook chậm làm mọi turn chậm.** `test-gate` chạy full suite 5 phút mỗi turn-end = tự DDoS mình. Fix: focused scope (`TEST_SCOPE`), cache, timeout, chỉ gate ở Stop (không gate ở PostToolUse).
+1. **0–5p:** `mkdir -p hooks .claude/ledger && chmod +x hooks/*.sh`, copy 4 scripts (2a, 2b, 2c, 3.1).
+2. **5–15p:** ghép khuôn `settings.json` mục 2 → test 4 ca push + 3 ca lint → `/hooks` kiểm tra matcher/event.
+3. **15–25p:** thêm `test-gate.sh` (sửa `TEST_SCOPE`) — làm đỏ 1 test, xác nhận Stop block.
+4. **25–30p:** thêm `session-start.sh`, mở session mới xem branch/status → commit `settings.json` + `hooks/`, ghi 1 dòng vào `CLAUDE.md`.
 
 ---
 
-## 8. Pitfalls + fix nhanh
+## 6. Bảy bẫy thường gặp
 
-Mục này trả lời câu: mọi lỗi triển khai hooks gộp lại có cùng gốc nào?
-
-Pitfalls triển khai (không chạy, chặn oan, treo CI, chậm, hardcode path, quên `chmod +x`, không version) xem chi tiết ở 7 bẫy mục 7 — cùng một gốc: **sai matcher/event, regex rộng, thiếu test ca, thiếu headless.**
-
----
-
-## 9. Thuật ngữ chi tiết: nôm na + analogie + ví dụ + verify
-
-Mục này trả lời câu: 3 khái niệm hooks cốt lõi hiểu nôm na, mượn hình ảnh đời thường và verify ra sao?
-
-| Thuật ngữ | Nôm na 1 câu | Analogie | Ví dụ kỹ thuật thật | Cách verify |
-|---|---|---|---|---|
-| Hook (Pre/Post/Stop/Start) | Luật tự chạy ngoài model, 0 tokens, không cãi được. | Như cửa tự động + chuông báo cháy: người quên nhưng máy không quên. | `PostToolUse Edit\|Write` chạy `lint-on-write.sh` | Sửa `src/a.ts` sai lint → hook báo ngay turn sau. |
-| Matcher + exit code | Địa chỉ áp luật + tín hiệu cho/chặn. | Như ghi `chỉ kiểm xe tải` (matcher) + đèn xanh/đỏ (exit 0/2). | `matcher Bash` + `branch-protect.sh` `exit 2` khi `push -f` | `feat/my-main-fix` exit 0; `push -f` + `HEAD:main` exit 2. |
-| Stop test-gate | Người gác cổng cuối: test đỏ không cho kết thúc turn. | Như bảo vệ không cho xe ra khi chưa có giấy. | `hooks/test-gate.sh` chạy `pnpm --filter payments test` | Làm đỏ 1 test → Stop exit 2; sửa xanh → exit 0. |
+1. **Matcher case-sensitive, sai event.** `edit|write` không match `Edit|Write`; Pre vs Post ngược → chạy sai lúc. Fix: `/hooks` + test từng event.
+2. **2 hooks cùng rewrite `updatedInput`.** Kết quả non-deterministic. Fix: mỗi hook 1 field riêng, hoặc gộp 1 script.
+3. **Headless (`-p`) + background subagents không trả lời prompt được.** Hook chờ input là treo. Fix: không `read`, không mở editor, timeout rõ.
+4. **Hooks là production code nhưng review như đồ chơi.** Hook chạy với quyền của bạn. Fix: review/test/version như code, không curl pipe bash lạ vào `hooks/`.
+5. **Substring match (`main`).** `feat/my-main-fix` bị chặn oan, `HEAD:main` lọt. Fix: match intent bằng regex (2b) + test cả ca đối chứng.
+6. **Bẫy version.** Schema stdin/hooks từng đổi qua các bản — hook viết năm ngoái có thể lặng lẽ không chạy năm nay. Fix: đối chiếu release notes trước khi tin hook chặn CI/push; pin version Claude trong team ([Tips 09](./09-teamwork-chuan-hoa.md)).
+7. **Hook chậm làm mọi turn chậm.** Full suite 5 phút mỗi turn-end = tự DDoS mình. Fix: `TEST_SCOPE` + cache + timeout, chỉ gate ở Stop.
 
 ---
 
-## 10. Mermaid: hook chạy khi nào
+## 7. Bài tập
 
-Mục này trả lời câu: hook can thiệp vào đâu giữa 1 tool call và 1 turn, minh họa bằng sequence?
-
-```mermaid
-sequenceDiagram
-    participant U as Bạn/Claude
-    participant Pre as PreToolUse
-    participant T as Tool (Bash/Edit)
-    participant Post as PostToolUse
-    participant S as Stop/Session
-    U->>Pre: định chạy lệnh?
-    Pre-->>U: BLOCK exit 2 / cho qua exit 0
-    U->>T: chạy tool
-    T->>Post: xong
-    Post->>U: lint/format/log (không chặn chính)
-    U->>S: định kết thúc turn?
-    S-->>U: test-gate đỏ → block max 8 lần
-```
-
-Giải thích từng bước:
-
-1. **U→Pre:** trước tool → `branch-protect/guard-paths` check intent (không substring).
-2. **Pre→U:** `exit 2` block + lý do; `exit 0` cho qua.
-3. **T→Post:** sau Edit/Write → lint đúng file vừa đổi.
-4. **U→S:** turn-end → `test-gate/cost-cap` chạy; đỏ thì block, tối đa 8 lần.
+- **Bài 1 (20 phút):** copy 3 scripts mục 2 + khuôn `settings.json`, chạy 3 ca lint + 4 ca push + cost-cap (`DAILY_CAP_USD=0.01`). Sửa regex tới khi 4 blocked + 2 ca đối chứng pass.
+- **Bài 2 (20 phút):** thêm `guard-paths.sh` (write `migrations/001.sql`, `.env` phải blocked) + `test-gate.sh` (làm đỏ 1 test → Stop exit 2; sửa xanh → exit 0).
+- **Bài 3 (15 phút):** `/hooks` kiểm tra overlap `updatedInput`; `time` từng hook (>5s thì focus scope/cache); viết 1 `prompt` hook check secret cho `git commit`, test với `ghp_fake123`.
 
 ---
 
-## 11. Bảng so sánh có cột Hiểu nôm na + Ví dụ
+## 8. Tham khảo chéo
 
-Mục này trả lời câu: nhắc bằng lời, skill và hook khác nhau ở đâu dưới hình ảnh đời thường, để bạn chọn nhanh?
-
-| Cơ chế | Hiểu nôm na | Ví dụ |
-|---|---|---|
-| Prompt nhắc | Nhắc miệng, vội là quên | `Nhớ chạy lint` → cuối tuần dồn 40 files |
-| Skill | Quy trình cần người quyết, gọi khi cần | `/deploy` checklist migrate/smoke/rollback |
-| Hook | Luật sắt máy check được 100% | Lint sau edit, cấm push main, cost-cap |
-
-**Kiểm tra nhanh:**
-
-```bash
-run() { echo "{\"tool_input\":{\"command\":\"$1\"}}" | ./hooks/branch-protect.sh; echo "[$1] exit=$?"; }
-run "git push origin feat/my-main-fix"
-run "git push origin HEAD:main"
-```
-
-- Dòng 1 `exit=0` (cho qua — chứng minh không substring "main" bừa), dòng 2 `exit=2 BLOCKED`; 4 ca force-push/push-main ở mục 2b cũng đều `exit=2`.
-
----
-
-## 12. Before/After
-
-Mục này trả lời câu: trước và sau khi có hook, cảnh "nhắc hoài vẫn quên" thay đổi thế nào?
-
-**Before:** Nhắc miệng `nhớ đừng push main` → Kết quả dở: máy B push thẳng main sập prod, cãi nhau `tưởng...`.
-
-**After (hook):** `PreToolUse Bash → branch-protect.sh` match intent + test 4 ca → Kết quả tốt.
-
-**Kiểm tra nhanh:**
-
-- Push main/force auto `BLOCKED` kèm lý do `Push lên feature + mở PR`; branch thường vẫn pass.
-
----
-
-## 13. Hiểu nhầm thường gặp
-
-Mục này trả lời câu: những lầm tưởng nào khiến bạn lắp hooks sai và giữ hooks sai?
-
-| Hiểu nhầm | Sự thật |
-|---|---|
-| Matcher viết thường cũng match | Case-sensitive: `edit\|write` không match `Edit\|Write`; Pre/Post ngược là chạy sai lúc |
-| Hook chậm không sao | `test-gate` full suite 5 phút mỗi turn = tự DDoS; phải `TEST_SCOPE` + cache + timeout |
-| Hooks review qua loa được | Hooks chạy với quyền bạn (xóa/push/webhook được); review như production code |
-
----
-
-## 14. Bài tập
-
-Mục này trả lời câu: luyện tay bằng 3 bài nào để tự mình thấy hooks thay đổi thói quen làm việc ra sao?
-
-**Bài 1 (20 phút — 3 recipes bắt buộc):** copy 3 scripts mục 2, gắn `settings.json`, chạy 3 ca lint + 4 ca push + cost-cap (`DAILY_CAP_USD=0.01`). Sửa regex tới khi 4 blocked + 2 ca đối chứng pass.
-
-**Bài 2 (20 phút — guard + test-gate):** thêm `guard-paths.sh` (write `migrations/001.sql`, `.env` phải blocked) + `test-gate.sh` (làm đỏ 1 test → Stop exit 2; sửa xanh → exit 0).
-
-**Bài 3 (15 phút — audit hooks):** `/hooks` kiểm tra overlap `updatedInput`; `time` từng hook (>5s thì focus scope/cache); viết 1 `prompt` hook check secret cho `git commit`, test với `ghp_fake123`.
-
-**Kiểm tra nhanh:**
-
-- Sau 1 tuần không còn lần nào phải nhắc "nhớ lint / đừng push main" bằng miệng — hooks lo hết.
-
----
-
-## 15. Tham khảo chéo
-
-Mục này trả lời câu: đọc tiếp lệnh hooks hoặc chủ đề liên quan nào?
-
-- Lệnh hooks:
-  - [../01-huong-dan-su-dung/commands/knowledge-system/hooks/README.md](../01-huong-dan-su-dung/commands/knowledge-system/hooks/README.md) — xem/sửa hooks
-  - [../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md](../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md) — phát hiện hooks chậm
-  - [../01-huong-dan-su-dung/commands/model-mode/goal/README.md](../01-huong-dan-su-dung/commands/model-mode/goal/README.md) — kết hợp Stop-gate
-  - [../01-huong-dan-su-dung/commands/code-repo/loop/README.md](../01-huong-dan-su-dung/commands/code-repo/loop/README.md) — loops + gate
-  - [../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md](../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md) — mcp_tool hooks
-- Bài tips liên quan:
-  - [Tips 04](./04-verification-done-that.md) — Stop test-gate + loops guard
-  - [Tips 05](./05-parallel-agents.md) — hooks bound từng subagent recipe
-  - [Tips 08](./08-tiet-kiem-cost-token.md) — cost-cap ledger + route model
-  - [Tips 09](./09-teamwork-chuan-hoa.md) — commit hooks + plugin phân phối team
+- [../01-huong-dan-su-dung/commands/knowledge-system/hooks/README.md](../01-huong-dan-su-dung/commands/knowledge-system/hooks/README.md) — xem/sửa hooks · [../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md](../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md) — phát hiện hooks chậm
+- [Tips 04](./04-verification-done-that.md) — Stop test-gate · [Tips 05](./05-parallel-agents.md) — hooks bound subagent · [Tips 08](./08-tiet-kiem-cost-token.md) — cost-cap + route model · [Tips 09](./09-teamwork-chuan-hoa.md) — commit hooks cho team
 
 > Mẹo 1 dòng: _lần thứ hai phải nhắc cùng 1 rule bằng miệng là lần đáng lẽ đã viết hook._

@@ -65,6 +65,7 @@ claude update && claude --version       # vd: update trước, debug sau
 /hooks                                  # vd: xem hooks; rule miss 2 lần -> viết hook
 /plugin                                 # vd: cài plugin team; validate trước khi tin
 /doctor                                 # vd: khám tổng; /debug chẩn đoán session; /bug gửi report
+# /checkup = alias của /doctor
 /memory                                 # vd: tách sở thích cá nhân khỏi CLAUDE.md
 /rules                                  # vd: rules theo path; /config xem settings
 /skill-doctor                           # vd: soi skill ngốn context/chết lâm sàng (≥2.1.252)
@@ -85,6 +86,8 @@ claude update && claude --version       # vd: update trước, debug sau
 claude mcp add --transport stdio github -- npx -y @modelcontextprotocol/server-github
 claude mcp add --transport http linear --url https://mcp.linear.app/mcp --headers "Authorization: Bearer ${LINEAR_TOKEN}"
 # secrets qua ${VAR}, không hardcode. Scope: project (.mcp.json team) | local (chỉ bạn) | user (~/.claude/)
+claude mcp login github                  # OAuth đăng nhập server cần auth (≥ w26/2026)
+claude mcp logout github                 # đăng xuất / token hết hạn thì login lại
 # MCP protocol 2026-07-28 từ CLI ≥2.1.292. Validate server trước khi tin: claude plugin details/eval
 ```
 
@@ -95,7 +98,7 @@ Explore -> /plan (duyệt) -> Implement từng bước (/diff sau mỗi bước)
 Rule miss 2 lần -> viết hook. Việc ồn -> đẩy subagent. Context bẩn -> /compact hoặc /clear.
 ```
 
-## Tra cứu chi tiết từng lệnh (78 lệnh)
+## Tra cứu chi tiết từng lệnh (84 lệnh)
 
 - Index: [01-huong-dan-su-dung/commands/README.md](01-huong-dan-su-dung/commands/README.md)
 - Hay dùng: `/plan` → [commands/model-mode/plan/README.md](01-huong-dan-su-dung/commands/model-mode/plan/README.md) · `/compact` → [commands/session-context/compact/README.md](01-huong-dan-su-dung/commands/session-context/compact/README.md) · `/verify` → [commands/code-repo/verify/README.md](01-huong-dan-su-dung/commands/code-repo/verify/README.md) · `/mcp` → [commands/knowledge-system/mcp/README.md](01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md) · `/doctor` → [commands/knowledge-system/doctor/README.md](01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md)

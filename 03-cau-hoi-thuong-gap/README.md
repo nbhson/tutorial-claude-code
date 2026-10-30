@@ -30,8 +30,8 @@
 Section này trả lời câu: 10 file FAQ trong folder gộp lại giúp bạn điều gì?
 
 Folder này là "sổ tay chữa bệnh" của khóa: gặp lỗi thì mở ra tra, chưa biết chọn gì thì mở ra so.
-Mỗi file khoảng 10 câu hỏi, đầu file luôn có **1 sơ đồ mermaid + 1 bảng tổng hợp** để nhìn 30 giây
-là nhớ được bố cục. Đọc theo thứ tự 00 → 16 không cần thiết — vào thẳng file đúng việc.
+Mỗi file 6–8 câu hỏi, đầu file luôn có **1 sơ đồ mermaid + 1 bảng tổng hợp** để nhìn 30 giây
+là nhớ được bố cục. Đọc theo thứ tự 01 → 10 không cần thiết — vào thẳng file đúng việc.
 
 ## Danh sách 10 file FAQ
 
@@ -98,7 +98,7 @@ flowchart TD
 
 Cần tra nhanh mà không muốn mở file FAQ dài → dùng các đường dẫn này:
 
-- **Tra 1 lệnh bất kỳ:** [`01-huong-dan-su-dung/commands/`](../01-huong-dan-su-dung/commands/) — 78 lệnh, mỗi lệnh 1 folder.
+- **Tra 1 lệnh bất kỳ:** [`01-huong-dan-su-dung/commands/`](../01-huong-dan-su-dung/commands/) — 84 lệnh, mỗi lệnh 1 folder.
 - **Sổ tay thao tác:** [`01-huong-dan-su-dung/README.md`](../01-huong-dan-su-dung/README.md).
 - **Thói quen làm việc:** [`02-tips-thuc-chien/README.md`](../02-tips-thuc-chien/README.md).
 - **Bảng tra 1 trang:** [`CHEATSHEET.md`](../CHEATSHEET.md) — in ra dán cạnh màn hình.

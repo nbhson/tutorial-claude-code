@@ -21,24 +21,9 @@
 | Memory tool | Tool kiểu `memory_20250818` của Messages API — bạn tự viết handler lưu/đọc `/memories` | dùng khi build agent bằng API/SDK, không phải CLI Claude Code |
 | Hook | Script Claude Code tự chạy tại sự kiện lifecycle, không qua model | PostToolUse chạy eslint sau mỗi lần sửa file |
 
-## Mục lục
-
-1. [Output style là gì và thay đổi gì](#1-output-style-là-gì-và-thay-đổi-gì)
-2. [4 style built-in: chọn cái nào khi nào](#2-4-style-built-in-chọn-cái-nào-khi-nào)
-3. [Đổi style: 4 cách](#3-đổi-style-4-cách)
-4. [Tự viết custom output style](#4-tự-viết-custom-output-style)
-5. [Output style vs CLAUDE.md vs skill vs hook vs subagent](#5-output-style-vs-claude-md-vs-skill-vs-hook-vs-subagent)
-6. [Lưu ý: memory tool (API/SDK) khác `/memory` của Claude Code](#6-lưu-ý-memory-tool-apisdk-khác-memory-của-claude-code)
-7. [Khi nào KHÔNG dùng output style](#7-khi-nào-không-dùng-output-style)
-8. [Hiểu nhầm thường gặp](#8-hiểu-nhầm-thường-gặp)
-9. [Bài tập thực hành](#9-bài-tập-thực-hành)
-10. [Link chéo](#10-link-chéo)
-
 ---
 
 ## 1. Output style là gì và thay đổi gì
-
-Mục này trả lời câu: output style thực chất sửa cái gì bên trong Claude Code, và khác gì "nói trong prompt mỗi lần".
 
 Output style là **bộ chỉ dẫn gửi kèm mọi request trong session** — style thay đổi cách Claude Code soạn instructions cho model: vai trò, giọng văn, format trả lời. Khác với việc bạn gõ "trả lời ngắn thôi" ở đầu session: style áp cho toàn session (kể cả câu trả lời sau `/compact`), không bị quên, và đổi bằng 1 lệnh.
 
@@ -54,8 +39,6 @@ Cơ chế (theo docs chính thức, tra 28/10/2026):
 ---
 
 ## 2. 4 style built-in: chọn cái nào khi nào
-
-Mục này trả lời câu: ngoài Default, Claude Code có sẵn 4 style nào và hợp hoàn cảnh nào.
 
 Claude Code khởi động ở style **Default** — không có style instruction nào thêm, model chạy với system prompt chuẩn cho việc dev. Bảng dưới đây là bản tóm tắt docs (tra 28/10/2026):
 
@@ -77,8 +60,6 @@ Ghi chú quan trọng:
 ---
 
 ## 3. Đổi style: 4 cách
-
-Mục này trả lời câu: bật style bằng công cụ nào, lưu vào đâu, và áp dụng từ khi nào.
 
 | Cách | Thao tác | Ghi chú |
 |---|---|---|
@@ -108,8 +89,6 @@ Thời điểm áp dụng: đổi style giữa session → style mới áp từ 
 ---
 
 ## 4. Tự viết custom output style
-
-Mục này trả lời câu: viết 1 style riêng dạng file Markdown như thế nào, đặt ở đâu, và frontmatter gồm field gì.
 
 Custom output style là **file Markdown**: frontmatter ghi metadata, phần thân là chỉ dẫn cho Claude. Lưu ở 1 trong 3 tầng — tên file trở thành tên style, trừ khi frontmatter đặt `name`:
 
@@ -165,8 +144,6 @@ Nếu YAML parse lỗi, style vẫn load dưới tên file với không field n�
 
 ## 5. Output style vs CLAUDE.md vs skill vs hook vs subagent
 
-Mục này trả lời câu: nhu cầu của bạn thuộc vào cơ chế nào — vì nhét sai chỗ vừa tốn token vừa không đạt ý muốn.
-
 Nguyên tắc 1 dòng: **output style = mọi câu trả lời; CLAUDE.md = những gì Claude cần biết; skill = quy trình theo task; hook = thứ phải chắc chắn xảy ra.**
 
 | Bạn muốn | Dùng | Vì sao hợp |
@@ -192,8 +169,6 @@ So sánh trực diện output style với 2 hàng xóm hay nhầm:
 ---
 
 ## 6. Lưu ý: memory tool (API/SDK) khác `/memory` của Claude Code
-
-Mục này trả lời câu: khi nói "memory", có 2 thứ hoàn toàn khác nhau — lệnh `/memory` trong Claude Code và memory tool của Messages API. Nhầm 2 thứ này là hiểu sai kiến trúc.
 
 **Lệnh `/memory` của Claude Code** (cùng hệ [knowledge system — bài 03](./03-claude-md-memory-rules.md)):
 

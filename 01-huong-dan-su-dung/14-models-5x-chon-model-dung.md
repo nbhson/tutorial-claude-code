@@ -1,134 +1,53 @@
 # 14 — Models 5.x: chọn model đúng (Fable / Opus / Sonnet / Haiku)
 
 > **Bài này cho ai:** dev chọn model trong `/model` mỗi ngày, và tech lead muốn gate model + kiểm soát chi phí cho team.
-> **Cần gì trước:** đã cài + login Claude Code (bài 01); biết đọc `/cost` (Tips 08). Chưa cần, bài tự giải thích từ model.
-> **Đọc xong bạn làm được:**
-> - Chọn đúng model cho từng task (Haiku/Sonnet/Opus/Fable), không trả tiền Opus cho việc Haiku làm được.
-> - Dùng `opusplan` (plan Opus + execute Sonnet) cho task multi-file, tiết kiệm ~40% so full-Opus.
-> - Đọc `/cost` hiểu được vì sao cache reads chiếm đa số bill agentic.
-> - Route model cho subagent trong frontmatter + xử lý 4 breaking changes khi lên Opus 5.5.
+> **Cần gì trước:** đã cài + login Claude Code (bài 01); biết đọc `/cost` (Tips 08).
+> **Đọc xong bạn làm được:** chọn đúng model cho từng task (không trả tiền Opus cho việc Haiku làm được); dùng `opusplan` tiết kiệm ~40% cho task multi-file; hiểu cache reads — phần chiếm đa số bill agentic; route model cho subagent; xử lý breaking changes khi lên Opus 5.5.
 > **Thời gian:** ~35 phút.
 
-## Thuật ngữ dùng trong bài này
+## Thuật ngữ
 
-Đọc bảng này trước khi vào mục 1 — mọi thuật ngữ Anh trong bài đều được giải thích ở đây.
-
-| Thuật ngữ | Hiểu nôm na là gì | Ví dụ thấy ngay | Khi nào dùng |
-|---|---|---|---|
-| Model (Opus/Sonnet/Haiku/Fable) | 4 cỡ não: sâu—hàng ngày—việc vặt—siêu khó dài hơi | `/model sonnet` cho daily, `opus` cho kiến trúc | Chọn đầu mỗi task (mục 7) |
-| `/model` | Công tắc đổi não giữa session, giữ context | `/model sonnet` → chạy tiếp, không mất history | Giữa các phase (mục 3.4) |
-| `opusplan` | Kiến trúc sư vẽ bản vẽ (Opus) + thợ thi công (Sonnet) | `claude --model opusplan` cho task >3 files | Task multi-file (mục 3.3) |
-| Effort (low/medium/high) | Vặn mức "cố gắng suy luận" | `/effort low` cho rename, `high` cho đoạn khó | Theo độ khó (mục 4.1) |
-| Fast mode | Trả gấp đôi lấy latency, vẫn Opus 5.5 | `/fast` cho demo live | Cần phản hồi nhanh (mục 4.2) |
-| Cache reads | Phần context trùng tính giá rẻ (Opus 5.5 $0.20/1M; Sonnet 5.5 $0.10; Haiku 5.5 $0.01) | `/cost` hiện `cache read` chiếm đa số | Tối ưu bill (mục 5) |
-| Breaking changes | Đổi model làm hỏng prompt cũ (thinking không tắt, ép-tool lỗi) | Opus 5.5 từ chối computer tool cũ | Trước khi upgrade (mục 6) |
-
-## Mục lục
-
-1. [Vì sao chọn model? (why)](#1-vì-sao-chọn-model-why)
-2. [Bảng so sánh các model](#2-bảng-so-sánh-các-model)
-3. [Model IDs + aliases + `/model`](#3-model-ids--aliases--model)
-4. [Effort + fast mode](#4-effort--fast-mode)
-5. [Cache reads: cost thật của agentic](#5-cache-reads-cost-thật-của-agentic)
-6. [Breaking changes Opus 5.5](#6-breaking-changes-opus-55-đọc-kỹ-trước-khi-upgrade)
-7. [Route model theo task + subagent routing](#7-route-model-theo-task--subagent-routing)
-8. [Legacy / deprecated](#8-legacy--deprecated)
-9. [Walkthrough + pitfalls + bài tập](#9-walkthrough--pitfalls--bài-tập)
-10. [Link chéo](#10-link-chéo)
+| Thuật ngữ | Hiểu nôm na | Ví dụ |
+|---|---|---|
+| Model (Opus/Sonnet/Haiku/Fable) | 4 cỡ não: sâu—hàng ngày—việc vặt—siêu khó dài hơi | `/model sonnet` cho daily, `opus` cho kiến trúc |
+| `/model` | Công tắc đổi não giữa session, giữ context | `/model sonnet` → chạy tiếp, không mất history |
+| `opusplan` | Kiến trúc sư vẽ bản vẽ (Opus) + thợ thi công (Sonnet) | `claude --model opusplan` cho task >3 files |
+| Effort (low→xhigh) | Vặn mức "cố gắng suy luận" | `/effort low` cho rename, `xhigh` cho đoạn khó nhất |
+| Fast mode | Cùng Opus, latency thấp hơn, giá cao hơn | `/fast` cho demo live |
+| Cache reads | Phần context trùng tính giá rẻ | `/cost` hiện `cache read` chiếm đa số bill |
 
 ---
 
-## 1. Vì sao chọn model? (why)
+## 1. Vì sao chọn model?
 
-Model mạnh nhất không phải lúc nào cũng là model đúng. Mỗi task có 3 chiều
-cần cân: **chất lượng suy luận — tốc độ — chi phí**. Dùng sai chiều là mất
-tiền hoặc mất thời gian:
+Model mạnh nhất không phải lúc nào cũng là model đúng. Mỗi task cần cân **chất lượng suy luận — tốc độ — chi phí**:
 
 - Dùng Fable/Opus sửa typo → trả gấp hàng chục lần mà kết quả y hệt Haiku/Sonnet.
-- Dùng Haiku thiết kế kiến trúc → thiếu depth, refactor 3 lần vẫn sai,
-  tổng cost cao hơn 1 lần Opus đúng ngay.
+- Dùng Haiku thiết kế kiến trúc → thiếu depth, refactor 3 lần vẫn sai, tổng cost cao hơn 1 lần Opus đúng ngay.
 - Không hiểu cache reads → shock khi bill gấp 3 lần dự tính (mục 5).
 
-Nguyên tắc vàng:
-
-```text
-Task khó, mơ hồ, hậu quả lớn → model mạnh (Opus/Fable).
-Task rõ ràng, lặp lại, khối lượng lớn → model rẻ + nhanh (Sonnet/Haiku).
-Không bao giờ default Fable — chỉ gọi đích danh khi cần hardest/long-horizon.
-```
-
-- Quản lý: `/model` chuyển giữa session; frontmatter `model:` per-task (bài 06);
-  env `ANTHROPIC_MODEL` cho CI (bài 12). Cost thực tế: `/cost` sau mỗi session.
+Quản lý: `/model` chuyển giữa session; frontmatter `model:` per-subagent (bài 06); env `ANTHROPIC_MODEL` cho CI (bài 12); `ANTHROPIC_DEFAULT_MODEL` đặt default cho session MỚI (≥2.1.236). Cost thực tế: `/cost` sau mỗi session.
 
 ---
 
-## 2. Bảng so sánh các model
+## 2. Bảng so sánh model hiện hành (10/2026)
 
-### 2.1. Bảng tổng (giá API chuẩn, USD / 1M tokens)
-
-| Model | Input / Output | Cache read | Context | Effort mặc định | Vai trò |
+| Model | Input / Output (USD/MTok) | Cache read | Context | Effort mặc định | Vai trò |
 |---|---|---|---|---|---|
-| **Fable 5.1** | $10 / $50 | $0.25 | 1M | high | Hardest, long-horizon — không bao giờ default |
-| **Opus 5.5** | $4 / $20 | $0.20 | 1M | medium | Default tài khoản — suy luận sâu mặc định |
-| **Sonnet 5.5** | $2 / $10 | $0.10 | 1M | (standard) | Daily coding — việc hàng ngày; mặc định Sonnet trên API |
-| **Sonnet 5** | $2 / $10 | $0.20 | 1M | (standard) | Mặc định Sonnet đời cũ (Pro/Team trước 2.1.280) |
-| **Haiku 5.5** | $0.10 / $0.50 | $0.01 | 1M | (light) | Mặc định Haiku trên API — rẻ nhất dòng 5.x |
-| **Haiku 4.5** | $1 / $5 | $0.10 | 200K | (light) | Việc nhỏ + subagents fan-out; mặc định Haiku trên Bedrock/GCP/AWS |
+| **Fable 5.1** | $10 / $50 | 2.5% giá input | 1M | high | Hardest, long-horizon — **không bao giờ default** |
+| **Opus 5.5** | $4 / $20 | 5% giá input | 1M | medium | **Default tài khoản** — suy luận sâu mặc định |
+| **Sonnet 5.5** | $2 / $10 | 5% giá input | 1M | high | Daily coding — việc hàng ngày |
+| **Haiku 5.5** | từ $0.10 / $0.50 | 10% giá input | 1M | medium | Việc vặt + subagents fan-out — rẻ nhất dòng 5.x |
 
-> Subscription (Pro/Max/Team) tính theo quota, không trừ từng token — quota Opus/Fable hết nhanh hơn Sonnet/Haiku nhiều lần. Fable không nằm trong hạn mức thường: trên Pro bill bằng usage credits, trên Max tốn ~50% hạn tuần mỗi lượt dùng.
+> Subscription (Pro/Max/Team) tính theo quota, không trừ từng token — quota Opus/Fable hết nhanh hơn Sonnet/Haiku nhiều lần. Fable không nằm trong hạn mức thường: trên subscription bill bằng **usage credits** (`/model` picker hiện "Requires usage credits").
 
-### 2.2. Fable 5.1 — hardest/long-horizon, không bao giờ default
+**Fable 5.1** (`claude-fable-5-1`, ≥2.1.257): KHÔNG là default trên plan/provider nào — gọi đích danh `/model fable`. Request bị safety classifier flag (cyber/bio) → tự động model fallback. Khi nào gọi: cả 3 ✓ — (1) task kéo dài nhiều giờ, cần coherence xuyên suốt? (2) Opus đã stuck? (3) hậu quả sai cao (migration prod, security-critical)?
 
-```text
-Fable 5.1: đắt nhất ($10/$50), context 1M, effort high. Sinh ra cho task
-hardest, long-horizon (reasoning sâu nhiều giờ, codebase lớn, research phức tạp).
-KHÔNG BAO GIỜ default — gọi đích danh (alias fable, /model fable).
-Không nằm trong hạn mức thường: trên Pro bill bằng usage credits, trên Max tốn
-~50% hạn tuần mỗi lượt dùng.
-Dùng sai: bill nổ cho task Opus/Sonnet đã làm tốt.
-```
+**Opus 5.5** — default tài khoản (Pro/Max/Team/Enterprise/API/Bedrock/GCP từ ≥2.1.280; trước đó default là Sonnet 5 trên Pro/Team Standard, Opus 5 ở nơi khác). Ngoại lệ: Microsoft Foundry default Sonnet 4.5. Dùng cho thiết kế, debug khó, refactor multi-file, review quan trọng.
 
-Khi nào gọi Fable (checklist):
+**Sonnet 5.5** — implement theo plan, viết test, CRUD, docs; cache read rẻ nên session dài đỡ đau. Quy tắc: plan Opus, execute Sonnet (`opusplan`).
 
-```text
-✓ Task kéo dài nhiều giờ, hàng chục steps, cần coherence xuyên suốt?
-✓ Đã thử Opus mà stuck / quality chưa đạt?
-✓ Hậu quả sai cao (migration prod, thiết kế security-critical)?
-→ Cả 3 ✓ thì Fable. Thiếu 1 thì Opus trước đã.
-```
-
-### 2.3. Opus 5.5 — model mặc định của tài khoản
-
-```text
-Opus 5.5: $4/$20, context 1M, effort medium. Là model MẶC ĐỊNH của tài khoản
-(Pro/Max/Team/Enterprise/Anthropic API/Bedrock/GCP từ ≥2.1.280).
-Ngoại lệ: Microsoft Foundry mặc định Sonnet 4.5, không phải Opus.
-Dùng cho: thiết kế, debug khó, refactor multi-file, review quan trọng.
-Fast mode $8/$40 (mục 4) — nhanh hơn, đắt gấp đôi.
-```
-
-### 2.4. Sonnet 5.5 — daily coding
-
-```text
-Sonnet 5.5: $2/$10, context 1M — rẻ bằng nửa Opus. Cache read chỉ $0.10/1M
-(rẻ hơn Sonnet 5 ở $0.20) nên session dài đọc lại context đỡ đau hơn. Việc hàng
-ngày: implement theo plan đã duyệt, viết test, CRUD, docs, refactor cơ học.
-Nhanh hơn Opus rõ rệt → vòng lặp code-test ngắn. Quy tắc: plan Opus,
-execute Sonnet (alias opusplan — mục 3.3).
-```
-
-### 2.5. Haiku 5.5 (mặc định) và Haiku 4.5 — việc nhỏ + subagents
-
-```text
-Haiku 5.5: $0.10/$0.50, context 1M, cache read $0.01 — rẻ nhất dòng 5.x.
-Nó THAY Haiku 4.5 làm Haiku mặc định trên Anthropic API (≥2.1.293).
-Prompt >100K thì $0.50/$2.50 (cache $0.05).
-Haiku 4.5: $1/$5, context 200K — vẫn là Haiku mặc định trên Bedrock/GCP/AWS.
-Việc nhỏ (format, rename, grep/explore, tóm tắt, classify) + subagents fan-out:
-5–10 Haiku song song rẻ hơn 1 Opus mà cover rộng hơn (mục 7.3).
-Lưu ý context: Haiku 5.5 = 1M còn Haiku 4.5 = 200K — đừng nhét cả monorepo
-vào Haiku 4.5.
-```
+**Haiku 5.5** — thay Haiku 4.5 làm mặc định Haiku trên Anthropic API (≥2.1.293); 5–10 Haiku song song rẻ hơn 1 Opus mà cover rộng hơn. Lưu ý provider: Bedrock/GCP/AWS còn trả alias `haiku` → Haiku 4.5 (200K context) — đừng nhét cả monorepo vào đó.
 
 ---
 
@@ -136,18 +55,13 @@ vào Haiku 4.5.
 
 ### 3.1. Model IDs chuẩn (dùng trong API / frontmatter / env)
 
-| Model | ID chính xác | Bản tối thiểu | Ghi chú |
-|---|---|---|---|
-| Opus 5.5 | `claude-opus-5-5` | ≥2.1.280 | Mặc định tài khoản |
-| Sonnet 5.5 | `claude-sonnet-5-5` | ≥2.1.284 | Daily coding |
-| Fable 5.1 | `claude-fable-5-1` | ≥2.1.257 | Gọi đích danh, không default |
-| Haiku 5.5 | `claude-haiku-5-5` | ≥2.1.293 | Mặc định Haiku trên API |
-| Haiku 4.5 | `claude-haiku-4-5-20251001` | — | Có date suffix — copy chính xác |
-
-```text
-⚠ Haiku 4.5 có date suffix (-20251001); Haiku 5.5 dùng ID ngắn `claude-haiku-5-5`.
-Gõ thiếu/thừa → "model not found". Khi nghi ngờ → /model xem list thực tế thay vì đoán.
-```
+| Model | ID chính xác | Bản tối thiểu |
+|---|---|---|
+| Opus 5.5 | `claude-opus-5-5` | ≥2.1.280 |
+| Sonnet 5.5 | `claude-sonnet-5-5` | ≥2.1.284 |
+| Fable 5.1 | `claude-fable-5-1` | ≥2.1.257 |
+| Haiku 5.5 | `claude-haiku-5-5` | ≥2.1.293 |
+| Haiku 4.5 | `claude-haiku-4-5-20251001` | — (có date suffix — copy chính xác) |
 
 ```bash
 # Dùng ID trong CLI / env / frontmatter:
@@ -156,76 +70,65 @@ ANTHROPIC_MODEL=claude-haiku-5-5 claude -p "tóm tắt file này"
 # Subagent frontmatter (.claude/agents/explorer.md): model: haiku
 ```
 
-### 3.2. Aliases ngắn (dùng hàng ngày cho nhanh)
+> Gõ thiếu/thừa ID → "model not found". Khi nghi ngờ → `/model` xem list thực tế thay vì đoán.
+> Pin version: dùng full ID hoặc `ANTHROPIC_DEFAULT_OPUS_MODEL` / `_SONNET_MODEL` / `_HAIKU_MODEL` / `_FABLE_MODEL`; có `opus[1m]`/`sonnet[1m]` khi cần ép cửa sổ 1M cho riêng lượt.
 
-| Alias | Trỏ tới | Khi dùng |
+### 3.2. Aliases ngắn (dùng hàng ngày)
+
+| Alias | Trỏ tới (Anthropic API) | Khi dùng |
 |---|---|---|
-| `default` | Opus 5.5 (theo mặc định tài khoản) | Để nguyên mặc định |
-| `best` | Fable 5.1 nếu provider có, không thì Opus 5.5 | Muốn model mạnh nhất hiện có |
-| `opus` | Opus 5.5 | Suy luận sâu, debug khó |
-| `sonnet` | Sonnet 5.5 | Daily coding |
-| `haiku` | Haiku 5.5 trên Anthropic API (provider khác còn Haiku 4.5) | Việc nhỏ, explore |
+| `default` | Opus 5.5 (runtime default theo account; Foundry = Sonnet 4.5) | Để nguyên mặc định |
+| `best` | Fable nếu provider có, không thì Opus | Muốn model mạnh nhất hiện có |
+| `opus` / `sonnet` / `haiku` | 5.5 (provider khác có thể đời cũ hơn) | Suy luận sâu / daily / việc nhỏ |
 | `fable` | Fable 5.1 | Hardest/long-horizon đích danh |
 | `opusplan` | **Plan bằng Opus + execute bằng Sonnet** | Mặc định cho task multi-file |
-
-```text
-Còn có `opus[1m]` / `sonnet[1m]` khi cần ép cửa sổ 1M cho riêng lượt đó.
-```
 
 ### 3.3. `opusplan` — alias đáng tiền nhất
 
 ```text
-opusplan = plan bằng Opus (hiểu sâu, thiết kế đúng) + execute bằng Sonnet
-(nhanh, rẻ). Lỗi kiến trúc (sai ở plan) đắt gấp 10 lần lỗi implement → đổ
-tiền model mạnh vào chỗ quyết định, tiết kiệm ở chỗ tay chân. Task điển hình:
-plan 10% tokens × Opus + execute 90% × Sonnet ≈ rẻ hơn full-Opus ~40%.
+opusplan = plan bằng Opus (hiểu sâu, thiết kế đúng) + execute bằng Sonnet (nhanh, rẻ).
+Lỗi kiến trúc (sai ở plan) đắt gấp 10 lần lỗi implement → đổ tiền model mạnh vào
+chỗ quyết định. Plan ~10% tokens × Opus + execute ~90% × Sonnet ≈ rẻ hơn full-Opus ~40%.
 ```
 
 ```bash
-# Dùng opusplan:
-claude --model opusplan
-# Hoặc trong session:
-/model opusplan
+claude --model opusplan   # hoặc trong session: /model opusplan
 ```
 
-### 3.4. `/model` — chuyển giữa session
+### 3.4. `/model` — chuyển giữa session (giữ context)
 
 ```bash
-# Trong session đang chạy:
-/model
-# → hiện model hiện tại + list chọn (default/best/opus/sonnet/haiku/fable/opusplan).
-
-/model sonnet
-# → chuyển ngay, context giữ nguyên, không mất history.
-
-/model fable
-# → chuyển sang Fable cho đoạn khó, xong /model sonnet quay lại.
+/model            # picker: Enter = đổi + lưu default; "s" = chỉ session này
+/model sonnet     # chuyển ngay, context giữ nguyên
+/model fable      # đoạn khó, xong /model sonnet quay lại
 ```
 
 ```text
-Chuyển model giữa session (giữ context + history — đừng ở lì 1 model):
-  opus (hiểu + plan) → /model sonnet (implement) → stuck thì /model opus
-  hoặc fable gỡ 1 đoạn → /model sonnet/haiku làm tiếp. Gom phase để đỡ phá cache (mục 5).
+Workflow đổi model theo phase (đừng ở lì 1 model):
+  opus (hiểu + plan) → /model sonnet (implement) → stuck thì /model opus/fable
+  → /model sonnet/haiku làm tiếp. Gom phase để đỡ phá cache (mục 5).
+Chú ý: đổi model bằng /model áp luôn cho subagents kế thừa model session —
+muốn subagent giữ model nhỏ thì set `model:` trong frontmatter của nó.
 ```
 
 ---
 
 ## 4. Effort + fast mode
 
-### 4.1. Effort là gì
+### 4.1. Effort
 
 ```text
-Effort = mức "cố gắng suy luận" (low/medium/high). Effort cao → thinking sâu,
-nhiều steps, nhiều tokens. Fable mặc định high, Opus mặc định medium.
-Task dễ mà nghĩ lâu → hạ effort; task khó mà trả lời cạn → tăng effort.
+Effort = mức "cố gắng suy luận". Cao hơn → thinking sâu, nhiều steps, nhiều tokens.
+Mặc định: Fable = high, Opus = medium, Sonnet = high, Haiku = medium.
+Opus 5.5 / Sonnet 5.5 / Haiku 5.5 / Fable luôn thinking — KHÔNG tắt được,
+đừng prompt "đừng suy nghĩ" (tokens vẫn tính). Việc siêu nhỏ → route Haiku/Sonnet effort low.
 ```
 
 ```bash
-# Đổi effort (tùy bản CLI — gõ "/" xem lệnh thực tế):
-/effort high    # cho đoạn khó, chấp nhận chậm + đắt
-/effort medium  # mặc định Opus
+# /effort: slider chọn mức; các mức low → medium → high → xhigh
+/effort high    # đoạn khó, chấp nhận chậm + đắt
+/effort xhigh   # mức cao nhất — cap team bằng setting maxEffortLevel (managed)
 /effort low     # việc cơ học, muốn nhanh
-# Chi tiết: commands/effort.
 ```
 
 ### 4.2. Fast mode (Opus 5.5: $8/$40)
@@ -233,114 +136,63 @@ Task dễ mà nghĩ lâu → hạ effort; task khó mà trả lời cạn → t�
 | Chế độ | Giá Opus 5.5 | Khi dùng |
 |---|---|---|
 | Normal | $4 / $20 | Mặc định — depth đầy đủ |
-| Fast mode | $8 / $40 | Cần latency thấp, chấp nhận đắt gấp đôi |
+| Fast mode | $8 / $40 (đến 2.5x nhanh hơn) | Cần latency thấp, chấp nhận đắt gấp đôi |
 
 ```text
-Fast mode KHÔNG phải model khác — vẫn Opus 5.5, chỉ ưu tiên tốc độ.
-Dùng khi: demo live, session interactive cần phản hồi nhanh, CI cần rút
-wall-clock mà vẫn cần depth Opus. KHÔNG dùng cho overnight batch (phí tiền)
-hay task đã hợp Sonnet/Haiku (đổi model rẻ hơn là nhanh + rẻ).
+Fast mode KHÔNG phải model khác — vẫn Opus, chỉ ưu tiên tốc độ.
+Chỉ có trên Anthropic API/subscription (Pro/Max/Team/Enterprise + Console).
+KHÔNG có trên Bedrock/GCP/Foundry/AWS Platform (bài 10). Trên subscription
+nó trừ vào usage credits, không tính vào hạn mức plan.
+Dùng khi: demo live, live debugging. KHÔNG dùng overnight batch/CI (phí tiền).
+Rate limit fast mode riêng — hết → tự fallback về tốc độ chuẩn, icon ↯ xám.
 ```
 
 ```bash
-# Bật fast mode (Sub/Console có; Bedrock/AWS/GCP không — bài 10 mục 6.1):
-/fast
-# → toggle. Chi tiết: commands/fast.
+/fast   # toggle (Space bật/tắt + Enter). Lưu vào setting fastMode.
 ```
 
 ### 4.3. Chọn effort/fast theo task (cheat)
 
 ```text
-Việc cơ học (format, rename, grep)       → haiku + effort low
-Implement theo plan rõ                    → sonnet (mặc định)
-Debug khó, refactor kiến trúc             → opus + effort medium
-Stuck sau 2 lần thử Opus                  → opus effort high hoặc fable
-Demo live cần nhanh mà vẫn sâu            → opus fast mode (có tiền thì bật)
-Overnight batch                           → KHÔNG fast (phí), chọn model đúng là đủ
+Việc cơ học (format, rename, grep)  → haiku + effort low
+Implement theo plan rõ              → sonnet
+Debug khó, refactor kiến trúc       → opus + effort medium
+Stuck sau 2 lần thử Opus            → opus effort high, vẫn stuck → fable
+Demo live cần nhanh mà vẫn sâu      → opus fast mode
+Overnight batch                     → KHÔNG fast (phí), chọn model đúng là đủ
 ```
 
 ---
 
 ## 5. Cache reads: cost thật của agentic
 
-### 5.1. Vì sao bill cao hơn bảng giá input/output
-
 ```text
-Agentic = mỗi step gửi lại gần như toàn bộ context. Không cache → mỗi step
-trả full input price. Có cache → phần trùng khớp tính giá cache read rẻ hơn
-nhiều. Thực tế session dài: cache reads (Opus 5.5: $0.20/1M) = ĐA SỐ cost.
-Sonnet 5.5 đọc cache $0.10, Haiku 5.5 chỉ $0.01 — model càng rẻ cache càng dễ chịu.
-Đổi model rẻ mà phá cache liên tục có thể đắt hơn ở lì Opus cache tốt.
+Agentic = mỗi step gửi lại gần như toàn bộ context. Không cache → mỗi step trả
+full input price. Có cache → phần trùng tính giá cache read (5–10% input price).
+Số minh họa (Opus 5.5, $0.20/1M cache read): session 50 steps × ~100K tokens,
+không cache ≈ $20, cache tốt (90% hit) ≈ $3. Thực tế session dài: cache reads
+= ĐA SỐ cost. Đổi model rẻ mà phá cache liên tục có thể đắt hơn ở lì Opus.
 ```
 
-### 5.2. Số minh họa (Opus 5.5)
+Giữ cache hit cao:
 
 ```text
-Session 50 steps × ~100K tokens: không cache ≈ $20; cache tốt (90% hit)
-≈ $3 (4.5M read × $0.20 + 0.5M mới × $4). Chênh ~7 lần — cache không phải chi tiết nhỏ.
-```
-
-### 5.3. Giữ cache hit cao (thực hành)
-
-```text
-1. Đừng /model qua lại liên tục — mỗi lần đổi có thể phá cache prefix.
-   Gom đoạn cần Opus/Fable làm 1 lượt rồi về Sonnet.
+1. Đừng /model qua lại liên tục — mỗi lần đổi có thể phá cache prefix. Gom đoạn cần Opus/Fable làm 1 lượt rồi về Sonnet.
 2. Đừng /cd lung tung (bài 10) hay nhét file khổng lồ không liên quan vào context.
 3. Explore bằng Haiku subagents thay vì nhét 20 files vào main context.
 4. Sau mỗi session: /cost → tỉ lệ cache read thấp bất thường? Xem lại workflow.
-```
-
-```bash
-# Kiểm tra cost thực tế (đừng đoán — xem thật):
-/cost
-# → hiện tokens theo loại (input mới / cache read / cache write / output)
-#   + tiền ước tính session này.
 ```
 
 ---
 
 ## 6. Breaking changes Opus 5.5 (đọc kỹ trước khi upgrade)
 
-Lên Opus 5.5 từ bản cũ có 4 breaking changes hay cắn. Biết trước đỡ mất
-buổi sáng debug "sao hôm nay nó lạ thế".
-
-### 6.1. Thinking không tắt được
-
-```text
-Opus 5.5 LUÔN thinking (không tắt được như bản cũ) → latency floor cao hơn.
-Fix: việc siêu nhỏ route sang Haiku/Sonnet effort low. Đừng prompt "đừng suy
-nghĩ" — model vẫn thinking ngầm, tokens vẫn tính.
-```
-
-### 6.2. Forced tool use lỗi
-
-```text
-Pattern "ép model gọi tool X ngay" trên Opus 5.5 có thể lỗi (sai params, gọi
-thừa, từ chối vòng vo). Fix: viết lại thành "đề xuất + hỏi trước", hoặc tách
-step ép-tool sang Haiku/Sonnet (nghe lời hơn ở task cơ học).
-```
-
-### 6.3. Thinking blocks gắn conversation
-
-```text
-Thinking blocks GẮN vào conversation (không strip được). Hệ quả: history nặng,
-mang thinking cũ theo mọi step (ảnh hưởng cache + context). Fix: compact sớm khi
-chuyển phase (plan xong → compact → execute); đừng branch 1 conversation dài cho 2 task.
-```
-
-### 6.4. Computer tool cũ bị từ chối
-
-```text
-Opus 5.5 TỪ CHỐI computer tool phiên bản cũ ("I can't use that tool").
-Fix: upgrade computer tool lên bản tương thích; check version floor (bài 10 mục 7.4).
-```
-
-```text
-Checklist upgrade (dán cho team):
-[ ] Việc nhỏ đã route Haiku/Sonnet? (thinking không tắt được)
-[ ] Prompt ép-tool test lại? (mục 6.2) [ ] Compact giữa phase? (mục 6.3)
-[ ] Computer tool bản mới? (mục 6.4) [ ] /cost sau 1 tuần so với trước upgrade?
-```
+| Thay đổi | Hệ quả | Fix |
+|---|---|---|
+| Thinking không tắt được | Latency floor cao hơn | Việc siêu nhỏ route Haiku/Sonnet effort low |
+| Forced tool use lỗi (sai params, gọi thừa, từ chối vòng vo) | Prompt ép-tool cũ gãy | Viết lại thành "đề xuất + hỏi trước", hoặc tách step ép-tool sang Haiku/Sonnet |
+| Thinking blocks GẮN conversation (không strip được) | History nặng, ảnh hưởng cache | Compact sớm khi chuyển phase (plan xong → compact → execute) |
+| Computer tool cũ bị từ chối | Session lỗi tool | Upgrade computer tool lên bản tương thích |
 
 ---
 
@@ -379,47 +231,24 @@ permissionMode: plan
 Chỉ ĐỌC và báo cáo (files liên quan + dòng quan trọng). Không sửa file.
 ```
 
-```markdown
-<!-- .claude/agents/implementer.md — implement bằng Sonnet -->
----
-model: sonnet
-tools: [Read, Edit, Write, Bash]
-permissionMode: acceptEdits
----
-Implement đúng plan được giao. Không tự đổi kiến trúc — cấn thì hỏi lại.
-```
-
-```markdown
-<!-- .claude/agents/architect.md — thiết kế bằng Opus -->
----
-model: opus
-tools: [Read, Glob, Grep]
-permissionMode: plan
----
-Thiết kế + plan (steps + risks). KHÔNG code.
-```
-
 ```text
+Cùng pattern cho implementer: model: sonnet + tools [Read, Edit, Write, Bash] +
+permissionMode: acceptEdits + chỉ dẫn "implement đúng plan, không tự đổi kiến trúc".
 Fan-out (rẻ mà cover rộng): main (opus) spawn 5 haiku explore 5 hướng →
 gom báo cáo → main quyết định → sonnet implement. Chi tiết: bài 06.
 ```
 
 ---
 
-## 8. Legacy / deprecated
+## 8. Legacy / fallback / gate model
+
+### 8.1. Legacy models
 
 | Model cũ | Trạng thái | Hành động |
 |---|---|---|
 | Opus 4 / Opus 4.1 | **Bị xóa** | Không gọi được nữa — migrate ID sang `claude-opus-5-5` |
-| Opus 4.5 – 4.8 | Legacy (còn nhưng không phát triển) | Task mới dùng 5.x; task cũ giữ nguyên nếu đang ổn, migrate khi rảnh |
-| Sonnet/Haiku đời cũ | Theo bảng provider | Tra docs hiện hành — date suffix Haiku đổi theo bản |
-
-```text
-Migrate (Opus 4/4.1 bị xóa):
-[ ] grep repo + configs còn "opus-4"? → đổi sang claude-opus-5-5, test lại ép-tool (mục 6.2)
-[ ] Task dở trên 4.5–4.8: để yên cho xong; task mới dùng 5.x
-[ ] Pin version ở CI (bài 12) để lần sau không bị xóa bất ngờ
-```
+| Opus 4.5 – 4.8, Sonnet 5, Sonnet 4.6 | Legacy (còn nhưng không phát triển) | Task mới dùng 5.5x; task cũ giữ nguyên nếu đang ổn |
+| Haiku 4.5 | Còn (200K context) | Mặc định Haiku trên Bedrock/GCP/AWS |
 
 ```bash
 # Tìm model IDs cũ còn sót:
@@ -427,122 +256,44 @@ rg -n "opus-4|sonnet-4|haiku-4[^.]" --glob '!node_modules' --glob '!.git'
 # → đổi từng hit sang ID mục 3.1, test 1 task mẫu trước khi merge.
 ```
 
----
+### 8.2. fallbackModel — dự phòng khi model lỗi
 
-## 9. Walkthrough + pitfalls + bài tập
-
-### 9.1. Walkthrough: route đúng cho 1 task thật (20 phút)
-
-```text
-Bước 1: Lấy 1 task multi-file thật. Mở bằng opusplan.
-Bước 2: Sau plan xong, /cost → ghi tokens plan. Implement xong, /cost → ghi tổng.
-Bước 3: Chạy task tương tự full-sonnet và full-haiku. So quality + /cost 3 runs.
-Bước 4: Spawn 3 haiku explore song song 1 câu hỏi codebase (bài 06). So thời gian
-         + cost vs tự explore bằng main model.
+```bash
+# Trong Agent SDK / settings API: chuỗi fallback tối đa 3 model
+# (fallbackModel / fallback model chain — Week 24/2026).
+# Vd: chính Opus 5.5 → fallback Sonnet 5.5 → Haiku 5.5.
+# Entry ngoài availableModels allowlist sẽ bị drop khỏi chuỗi.
 ```
 
-### 9.2. Pitfalls + fix
+### 8.3. Gate model cho team (managed settings)
 
-| Pitfall | Vì sao | Fix |
-|---|---|---|
-| Default Fable cho mọi thứ | Bill nổ, nhanh hơn không bao nhiêu | Fable chỉ đích danh khi Opus stuck |
-| Ở lì Opus cả session dài | Phần cơ học trả giá Opus | Chuyển `/model sonnet/haiku` theo phase |
-| Haiku cho task kiến trúc | Thiếu depth, refactor 3 lần | Plan bằng Opus, execute mới rẻ |
-| Quên date suffix Haiku 4.5 | `model not found` | Haiku 4.5 dùng ID có date suffix `claude-haiku-4-5-20251001`; Haiku 5.5 dùng `claude-haiku-5-5` |
-| Đổi model liên tục | Phá cache, bill cao hơn (mục 5) | Gom phase, chuyển ít lần |
-| Prompt ép-tool cũ trên Opus 5.5 | Forced tool use lỗi (mục 6.2) | Viết lại thành đề xuất + hỏi |
-| Conversation Opus dài không compact | Thinking blocks nặng history | Compact giữa plan/execute |
-| Gọi Opus 4/4.1 trong CI cũ | Đã bị xóa → CI đỏ | Migrate ID + pin version (mục 8) |
-| Nhìn giá input/output mà quên cache | Shock bill (cache reads mới là đa số) | `/cost` mỗi session, tối ưu cache (mục 5.3) |
+```text
+availableModels: ["sonnet", "haiku"]   # allowlist model user được chọn
+enforceAvailableModels: true            # extend allowlist tới cả Default option
+deniedModels: ["claude-opus-5-5"]       # chặn 1 version cụ thể (≥2.1.283)
+model: claude-sonnet-5-5                # model khởi đầu (vẫn là initial, không phải enforcement)
+```
 
-### 9.3. Bài tập thực hành
+---
+
+## 9. Bẫy thường gặp + bài tập
+
+| Pitfall | Fix |
+|---|---|
+| Default Fable cho mọi thứ | Fable chỉ đích danh khi Opus stuck — bill nổ |
+| Ở lì Opus cả session dài | Chuyển `/model sonnet/haiku` theo phase |
+| Haiku cho task kiến trúc | Thiếu depth, refactor 3 lần — plan Opus, execute Sonnet |
+| Đổi model liên tục | Phá cache, bill cao hơn (mục 5) — gom phase |
+| Prompt ép-tool cũ trên Opus 5.5 | Forced tool use lỗi (mục 6) — viết lại thành đề xuất + hỏi |
+| Gọi Opus 4/4.1 trong CI cũ | Đã bị xóa → CI đỏ — migrate ID + pin version (mục 8.1) |
+| Nhìn giá input/output mà quên cache | Cache reads mới là đa số bill — `/cost` mỗi session |
 
 **Bài 1 (15 phút):** Cùng 1 task nhỏ, chạy 3 models (haiku → sonnet → opus). Ghi `/cost` + thời gian + quality. Kết luận model nào là "đủ"?
 
-**Bài 2 (15 phút):** Dùng `opusplan` cho 1 task 3+ files. Ghi tokens plan (Opus) vs execute (Sonnet). So với full-Opus — tiết kiệm bao nhiêu %?
+**Bài 2 (30 phút):** Dùng `opusplan` cho 1 task 3+ files — ghi tokens plan (Opus) vs execute (Sonnet), so với full-Opus. Rồi test 1 breaking change (mục 6): prompt ép-tool cũ → ghi lỗi → sửa → chạy lại.
 
-**Bài 3 (15 phút):** Test 1 breaking change (mục 6): prompt ép-tool cũ trên Opus 5.5 → ghi lỗi → sửa theo fix → chạy lại so sánh.
+**Bài 3 (15 phút):** Audit repo tìm model IDs cũ (lệnh `rg` mục 8.1). Lập bảng file → ID mới. Prompt ép-tool nào cần test lại?
 
-**Bài 4 (15 phút):** Audit repo tìm model IDs cũ (lệnh `rg` mục 8). Lập bảng file → ID 5.x mới. Prompt ép-tool nào cần test lại?
+**Flow chọn model 30 giây:** khó + mơ hồ + hậu quả lớn? → Opus (medium) → stuck 2 lần + hardest? → Fable. Không hiểm: việc lặp rõ ràng → explore/việc vặt = Haiku (low), còn lại = Sonnet; task >3 files → opusplan. Sau mỗi run `/cost` verify.
 
-### 9.4. FAQ models
-
-| Câu hỏi | Trả lời |
-|---|---|
-| Model nào làm default? | Opus 5.5 là mặc định của tài khoản (Pro/Max/Team/Enterprise/API/Bedrock/GCP), trừ Microsoft Foundry = Sonnet 4.5. Fable không bao giờ default |
-| `opusplan` là gì? | Alias: plan Opus + execute Sonnet — default tốt cho task multi-file |
-| Khi nào dùng Fable? | Opus stuck 2 lần + task hardest/long-horizon + hậu quả sai cao |
-| Fast mode có phải model khác? | Không — vẫn Opus 5.5, giá $8/$40, chỉ ưu tiên latency |
-| Fable tính tiền thế nào? | Không nằm trong hạn mức thường: trên Pro bill bằng usage credits, trên Max tốn ~50% hạn tuần mỗi lượt |
-| Sao bill cao hơn tính từ bảng giá? | Cache reads (Opus 5.5 $0.20; Sonnet 5.5 $0.10; Haiku 5.5 $0.01) mới là đa số cost agentic — xem `/cost` |
-| Opus 4 còn dùng được? | Opus 4/4.1 bị xóa; 4.5–4.8 legacy — migrate sang 5.x |
-
----
-
-### 9.5. Mermaid: chọn model trong 30 giây
-
-```mermaid
-flowchart TD
-    A[Task mới?] --> B{Khó + mơ hồ + hậu quả lớn?}
-    B -->|Có: kiến trúc, bug hiểm, tiền/auth| C[Opus medium]
-    B -->|Không rõ| D{Việc lặp, rõ ràng, số lượng lớn?}
-    D -->|Có: CRUD, test, docs, explore| E{Explore / việc vặt?}
-    E -->|Có| F[Haiku low - rẻ nhất]
-    E -->|Không| G[Sonnet - default hàng ngày]
-    C --> H{Opus stuck 2 lần?}
-    H -->|Có + hardest/long-horizon| I[Fable đích danh]
-    H -->|Không| J[Giữ Opus, compact giữa phase]
-    G --> K{Task >3 files?}
-    K -->|Có| L[opusplan: plan Opus + execute Sonnet]
-    K -->|Không| M[Full Sonnet]
-    F --> N[Verify: /cost + quality đủ?]
-    G --> N
-    C --> N
-```
-
-Giải thích từng bước (đọc 30s từ trên xuống):
-
-1. **A→B:** hỏi hậu quả sai có lớn không (tiền/auth/migrate/thiết kế). Có → Opus ngay.
-2. **B→D:** không hiểm → hỏi có rõ ràng + lặp lại không. Có → nhóm rẻ (Haiku/Sonnet).
-3. **D→E:** explore/classify/format/rename → Haiku `low`; implement/test/CRUD → Sonnet.
-4. **C→H:** Opus thử 2 lần vẫn stuck + đủ 3 điều kiện (nhiều giờ, coherence dài, hậu quả cao) → mới gọi Fable.
-5. **G→K:** task >3 files → `opusplan` (plan 10% Opus + execute 90% Sonnet ≈ rẻ hơn 40%).
-6. **→N:** sau mỗi run `/cost`: Haiku phải rẻ hơn Opus nhiều lần (Haiku 5.5 ≈ 1/40 input khi prompt ≤100K) mà quality vẫn đủ; không đủ thì leo thang (sonnet→opus→fable).
-
-### 9.6. Bảng so sánh Opus/Sonnet/Haiku (+Fable)
-
-| Model (giá input/output, context) | Mạnh ở gì | Tốn token/cost thế nào | Hiểu nôm na | Ví dụ task nên dùng |
-|---|---|---|---|---|
-| **Fable 5.1** ($10/$50, 1M, high) | Hardest, long-horizon nhiều giờ, coherence dài | Đắt nhất, gấp 2.5x Opus; chỉ đích danh | Giáo sư giải đề khó nhất, không mời chấm bài vặt | Migration prod + research codebase lớn sau khi Opus stuck 2 lần |
-| **Opus 5.5** ($4/$20, 1M, medium) | Suy luận sâu mặc định, thiết kế/debug khó | Default tài khoản; fast mode $8/$40 gấp đôi lấy latency | Kiến trúc sư vẽ bản vẽ | Thiết kế refund idempotent, debug race 30p+, review security |
-| **Sonnet 5.5** ($2/$10, 1M) | Daily coding nhanh + đủ tốt | Rẻ bằng nửa Opus, cache read $0.10, vòng lặp ngắn | Thợ chính làm theo bản vẽ | Implement theo plan đã duyệt, viết test, CRUD, docs |
-| **Haiku 5.5** ($0.10/$0.50, 1M, light) | Việc nhỏ + fan-out rộng, cực rẻ, cache $0.01 | Rẻ nhất dòng 5.x; thay Haiku 4.5 làm mặc định Haiku trên API | Phụ việc chạy vặt nhanh, túi tiền 1M | Format/rename, grep/explore, 5 Haiku song song mỗi đứa 5 files |
-| **Haiku 4.5** ($1/$5, 200K, light) | Việc nhỏ + fan-out; mặc định Haiku trên Bedrock/GCP/AWS | Đắt hơn Haiku 5.5 nhưng context chỉ 200K | Phụ việc chạy vặt nhanh | Format/rename, grep/explore trên provider không có Haiku 5.5 |
-
-**Kỳ vọng thấy gì (sau khi đổi model):**
-
-```bash
-/model sonnet
-/cost
-```
-
-> Kỳ vọng thấy gì: `/model` hiện `sonnet (claude-sonnet-5-5)` + context giữ nguyên; `/cost` session explore bằng Haiku 5.5 chỉ ~1/40 input (prompt ≤100K) so với cùng task bằng Opus. Nếu báo `model not found` là sai ID: Haiku 4.5 cần date suffix (`claude-haiku-4-5-20251001`), Haiku 5.5 dùng `claude-haiku-5-5`.
-
-### 9.7. Hiểu nhầm thường gặp
-
-| Hiểu nhầm | Sự thật | Ví dụ sửa |
-|---|---|---|
-| Model mạnh nhất luôn đúng | Fable/Opus sửa typo cũng như Haiku mà đắt hàng chục lần | Typo/format → Haiku `low` |
-| Haiku làm được kiến trúc | Thiếu depth → refactor 3 lần, tổng đắt hơn 1 lần Opus | Plan Opus, execute Sonnet (opusplan) |
-| Fast mode là model khác | Vẫn Opus 5.5, chỉ ưu tiên latency, giá $8/$40 | Overnight batch không bật fast (phí) |
-| Nhìn giá input/output là đủ | Cache reads mới là đa số bill agentic (Opus 5.5 $0.20; Sonnet 5.5 $0.10; Haiku 5.5 $0.01) | Đừng `/model` qua lại phá cache; gom phase |
-| Prompt `đừng suy nghĩ` tắt thinking Opus 5.5 | Opus 5.5 luôn thinking, tokens vẫn tính | Route việc nhỏ sang Haiku/Sonnet `low` |
-
-## 10. Link chéo
-
-- **[Bài 04 — Slash commands toàn tập](./04-slash-commands-toan-tap.md)**: `/model`, `/cost`, `/effort`, `/fast` chi tiết.
-- **[Bài 06 — Subagents & agent teams](./06-subagents-agent-teams-parallel.md)**: `model:` frontmatter, fan-out Haiku, permissionMode per-agent.
-- **[Bài 10 — Permissions & availability](./10-permissions-modes-availability.md)**: fast mode theo provider (Bedrock/AWS/GCP
-  không có), version floor khi "lệnh không tồn tại".
-- **[Bài 12 — Agent SDK, CI/CD](./12-agent-sdk-ci-cd-automation.md)**: `ANTHROPIC_MODEL` env, pin version tránh bị xóa bất ngờ.
-- **[02-tips/08](../02-tips-thuc-chien/08-tiet-kiem-cost-token.md)** + **[commands/model](./commands/model-mode/model/README.md)**, **[commands/effort](./commands/model-mode/effort/README.md)**, **[commands/fast](./commands/model-mode/fast/README.md)**: case study cost + reference đầy đủ.
+**Link chéo:** [04 — Slash commands](./04-slash-commands-toan-tap.md) (`/model /effort /fast`) · [06 — Subagents](./06-subagents-agent-teams-parallel.md) (frontmatter `model:`, fan-out Haiku) · [10 — Permissions](./10-permissions-modes-availability.md) (fast mode theo provider) · [12 — SDK/CI](./12-agent-sdk-ci-cd-automation.md) (`ANTHROPIC_MODEL`, pin version) · [02-tips/08 — Tiết kiệm cost](../02-tips-thuc-chien/08-tiet-kiem-cost-token.md) · Reference: [commands/model](./commands/model-mode/model/README.md), [commands/effort](./commands/model-mode/effort/README.md), [commands/fast](./commands/model-mode/fast/README.md).

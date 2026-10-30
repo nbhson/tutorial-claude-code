@@ -61,7 +61,7 @@ Kiểm tra máy bạn: `claude doctor` hoặc trong session gõ `/doctor` / `/st
 > https://support.claude.com/en/articles/12138966-release-notes . Version-sensitive 2026 facts already
 > covered in this repo: MCP protocol `2026-07-28` default negotiation (≥2.1.292), 4,096-char tool
 > descriptions via tool search (≥2.1.295), auto mode as default permission mode for new sessions on
-> Pro/Max/Team since w34/2026, and computer use / Remote Control (March 2026).
+> Pro/Max/Team since 14/08/2026 (w32/2026), and computer use / Remote Control (March 2026).
 > New in this update: advanced MCP content (now in Vietnamese) in
 > [`tool-use/mcp-advanced/README.md`](./tool-use/mcp-advanced/README.md), and a new lesson
 > [`01-huong-dan-su-dung/17-output-styles-doi-vai-tro-va-giong-tra-loi.md`](./01-huong-dan-su-dung/17-output-styles-doi-vai-tro-va-giong-tra-loi.md)

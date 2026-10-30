@@ -3,108 +3,56 @@
 > **Bài này cho ai:** dev muốn chạy song song research/review/test với Claude Code, hoặc tech lead chuẩn hóa cách fan-out subagent cho team.
 > **Cần gì trước:** đã cài và đăng nhập ([bài 01](../01-huong-dan-su-dung/01-cai-dat-va-xac-thuc.md)); nên đọc [Tips 01 — Vệ sinh context](./01-context-hygiene.md) trước vì mục 4 nói vì sao phải tách context writer/reviewer.
 > **Đọc xong bạn làm được:**
-> - Chọn đúng việc để fan-out: 1 subagent = 1 task hẹp → đúng thì x3 tốc độ research/review/test, bừa thì x3 tiền + loạn merge.
-> - Copy-paste 4 recipes explorer/planner/reviewer/tester kèm tools + hook giữ đúng phạm vi.
+> - Chọn đúng việc để fan-out: 1 subagent = 1 task hẹp → đúng thì x3 tốc độ, bừa thì x3 tiền + loạn merge.
 > - Chạy vòng writer → reviewer fresh, và scale bằng worktree / `/batch` khi 2+ writers cùng sửa 1 repo.
-> - Theo dõi task nền bằng `/agents`, `/tasks` và kill kịp bằng `Ctrl+X Ctrl+K` ×2.
 > **Thời gian:** ~45 phút
 
 ## Thuật ngữ dùng trong bài này
 
-Đọc bảng này trước khi vào mục 1 — mọi thuật ngữ Anh trong bài đều được giải thích ở đây.
-
 | Thuật ngữ | Hiểu nôm na là gì | Ví dụ thấy ngay |
 |---|---|---|
 | Subagent | Agent con do Claude Code sinh ra: có context + tools riêng, làm xong chỉ trả summary về main | Explorer đọc `src/payments/` trả 10 bullet, main nhận ~1.5K tokens |
-| Parallel (chạy song song) | Nhiều subagent làm việc độc lập cùng lúc thay vì làm tuần tự | 3 explorers đọc 3 modules cùng lúc, wall-clock giảm 2–3× |
-| Fan-out | Chia 1 việc lớn thành 3–5 việc hẹp giao cùng lúc cho các subagent | 1 message spawn 3 explorer cho api/service/webhook |
-| Chain (nối tiếp) | Việc sau phải đợi kết quả việc trước nên làm tuần tự | explorer → planner → implementer |
-| Fork mode | Chế độ subagent hưởng nguyên context của main thay vì bắt đầu trắng — bật mặc định từ ≥2.1.232 | Tắt bằng `CLAUDE_CODE_FORK_SUBAGENT=0` khi muốn reviewer thật sự "mới" |
-| Output contract | Dặn trước subagent được trả cái gì, để main không nhận rác | `"Trả quyết định + evidence, tối đa 15 bullet, không dump log"` |
-| Reviewer fresh | Reviewer sinh mới, chưa thấy reasoning của writer nên soi khách quan hơn | `git diff` → spawn reviewer → nhận `[SEVERITY] file:line — fix` |
-| Worktree | Bản sao repo ở thư mục khác để 2 luồng việc sửa song song không đè nhau | `git worktree add ../myrepo-worktrees/stream-refund -b feat/refund` |
-| `/batch` | Lệnh chia 1 việc lặp thành nhiều worktree-subagent, mỗi con 1 PR nhỏ | `/batch Thêm missing tests cho src/utils/*.ts` |
-| Agent teams | Chế độ 1 lead điều phối các thành viên agent song song (experimental) | Lead + 2 teammates security/perf/tests |
-| Concurrent | Số subagent đang chạy song song cùng lúc | Trần 3–5 concurrent, quá thì chuyển worktree/`/batch` |
-| Kill switch | Phím tắt tắt ngay toàn bộ subagent đang chạy nền | `Ctrl+X Ctrl+K` ×2 trong 3s |
-
-## Mục lục
-
-1. [Vì sao chạy song song? (và vì sao loạn?)](#1-vì-sao-chạy-song-song-và-vì-sao-loạn)
-2. [Nguyên tắc fan-out](#2-nguyên-tắc-fan-out)
-3. [Bốn recipes chuẩn (copy-paste)](#3-bốn-recipes-chuẩn-copy-paste)
-4. [Writer/Reviewer tách context](#4-writerreviewer-tách-context)
-5. [Ví dụ: fan-out 3 explorers song song](#5-ví-dụ-fan-out-3-explorers-song-song)
-6. [Walkthrough: feature lớn với 5 agents](#6-walkthrough-feature-lớn-với-5-agents)
-7. [Worktrees + batch cho scale](#7-worktrees--batch-cho-scale)
-8. [Bảng: song song vs nối tiếp vs một mình](#8-bảng-song-song-vs-nối-tiếp-vs-một-mình)
-9. [Vận hành: theo dõi + kill switch + output contract](#9-vận-hành-theo-dõi--kill-switch--output-contract)
-10. [Pitfalls + fix](#10-pitfalls--fix)
-11. [Thuật ngữ chi tiết: nôm na + analogie + ví dụ + verify](#11-thuật-ngữ-chi-tiết-nôm-na--analogie--ví-dụ--verify)
-12. [Mermaid: fan-out đúng vs chain](#12-mermaid-fan-out-đúng-vs-chain)
-13. [Bảng so sánh có cột Hiểu nôm na + Ví dụ](#13-bảng-so-sánh-có-cột-hiểu-nôm-na--ví-dụ)
-14. [Before/After](#14-beforeafter)
-15. [Hiểu nhầm thường gặp](#15-hiểu-nhầm-thường-gặp)
-16. [Bài tập](#16-bài-tập)
-17. [Tham khảo chéo](#17-tham-khảo-chéo)
+| Fan-out | Chia 1 việc lớn thành 3–5 việc hẹp giao cùng lúc | 1 message spawn 3 explorer cho api/service/webhook |
+| Chain (nối tiếp) | Việc sau phải đợi kết quả việc trước | explorer → planner → implementer |
+| Fork | Subagent hưởng nguyên conversation của main thay vì bắt đầu trắng — bật mặc định từ w33/2026 | Tắt bằng `CLAUDE_CODE_FORK_SUBAGENT=0` khi muốn reviewer "mới" |
+| Background subagent | Subagent chạy nền, main làm tiếp việc khác — mặc định từ w27/2026 | Spawn explorer xong main làm tiếp, kết quả về sau |
+| Worktree | Bản sao repo ở thư mục khác để 2 luồng việc không đè nhau | `git worktree add ../wt/stream-refund -b feat/refund` |
+| `/batch` | Chia 1 việc lặp thành nhiều worktree-subagent, mỗi con 1 PR nhỏ | `/batch Thêm missing tests cho src/utils/*.ts` |
 
 ---
 
 ## 1. Vì sao chạy song song? (và vì sao loạn?)
 
-Mục này trả lời câu: chạy song song thật sự cho bạn cái gì, và cái giá nào đang chờ sẵn nếu fan-out bừa?
+### 1.1. Lợi ích
 
-### 1.1. Lợi ích: fresh context + song song thật
-
-- **Fresh context:** mỗi subagent có context riêng → không mang rác của main, không rationalize code người khác. Lưu ý: từ Claude Code **≥2.1.232** fork mode bật mặc định (subagent hưởng nguyên context của main) — muốn trắng thật thì đặt `CLAUDE_CODE_FORK_SUBAGENT=0`.
+- **Context sạch:** mỗi subagent có context riêng → raw reads/log không nhiễm main. Từ w27/2026 subagent chạy **background mặc định** — main spawn xong làm tiếp việc khác.
 - **Song song thật:** 3 explorers đọc 3 modules cùng lúc → wall-clock giảm 2–3x so với main đọc tuần tự.
-- **Chuyên môn hóa:** explorer chỉ đọc, tester chỉ chạy test, reviewer chỉ soi — prompt hẹp → ít sai.
+- **Chuyên môn hóa:** explorer chỉ đọc, tester chỉ chạy test, reviewer chỉ soi — prompt hẹp → ít sai. Chi tiết giá spawn lồng ở mục 9.
 
-### 1.2. Giá phải trả: overhead + merge + token nhân
+### 1.2. Giá phải trả
 
 | Giá | Con số | Ý nghĩa |
 |---|---|---|
-| Overhead mỗi con | ~20K tokens | Spawn 5 con bừa = 100K bay hơi |
+| Overhead mỗi con | ~20K tokens | Spawn 5 con bừa = 100K bay hơi (ước tính cộng đồng); token cộng dồn 1→3→9 khi spawn lồng |
 | Merge conflicts | Tăng theo số writer cùng repo | 2+ writers cùng branch = đau đầu |
-| Token cộng dồn | Nhân theo cấp (subagent spawn subagent) | 1 → 3 → 9 nếu không tiết chế |
-| Giám sát | `/agents`, `/tasks` | Quên là có con chạy nền đốt tiền |
-
-Con số ~20K tokens/con là **ước tính cộng đồng**, không phải số chính thức của Anthropic.
 
 > Kết luận: parallel là **đòn bẩy có giá**. Dùng cho việc độc lập + hẹp + đáng tiền. Không dùng "cho vui".
-
-**Kiểm tra nhanh:**
-
-- Chạy 1 subagent thật (mục 5) rồi mở `/usage` → thấy token tăng thêm khoảng mức overhead, không phải chỉ vài trăm tokens.
-- Spawn 2 explorer cùng scope → `/tasks` hiện 2 job nền; kill 1 cái bằng `Ctrl+X Ctrl+K` ×2 → job kia vẫn chạy.
 
 ---
 
 ## 2. Nguyên tắc fan-out
 
-Mục này trả lời câu: trước khi spawn subagent, bạn phải chốt những nguyên tắc nào để không tốn tiền cho việc vô ích?
-
 1. **1 subagent = 1 task hẹp + output format.** Không có "QA agent chung chung", "helper agent đa năng".
-2. **Trần 3–5 concurrent.** Hơn → cân nhắc worktrees + sessions riêng hoặc `/batch` (xem mục 7).
-3. **Độc lập thật mới fan-out.** 3 explorers 3 modules khác nhau → fan-out. Explorer → planner → implementer (nối tiếp) → **chain**, đừng parallel bừa.
+2. **Trần khuyên dùng 3–5 concurrent.** Harness cho phép mặc định 20 (v2.1.217+, đổi bằng `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`) — nhưng quá 5 khó theo dõi; hơn thì worktrees + `/batch` (mục 7).
+3. **Độc lập thật mới fan-out.** 3 explorers 3 modules khác nhau → fan-out. Explorer → planner → implementer → **chain**, đừng parallel bừa.
 4. **Read-only trước, write sau.** Explorers/reviewers read-only. Chỉ 1 writer tại 1 thời điểm trên cùng branch (trừ khi worktrees).
 5. **Luôn có output contract:** "trả quyết định + evidence, không dump 200 dòng log".
-
-### Checklist trước khi fan-out
-
-- [ ] Các task có độc lập thật không (không chờ nhau)?
-- [ ] Mỗi task viết được trong 2 dòng + output format?
-- [ ] Tổng concurrent ≤5?
-- [ ] Writers có dẫm chân nhau không (cùng files)?
-- [ ] Đã biết kill switch (`Ctrl+X Ctrl+K` ×2)?
 
 ---
 
 ## 3. Bốn recipes chuẩn (copy-paste)
 
-Mục này trả lời câu: 4 vai trò subagent hay dùng nhất cần tools nào, gõ prompt gì, và hook nào giữ chúng trong phạm vi?
-
-Mỗi recipe: vai trò + tools + prompt mẫu + hook đi kèm (chi tiết hooks ở [Tips 06](./06-hooks-recipes.md)).
+Hooks đi kèm chi tiết ở [Tips 06](./06-hooks-recipes.md).
 
 ### Recipe 1 — Explorer (Read/Grep/Glob, read-only)
 
@@ -114,12 +62,10 @@ Trả về:
 - Files liên quan (đường dẫn + 1 dòng vai trò, tối đa 8 files)
 - Flow hiện tại (5-8 bullet)
 - 2 phương án thay đổi (pros/cons 3 bullet mỗi cái)
-- "Chỉ liệt kê files sẽ sửa/đọc nếu làm change tiếp theo"
 Không dump log dài, không đọc src/legacy/.
 ```
 
-- Tools: `Read`, `Grep`, `Glob` (cấm `Edit`/`Write`).
-- Hook bound: explorer + hook giới hạn scope (block đọc ngoài `src/payments/**`).
+- Tools: `Read`, `Grep`, `Glob` (cấm `Edit`/`Write`). Hook bound: giới hạn scope đọc ngoài `src/payments/**`.
 
 ### Recipe 2 — Planner (Write scope plans/)
 
@@ -129,21 +75,18 @@ Sinh plan markdown gồm: files sửa, steps, risks, verify từng phase, gate.
 Lưu vào plans/refund-plan.md. Không đụng source, chỉ ghi file plan.
 ```
 
-- Tools: `Read` + `Write` (chỉ `plans/`).
-- Hook bound: block write ngoài `plans/`.
+- Tools: `Read` + `Write` (chỉ `plans/`). Hook bound: block write ngoài `plans/`.
 
 ### Recipe 3 — Reviewer (Bash git-read-only + Read)
 
 ```text
 Reviewer: review `git diff main...HEAD -- src/payments/`.
-Rate: correctness, coverage, style, security (mỗi mảng 2-3 bullet).
 Finding = bug/correctness/security/test-gap thực sự, bỏ qua style preferences.
 Trả về: [SEVERITY: HIGH/MED/LOW] file:line — mô tả — gợi ý fix.
 Cuối: verdict PASS / NEEDS-FIX.
 ```
 
-- Tools: `Bash` (chỉ `git diff/log/show`, cấm `push`), `Read`.
-- Hook bound: block `git push` + force-push (branch-protect).
+- Tools: `Bash` (chỉ `git diff/log/show`, cấm `push`), `Read`. Hook bound: block `git push` + force-push (branch-protect).
 
 ### Recipe 4 — Tester (Bash test-runner + Read)
 
@@ -154,28 +97,11 @@ Nếu pass/fail khác nhau giữa 3 lần chạy → ghi FLAKY và dừng đoán
 Không sửa code, chỉ chạy và báo.
 ```
 
-- Tools: `Bash` (chỉ lệnh test), `Read` (đọc log).
-- Hook bound: giới hạn test command (chỉ `pnpm --filter cart test*`, block `rm -rf`, block deploy).
-
-### Bảng tóm tắt 4 recipes
-
-| Recipe | Tools | Input | Output | Hook đi kèm |
-|---|---|---|---|---|
-| Explorer | Read/Grep/Glob | Phạm vi hẹp | Files + flow + 2 options | Giới hạn scope đọc |
-| Planner | Read + Write plans/ | Summaries explorers | plan.md có gate | Block write ngoài plans/ |
-| Reviewer | Bash git-read + Read | Diff + plan | Findings + verdict | Branch-protect |
-| Tester | Bash test + Read | Scope test | PASS/FAIL + log | Giới hạn test command |
-
-**Kiểm tra nhanh:**
-
-- Chạy Recipe 1 trên 1 module thật → summary có đủ 3 mục "files + flow + 2 options", không dump log.
-- Gõ sai phạm vi (vd `src/` thay `src/payments/`) → hook block ngay là đúng.
+- Tools: `Bash` (chỉ lệnh test), `Read`. Hook bound: giới hạn test command, block `rm -rf`, block deploy.
 
 ---
 
 ## 4. Writer/Reviewer tách context
-
-Mục này trả lời câu: làm sao để người viết và người chấm tách khỏi nhau, bắt được lỗi thật thay vì tự bao biện?
 
 Pattern đắt giá nhất trong bài này. Giữ cho mọi PR nontrivial.
 
@@ -185,13 +111,9 @@ spawn reviewer FRESH (chưa thấy reasoning của writer) →
 reviewer trả gaps → writer fix → re-review nếu còn HIGH
 ```
 
-> **Lưu ý version:** từ Claude Code ≥2.1.232 fork mode bật mặc định — subagent hưởng nguyên context của main. Muốn reviewer thật sự fresh thì đặt `CLAUDE_CODE_FORK_SUBAGENT=0` trước khi spawn, nếu không reviewer thấy luôn reasoning của writer.
+> **Lưu ý fork mode:** từ w33/2026 fork mode bật **mặc định** — subagent hưởng nguyên conversation của main. Muốn reviewer thật sự fresh: đặt `CLAUDE_CODE_FORK_SUBAGENT=0` trong `env` của `settings.json`, hoặc dùng `/subtask <task>` khi cần fork có chủ đích (fork thấy luôn reasoning của writer). `/fork` (w29/2026) thì copy cả session thành 1 background session riêng.
 
-### Vì sao tách?
-
-- Writer nhớ "lúc đó nghĩ gì" → tự bao biện ("chỗ này chắc đúng vì...").
-- Reviewer fresh chỉ thấy code + plan → soi như người ngoài, bắt nhiều hơn 30–50% (kinh nghiệm team).
-- Chi tiết calibration ở [Tips 04](./04-verification-done-that.md).
+Vì sao tách? Writer nhớ "lúc đó nghĩ gì" → tự bao biện; reviewer fresh chỉ thấy code + plan → bắt nhiều hơn 30–50% (kinh nghiệm team). Chi tiết calibration ở [Tips 04](./04-verification-done-that.md).
 
 ### Copy-paste full vòng
 
@@ -208,357 +130,120 @@ Trả về [SEVERITY] file:line — mô tả — fix. Verdict PASS/NEEDS-FIX."
 # Bước 4: re-review nếu còn HIGH. Không HIGH mới mở PR (/ship).
 ```
 
-**Kiểm tra nhanh:**
-
-- Chạy vòng trên 1 diff nhỏ → reviewer trả `[SEVERITY] file:line` + verdict, không có dòng nào kiểu "theo tôi thì ổn".
-- Nếu reviewer nói đúng reasoning của writer ("vì bạn bảo...") → reviewer đang hưởng context của writer, đặt `CLAUDE_CODE_FORK_SUBAGENT=0` và spawn lại.
+- Nếu reviewer nhắc đúng reasoning của writer ("vì bạn bảo...") → reviewer đang hưởng context của writer: đặt `CLAUDE_CODE_FORK_SUBAGENT=0` rồi spawn lại.
 
 ---
 
 ## 5. Ví dụ: fan-out 3 explorers song song
 
-Mục này trả lời câu: fan-out 3 explorer cho 1 bug nhìn thật sự trông như thế nào, và main nhận được gì?
-
 **Tình huống:** bug refund chưa rõ nằm ở API, service, hay webhook. Thay vì main đọc tuần tự 30 files, fan-out 3 explorers.
 
 ```text
 Main prompt (1 message, 3 agents song song):
-
-1. Explorer A: chỉ đọc src/payments/api/*.ts. Trả về endpoints refund + validation (5 bullet + file:line).
-2. Explorer B: chỉ đọc src/payments/service/*.ts. Trả về flow trừ tiền/hoàn tiền + chỗ idempotency (5 bullet + file:line).
-3. Explorer C: chỉ đọc src/payments/webhook/*.ts + docs/webhooks.md. Trả về retry/timeout behavior (5 bullet).
-
-Mỗi explorer: không sửa code, không dump log, chỉ trả summary ≤15 bullet.
+1. Explorer A: chỉ đọc src/payments/api/*.ts. Trả endpoints refund + validation (5 bullet + file:line).
+2. Explorer B: chỉ đọc src/payments/service/*.ts. Trả flow trừ/hoàn tiền + chỗ idempotency (5 bullet + file:line).
+3. Explorer C: chỉ đọc src/payments/webhook/*.ts + docs/webhooks.md. Trả retry/timeout behavior (5 bullet).
+Mỗi explorer: không sửa code, không dump log, summary ≤15 bullet.
 Main chỉ tổng hợp 3 summaries thành 1 table root-cause nghi ngờ.
 ```
 
-Kết quả: 3 summaries ~1500 tokens về main, thay vì 30K raw reads. Main quyết định "nghi service nhất" → giao planner plan fix service (chain, không parallel tiếp).
+Kết quả: 3 summaries ~1500 tokens về main, thay vì 30K raw reads. Main "nghi service nhất" → giao planner plan fix service (chain, không parallel tiếp).
 
 ---
 
 ## 6. Walkthrough: feature lớn với 5 agents
 
-Mục này trả lời câu: 1 feature nhiều mảnh phải chia mấy wave, wave nào song song, wave nào nối tiếp?
+**Bối cảnh:** thêm refund (API + service + webhook + docs + tests) qua 3 waves:
 
-**Bối cảnh:** thêm refund (API + service + webhook + docs + tests). Dùng 5 agents qua 3 waves.
+- **Wave 1 — Explore song song (~10 phút):** 3 explorers → api/service/webhook (như mục 5). Main tổng hợp → scope 3 phases.
+- **Wave 2 — Plan (nối tiếp, ~15 phút):** planner đọc 3 summaries + architecture.md → `plans/refund-plan.md` (3 phases + gate). Human duyệt plan.
+- **Wave 3 — Implement + verify (~45–60 phút):** main (writer) làm từng phase → tester chạy focused test → xanh; xong hết → reviewer fresh soi diff → fix HIGH → `/verify` chạy thật.
 
-**Wave 1 — Explore song song (3 explorers, ~10 phút — ước lượng):**
-
-```text
-Explorer A → api, Explorer B → service, Explorer C → webhook (như mục 5).
-Main tổng hợp → quyết định scope 3 phases.
-```
-
-**Wave 2 — Plan (1 planner, nối tiếp sau Wave 1, ~15 phút — ước lượng):**
-
-```text
-Planner đọc 3 summaries + architecture.md → sinh plans/refund-plan.md (3 phases + gate).
-Human duyệt plan (sửa 2 vòng bằng chữ).
-```
-
-**Wave 3 — Implement + verify (writer main + reviewer/tester, ~45–60 phút — ước lượng):**
-
-```text
-Main (writer) làm Phase 1 → tester chạy focused test → xanh →
-làm Phase 2 → tester chạy → xanh →
-xong hết → reviewer fresh soi diff → fix HIGH → /verify chạy thật.
-```
-
-Tổng concurrent tối đa 3 (Wave 1). Không bao giờ 5 cùng lúc. **Song song ở explore, nối tiếp ở implement.**
-
-**Kiểm tra nhanh:**
-
-- Trong Wave 1, `/tasks` hiện đúng 3 explorer đang chạy; main chỉ nhận 3 summaries chứ không nhận raw files.
-- sang Wave 2 còn 0 explorer nền (đã xong) → planner chạy 1 mình, không còn job nào đợi.
+Tổng concurrent tối đa 3 (Wave 1). **Song song ở explore, nối tiếp ở implement.**
 
 ---
 
 ## 7. Worktrees + batch cho scale
 
-Mục này trả lời câu: khi 2+ luồng việc cùng sửa 1 repo, hoặc khi việc lặp hàng chục file, bạn scale bằng gì?
-
 ### 7.1. 2+ streams sửa cùng repo → mỗi stream 1 worktree
-
-2 writers cùng branch = conflict + context lẫn. Tách worktree là tách cả đĩa + context.
 
 ```bash
 # Mỗi stream 1 worktree (copy-paste, đổi tên)
 git worktree add ../myrepo-worktrees/stream-refund -b feat/refund
 git worktree add ../myrepo-worktrees/stream-cart -b feat/cart-promo
-
-# Mỗi stream 1 session Claude riêng, chạy song song, không dẫm nhau
-# Xong thì remove:
-git worktree remove ../myrepo-worktrees/stream-cart
+git worktree remove ../myrepo-worktrees/stream-cart  # mỗi stream 1 session riêng; xong thì remove
 ```
 
 > Xem [../01-huong-dan-su-dung/11-git-worktrees-checkpoints.md](../01-huong-dan-su-dung/11-git-worktrees-checkpoints.md) và [Tips 09](./09-teamwork-chuan-hoa.md).
 
 ### 7.2. 1 change lặp pattern → `/batch`
 
-Migrate 20 files, thêm test toàn repo, đổi import 50 chỗ → 1 agent làm tuần tự thì lâu, 20 writers cùng repo thì loạn. `/batch` = 5–30 worktree-subagents, mỗi đứa 1 PR nhỏ.
+Migrate 20 files, thêm test toàn repo → `/batch` = 5–30 worktree-subagents, mỗi đứa 1 PR nhỏ.
 
 ```bash
 /batch Migrate 20 files trong src/legacy/ sang src/new/: mỗi file 1 PR nhỏ, chạy focused test file đó, dán log. Tối đa 10 concurrent.
-/batch Thêm missing tests cho src/utils/*.ts: mỗi file 1 subagent, chỉ thêm test, không sửa source.
 ```
 
 > Xem [../01-huong-dan-su-dung/commands/code-repo/batch/README.md](../01-huong-dan-su-dung/commands/code-repo/batch/README.md).
 
-### 7.3. Agent teams (experimental)
-
-- Lead plan + teammates security/perf/tests song song.
-- Chỉ bật khi task đủ lớn (multi-day, multi-module). Task nhỏ bật teams = overhead nuốt lợi ích.
-- Đánh giá: nếu lead + 2 teammates mà tổng turns < 1.5x single-agent thì đáng.
-
-### Bảng chọn scale
+Lead plan + teammates security/perf/tests song song — chỉ bật khi task đủ lớn (multi-day, multi-module). Nếu lead + 2 teammates mà tổng turns < 1.5x single-agent thì đáng.
 
 | Tình huống | Dùng gì | Vì sao |
 |---|---|---|
 | 3 explorers đọc 3 modules | Fan-out 3 subagents | Nhanh, rẻ, không conflict |
 | 2 features sửa cùng repo | 2 worktrees + 2 sessions | Tách đĩa + context |
 | Migrate 20 files lặp pattern | `/batch` 5–30 worktree-agents | Mỗi đứa 1 PR, dễ review |
-| Task critical multi-module | Agent teams | Lead + teammates verify chéo |
-
-**Kiểm tra nhanh:**
-
-- Tạo 2 worktree ở trên → `git worktree list` hiện 2 đường dẫn, 2 session không thấy thay đổi của nhau.
-- Chạy 1 lệnh `/batch` nhỏ (5 files) → nhận 5 PR riêng lẻ, mỗi PR có test log, review được từng cái.
 
 ---
 
 ## 8. Bảng: song song vs nối tiếp vs một mình
 
-Mục này trả lời câu: khi nào làm một mình, khi nào chain, khi nào fan-out, khi nào phải scale bằng worktree/batch?
-
 | Kiểu | Ví dụ | Khi dùng |
 |---|---|---|
-| Một mình (main) | Fix typo, đổi text | Task 1 file 1 bước |
 | Nối tiếp (chain) | Explorer → planner → implementer | Việc sau cần kết quả việc trước |
 | Song song (fan-out) | 3 explorers 3 modules | Việc độc lập, cùng cấp |
 | Scale (worktrees/batch) | 2 streams / 20 files | Sửa song song cùng repo / lặp pattern |
 
-> Sai lầm #1: chain mà fan-out (planner chưa có summary explorers đã chạy). Sai lầm #2: độc lập mà chain (đọc tuần tự 3 modules mất 3x thời gian).
-
-**Kiểm tra nhanh:**
-
-- Nhìn 1 task đang định giao: tự trả lời được "việc này có chờ việc khác không?" → có thì chain, không thì fan-out.
-- Đọc lại 2 sai lầm phía trên và chỉ ra được 1 lần bạn từng phạm trong 2 tuần qua.
-
 ---
 
-## 9. Vận hành: theo dõi + kill switch + output contract
-
-Mục này trả lời câu: nhìn task nền bằng lệnh nào, kill lúc nào, và chặn subagent trả rác bằng gì?
-
-### Theo dõi
+## 9. Vận hành: theo dõi + kill + output contract
 
 ```bash
-/agents
-# → xem Running (đang chạy gì) + Library (agents khả dụng)
-/tasks
-# → xem tasks nền, tiến độ, con nào kẹt
+/agents   # xem Running (đang chạy gì) + Library (agents khả dụng)
+/tasks    # xem tasks nền, tiến độ, model mỗi con đang chạy (v2.1.242+)
 ```
 
-- Đặt tên task rõ khi spawn ("explorer-payments-api", không "agent-1") để `/tasks` đọc được.
-- Con nào >10 phút không trả → ping 1 lần, không trả nữa → kill + spawn lại với scope hẹp hơn.
-
-### Kill switch
-
-```text
-Ctrl+X Ctrl+K ×2 trong 3s → kill all background subagents.
-```
-
-- Dùng khi: fan-out sai (5 con đọc cùng files), 1 con loop, thấy tiền chạy nhanh ([Tips 08](./08-tiet-kiem-cost-token.md)).
-- Sau kill: `/clear` main nếu context đã nhiễm outputs dở, rồi fan-out lại hẹp hơn.
-
-### Output contract (ép từ prompt, khỏi dọn rác)
-
-```text
-Thêm vào mọi prompt subagent:
-"Trả về: quyết định + evidence (file:line, log 5 dòng). Không dump 200 dòng log.
-Tối đa 15 bullet. Nếu không đủ info thì ghi BLOCKED + thiếu gì, đừng đoán."
-```
-
-### Subagent spawn subagent
-
-- Cho phép nhưng tiết chế: token cộng dồn theo cấp số nhân (1→3→9). Harness cho phép tối đa 5 cấp (tính từ w24/2026), nhưng rule của bài vẫn giữ nguyên.
-- Rule: subagent cấp 2 phải read-only + hẹp hơn cấp 1. Cấm cấp 3 trừ khi agent teams.
-- Nếu thấy `/usage` vọt sau fan-out → kiểm tra có spawn lồng không.
-
-**Kiểm tra nhanh:**
-
-- Spawn 1 subagent với output contract phía trên → log trả về ≤15 bullet, có `file:line`, không có màn hình dump 200 dòng.
-- Gõ `/usage` sau 2 đợt fan-out → không thấy mức tăng kiểu cấp số nhân (nếu có = đang spawn lồng, kiểm tra lại).
+- Đặt tên task rõ khi spawn ("explorer-payments-api", không "agent-1"). Con nào >10 phút không trả → ping 1 lần, không trả nữa → stop (phím `x` trên row trong panel subagent) + spawn lại hẹp hơn.
+- Output contract ép từ prompt: `"Trả về: quyết định + evidence (file:line, log 5 dòng). Không dump 200 dòng log. Tối đa 15 bullet. Không đủ info thì ghi BLOCKED + thiếu gì, đừng đoán."`
+- Spawn lồng: mặc định tối đa **3 tầng dưới main** (đổi bằng `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`); token cộng dồn 1→3→9 nên rule của bài: cấp 2 read-only + hẹp hơn cấp 1, cấm cấp 3.
 
 ---
 
 ## 10. Pitfalls + fix
 
-Mục này trả lời câu: 10 bẫy hay gặp nhất khi chạy song song là gì và cách fix từng cái ra sao?
-
 | Pitfall | Triệu chứng | Fix |
 |---|---|---|
 | "QA agent chung chung" | Trả chung chung, không dùng được | 1 agent 1 task hẹp + output format (mục 3) |
-| Fan-out 8 concurrent | Chậm, tốn, khó theo dõi | Trần 3–5; hơn thì worktrees/batch |
 | Chain mà parallel | Planner plan thiếu vì explorers chưa xong | Chain: đợi summaries rồi mới plan |
 | 2 writers cùng branch | Conflict, ghi đè nhau | Mỗi stream 1 worktree (mục 7) |
-| Reviewer cùng context writer | Toàn PASS mù | Luôn fresh reviewer (mục 4) |
+| Reviewer cùng context writer | Toàn PASS mù | Tắt fork mode cho reviewer (mục 4) |
 | Subagent dump 200 dòng log | Main nhiễm rác | Output contract: quyết định + evidence, ≤15 bullet |
-| Subagent spawn lồng vô hạn | `/usage` vọt, tiền bay | Cấm cấp 3, cấp 2 read-only hẹp |
-| Quên kill switch | 3 con nền chạy 1 tiếng không ai biết | `/agents` + `Ctrl+X Ctrl+K` ×2 |
-| Dùng subagent cho việc skill làm được | Tốn 20K overhead cho việc 500 tokens | Skill trước, subagent sau (xem [Tips 07](./07-thiet-ke-skills.md)) |
-| Không đặt tên task | `/tasks` toàn "agent-1..5" | Tên rõ: explorer-payments-api, tester-cart |
-
-**Kiểm tra nhanh:**
-
-- Đối chiếu 10 dòng trong bảng với session gần đây: dòng nào dính → fix theo cột cuối trước lần fan-out kế tiếp.
-- Gõ `/tasks` → không còn "agent-1..5" mà toàn tên như `explorer-payments-api`.
 
 ---
 
-## 11. Thuật ngữ chi tiết: nôm na + analogie + ví dụ + verify
+## 11. Bài tập
 
-Mục này trả lời câu: 3 thuật ngữ khó nhất của bài (fan-out, output contract, writer/reviewer tách context) hình dung bằng hình ảnh đời thường và tự kiểm chứng thế nào?
-
-Đọc bảng này khi gặp lại 3 thuật ngữ ở các mục sau — mỗi dòng gồm cách hình dung đời thường + ví dụ thật + cách tự kiểm chứng.
-
-| Thuật ngữ | Nôm na 1 câu | Analogie | Ví dụ kỹ thuật thật | Cách verify |
-|---|---|---|---|---|
-| Fan-out | 1 lệnh nở ra 3-5 agents làm song song. | Như 1 quản đốc gọi 3 tổ đi 3 xưởng cùng lúc. | 3 explorers đọc api/service/webhook cùng lúc | 3 summaries ~1500 tokens về main thay vì 30K raw. |
-| Output contract | Giao kèo trả về gọn: quyết định + evidence, không dump rác. | Như dặn shipper chỉ giao hóa đơn + hàng, không chở cả kho. | `Trả ≤15 bullet + file:line, không dump 200 dòng log` | Main không nhiễm log; `/context` tăng <2K. |
-| Writer/Reviewer tách context | Người làm và người chấm khác nhau để khỏi bao biện. | Như cầu thủ và trọng tài phải khác người. | Writer xong → `git diff` → reviewer fresh chưa thấy reasoning | Reviewer bắt thêm HIGH (thiếu idempotency). |
+- **Bài 1 (15 phút):** viết 4 prompts explorer/planner/reviewer/tester cho 1 module thật (copy khung mục 3), chạy 1 explorer, chấm summary có đủ "files + flow + options" không.
+- **Bài 2 (30 phút):** lấy 1 diff nhỏ, chạy vòng mục 4 (reviewer fresh → fix HIGH → re-review). Đếm HIGH/MED/LOW, so với tự review.
+- **Bài 3 (30 phút):** tạo 2 worktrees cho 2 streams nhỏ làm song song 20 phút; thử `/batch` cho 1 việc lặp (thêm test 5 files utils), đo thời gian vs làm tay.
 
 ---
 
-## 12. Mermaid: fan-out đúng vs chain
+## 12. Tham khảo chéo
 
-Mục này trả lời câu: dựa vào sơ đồ, bạn quyết định fan-out hay chain cho 1 task lớn?
+- [../01-huong-dan-su-dung/commands/knowledge-system/agents/README.md](../01-huong-dan-su-dung/commands/knowledge-system/agents/README.md) — xem Running/Library · [../01-huong-dan-su-dung/commands/session-context/tasks/README.md](../01-huong-dan-su-dung/commands/session-context/tasks/README.md) — theo dõi tasks nền
+- [../01-huong-dan-su-dung/commands/code-repo/batch/README.md](../01-huong-dan-su-dung/commands/code-repo/batch/README.md) — lặp pattern quy mô lớn
+- [Tips 01](./01-context-hygiene.md) — vì sao đẩy explore sang subagent · [Tips 04](./04-verification-done-that.md) — reviewer calibration + tester flaky
+- [Tips 06](./06-hooks-recipes.md) — hooks bound từng recipe · [Tips 09](./09-teamwork-chuan-hoa.md) — PR flow team với reviewer fresh
 
-```mermaid
-flowchart TD
-    A[Task lớn?] --> B{Việc độc lập?}
-    B -->|Có: 3 modules khác nhau| C[Fan-out 3 explorers song song]
-    B -->|Không: cần kết quả nhau| D[Chain: explore -> plan -> implement]
-    C --> E[Main tổng hợp 3 summaries]
-    E --> D
-    D --> F{2 writers cùng repo?}
-    F -->|Có| G[Mỗi stream 1 worktree]
-    F -->|Không| H[1 writer + tester + reviewer fresh]
-    G --> I[Merge + remove worktree]
-    H --> I
-```
-
-Giải thích:
-
-1. **A→B:** độc lập thật mới fan-out; nối tiếp thì chain.
-2. **B→C:** 3 explorers hẹp + contract ≤15 bullet.
-3. **C→E:** main chỉ gom summaries, không đọc raw.
-4. **D→F:** tới implement chỉ 1 writer/branch (trừ worktrees).
-5. **F→G:** 2 streams cùng repo → 2 worktrees + 2 sessions.
-
-**Kiểm tra nhanh:**
-
-- Lấy 1 task thật của bạn, vẽ lại đúng 5 nhánh trên giấy → chọn được 1 đường đi cuối cùng mà không cần bàn thêm.
-- Không chỉ ra được vì sao chọn nhánh đó → chưa hiểu rule "độc lập mới fan-out", đọc lại mục 2.
-
----
-
-## 13. Bảng so sánh có cột Hiểu nôm na + Ví dụ
-
-Mục này trả lời câu: 4 kiểu chạy trông ra sao dưới hình ảnh đời thường, để bạn chọn nhanh khi bắt đầu task?
-
-| Kiểu | Hiểu nôm na | Ví dụ |
-|---|---|---|
-| Một mình | Tự làm việc vặt 1 file | Fix typo, đổi text |
-| Fan-out | 3 người đi chợ 3 sạp cùng lúc | 3 explorers api/service/webhook |
-| Chain | Nấu ăn theo thứ tự: sơ chế → nấu → nếm | Explorer xong mới planner, planner xong mới implement |
-| Scale worktree/batch | Mỗi đội 1 bếp riêng, không giành nồi | 2 features 2 worktrees; migrate 20 files bằng `/batch` mỗi file 1 PR |
-
-**Kiểm tra nhanh:**
-
-```bash
-/agents
-/tasks
-# kill khi loạn: Ctrl+X Ctrl+K x2 trong 3s
-```
-
-- `/agents` hiện Running 3 explorers tên rõ (`explorer-payments-api`); sau kill không còn job nền đốt tiền.
-
----
-
-## 14. Before/After
-
-Mục này trả lời câu: cùng 1 yêu cầu, prompt dở và prompt tốt chênh nhau ở đâu, và kết quả kiểm chứng ra sao?
-
-**Before:** `"Nhờ QA agent check giúp"` → Kết quả dở: agent chung chung trả chung chung, dump 200 dòng log, main nhiễm rác.
-
-**After:**
-
-```text
-"Explorer payments: chỉ đọc src/payments/*.ts (không sửa). Trả: 8 files + vai trò 1 dòng, flow 5-8 bullet, 2 phương án pros/cons 3 bullet. ≤15 bullet, không dump log."
-```
-
-**Kiểm tra nhanh:**
-
-- Prompt After → summary gọn đủ viết plan.
-- Tester `pnpm --filter cart test` trả `PASS/FAIL + 10 dòng log`.
-- Reviewer trả `[SEVERITY] file:line — fix + PASS/NEEDS-FIX`.
-
----
-
-## 15. Hiểu nhầm thường gặp
-
-Mục này trả lời câu: những lầm tưởng nào khiến bạn chạy song song mãi mà không nhanh hơn, không rẻ hơn?
-
-| Hiểu nhầm | Sự thật |
-|---|---|
-| Càng nhiều agents càng nhanh | Overhead ~20K/con; trần 3-5, hơn thì worktrees/batch |
-| Chain mà fan-out cho nhanh | Planner thiếu summary explorers → plan sai; độc lập mới parallel |
-| Dùng subagent cho việc skill làm được | Tốn 20K cho việc 500 tokens; skill trước, subagent sau |
-
-**Kiểm tra nhanh:**
-
-- Kể lại được 3 hiểu nhầm trên cho đồng nghiệp mà không nhìn bảng, kèm 1 ví dụ thật của team bạn.
-
----
-
-## 16. Bài tập
-
-Mục này trả lời câu: làm 3 bài thực hành nào để tự mình thấy fan-out đúng và fan-out sai khác nhau ở đâu?
-
-**Bài 1 (15 phút — viết lại 4 recipes):**
-
-- Lấy repo bạn, viết 4 prompts explorer/planner/reviewer/tester cho 1 module thật (copy khung mục 3, điền paths + lệnh test).
-- Chạy thử 1 explorer, chấm: summary có đủ "files + flow + options" không? Thiếu thì sửa prompt.
-
-**Bài 2 (30 phút — writer/reviewer vòng kín):**
-
-- Lấy 1 diff nhỏ, chạy vòng mục 4 (reviewer fresh → fix HIGH → re-review).
-- Đếm HIGH/MED/LOW. So với tự review: bắt thêm mấy cái?
-
-**Bài 3 (30 phút — worktree + batch):**
-
-- Tạo 2 worktrees cho 2 streams nhỏ, mỗi stream 1 session, làm song song 20 phút.
-- Thử `/batch` cho 1 việc lặp pattern (vd thêm test 5 files utils). Đo: thời gian vs làm tay + số PR sinh ra có review được không?
-
-> Đạt: sau 1 tháng, mọi explore >3 files của bạn đều via subagent + mọi PR nontrivial đều qua reviewer fresh.
-
----
-
-## 17. Tham khảo chéo
-
-Mục này trả lời câu: muốn đi sâu từng lệnh hoặc từng chủ đề liên quan thì mở link nào?
-
-- Lệnh agents & scale:
-  - [../01-huong-dan-su-dung/commands/knowledge-system/agents/README.md](../01-huong-dan-su-dung/commands/knowledge-system/agents/README.md) — xem Running/Library
-  - [../01-huong-dan-su-dung/commands/session-context/tasks/README.md](../01-huong-dan-su-dung/commands/session-context/tasks/README.md) — theo dõi tasks nền
-  - [../01-huong-dan-su-dung/commands/code-repo/batch/README.md](../01-huong-dan-su-dung/commands/code-repo/batch/README.md) — lặp pattern quy mô lớn
-  - [../01-huong-dan-su-dung/commands/code-repo/code-review/README.md](../01-huong-dan-su-dung/commands/code-repo/code-review/README.md) — reviewer chuẩn
-  - [../01-huong-dan-su-dung/commands/code-repo/verify/README.md](../01-huong-dan-su-dung/commands/code-repo/verify/README.md) — verify sau fan-out
-- Bài tips liên quan:
-  - [Tips 01](./01-context-hygiene.md) — vì sao đẩy explore sang subagent
-  - [Tips 04](./04-verification-done-that.md) — reviewer calibration + tester flaky
-  - [Tips 06](./06-hooks-recipes.md) — hooks bound từng recipe
-  - [Tips 09](./09-teamwork-chuan-hoa.md) — PR flow team với reviewer fresh
-
-> Mẹo 1 dòng: _fan-out việc độc lập + hẹp, chain việc nối tiếp, worktree khi writers dẫm chân nhau — và luôn biết kill switch._
+> Mẹo 1 dòng: _fan-out việc độc lập + hẹp, chain việc nối tiếp, worktree khi writers dẫm chân nhau — và luôn biết cách stop task nền._
