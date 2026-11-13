@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/debug             # chẩn đoán session hiện tại
-/debug --verbose   # kèm latency từng tool
-/debug transcript  # xuất transcript để soi
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,14 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Triệu chứng: model quên chỉ thị đầu session, nói linh tinh.
-/debug
-# → "Context 92% — file legacy/dump.sql 40k token đang chiếm nửa."
-# Nguyên nhân: bạn Read nhầm file dump vào context.
-
-# Fix: /clear rồi làm tiếp, đừng Read file dump nữa (dùng head/Grep thay).
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -41,11 +30,17 @@ Kết quả mong đợi:
 
 ## Lỗi thường gặp
 
+Mục này là "sổ bệnh án" của `/debug`: khi chính lệnh chẩn đoán có lúc "ốm", tra đây trước.
+
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/debug` báo unknown | Bản CLI cũ | Update CLI; thử `Ctrl+O` trong IDE |
 | Verbose không hiện latency | Tool chạy local quá nhanh (<10ms) | Bình thường — chỉ tool mạng/MCP mới có latency đáng kể |
 | Transcript file quá to (>50MB) | Session dài 1 tuần không clear | Dùng `rg` grep thay vì mở hết; `/clear` thường xuyên hơn |
+
+> **Cách đọc bảng này:** "Triệu chứng" là hiện tượng khi chạy `/debug`, "Vì sao" giải thích giới hạn của tool, "Cách sửa" là cách làm обход được.
+
+> **Tóm gọn 1 câu:** `/debug` là bác sĩ soi bệnh sử session đang chạy — chỉ ra nghi phạm kèm số liệu, nhưng chỉ kê đơn chứ không tự tay mổ.
 
 ## Tham khảo
 

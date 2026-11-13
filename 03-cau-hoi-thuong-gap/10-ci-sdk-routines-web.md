@@ -57,6 +57,8 @@ flowchart TD
 | `claude mcp serve` | Máy bạn (stdio) | Expose Claude thành MCP server | Hệ khác gọi Claude như tool |
 | Analytics (`/insights`, dashboard) | Team/Enterprise | Plan tương ứng | Đo habits, contribution theo plan |
 
+> **Cách đọc bảng này:** mỗi dòng là một "phương án automation" — tra theo việc bạn muốn tự động hóa (review PR? chạy định kỳ? đổi máy?), cột "Chạy ở đâu" + "Cần gì" cho biết điều kiện tiên quyết trước khi theo dòng đó.
+
 ---
 
 ## 1. Dùng Claude trong CI thế nào mà vẫn an toàn? (pattern + YAML)
@@ -66,39 +68,17 @@ flowchart TD
 
 Provider hỗ trợ CI headless gồm Sub/Console/Bedrock/AWS/GCP — **Foundry ✗**. Không dùng `--dangerously-skip-permissions` ngoài sandbox; đọc secrets từ environment runner, không hardcode.
 
-```bash
-claude -p "review diff origin/main...HEAD, chỉ báo security + sai logic, bỏ style. Trả JSON." \
-  --output-format json \
-  --permission-mode dontAsk \
-  --allowedTools "Read Grep Glob Bash(git diff:*) Bash(git log:*) Bash(npm test:*)"
-```
+> 📄 **Code ví dụ:** [`examples/01-1-dung-claude-trong-ci-the-nao-ma.sh`](examples/01-1-dung-claude-trong-ci-the-nao-ma.sh)
 
 **YAML ví dụ (GitHub Actions — review PR):**
 
-```yaml
-name: claude-review
-on: [pull_request]
-jobs:
-  review:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - run: curl -fsSL https://claude.ai/install.sh | bash
-      - run: >
-          claude -p "Review diff origin/main...HEAD, chỉ báo security + sai logic, bỏ qua style. Trả JSON."
-          --output-format json
-          --permission-mode dontAsk
-          --allowedTools "Read Grep Glob Bash(git diff:*) Bash(git log:*)"
-          > review.json
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-      - run: python3 -c "import json; print(json.load(open('review.json'))['result'])"
-```
+> 📄 **Code ví dụ:** [`examples/02-1-dung-claude-trong-ci-the-nao-ma.yaml`](examples/02-1-dung-claude-trong-ci-the-nao-ma.yaml)
 
 Test nhanh: `claude -p "ping" --output-format json --permission-mode dontAsk --allowedTools "Read"` → JSON trả về ping, exit 0.
 
 **Đào sâu:** [FAQ 01 — tài khoản & provider](01-tai-khoan-pricing-cai-dat.md) · [FAQ 03 — permissions & modes](03-permissions-modes.md) · [FAQ 09 — bảo mật](09-bao-mat-quyen-rieng-tu.md)
+
+> **Tóm gọn 1 câu:** CI an toàn = robot làm việc trong phòng không cửa sổ (`-p` + `dontAsk`), chỉ cho cầm đúng dụng cụ được liệt kê (`--allowedTools` hẹp), và chìa khóa (secrets) do phòng vận chuyển giao tận tay (env runner).
 
 ## 2. `Setup` hook event để làm gì?
 
@@ -111,14 +91,7 @@ Test nhanh: `claude -p "ping" --output-format json --permission-mode dontAsk --a
 | `--init` | Chạy Setup rồi làm task luôn | CI job chuẩn |
 | `--maintenance` | Bảo trì (dọn cache, update index...) | Cron đêm |
 
-```bash
-# CI job chuẩn: setup rồi review
-claude -p "review diff" --init --output-format json --permission-mode dontAsk \
-  --allowedTools "Read Grep Glob Bash(git diff:*)"
-
-# Warm env đêm trước (không tốn task):
-claude -p "" --init-only
-```
+> 📄 **Code ví dụ:** [`examples/03-2-setup-hook-event-e-lam-gi.sh`](examples/03-2-setup-hook-event-e-lam-gi.sh)
 
 **Đào sâu:** [FAQ 05 — hooks](05-hooks-faq.md) · [FAQ 08 — lỗi thường gặp](08-loi-thuong-gap-troubleshooting.md)
 
@@ -129,19 +102,18 @@ claude -p "" --init-only
 
 Viết prompt như skill và gắn verify, nếu không nó "xong" mà không ai kiểm.
 
-```bash
-/schedule
-# → tạo: morning digest 8h (tóm tắt PRs + CI đỏ + issues mới)
-# → tạo: dep audit thứ 2 (list outdated + CVE, mở PR nếu patch)
-# → tạo: docs sync (diff code vs docs, báo lệch)
-```
+> 📄 **Code ví dụ:** [`examples/04-3-routines-schedule-la-gi.sh`](examples/04-3-routines-schedule-la-gi.sh)
 
 ```text
 Mỗi sáng 8h: tóm tắt PRs mở + CI đỏ + issues mới (repo X).
 Verify: mỗi mục kèm link. Không tự merge. Gửi digest về Slack #dev.
 ```
 
+Routine giống đồng hồ báo thức có nhiệm vụ: chạy đúng giờ, làm đúng việc, và phải có "bằng chứng đã làm" (verify) — nếu không nó reo "đã hoàn thành" mà chẳng ai kiểm được.
+
 **Đào sâu:** [FAQ 01 — tài khoản](01-tai-khoan-pricing-cai-dat.md) · [FAQ 09 — bảo mật](09-bao-mat-quyen-rieng-tu.md)
+
+> **Tóm gọn 1 câu:** Routine = việc định kỳ chạy trên cloud theo lịch (`/schedule`), cần subscription và bắt buộc gắn verify — nếu không nó "xong" trong im lặng mà không ai kiểm.
 
 ## 4. Cloud session từ terminal + `/teleport`?
 
@@ -150,20 +122,11 @@ Verify: mỗi mục kèm link. Không tự merge. Gửi digest về Slack #dev.
 
 Cloud environment lưu servers/env vars/setup script dùng chung. Mode cloud: **Accept edits** (tự sửa + push branch) / **Plan** (chờ duyệt) — không có Bypass. VD: laptop yếu, task nặng (migrate 30 files) → đẩy lên cloud Accept edits, xong về check PR.
 
-```bash
-# 1. Chuẩn bị (1 lần/repo):
-/web-setup
-# → sync token qua gh, khai MCP servers + env vars + setup script cho cloud
-
-# 2. Chạy:
-claude --cloud "migrate endpoint X sang v2, mở PR"
-
-# 3. Chuyển nơi làm việc:
-/teleport
-# → terminal đang 30 turns → lên cloud chạy tests nặng qua đêm → sáng resume
-```
+> 📄 **Code ví dụ:** [`examples/05-4-cloud-session-tu-terminal-teleport.sh`](examples/05-4-cloud-session-tu-terminal-teleport.sh)
 
 **Đào sâu:** [Bài 02 — các bề mặt: terminal/IDE/web/desktop](../01-huong-dan-su-dung/02-cac-be-mat-terminal-ide-web-desktop.md) · [lệnh `teleport`](../01-huong-dan-su-dung/commands/auth-settings/teleport/README.md) · [FAQ 03 — permissions & modes](03-permissions-modes.md)
+
+> **Tóm gọn 1 câu:** `/web-setup` là làm giấy tờ chuyển phòng (cần `gh`), `claude --cloud` là gửi việc sang phòng mới, còn `/teleport` là đổi trạm làm giữa chừng mà không bỏ dở công việc.
 
 <!-- CHUNK2 -->
 
@@ -176,21 +139,9 @@ claude --cloud "migrate endpoint X sang v2, mở PR"
 
 Automation đơn giản → `claude -p` trong CI là đủ (câu 1), không cần SDK. Khi build SDK: thu hẹp scope bằng `setting_sources` để không load hết config user.
 
-```python
-# pseudocode — đọc SDK docs cho API thật
-agent = ClaudeAgent(
-    tools=["Read", "Grep", "Glob"],       # hẹp nhất có thể
-    permissions={...},                     # allowlist rõ
-    setting_sources=["project"],           # chỉ .claude/, không ~/.claude/
-)
-result = agent.run("triage ticket X")
-```
+> 📄 **Code ví dụ:** [`examples/06-5-agent-sdk-khi-nao-claude-mcp-serve.py`](examples/06-5-agent-sdk-khi-nao-claude-mcp-serve.py)
 
-```bash
-# Chiều ngược: hệ khác (IDE lạ, bot Slack nội bộ) gọi Claude như tool
-claude mcp serve --transport stdio
-# → hệ khác add như 1 MCP server stdio bình thường
-```
+> 📄 **Code ví dụ:** [`examples/07-5-agent-sdk-khi-nao-claude-mcp-serve.sh`](examples/07-5-agent-sdk-khi-nao-claude-mcp-serve.sh)
 
 **Đào sâu:** [Bài 12 — Agent SDK, CI/CD](../01-huong-dan-su-dung/12-agent-sdk-ci-cd-automation.md) · [FAQ 04 — MCP](04-mcp-faq.md) · [lệnh `mcp-serve`](../01-huong-dan-su-dung/commands/knowledge-system/mcp-serve/README.md)
 
@@ -209,11 +160,7 @@ claude mcp serve --transport stdio
 | Enterprise Analytics API | Pull metrics về BI nội bộ | Enterprise |
 | Server-managed settings / SSO / SCIM | Quản lý tập trung | Theo plan ([FAQ 01](01-tai-khoan-pricing-cai-dat.md)) |
 
-```bash
-/stats        # tôi tốn bao nhiêu
-/insights     # thói quen team (HTML) — cuối sprint chạy 1 lần
-/extra-usage  # usage vượt gói?
-```
+> 📄 **Code ví dụ:** [`examples/08-6-analytics-cho-team.sh`](examples/08-6-analytics-cho-team.sh)
 
 **Đào sâu:** [lệnh `insights`](../01-huong-dan-su-dung/commands/knowledge-system/insights/README.md) · [lệnh `stats`](../01-huong-dan-su-dung/commands/knowledge-system/stats/README.md) · [FAQ 09 — bảo mật](09-bao-mat-quyen-rieng-tu.md)
 
@@ -226,54 +173,15 @@ claude mcp serve --transport stdio
 
 **YAML hoàn chỉnh** (thứ tự rẻ-trước-đắt-sau để fail nhanh; hợp team ≥3 người):
 
-```yaml
-name: claude-ci
-on: [pull_request]
-jobs:
-  secrets:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: git grep -E 'ghp_|sk-ant_|xoxb-|AKIA' -- .mcp.json .claude/ . && exit 1 || echo "secrets clean"
-  doctor-gate:
-    runs-on: ubuntu-latest
-    needs: secrets
-    steps:
-      - uses: actions/checkout@v4
-      - run: curl -fsSL https://claude.ai/install.sh | bash
-      - run: claude /doctor --json > doctor.json
-        env: { ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }} }
-      - run: python3 -c "import json,sys; d=json.load(open('doctor.json')); print(d['score']); sys.exit(1 if d['score']<70 else 0)"
-  review:
-    runs-on: ubuntu-latest
-    needs: doctor-gate
-    steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - run: curl -fsSL https://claude.ai/install.sh | bash
-      - run: >
-          claude -p "Review diff, chỉ security + sai logic."
-          --output-format json --permission-mode dontAsk
-          --allowedTools "Read Grep Glob Bash(git diff:*)" > review.json
-        env: { ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }} }
-```
+> 📄 **Code ví dụ:** [`examples/09-7-ci-yaml-hoan-chinh-checklist-truoc-khi.yaml`](examples/09-7-ci-yaml-hoan-chinh-checklist-truoc-khi.yaml)
 
 **Checklist 5 mục trước khi schedule/bật automation:**
 
-```bash
-# 1. Allowlist hẹp? (không bypass ngoài sandbox)
-/permissions
-# 2. Secrets từ env? (git grep rỗng?)
-git grep -E 'ghp_|sk-ant_' -- .mcp.json .claude/ .
-# 3. Chạy tay 1 lần xanh với đúng flags CI?
-claude -p "<task>" --output-format json --permission-mode dontAsk --allowedTools "Read Grep Glob ..."
-# 4. Headless-safe? (hooks không prompt)
-/hooks
-# 5. Verify gắn chưa? (ai check output? tests? human?)
-/verify
-```
+> 📄 **Code ví dụ:** [`examples/10-7-ci-yaml-hoan-chinh-checklist-truoc-khi.sh`](examples/10-7-ci-yaml-hoan-chinh-checklist-truoc-khi.sh)
 
 **Đào sâu:** [lệnh `doctor`](../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md) · [FAQ 08 — lỗi thường gặp](08-loi-thuong-gap-troubleshooting.md) · [FAQ 05 — hooks](05-hooks-faq.md)
+
+> **Tóm gọn 1 câu:** Bật automation nhớ 3 chữ: hẹp (allowlist), sạch (secrets từ env), chứng minh (chạy tay xanh 1 lần + verify gắn sẵn) — đủ 3 chữ mới ngủ yên được.
 
 ---
 
@@ -285,9 +193,7 @@ claude -p "<task>" --output-format json --permission-mode dontAsk --allowedTools
 4. Rate/provider → `/usage` + đổi key (Foundry không hỗ trợ `-p`).
 5. `/debug` → chẩn đoán; `/bug` kèm `/status` + `doctor`.
 
-```bash
-claude -p "ping" --output-format json --permission-mode dontAsk --allowedTools "Read"
-```
+> 📄 **Code ví dụ:** [`examples/11-van-loi-thi-sao-ci-sdk-web.sh`](examples/11-van-loi-thi-sao-ci-sdk-web.sh)
 
 ---
 

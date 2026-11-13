@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/statusline
-/statusline set <mẫu>
-/statusline exec <lệnh>
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,13 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-/statusline set "[{acc}] {model} · {cwd}"
-# {model} hiện alias đang chạy; "default" = model mặc định tài khoản (Opus 5.5, ≥2.1.280)
-# Sáng: "[work] default · /repo" ✓
-# Trưa vọc side-project xong quên đổi: "[personal] default · /repo" ← thấy ngay!
-# → /login --account work trước khi push code công ty bằng quota túi
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -38,18 +28,21 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-/statusline
-# → xem cấu hình hiện tại; exec (nếu có) chạy nhẹ, mỗi Enter không bị chậm
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
+
+Mục này nói về các trục trặc hay gặp khi cấu hình và dùng thanh trạng thái — tra đúng triệu chứng rồi làm theo cột "Cách sửa".
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Biến hiện trống (`{quota}` = rỗng) | Bản CLI cũ chưa có biến đó | Update CLI; bỏ biến đó khỏi mẫu tạm |
 | Mỗi Enter chậm 1-2s | Exec nặng | `/statusline` xem exec nào chậm → xoá/cache |
 | Sang máy mới mất statusline | Local scope không đi theo | Set lại (copy mẫu từ note cá nhân) |
+
+> **Cách đọc bảng này:** đọc theo hàng — "Triệu chứng" là hiện tượng trên màn hình, "Vì sao" cho biết lỗi ở bản CLI hay ở cấu hình, "Cách sửa" là việc cần làm.
+
+> **Tóm gọn 1 câu:** `/statusline` gắn đồng hồ cố định lên kính lái: thông tin quan trọng luôn trước mắt, nhầm tài khoản hay hết quota là thấy ngay.
 
 ## Tham khảo
 

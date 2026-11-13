@@ -9,13 +9,11 @@
 - Bạn chưa biết tên → đọc 1 dòng mô tả của từng nhóm bên dưới → vào README nhóm → chọn lệnh.
 - Bạn không cần học hết 78 lệnh: đọc 3 lệnh trụ của mỗi nhóm ("Bộ 3 phải nhớ") trước, còn lại tra khi gặp việc thật.
 
+> **Tóm gọn 1 câu:** File này là bản đồ tủ bếp của Claude Code: 78 "dụng cụ" chia 5 ngăn, biết tên thì Ctrl+F tìm ngay, chưa biết thì dò từng ngăn theo dòng mô tả — không ai học thuộc cả tủ bếp, chỉ cần biết đồ để đâu.
+
 ## Cách gọi
 
-```bash
-# gõ / trong session Claude Code: máy bạn hiện lệnh nào theo version/provider
-/
-# ngoài session: Ctrl+F file này để tìm tên lệnh
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 Kiểm tra lệnh có ở máy bạn không: mở session, gõ `/`, cuộn xem danh sách — version/provider khác nhau hiện lệnh khác nhau.
 
@@ -27,11 +25,15 @@ Kiểm tra lệnh có ở máy bạn không: mở session, gõ `/`, cuộn xem d
 
 ## Lỗi thường gặp
 
+Mục này là sổ "lạc bản đồ" khi tra index: ba tình huống hay gặp nhất và cách tự xử — đối chiếu với cột "Triệu chứng" rồi làm theo cột "Cách sửa".
+
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Bạn tìm `/ultraplan` trong file này mà không thấy | Lệnh này bị gỡ w32/2026, thay bằng plan mode | Dùng `/plan`, xem group model-mode |
 | Bạn mở 1 file lệnh mà không có mục "Lỗi thường gặp" | File cũ chưa cập nhật khung 7 mục (A6) | Chạy `claude update` rồi đọc lại, hoặc báo repo thiếu mục 6 |
 | Bạn thấy lệnh không hiện khi gõ `/` trong session | Version Claude Code máy bạn thấp hơn version tối thiểu của lệnh | Chạy `claude --version`, update bằng `claude update` rồi thử lại |
+
+> **Cách đọc bảng này:** mỗi dòng là một hiện tượng "index không giúp được mình"; cột "Vì sao" cho biết lỗi nằm ở lệnh đã gỡ, ở khung file cũ hay ở bản CLI, cột "Cách sửa" là bước xử lý cụ thể.
 
 ## Tham khảo
 
@@ -42,6 +44,8 @@ Kiểm tra lệnh có ở máy bạn không: mở session, gõ `/`, cuộn xem d
 > Mẹo 1 dòng: _biết tên lệnh thì Ctrl+F trong file này là đủ, không cần đọc hết 5 nhóm._
 
 ## Phiên làm việc & Context (18 lệnh) — [`session-context/`](./session-context/README.md)
+
+Năm mục dưới đây là năm "ngăn tủ" của bản đồ: mỗi ngăn một nhóm việc, kèm bảng lệnh đầy đủ. Hãy hình dung như sắp nhà bếp — đụng phiên thì vào ngăn này, đổi model thì vào ngăn model-mode, cứ thế.
 
 > Mở, dọn, lưu, chia nhánh phiên mà không đụng code trên đĩa.
 
@@ -66,6 +70,8 @@ Kiểm tra lệnh có ở máy bạn không: mở session, gõ `/`, cuộn xem d
 | [/todos](./session-context/todos/README.md) | Không | Xem/ghi todo list trong memory session |
 | [/usage](./session-context/usage/README.md) | Không | Xem thống kê chi tiết token/chi phí theo phiên |
 
+> **Cách đọc bảng này:** mỗi dòng là một lệnh, xếp theo tên A→Z; cột "Mức rủi ro" là đèn giao thông (Không = gõ được ngay, Có = dừng đọc cấu hình trước), cột "Một dòng" đủ để quyết định có bấm vào tên lệnh đọc chi tiết hay không. Bốn bảng nhóm dưới đây có khuôn y hệt — đọc theo cách này luôn.
+
 ## Model & Permission Modes (7 lệnh) — [`model-mode/`](./model-mode/README.md)
 
 > Đổi cách model suy nghĩ/chạy: model, effort, mode, mục tiêu, quyền.
@@ -73,7 +79,7 @@ Kiểm tra lệnh có ở máy bạn không: mở session, gõ `/`, cuộn xem d
 | Lệnh | Mức rủi ro | Một dòng |
 |---|---|---|
 | [/effort](./model-mode/effort/README.md) | Không | Vặn độ sâu suy luận, không cần đổi model |
-| [/extra-usage](./model-mode/extra-usage/README.md) | Không (tốn tiền thật) | Mua thêm quota khi hết hạn mức gói |
+| [/usage-credits](./model-mode/usage-credits/README.md) | Không (tốn tiền thật) | Mua thêm quota khi hết hạn mức gói |
 | [/fast](./model-mode/fast/README.md) | Không | Chế độ nhanh cho việc dễ, không chờ suy luận sâu |
 | [/goal](./model-mode/goal/README.md) | Không (cần ≥2.1.139) | Đặt điều kiện hoàn thành, evaluator check mỗi turn |
 | [/model](./model-mode/model/README.md) | Không | Đổi model giữa phiên (Haiku 5.5/Sonnet/Opus 5.5) |
@@ -94,7 +100,7 @@ Kiểm tra lệnh có ở máy bạn không: mở session, gõ `/`, cuộn xem d
 | [/fewer-permission-prompts](./code-repo/fewer-permission-prompts/README.md) | Thấp | Đề xuất allowlist read-only để bớt bị hỏi quyền |
 | [/init](./code-repo/init/README.md) | Không | Đọc repo rồi sinh CLAUDE.md + docs/settings |
 | [/loop](./code-repo/loop/README.md) | Trung bình | Chạy lặp một task nhiều vòng; coi chừng tốn quota khi auto/bypass |
-| [/pr_comments](./code-repo/pr_comments/README.md) | Không | Xử lý comment PR: sửa code theo góp ý |
+| [/pr-comments](./code-repo/pr-comments/README.md) | Không | Xử lý comment PR: sửa code theo góp ý (đã gỡ v2.1.91) |
 | [/radio](./code-repo/radio/README.md) | Thấp | Hỏi-đáp + nghe realtime trong session (version-gated) |
 | [/review](./code-repo/review/README.md) | Không | Review code trong context phiên hiện tại, chỉ đọc + nhận xét |
 | [/run](./code-repo/run/README.md) | Thấp | Chạy app local theo recipe; tốn port/CPU, có thể ghi DB dev |
@@ -153,5 +159,7 @@ Kiểm tra lệnh có ở máy bạn không: mở session, gõ `/`, cuộn xem d
 | [/theme](./auth-settings/theme/README.md) | Không | Đổi bảng màu CLI: sáng/tối, tương phản cao, mù màu |
 | [/vim](./auth-settings/vim/README.md) | Không | Soạn prompt kiểu vim: normal/insert, hjkl |
 | [/voice](./auth-settings/voice/README.md) | Không | Nói thay vì gõ: giữ Space để nói, thả để gửi |
+
+> **Tóm gọn 1 câu:** Đã xem hết bản đồ 5 ngăn: biết tên lệnh thì Ctrl+F quay lên trên, chưa nhớ thì vào README của từng nhóm đọc "Bộ 3 phải nhớ" — dùng lệnh giống dùng dao thớt, cần con dao nào mới lôi con dao đó.
 
 [← Về 01-hướng dẫn sử dụng](../README.md)

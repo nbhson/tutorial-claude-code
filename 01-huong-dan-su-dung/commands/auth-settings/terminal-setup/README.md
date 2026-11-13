@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/terminal-setup
-/terminal-setup <app>
-/terminal-setup --check
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,12 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-/terminal-setup
-# → "iTerm2 · Shift+Enter: ✗ nothing received"
-# → Fix: Preferences → Profiles → Keys → + → Shift+Enter → Send Escape Sequence "[13;2u"
-# → quay lại test: gõ 2 dòng, Shift+Enter xuống dòng ✓
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -37,18 +28,21 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-/terminal-setup --check
-# → Shift+Enter / truecolor / font báo ✓ sau khi làm theo hướng dẫn
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
+
+Mục này nói về các lỗi terminal hay gặp sau khi fix — tra đúng triệu chứng rồi làm theo cột "Cách sửa".
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Fix đúng hướng dẫn mà Shift+Enter vẫn gửi | tmux/screen ở giữa ăn mã (chưa passthrough) | `set -g extended-keys on` (tmux 3.2+); hoặc test ngoài tmux để loại trừ |
 | Màu xấu dù truecolor ✓ | `TERM` sai (`xterm` thay vì `xterm-256color`) | `export TERM=xterm-256color` (hoặc theo app) |
 | Icon hiện ô vuông □ | Thiếu Nerd Font | Cài font + chỉnh terminal dùng nó |
+
+> **Cách đọc bảng này:** đọc theo hàng — "Triệu chứng" là hiện tượng trên terminal, "Vì sao" chỉ tầng gây lỗi (tmux, biến môi trường, font), "Cách sửa" là việc cần làm.
+
+> **Tóm gọn 1 câu:** `/terminal-setup` là thợ điện cho xưởng CLI: điện (terminal) chập chờn thì sửa điện, đừng đổ lỗi cho máy móc (model).
 
 ## Tham khảo
 

@@ -33,6 +33,8 @@
 
 ## Sơ đồ nhanh
 
+Sơ đồ này trả lời câu "mình bắt đầu từ đâu": nhìn vào ô "Bạn là ai?" rồi đi theo nhánh tương ứng — 10 phút là xong setup.
+
 ```mermaid
 flowchart TD
   A[Bạn là ai?] -->|Dev cá nhân Pro/Max| B[claude login<br/>full cloud: Web/Remote/Routines]
@@ -59,6 +61,8 @@ flowchart TD
 
 Terminal CLI + VS Code extension hỗ trợ thêm third-party providers: Bedrock, GCP Agent Platform (Vertex), Foundry.
 
+Hai đường vào này giống hai cửa hàng: subscription là gói buffet trả tháng ăn tùy sức, API key là mua lẻ từng món theo cân — chọn cửa nào quyết định cách bạn trả tiền chứ không quyết định Claude chạy thế nào.
+
 Giá gói subscription (tra 11/10/2026, nguồn [WRITING-STYLE — Phần B](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-11102026)):
 
 | Gói | Giá /tháng | Claude Code? | Ghi chú |
@@ -69,22 +73,19 @@ Giá gói subscription (tra 11/10/2026, nguồn [WRITING-STYLE — Phần B](../
 | Team (Standard) | $20 (trả trước năm) hoặc $25 | ✅ | Tối thiểu 2 ghế, tối đa 150 ghế |
 | Team (Premium) | $100 (trả trước năm) hoặc $125 | ✅ | 5× Standard |
 
+> **Cách đọc bảng này:** cột "Claude Code?" là cột quyết định — gói nào ❌ thì bỏ qua hết các cột còn lại; cột "Ghi chú" so hạn mức để chọn giữa các gói ✅.
+
 Hạn mức tính theo **phiên 5 giờ cuộn** + hạn tuần; chat web và Claude Code dùng chung 1 hạn mức. Riêng **Fable 5.1 không nằm trong hạn mức thường**: trên Pro nó bill bằng usage credits, trên Max tốn ~50% hạn tuần cho mỗi lượt dùng.
 
 Trả theo API key thì giá theo model (USD / 1M tokens): **Fable 5.1** $10/$50 · **Opus 5.5** $4/$20 (mặc định tài khoản, cache đọc $0.20) · **Sonnet 5.5** $2/$10 · **Haiku 5.5** $0.10/$0.50 (1M context, cần ≥2.1.293) · **Haiku 4.5** $1/$5 với context 200K (mặc định Haiku trên Bedrock/GCP/AWS).
 
-```bash
-# Cách 1: subscription (khuyên dùng cho dev tay)
-claude login        # → mở browser, sign-in claude.ai
-
-# Cách 2: API key (khuyên dùng cho CI/máy phụ)
-export ANTHROPIC_API_KEY="sk-ant-xxxx"
-claude -p "ping" --output-format json
-```
+> 📄 **Code ví dụ:** [`examples/01-1-can-tai-khoan-gi-goi-nao-co.sh`](examples/01-1-can-tai-khoan-gi-goi-nao-co.sh)
 
 Có Pro cá nhân + công ty cấp Bedrock → máy dev `claude login` (Pro), CI dùng Bedrock creds — tách 2 môi trường, không lẫn bill.
 
 **Đổi account:** ngoài terminal dùng `claude login` / `claude logout`; đang trong session dùng `/login` / `/logout` / `/status` (soi gương: account, provider, model, version) — khỏi thoát ra. Nghi bill sai account → `/status` → `/logout` → `/login` lại, không mất session.
+
+> **Tóm gọn 1 câu:** Hai cửa vào — subscription cho người, API key cho máy — gói Free thì chưa có cửa vào Claude Code.
 
 **Đào sâu:** [Bài 01 — cài đặt và xác thực](../01-huong-dan-su-dung/01-cai-dat-va-xac-thuc.md) · [FAQ 10 — CI, SDK, routines, Web](10-ci-sdk-routines-web.md) · [lệnh `status`](../01-huong-dan-su-dung/commands/auth-settings/status/README.md)
 
@@ -109,11 +110,13 @@ Có Pro cá nhân + công ty cấp Bedrock → máy dev `claude login` (Pro), CI
 
 \* Xem provider docs của bạn để xác nhận; hỏi admin/contract trước khi cam kết với khách (chi tiết [FAQ 09](09-bao-mat-quyen-rieng-tu.md)).
 
-```bash
-/status    # dòng Provider hiện Bedrock / GCP / Anthropic — đừng đoán
-```
+> 📄 **Code ví dụ:** [`examples/02-2-provider-sub-console-bedrock-gcp-foundry-khac.sh`](examples/02-2-provider-sub-console-bedrock-gcp-foundry-khac.sh)
 
 Team enterprise chọn Bedrock/GCP vì compliance → chấp nhận mất Routines/Remote. Dev indie chọn Sub → full tính năng cloud.
+
+> **Cách đọc bảng này:** đọc theo cột của provider bạn đang cân nhắc; ô ✅/❌ ở nhóm dòng giữa (Web, Slack, Routines, Remote) chính là ranh giới "full cloud" và "chỉ model".
+
+> **Tóm gọn 1 câu:** Provider khác = cùng chạy được terminal/IDE nhưng mất dần tính năng cloud — compliance càng ngặt, càng mất nhiều tiện ích.
 
 **Đào sâu:** [Bài 02 — từng bề mặt dùng](../01-huong-dan-su-dung/02-cac-be-mat-terminal-ide-web-desktop.md) · [FAQ 09 — bảo mật & riêng tư](09-bao-mat-quyen-rieng-tu.md)
 
@@ -125,14 +128,11 @@ Team enterprise chọn Bedrock/GCP vì compliance → chấp nhận mất Routin
 >
 > **Trả lời 1 câu:** Vì đó là cloud service của Anthropic — muốn dùng phải đăng nhập `claude.ai`, API key không đủ.
 
-Các mặt Web / Mobile / Desktop-cloud / Slack / Chrome extension / Computer use / Artifacts / Routines (`/schedule`) / Remote (`--cloud`, teleport) chạy trên hạ tầng cloud của Anthropic (session persist cross-device, push branch, schedule...), nên phải gắn với identity `claude.ai`. API-key-only = cục model trần, thiếu lớp "session cloud". 99% trường hợp "sao không thấy nút cloud" là đang dùng API-key-only.
+Các mặt Web / Mobile / Desktop-cloud / Slack / Chrome extension / Computer use / Artifacts / Routines (`/schedule`) / Remote (`--cloud`, teleport) chạy trên hạ tầng cloud của Anthropic (session persist cross-device, push branch, schedule...), nên phải gắn với identity `claude.ai`. API-key-only = cục model trần, thiếu lớp "session cloud". Giống như có thẻ ngân hàng nhưng chưa đăng ký app ngân hàng: chuyển được tiền ở quầy (model chạy), nhưng xem số dư trên điện thoại (session cloud) thì phải đăng nhập tài khoản. 99% trường hợp "sao không thấy nút cloud" là đang dùng API-key-only.
 
-```bash
-claude login        # đảm bảo đã sign-in claude.ai
-/status             # xem account hiện tại
-/web-setup          # sync token + tạo cloud environment (cần gh CLI)
-/teleport           # thử chuyển session lên cloud
-```
+> 📄 **Code ví dụ:** [`examples/03-3-web-mobile-routines-remote-vi-sao-bat.sh`](examples/03-3-web-mobile-routines-remote-vi-sao-bat.sh)
+
+> **Tóm gọn 1 câu:** API key là thẻ ngân hàng còn claude.ai sign-in là tài khoản app — cùng một tiền, nhưng các tính năng "xem trên điện thoại" thì chỉ tài khoản app mới mở được.
 
 **Đào sâu:** [FAQ 10 — routines, Web, CI](10-ci-sdk-routines-web.md) · [Bài 02 — terminal/IDE/web/desktop](../01-huong-dan-su-dung/02-cac-be-mat-terminal-ide-web-desktop.md)
 
@@ -150,28 +150,15 @@ claude login        # đảm bảo đã sign-in claude.ai
 - **Homebrew cask:** tiện cho macOS, nhưng version có thể chậm hơn native nửa nhịp.
 - **npm:** chỉ khi kẹt môi trường không cài được binary (container lạ). Dễ dính duplicate nhất.
 
-Triệu chứng duplicate: `which -a claude` ra 2 đường, `/status` báo version khác `claude --version`, update hoài không lên.
+Triệu chứng duplicate: `which -a claude` ra 2 đường, `/status` báo version khác `claude --version`, update hoài không lên. Cứ hình dung 2 bản Claude trên máy như 2 chìa khóa cùng mở cửa nhà: đôi khi dùng nhầm chìa cũ, cửa mở nửa vời — giữ đúng 1 chìa là hết chuyện.
 
-```bash
-# Cài native:
-curl -fsSL https://claude.ai/install.sh | bash
-claude --version
-
-# Soi + dọn duplicate:
-which -a claude
-npm ls -g @anthropic-ai/claude-code 2>/dev/null
-claude doctor   # phát hiện duplicate install, settings parse lỗi, PATH lỗi
-
-# Dọn: giữ native, gỡ npm
-npm uninstall -g @anthropic-ai/claude-code
-hash -r
-which claude    # giờ chỉ còn 1
-claude update
-```
+> 📄 **Code ví dụ:** [`examples/04-4-cai-the-nao-cho-sach-don-duplicate.sh`](examples/04-4-cai-the-nao-cho-sach-don-duplicate.sh)
 
 `which -a` ra `/opt/homebrew/bin/claude` + `~/.nvm/.../claude` → gỡ bản npm, giữ brew/native, PATH sạch lại.
 
 **Đào sâu:** [Bài 01 — cài đặt và xác thực](../01-huong-dan-su-dung/01-cai-dat-va-xac-thuc.md) · [lệnh `doctor`](../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md)
+
+> **Tóm gọn 1 câu:** Cài sạch = giữ đúng 1 bản native binary — `which -a claude` là thước đo 10 giây cho việc đó.
 
 ---
 
@@ -194,11 +181,11 @@ Quy tắc: **update trước, debug sau**. Bản mới nhất tại thời đi�
 | Sonnet 5.5 | ≥2.1.284 | Mặc định Sonnet trên API |
 | Haiku 5.5 | ≥2.1.293 | Mặc định Haiku trên API; 1M context |
 
-```bash
-claude update
-claude --version
-/status    # xem version đang chạy
-```
+> **Cách đọc bảng này:** cột giữa là "vé tối thiểu" để lệnh tồn tại — đối chiếu với bản đang cài (`/status`), thấp hơn là gõ vào cũng không thấy; đừng nhớ dòng lệnh mà hãy nhớ số bản.
+
+> **Tóm gọn 1 câu:** Version floor giống chiều cao tối thiểu của trò chơi vui chơi: chưa tới vạch thì gõ lệnh hay mấy cũng không thấy lệnh đâu.
+
+> 📄 **Code ví dụ:** [`examples/05-5-claude-update-va-version-floor-lenh-la.sh`](examples/05-5-claude-update-va-version-floor-lenh-la.sh)
 
 Gõ `/cd web` → `Unknown command: /cd` → `claude update` lên ≥2.1.169, mở session mới, gõ lại → chạy.
 
@@ -220,21 +207,9 @@ Gõ `/cd web` → `Unknown command: /cd` → `claude update` lên ≥2.1.169, m�
 4. Tạo subagents — tách việc đọc ồn sang worker (xem [FAQ 07](07-subagents-teams-workflows.md)).
 5. `/permissions` — dựng phanh allow/ask/deny baseline (xem [FAQ 03](03-permissions-modes.md)).
 
-```bash
-cd ~/code/my-repo && claude
+5 bước này giống mở cửa hàng ngày đầu: bày hàng (`/init`), ghi sổ riêng (`/memory`), nối điện (`/mcp`), thuê nhân viên (subagents), rồi mới khóa két (`/permissions`) — đúng thứ tự thì mọi thứ sau chạy mượt.
 
-# Repo trống:
-ls templates/
-cp templates/CLAUDE.md ./CLAUDE.md
-# Mở CLAUDE.md, sửa: stack, lệnh test/lint/build, cấu trúc thư mục
-
-# Trong session, theo thứ tự:
-/init
-/memory
-/mcp
-/permissions
-/doctor   # khám lại xem còn đỏ gì
-```
+> 📄 **Code ví dụ:** [`examples/06-6-repo-moi-5-lenh-setup-au-copy.sh`](examples/06-6-repo-moi-5-lenh-setup-au-copy.sh)
 
 Template Node ghi `npm test`; bạn dùng `pnpm` → sửa ngay dòng đó. Sau khi code lên hình (vài trăm dòng), chạy `/init` lại để bổ sung kiến trúc thật. Team thì commit `.claude/` + `CLAUDE.md` để người sau khỏi setup lại.
 
@@ -250,9 +225,7 @@ Template Node ghi `npm test`; bạn dùng `pnpm` → sửa ngay dòng đó. Sau 
 4. `/debug` — chẩn đoán session hiện tại.
 5. `/bug` — gói report gửi Anthropic (kèm `/status` + `claude doctor`).
 
-```bash
-claude update && claude doctor
-```
+> 📄 **Code ví dụ:** [`examples/07-van-loi-thi-sao-thu-tu-debug-chuan.sh`](examples/07-van-loi-thi-sao-thu-tu-debug-chuan.sh)
 
 **Tham khảo chéo:** [lệnh `status`](../01-huong-dan-su-dung/commands/auth-settings/status/README.md) · [lệnh `doctor`](../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md) · [lệnh `init`](../01-huong-dan-su-dung/commands/code-repo/init/README.md) · [FAQ 08 — bảng lỗi full](08-loi-thuong-gap-troubleshooting.md) · [FAQ 02 — model & token](02-model-context-token.md)
 

@@ -1,7 +1,7 @@
 # /diff — xem diff tương tác: model sửa gì, từng dòng, duyệt trước khi nhận
 
 > Loại Built-in · Nhóm Code & Repo · Mức rủi ro Không
-> **Nói nôm na:** `/diff` mở interactive diff viewer: liệt kê mọi file model vừa sửa, từng hunk thêm/xóa, cho bạn duyệt/chỉnh/revert trước khi nhận. Không có `/diff` sau bước code = nhận hàng mù.
+> **Nói nôm na:** `/diff` mở interactive diff viewer: liệt kê mọi file model vừa sửa, từng hunk thêm/xóa, cho bạn duyệt/chỉnh/revert trước khi nhận. Không có `/diff` sau bước code = nhận hàng mù. Cứ coi như kiểm hàng trước khi ký nhận: từng món model làm đều bày ra bàn, đồng ý món nào mới nhận món đó.
 
 ## Khi nào dùng
 
@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/diff`
-`/diff <file>`
-`/diff --staged`
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,11 +19,7 @@
 
 **Prompt thật (paste vào Claude Code):**
 
-```bash
-/diff
-# → hunk 1–3: rename đúng. hunk 4: đổi if (x > 0) thành if (x >= 0) — KHÔNG yêu cầu.
-# → bỏ hunk 4, giữ 1–3.
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 **Kết quả mong đợi:**
 
@@ -36,17 +28,21 @@
 
 **Verify (30 giây):**
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
+
+Mục này nói về các tình huống `/diff` hiển thị không như bạn mong — tra đúng triệu chứng rồi làm theo cột "Cách sửa".
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/diff` trống dù model bảo đã sửa | Sửa ở worktree khác (`/batch`) hoặc file chưa flush | Kiểm tra worktree path; bảo model paste đường dẫn tuyệt đối |
 | Diff quá lớn (50 file) đọc nản | Task quá to, model sửa lan | Bảo "tóm tắt 10 bullet + chỉ hiện file quan trọng"; chia task nhỏ |
 | `/diff` hiện cả file bạn sửa tay | Gộp chung thay đổi người + model | Dùng `git diff` tay để phân biệt, hoặc commit phần bạn trước |
+
+> **Cách đọc bảng này:** đọc theo hàng — "Triệu chứng" là hiện tượng trên panel, "Vì sao" chỉ nguyên nhân (worktree khác, task to, thay đổi lẫn lộn), "Cách sửa" là việc cần làm.
+
+> **Tóm gọn 1 câu:** `/diff` là bàn kiểm hàng trước khi ký nhận: mỗi hunk model sửa đều bày ra để bạn duyệt — không nhận món nào mù.
 
 ## Tham khảo
 

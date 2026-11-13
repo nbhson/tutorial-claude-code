@@ -25,7 +25,9 @@
 
 ## 1. Output style là gì và thay đổi gì
 
-Output style là **bộ chỉ dẫn gửi kèm mọi request trong session** — style thay đổi cách Claude Code soạn instructions cho model: vai trò, giọng văn, format trả lời. Khác với việc bạn gõ "trả lời ngắn thôi" ở đầu session: style áp cho toàn session (kể cả câu trả lời sau `/compact`), không bị quên, và đổi bằng 1 lệnh.
+Mục này định nghĩa chính xác output style là gì, cơ chế nó bám vào đâu trong mỗi request — nền để hiểu mục 5 (so sánh với các cơ chế khác) không bị nhầm.
+
+Output style là **bộ chỉ dẫn gửi kèm mọi request trong session** — style thay đổi cách Claude Code soạn instructions cho model: vai trò, giọng văn, format trả lời. Khác với việc bạn gõ "trả lời ngắn thôi" ở đầu session: style áp cho toàn session (kể cả câu trả lời sau `/compact`), không bị quên, và đổi bằng 1 lệnh. Hãy hình dung style như "đồng phục cả ca làm việc": một lần mặc là áp dụng suốt ca, không phải dặn từng câu chuyện.
 
 Cơ chế (theo docs chính thức, tra 28/10/2026):
 
@@ -36,9 +38,13 @@ Cơ chế (theo docs chính thức, tra 28/10/2026):
 
 **Output style là chỉ dẫn, không phải luật.** Không gì đảm bảo "chưa bao giờ vi phạm" — cần đảm bảo tuyệt đối thì dùng hook (xem mục 5).
 
+> **Tóm gọn 1 câu:** Output style là đồng phục mặc suốt session — đổi được bằng 1 lệnh, nhưng là chỉ dẫn chứ không phải cơ chế đảm bảo.
+
 ---
 
 ## 2. 4 style built-in: chọn cái nào khi nào
+
+Mục này giới thiệu 4 style có sẵn và tình huống hợp của từng style — đọc để chọn đúng, đừng bật bừa rồi đổi dần.
 
 Claude Code khởi động ở style **Default** — không có style instruction nào thêm, model chạy với system prompt chuẩn cho việc dev. Bảng dưới đây là bản tóm tắt docs (tra 28/10/2026):
 
@@ -49,6 +55,8 @@ Claude Code khởi động ở style **Default** — không có style instructio
 | **Explanatory** | Thêm khối `★ Insight` ngắn giải thích vì sao chọn cách làm đó | Bạn đang làm quen codebase, muốn kèm lý do |
 | **Learning** | Giống Explanatory + để lại vài dòng `TODO(human)` cho bạn tự viết | Bạn muốn thực hành tay trong khi task vẫn đi tới đích |
 
+> **Cách đọc bảng này:** cột "Dùng khi" là phím tìm nhanh — đọc đúng dòng khớp mục đích của bạn là chọn được style; Default (không trong bảng) là trạng thái khởi động, chọn lại được bất cứ lúc nào.
+
 Ghi chú quan trọng:
 
 - **Proactive không đổi permission mode.** Style chỉ là chỉ dẫn — prompt hỏi quyền vẫn hiện như cũ; việc nào xóa data hay đụng prod thì style bảo Claude hỏi lại trong hội thoại, nhưng đó là chỉ dẫn chứ không phải cơ chế permissions.
@@ -57,9 +65,13 @@ Ghi chú quan trọng:
 
 **Kiểm tra nhanh:** chạy `/output-style` không tham số → danh sách style hiện ra và style hiện tại được đánh dấu. Đổi sang `concise` rồi hỏi 1 câu đơn giản → câu trả lời ngắn, không lời dẫn.
 
+> **Tóm gọn 1 câu:** Chọn style theo nhu cầu: muốn tự chạy lấy Proactive, muốn gọn lấy Concise, muốn hiểu sâu lấy Explanatory/Learning.
+
 ---
 
 ## 3. Đổi style: 4 cách
+
+Mục này liệt kê đủ 4 đường đổi style — lệnh, menu, extension, settings file — để bạn chọn đường nào tiện cho tình huống của mình.
 
 | Cách | Thao tác | Ghi chú |
 |---|---|---|
@@ -68,27 +80,21 @@ Ghi chú quan trọng:
 | VS Code extension | Menu `/` → **Output styles** (≥2.1.257; tạo style từ menu cần ≥2.1.261) | Chọn được cả custom style |
 | Settings file | Đặt field `outputStyle` trong `.claude/settings.local.json` hoặc `~/.claude/settings.json` | Giá trị **phân biệt hoa/thường**: `Explanatory` đúng, `explanatory` → rơi về Default |
 
-```bash
-# Trong session — đổi tới khi nào:
-/output-style concise
-/output-style            # không tham số: liệt kê + đánh dấu style hiện tại
+> **Cách đọc bảng này:** 4 dòng là 4 đường từ nhanh nhất (lệnh, tạm thời) tới bền nhất (settings file, áp cho mọi session) — muốn đổi thử thì 2 dòng đầu, muốn mặc định lâu dài thì dòng cuối.
 
-# Đặt default cho mọi project (user scope):
-# ~/.claude/settings.json
-# { "outputStyle": "Explanatory" }
-
-# Đặt cho 1 project (project scope, đè user):
-# .claude/settings.local.json
-# { "outputStyle": "Concise" }
-```
+> 📄 **Code ví dụ:** [`examples/01-3-oi-style-4-cach.sh`](examples/01-3-oi-style-4-cach.sh)
 
 Thời điểm áp dụng: đổi style giữa session → style mới áp từ **tin nhắn kế tiếp** của bạn. Trước v2.1.251, style mới chỉ áp sau `/clear` hoặc mở session mới. Đổi style có thể làm mất prompt cache của turn đó (turn đầu sau khi đổi chậm hơn — xem docs prompt caching).
 
 **Kiểm tra nhanh:** đặt `"outputStyle": "explanatory"` (viết thường) trong settings → style không áp (rơi về Default); sửa thành `"Explanatory"` → áp từ tin nhắn tiếp theo.
 
+> **Tóm gọn 1 câu:** Đổi style có 4 đường — `/output-style` là nhanh nhất, settings file là bền nhất, và nhớ viết đúng hoa/thường.
+
 ---
 
 ## 4. Tự viết custom output style
+
+Mục này dạy bạn làm "đồng phục riêng" cho team của mình: file style đặt ở đâu, frontmatter ghi gì, và một ví dụ chép được ngay.
 
 Custom output style là **file Markdown**: frontmatter ghi metadata, phần thân là chỉ dẫn cho Claude. Lưu ở 1 trong 3 tầng — tên file trở thành tên style, trừ khi frontmatter đặt `name`:
 
@@ -120,12 +126,7 @@ Use `flowchart TD` for control flow and `sequenceDiagram` for request paths.
 Keep diagrams under 15 nodes.
 ```
 
-```bash
-# Lưu và bật:
-mkdir -p .claude/output-styles
-# (tạo file .claude/output-styles/diagrams-first.md với nội dung trên)
-/output-style diagrams-first
-```
+> 📄 **Code ví dụ:** [`examples/02-4-1-vi-du-copy-paste-style-diagrams.sh`](examples/02-4-1-vi-du-copy-paste-style-diagrams.sh)
 
 ### 4.2. Frontmatter reference
 
@@ -136,13 +137,19 @@ mkdir -p .claude/output-styles
 | `keep-coding-instructions` | Không | `true` = giữ nguyên phần chỉ dẫn code của Claude Code. Mặc định `false` = bỏ phần đó (dành cho style biến Claude thành role không phải dev) |
 | `force-for-plugin` | Không | Chỉ cho style của plugin: `true` → tự áp khi plugin bật, đè `outputStyle` của user |
 
+> **Cách đọc bảng này:** cả 4 field đều không bắt buộc — chỉ cần đọc dòng `keep-coding-instructions` trước vì đó là field quyết định style có làm Claude "quên nghề code" hay không.
+
 Nếu YAML parse lỗi, style vẫn load dưới tên file với không field nào; chạy `claude --debug` để xem lỗi parse.
 
 **Kiểm tra nhanh:** tạo style trên, restart Claude Code, chạy `/output-style diagrams-first` → hỏi "explain this function" → thấy Mermaid diagram trước lời giải thích, và Claude vẫn code đúng chuẩn cũ (nhờ `keep-coding-instructions: true`).
 
+> **Tóm gọn 1 câu:** Custom style chỉ là một file Markdown với frontmatter ngắn — đặt đúng folder, restart, là có style riêng trong picker.
+
 ---
 
 ## 5. Output style vs CLAUDE.md vs skill vs hook vs subagent
+
+Mục này giải quyết câu hỏi hay gây rối nhất của bài: việc này nên nhét vào cơ chế nào trong 5 cơ chế? Đọc bảng là quyết định được ngay.
 
 Nguyên tắc 1 dòng: **output style = mọi câu trả lời; CLAUDE.md = những gì Claude cần biết; skill = quy trình theo task; hook = thứ phải chắc chắn xảy ra.**
 
@@ -166,9 +173,15 @@ So sánh trực diện output style với 2 hàng xóm hay nhầm:
 | Có đảm bảo tuân thủ không | Không (chỉ dẫn) | Không (context, không phải config) | Không |
 | Chi phí context | Thêm instructions mỗi turn (cache giảm dần) | Nạp mỗi turn → giữ <200 dòng | ~100 tokens lúc start, load body khi gọi |
 
+> **Cách đọc bảng này:** hàng "Phạm vi" là phân biệt quan trọng nhất — đọc nó trước; 3 hàng còn lại chỉ cần khi bạn đang cân nhắc đổi cơ chế vì lý do chi phí hay độ chắc chắn.
+
+> **Tóm gọn 1 câu:** Style đổi "cách nói", CLAUDE.md nạp "điều cần biết", skill gắn với "loại việc", hook đảm bảo "nhất định xảy ra" — muốn gì thì chọn đúng cơ chế đó.
+
 ---
 
 ## 6. Lưu ý: memory tool (API/SDK) khác `/memory` của Claude Code
+
+Mục này xử lý một cặp tên dễ nhầm: `/memory` là lệnh trong CLI, còn memory tool là tool type của Messages API dành cho ai tự build agent. Đọc để đừng gọi nhầm trong discussion hay docs.
 
 **Lệnh `/memory` của Claude Code** (cùng hệ [knowledge system — bài 03](./03-claude-md-memory-rules.md)):
 
@@ -186,9 +199,13 @@ So sánh trực diện output style với 2 hàng xóm hay nhầm:
 
 Tóm 1 dòng: **`/memory` = trình quản lý file nhớ của Claude Code trên máy bạn; memory tool = cơ chế cho dev tự build agent bằng API/SDK, dữ liệu nằm ở hạ tầng bạn kiểm soát.**
 
+> **Tóm gọn 1 câu:** Hai cái tên gần nhau nhưng hai thế giới: `/memory` cho người dùng CLI, memory tool cho dev build agent bằng API — trong Claude Code bạn không bật được memory tool.
+
 ---
 
 ## 7. Khi nào KHÔNG dùng output style
+
+Mục này là mặt trái của mục 5: những nhu cầu mà style không phải đáp án — đọc để đừng cài style rồi thất vọng vì việc bắt buộc vẫn bỏ qua.
 
 Cần điều kiện "chưa bao giờ" hay "luôn luôn" → output style không phải công cụ:
 
@@ -197,9 +214,13 @@ Cần điều kiện "chưa bao giờ" hay "luôn luôn" → output style không
 - Checklist deploy chỉ dùng khi release → **skill** (bài 05).
 - Giám sát assistant cho 1 việc hẹp → **subagent** (bài 06).
 
+> **Tóm gọn 1 câu:** Style là "mong muốn", không phải "thiết chế" — điều kiện luôn luôn/never bao giờ thì chuyển sang hook, CLAUDE.md, skill hoặc subagent.
+
 ---
 
 ## 8. Hiểu nhầm thường gặp
+
+Mục này chốt lại các nhầm lẫn hay gặp dưới dạng bảng "nhầm gì → sự thật → sửa ra sao" — dọc qua một lượt là tránh được gần hết bẫy của bài.
 
 | Hiểu nhầm | Sự thật | Cách sửa |
 |---|---|---|
@@ -209,6 +230,10 @@ Cần điều kiện "chưa bao giờ" hay "luôn luôn" → output style không
 | Subagent cũng nghe theo style | Subagent thường chạy system prompt riêng | Style chỉ áp hội thoại chính + fork |
 | `outputStyle: "concise"` trong settings | Field phân biệt hoa/thường, sai là rơi về Default | Viết đúng `Concise`, `Proactive`, `Explanatory`, `Learning` |
 | Nhầm `/memory` với memory tool `memory_20250818` | Hai cơ chế khác nhau: CLI local vs tool type của Messages API | Xem mục 6 |
+
+> **Cách đọc bảng này:** cột "Hiểu nhầm" là điều nhiều người tin sai, cột "Sự thật" đính chính, cột "Cách sửa" là việc làm cụ thể — dùng như checklist đối chiếu trước khi viết style đầu tiên.
+
+> **Tóm gọn 1 câu:** Hai nhầm lớn nhất: style không thay được hook, và field `outputStyle` phân biệt hoa/thường — còn lại tra bảng là hết bẫy.
 
 ---
 

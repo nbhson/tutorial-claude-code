@@ -12,12 +12,7 @@
 
 ## Cách gọi
 
-```bash
-/fast
-/fast <câu hỏi>
-/model sonnet
-/effort low
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -25,9 +20,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-/fast Tóm tắt module src/payments/ trong 5 bullet cho người không code.
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -36,11 +29,13 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
+
+> **Tóm gọn 1 câu:** `/fast` là làn ưu tiên cho việc vặt: đi nhanh, không dừng suy nghĩ — nhưng nhớ tắt làn về đúng tốc độ (`/effort medium`) trước khi gặp bài khó.
 
 ## Lỗi thường gặp
+
+Bảng dưới là mấy trục trặc khi bật chế độ tăng tốc — đối chiếu triệu chứng với cột đầu rồi xử theo cột cuối.
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
@@ -49,11 +44,13 @@ Kết quả mong đợi:
 | Fast trả lời ẩu, sai | Dùng fast cho bài khó | Lên `/effort medium`/`high` |
 | Bật fast rồi quên, bài khó sau cũng ẩu | Fast còn hiệu lực session | `/effort medium` để về bình thường |
 
+> **Cách đọc bảng này:** mỗi dòng là một cách "làn nhanh phản tác dụng"; cột "Vì sao" cho biết do bản CLI, do provider hay do bạn dùng sai loại bài, cột "Cách sửa" là lệnh chuyển về làn thường.
+
 ## Tham khảo
 
 - [../effort/README.md](../../model-mode/effort/README.md)
 - [../model/README.md](../../model-mode/model/README.md)
-- [../extra-usage/README.md](../../model-mode/extra-usage/README.md)
+- [../usage-credits/README.md](../../model-mode/usage-credits/README.md)
 - [../btw/README.md](../../code-repo/btw/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 

@@ -1,0 +1,6 @@
+// settings.json — hẹp (tốt): chỉ cho test/lint chạy luôn, còn lại hỏi
+{ "permissions": {
+  "allow": ["Read", "Bash(pnpm test:*)", "Bash(git diff:*)"],
+  "ask": ["Edit", "Write", "Bash(pnpm:*)", "Bash(git push:*)"],
+  "deny": ["Bash(rm -rf:*)", "Bash(git push origin main:*)", "Write(.env*)"]
+} }

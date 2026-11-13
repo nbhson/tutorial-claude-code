@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/radio`
-`/radio status`
-`/radio ask <câu hỏi>`
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,11 +19,7 @@
 
 **Prompt thật (paste vào Claude Code):**
 
-```bash
-/radio ask "refresh token nên xoay ở đâu: middleware hay API route?"
-# → trả lời trade-off 5 bullets, mạch chính vẫn gọn
-/radio off
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 **Kết quả mong đợi:**
 
@@ -36,17 +28,21 @@
 
 **Verify (30 giây):**
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
+
+Mục này là "sổ bệnh án" của `/radio`: các trục trặc khi mở kênh hỏi-đáp realtime và cách xử lý nhanh.
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `unknown command: /radio` | Bản cũ hoặc provider không hỗ trợ | Update mới nhất; gõ `/` kiểm tra; vắng thì dùng `/btw` |
 | Hỏi mà trả lời chung chung | Câu hỏi quá rộng | Hẹp scope: 1 file/1 luồng/1 quyết định |
 | Transcript voice sai từ khóa | Mic/tiếng ồn | Gõ lại từ khóa (tên file/hàm) bằng text |
+
+> **Cách đọc bảng này:** tra theo cột "Triệu chứng" trước, rồi đọc sang "Vì sao" và "Cách sửa" — mỗi dòng là một tình huống xử lý xong trong 1–2 phút.
+
+> **Tóm gọn 1 câu:** `/radio` là tai nghe đàm thoại rời trong lúc tay vẫn đang code — hỏi nhanh trên kênh phụ, tắt đi thì luồng chính vẫn nguyên vẹn.
 
 ## Tham khảo
 

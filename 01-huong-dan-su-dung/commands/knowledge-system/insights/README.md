@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/insights          # phân tích log local gần đây
-/insights --month  # gộp cả tháng
-/insights --team   # gộp log nhiều người
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,12 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-/insights
-# → "Tuần này 1.2M token. 40% vào Read file dump.sql lặp 12 lần.
-#    Đơn: thay Read dump bằng Grep + head, dùng /compact mỗi 2h.
-#    Tiết kiệm ước tính 400k/tuần (~30%)."
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -39,11 +30,17 @@ Kết quả mong đợi:
 
 ## Lỗi thường gặp
 
+Mục này là "sổ bệnh án" của `/insights`: báo cáo trống, số lệch bill, team thiếu người — và cách xử lý.
+
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Báo cáo trống/không có dữ liệu | Log bị xoá hoặc profile khác | Kiểm tra `~/.claude/projects/`; đúng user/profile |
 | Số token lệch với bill | Bill tính cả API trực tiếp, insights chỉ CLI local | So với `/stats` cùng nguồn; bill cloud xem console riêng |
 | `--team` thiếu người | Ai đó chưa export log | Quy ước: mỗi người export thứ 2 đầu tuần |
+
+> **Cách đọc bảng này:** mỗi dòng một hiện tượng khi đọc báo cáo; "Vì sao" chỉ chênh lệch nguồn dữ liệu, "Cách sửa" là bước kiểm tra hoặc quy ước team.
+
+> **Tóm gọn 1 câu:** `/insights` là bác sĩ đọc kết quả xét nghiệm rồi kê đơn cho ví tiền của bạn — áp từng viên thuốc (1 gợi ý) chứ đừng uống cả lọ một lúc.
 
 ## Tham khảo
 

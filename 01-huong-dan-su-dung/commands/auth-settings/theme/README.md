@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/theme
-/theme <tên>
-/theme --list
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,12 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Đang theme dark, ra sân demo với khách, màn hình lóa:
-/theme light
-# → diff đọc được ngay, demo tiếp không mất mặt
-# Về văn phòng: /theme dark (1 giây)
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -37,18 +28,21 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-/theme --list
-# → theme vừa chọn được đánh dấu active
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
+
+Mục này nói về các trục trặc hay gặp khi đổi theme — tra đúng triệu chứng rồi làm theo cột "Cách sửa".
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Đổi theme mà màu không đổi | Terminal ép 16 màu hoặc `NO_COLOR` set | Kiểm tra terminal truecolor; `unset NO_COLOR` |
 | Picker theme trống | Themes dir bị xoá | Reinstall CLI hoặc copy themes từ máy khác |
 | Theme không nhớ sau restart | Sửa file tay sai scope | Đổi bằng `/theme` (lưu local đúng chỗ) thay vì sửa tay |
+
+> **Cách đọc bảng này:** đọc theo hàng — "Triệu chứng" là hiện tượng bạn thấy, "Vì sao" chỉ nguyên nhân nằm ở terminal hay ở thao tác, "Cách sửa" là việc cần làm.
+
+> **Tóm gọn 1 câu:** `/theme` là đổi áo cho CLI: không đổi tính cách, chỉ để mắt đỡ mỏi và màn demo đỡ bị lóa.
 
 ## Tham khảo
 

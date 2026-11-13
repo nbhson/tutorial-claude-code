@@ -17,20 +17,15 @@
 | Auto mode | Mode tự tiến xa, classifier duyệt quyền thay bạn | **Default cho session mới trên Pro/Max/Team từ 14/08/2026** |
 | Mod | Mã JS/TS chạy ngay trong CLI, mở rộng cả giao diện | Audit ở [bài 16](./16-mods-bao-mat-validate.md) |
 
+> **Cách đọc bảng này:** Mỗi dòng là một thuật ngữ sẽ dùng suốt bài — cột 2 là giải thích bằng lời đời thường, cột 3 là ví dụ cụ thể.
+
 ---
 
 ## 1. Permissions là gì, vì sao cần?
 
 Agent có quyền chạy shell + sửa file = sức mạnh + rủi ro. Permissions là harness gate giữa model và máy bạn — không có gate này, 1 prompt-injection (issue text độc) có thể khiến agent chạy `rm -rf` hay exfiltrate `.env`. Bốn mốc khi tool request đến:
 
-```json
-// settings.json — hẹp (tốt): chỉ cho test/lint chạy luôn, còn lại hỏi
-{ "permissions": {
-  "allow": ["Read", "Bash(pnpm test:*)", "Bash(git diff:*)"],
-  "ask": ["Edit", "Write", "Bash(pnpm:*)", "Bash(git push:*)"],
-  "deny": ["Bash(rm -rf:*)", "Bash(git push origin main:*)", "Write(.env*)"]
-} }
-```
+> 📄 **Code ví dụ:** [`examples/01-1-permissions-la-gi-vi-sao-can.json`](examples/01-1-permissions-la-gi-vi-sao-can.json)
 
 1. **Hook trước:** `PreToolUse` deny thắng TẤT CẢ (kể cả `--dangerously-skip-permissions`); hook allow không nới được deny (thiết kế chỉ siết — muốn nới phải sửa deny gốc).
 2. **Rules:** `deny > ask > allow` trong cùng scope; `managed (org) > local > team settings > defaults` giữa các scope.
@@ -40,6 +35,8 @@ Agent có quyền chạy shell + sửa file = sức mạnh + rủi ro. Permissio
 - Quản lý: `/permissions` (alias `/allowed-tools`) — xem rules theo scope, thêm/xóa, quản lý working dirs, review auto-mode denials gần đây.
 - Từ Week 25/2026, deny/ask rules match được cả **tool params** theo mẫu `Tool(param:value)` — hẹp hơn được nữa.
 
+> **Tóm gọn 1 câu:** Permissions là "cửa chắn 4 lớp" trước khi model chạm vào máy bạn — hook siết trước, rules xét sau, mode quyết định hỏi hay không.
+
 ### 1.1. 3 loại quyết định
 
 | Quyết định | Ý nghĩa | Khi dùng |
@@ -48,7 +45,11 @@ Agent có quyền chạy shell + sửa file = sức mạnh + rủi ro. Permissio
 | `ask` | Hỏi bạn mỗi lần (hoặc theo mode) | Edit, Write, push, deploy |
 | `deny` | Cấm luôn (hook allow cũng không nới được) | `rm -rf`, push main, đọc `.env`, writes ngoài repo |
 
+> **Cách đọc bảng này:** Mỗi dòng là một mức quyết định của gác cổng — cột 2 là nghĩa, cột 3 là tình huống nên áp mức đó.
+
 Thứ tự xử lý khi tool request đến: `PreToolUse` hook deny → rules `deny` → rules `ask` (hỏi bạn hoặc auto-approve theo mode) → rules `allow` (chạy luôn).
+
+> **Tóm gọn 1 câu:** Chỉ có 3 mức: allow chạy luôn, ask hỏi bạn, deny cấm hẳn — và deny luôn thắng mọi thứ.
 
 ---
 
@@ -81,6 +82,8 @@ Deny "Bash(rm:*)" nhưng agent chạy:
 
 ### 2.3. Deny-bypass đã vá từ v2.1.288/289 — đừng dựa vào bản cũ
 
+Mục này kể các đường lách luật đã bị vá — và bài học: đừng tin deny trên bản CLI cũ.
+
 Các kiểu lách đã vá: compound `&&`/`||`/`;` (chỉ check prefix allow), env-prefix `TZ="$HOME" rm -rf`, bare assignment, symlink, nested-mod approval. Bản ≥2.1.288 tách từng segment compound rồi đối chiếu từng cái + resolve realpath.
 
 Quy tắc phòng thủ (áp dụng cả khi đã update):
@@ -88,6 +91,8 @@ Quy tắc phòng thủ (áp dụng cả khi đã update):
 - **Deny interpreter, không chỉ deny binary**: thêm `Bash(bash -c:*)`, `Bash(sh -c:*)`, `Bash(python3 -c:*)`, `Bash(node -e:*)` vào deny khi việc critical.
 - **Nghi ngờ cả allow rules**: allow prefix rộng (`Bash(git:*)`, `Bash(npm:*)`) là mặt lách compound/env-prefix — giữ allow hẹp.
 - **Negative test sau mỗi update**: viết 1 prompt cố lách deny cũ (compound, env-prefix, symlink) lên môi trường test — phải BLOCK mới đạt.
+
+> **Tóm gọn 1 câu:** Rules là allowlist tiện chứ không phải tường thành — chặn interpreter, giữ allow hẹp, và negative-test sau mỗi bản update.
 
 ---
 
@@ -103,6 +108,8 @@ managed (org) > settings.local (personal) > settings.json (team) > defaults
 - `deny` ở bất kỳ scope nào cũng thắng `allow` nơi khác (an toàn mặc định).
 - Hook `PreToolUse` deny thắng TẤT CẢ kể cả `bypassPermissions`; hook allow KHÔNG thắng `deny` rules hay `ask` của org.
 - Xem merged result (đừng đoán): `/permissions` → tabs Allow/Ask/Deny theo scope + working dirs + recent auto-denials.
+
+> **Tóm gọn 1 câu:** Nhớ hai thứ tự: `deny > ask > allow` trong cùng scope, và `managed > local > team > defaults` giữa các scope.
 
 ### 3.2. Patterns khuyến nghị
 
@@ -127,46 +134,15 @@ DENY (cấm — nguy hiểm/không bao giờ trong agent):
 
 ### 4.1. Cấp 1 — Team (`.claude/settings.json`, COMMIT)
 
-```json
-{
-  "$schema": "https://claude.ai/code/settings-schema.json",
-  "permissions": {
-    "allow": [
-      "Read", "Glob", "Grep",
-      "Bash(git diff:*)", "Bash(git status:*)", "Bash(git log:*)",
-      "Bash(pnpm test:*)", "Bash(pnpm lint:*)"
-    ],
-    "ask": ["Edit", "Write", "Bash(pnpm:*)", "Bash(git push:*)", "Bash(git commit:*)", "Bash(docker:*)"],
-    "deny": [
-      "Bash(rm -rf:*)", "Bash(sudo:*)",
-      "Bash(git push origin main:*)", "Bash(git push origin master:*)",
-      "Write(.env*)", "Read(.env*)"
-    ]
-  },
-  "hooks": {
-    "PreToolUse": [
-      { "matcher": "Bash", "type": "command",
-        "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/block-main-push.sh" }
-    ],
-    "PostToolUse": [
-      { "matcher": "Edit|Write", "type": "command",
-        "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/lint-on-write.sh" }
-    ]
-  }
-}
-```
+> 📄 **Code ví dụ:** [`examples/02-4-1-cap-1-team-claude-settings-json.json`](examples/02-4-1-cap-1-team-claude-settings-json.json)
 
 ### 4.2. Cấp 2 — Personal (`.claude/settings.local.json`, KHÔNG commit)
 
-```json
-{
-  "permissions": {
-    "allow": ["Bash(gh pr view:*)", "Bash(gh issue view:*)", "Bash(pnpm --filter @acme/api test:*)"]
-  }
-}
-```
+> 📄 **Code ví dụ:** [`examples/03-4-2-cap-2-personal-claude-settings-local.json`](examples/03-4-2-cap-2-personal-claude-settings-local.json)
 
 > Personal chỉ NỚI cái team chưa cover cho workflow riêng bạn. Đừng deny trong personal để lách team allow — deny personal thắng nhưng gây confusion khi debug chung.
+
+> **Tóm gọn 1 câu:** Personal settings chỉ để nới cho workflow riêng — đừng dùng nó để lách luật của team.
 
 ### 4.3. Cấp 3 — Org managed (Team/Enterprise admin)
 
@@ -193,10 +169,14 @@ default → acceptEdits → plan → auto → bypassPermissions
 | `auto` | Tự tiến xa, ít hỏi — classifier duyệt quyền chạy server-side + deny rules lưng | Task dài có verification gate (overnight migrate + test gate) |
 | `bypassPermissions` (`--dangerously-skip-permissions`) | Bỏ hỏi | **Chỉ CI sandbox** — không dùng máy dev |
 
+> **Cách đọc bảng này:** Mỗi dòng là một mode — cột 2 là hành vi khi đang ở mode đó, cột 3 là tình huống nên chọn mode đó.
+
 > **Auto mode:** research preview từ Week 13/03-2026 → có trên Pro từ Week 21 →
 > **từ 14/08/2026 (Week 32) là default permission mode cho session mới trên Pro/Max/Team.**
 > Cả auto mode lẫn hard-deny đều blocks destructive git và `rm -rf` trên biến chưa resolve.
 > Có trên Bedrock/Vertex/Foundry. Cloud sessions (Web): chỉ Accept edits / Plan (/Auto tùy bản) — không Manual/Bypass.
+
+> **Tóm gọn 1 câu:** Modes là núm ga tự chủ: plan chỉ nhìn, acceptEdits tự sửa, auto tự tiến, bypass bỏ hỏi (chỉ cho CI sandbox).
 
 ### 5.1. Chọn mode + đổi mode
 
@@ -216,6 +196,8 @@ Máy dev hàng ngày → default (hoặc auto nếu đã quen review denials).
 
 **Bắt buộc Claude subscription (claude.ai sign-in)**: Web, Mobile, Slack, Desktop app full, Routines (`/schedule`), Ultraplan, `/ultrareview` (public preview) + `claude ultrareview` cho CI, Code Review (Team/Enterprise), Remote Control, Chrome extension, Computer use (Pro/Max), Artifacts, Voice dictation.
 
+> **Tóm gọn 1 câu:** Việc chạy local thì có ở mọi provider; việc cần claude.ai sign-in thì không — đây là lý do "lệnh không tồn tại" trên máy bạn.
+
 ### 6.1. Khác nhau theo provider
 
 | Khả năng | Sub | Console | Bedrock | AWS Plat | GCP | Foundry |
@@ -228,6 +210,8 @@ Máy dev hàng ngày → default (hoặc auto nếu đã quen review denials).
 | Analytics/server settings | Team/Ent | Team/Ent | ✗ | ✗ | ✗ | ✗ |
 | Web/Mobile/Slack/Routines/Remote | ✓ (sign-in) | ✗ | ✗ | ✗ | ✗ | ✗ |
 
+> **Cách đọc bảng này:** Mỗi dòng là một khả năng, mỗi cột là một provider — ô ✗ nghĩa là khả năng đó không có trên provider đó; dọc theo cột của bạn để biết mình có gì.
+
 ### 6.2. Theo plan (sign-in claude.ai)
 
 | Feature | Pro | Max | Team | Enterprise |
@@ -239,7 +223,11 @@ Máy dev hàng ngày → default (hoặc auto nếu đã quen review denials).
 | Analytics dashboard | ✗ | ✗ | ✓ | ✓ (+ API) |
 | Server-managed settings / SSO | ✗ | ✗ | ✓ | ✓ (+SCIM/Compliance/ZDR) |
 
+> **Cách đọc bảng này:** Mỗi dòng là một feature, mỗi cột là một plan trả tiền — dọc theo cột plan của bạn để biết được dùng gì, dấu ✓/admin nghĩa là có hoặc cần admin bật.
+
 > `*` = cần admin enable hoặc giới hạn theo bản. Check docs hiện hành (code.claude.com/docs) trước khi hứa với team.
+
+> **Tóm gọn 1 câu:** Feature càng "quản trị" (SSO, analytics, Code Review) càng cần plan cao — tra bảng này trước khi hứa với team.
 
 ---
 
@@ -272,6 +260,8 @@ Bước 5: /permissions → review auto-denials: cái nào deny oan thì pre-app
 | `bypassPermissions` trên máy dev | Chỉ CI sandbox; máy dev dùng default/auto + rules |
 | Deny oan lệnh read-only lặp lại | `/permissions` → review denials → pre-approve lệnh đó |
 
+> **Cách đọc bảng này:** Cột trái là thói quen sai hay gặp, cột phải là cách sửa — đọc theo cặp như bài học "đừng làm thế, hãy làm này".
+
 ### 8.2. Gặp "lệnh không tồn tại" — 6 bước tra
 
 ```text
@@ -293,8 +283,12 @@ Bước 5: /permissions → review auto-denials: cái nào deny oan thì pre-app
 
 Mitigations khi chạy mod lạ (chi tiết bài 16): **safe-mode** — chỉ cho mod calls đọc (`$.fs.read`, `$.model.complete`), chặn `run/spawn/write/fetch`; **`disableAllHooks`** — tắt hooks mod đăng ký khi nghi prompt.submit/ui.render giả mạo; **`--bare`** — chạy CLI trần không load mod/plugin lạ để review code trước; review bằng `claude plugin validate <mod>` — đỏ ở `hooks:` + `calls:` (đọc env + ghi file + gọi mạng + chạy shell cùng lúc) → không cài; kèm `claude plugin eval` (đánh giá trước khi tin) và `claude plugin details` (token cost).
 
+> **Tóm gọn 1 câu:** Mod độc có thể tự duyệt quyền của chính nó — chạy mod lạ thì dùng safe-mode, `--bare` và `claude plugin validate` trước.
+
 ## 10. Bài tập + link chéo
 
 **Bài 1 (15 phút):** Setup 2 files settings (mục 4.1 + 4.2). Test 4 prompts: read-only (qua), edit (hỏi), push main (block), đọc .env (block). **Bài 2 (15 phút):** Thử các modes (Shift+Tab) trên cùng 1 task nhỏ, ghi khác biệt số lần hỏi + `/cost`. Rồi viết 1 rule matcher cố ý sai (prefix lọt `HEAD:main`), chứng minh lọt bằng hook test script (bài 07), sửa bằng hook intent-match. **Bài 3 (15 phút):** Tra bảng mục 6: team bạn thiếu features nào? Lập bảng "có/không" + workaround.
+
+> **Tóm gọn 1 câu:** Ba bài tập: setup settings thật và test 4 tình huống, thử các modes so sánh, và lập bảng tính khả dụng cho team mình.
 
 **Link chéo:** [00 — Tổng quan](./00-tong-quan-claude-code.md) (harness ≠ model — permission do harness enforce) · [07 — Hooks](./07-hooks-tu-dong-hoa.md) (PreToolUse deny thắng bypass) · [09 — Plugins](./09-plugins-marketplaces.md) (managed policy cho org) · [11 — Worktrees](./11-git-worktrees-checkpoints.md) (trust per worktree) · [12 — SDK/CI](./12-agent-sdk-ci-cd-automation.md) (`bypassPermissions` chỉ CI sandbox) · [16 — Mods](./16-mods-bao-mat-validate.md) (audit mod trước khi cài) · Tra lệnh chi tiết: [commands/model-mode/permissions](./commands/model-mode/permissions/README.md), [commands/auth-settings/sandbox](./commands/auth-settings/sandbox/README.md).

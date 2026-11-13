@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/keybindings
-/keybindings set <hành-động> <phím>
-/keybindings reset
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,13 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Gõ prompt 2 dòng, Shift+Enter lại gửi mất:
-/keybindings
-# → Multiline: Shift+Enter (đúng rồi — vậy là terminal ăn mất, không phải CLI sai)
-# → sang /terminal-setup fix theo terminal đang dùng (iTerm2/VSCode/Kitty...)
-# → quay lại test: Shift+Enter xuống dòng ✓
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -38,10 +28,7 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-/keybindings
-# → đối chiếu phím vừa đổi đã đúng; Ctrl+C vẫn huỷ được
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
 
@@ -50,6 +37,10 @@ Kết quả mong đợi:
 | Remap xong bấm không ăn | Terminal/compositor ăn phím trước | `/terminal-setup` fix terminal; chọn phím khác ít đụng (Ctrl+G, Alt+...) |
 | `Ctrl+C` không huỷ được nữa | Remap đè mất | `/keybindings reset cancel`; luôn giữ 1 cách huỷ quen |
 | Sang máy mới phím khác | Local scope không đi theo | Sync `~/.claude/settings.json` tay hoặc cấu lại |
+
+> **Cách đọc bảng này:** "Triệu chứng" là phím bấm không ăn hoặc ăn sai, "Vì sao" cho biết ai đã chặn trước, "Cách sửa" là bước gỡ kẹt — tra theo đúng hàng phím đang lỗi.
+
+> **Tóm gọn 1 câu:** `/keybindings` là bẻ cong bàn phím theo tay mình — cứ thoải mái remap, miễn đừng đè mất lối thoát (phím huỷ lệnh).
 
 ## Tham khảo
 

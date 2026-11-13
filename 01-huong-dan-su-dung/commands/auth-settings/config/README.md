@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/config
-/settings
-/config <tab>
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,14 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-/config --scope managed
-# → {"deny": ["Bash(sudo:*)", "MCP(external-*)"], "region": "eu-west", ...}
-# → À, công ty cấm sudo + MCP ngoài. Khỏi thắc mắc, khỏi tìm cách gỡ (gỡ không được).
-
-/config --scope project
-# → baseline team: deny rm-rf, allow test/lint (đi theo git, đã có sẵn)
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -39,10 +28,7 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-/config --scope project
-# → thấy baseline team (deny/allow); đối chiếu thay đổi vừa rồi đã nằm đúng scope
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
 
@@ -51,6 +37,10 @@ Kết quả mong đợi:
 | Sửa settings tay xong config "bay về default" | JSON sai cú pháp, fail parse | Restore `.bak`; dùng UI sửa; `python3 -m json.tool settings.json` check |
 | Allow rồi mà vẫn bị chặn | Managed deny đè (thiết kế) | `/config --scope managed` xem ai chặn; xin admin, đừng cố gỡ |
 | `/settings` tưởng lệnh khác `/config` | Không — cùng 1 handler | Nhớ 1 là đủ; bài này gộp chung |
+
+> **Cách đọc bảng này:** "Triệu chứng" là hiện tượng sau khi sửa settings, "Vì sao" cho biết config nào gây ra, "Cách sửa" là bước khôi phục — đọc hàng nào dính hàng đó.
+
+> **Tóm gọn 1 câu:** `/config` là phòng máy trung tâm của Claude Code — sửa đúng tab, đúng scope, và luôn backup settings trước khi nghịch tay.
 
 ## Tham khảo
 

@@ -20,15 +20,11 @@
 
 ## 1. Print mode (`-p`) — Claude cho scripts và CI
 
-CI runner không có người ngồi approve/deny. REPL hỏi giữa chừng = treo job tới timeout. `-p` + `dontAsk` + allowlist hẹp = deterministic: cho phép trước đúng thứ job cần, cấm phần còn lại, log JSON để step sau parse.
+Mục này nói về cách chạy Claude khi không có người ngồi bên màn hình: một câu hỏi, một kết quả, không ai phải bấm approve. Đọc để biết vì sao CI bắt buộc chạy kiểu này và bật guardrails ở đâu.
 
-```bash
-# Non-interactive, output text/JSON — giữ guardrails chặt chẽ
-claude -p "review diff và in findings dạng JSON" \
-  --output-format json \
-  --permission-mode dontAsk \
-  --allowedTools "Read, Grep, Glob, Bash"
-```
+CI runner không có người ngồi approve/deny. REPL hỏi giữa chừng = treo job tới timeout. `-p` + `dontAsk` + allowlist hẹp = deterministic: cho phép trước đúng thứ job cần, cấm phần còn lại, log JSON để step sau parse. Ví von: máy bán vé tự động không được dừng giữa chừng hỏi "bạn có chắc muốn mua vé này không?" — mọi cửa đều phải chốt trước khi máy chạy.
+
+> 📄 **Code ví dụ:** [`examples/01-1-print-mode-p-claude-cho-scripts-va.sh`](examples/01-1-print-mode-p-claude-cho-scripts-va.sh)
 
 - `PermissionRequest` hooks trong `-p` plain không có prompt (cần Agent SDK `canUseTool` hoặc `--permission-prompt-tool`); automate permission thì dùng **`PreToolUse`** hooks.
 - Hook `onFailure: "block"` (≥2.1.295): hook lỗi/timeout thì **chặn** hành động thay vì thả qua — CI nên bật để lỗi hook không âm thầm bỏ qua guardrail.
@@ -36,53 +32,23 @@ claude -p "review diff và in findings dạng JSON" \
 
 ### 1.1. 3 ví dụ `-p` copy-paste
 
-```bash
-# Ví dụ 1 — review JSON (parse bằng jq cho step sau)
-claude -p "review git diff main...HEAD, output JSON: {findings: [{severity, file, line, msg, fix}]}" \
-  --output-format json --permission-mode dontAsk --allowedTools "Read, Grep, Glob, Bash" | jq '.findings'
-
-# Ví dụ 2 — healthcheck MCP (≥2.1.205): gắn vào CI warmup, MCP down → fail fast
-claude -p "/mcp" --output-format text
-```
+> 📄 **Code ví dụ:** [`examples/02-1-1-3-vi-du-p-copy-paste.sh`](examples/02-1-1-3-vi-du-p-copy-paste.sh)
 
 **Kiểm tra nhanh:** ví dụ 1 pipe qua `jq '.findings | length'` → in ra số (`null` = prompt chưa ép đúng schema). Yêu cầu `rm -rf` với allowlist hẹp → phải bị chặn.
+
+> **Tóm gọn 1 câu:** `claude -p` là "Claude cho máy đọc": chốt quyền trước, chạy 1 mạch, xuất JSON — không bao giờ dừng hỏi người.
 
 ---
 
 ## 2. Agent SDK — build agent riêng
 
-SDK bọc vòng lặp Claude (tools + permissions + orchestration) để build workflow custom: full control tool access, permission callbacks. Mặc định load `.claude/` từ CWD + `~/.claude/` — thu hẹp bằng `settingSources`.
+Mục này dành cho ai muốn đưa vòng lặp Claude vào app của chính mình (bot, backend, CLI nội bộ) thay vì dùng qua terminal — SDK bọc sẵn tools + permissions để bạn chỉ định hình khối workflow.
+
+SDK bọc vòng lặp Claude (tools + permissions + orchestration) để build workflow custom: full control tool access, permission callbacks. Mặc định load `.claude/` từ CWD + `~/.claude/` — thu hẹp bằng `settingSources`. Hãy hình dung SDK như mua "bộ khung bếp thay cho nguyên căn nhà hàng": bạn vẫn có lửa và dao thớt (tools), nhưng tự bày cách nấu.
 
 ### 2.1. SDK code mẫu (TypeScript — query + permissions callback)
 
-```typescript
-// examples/agent-review.ts — chạy: npx tsx examples/agent-review.ts
-import { query } from "@anthropic-ai/claude-agent-sdk";
-
-const result = await query({
-  prompt: "Review git diff main...HEAD, trả về tối đa 10 findings dạng checklist.",
-  options: {
-    model: "sonnet",
-    permissionMode: "dontAsk",
-    allowedTools: ["Read", "Grep", "Glob", "Bash"],
-    settingSources: ["project"], // chỉ load .claude/ project, bỏ ~/.claude/ personal
-    canUseTool: async (tool, input) => {
-      if (tool === "Bash") {
-        const cmd = (input as { command: string }).command ?? "";
-        // Chỉ cho git read-only + test focused
-        if (/^(git (diff|status|log) |pnpm (test|lint) )/.test(cmd)) return { behavior: "allow" };
-        return { behavior: "deny", message: "CI agent chỉ được git-read + test/lint." };
-      }
-      return { behavior: "ask" };
-    },
-  },
-});
-
-for await (const msg of result) {
-  if (msg.type === "text") process.stdout.write(msg.text);
-  if (msg.type === "result" && msg.isError) process.exitCode = 1;
-}
-```
+> 📄 **Code ví dụ:** [`examples/03-2-1-sdk-code-mau-typescript-query-permissions.ts`](examples/03-2-1-sdk-code-mau-typescript-query-permissions.ts)
 
 ### 2.2. TypeScript vs Python SDK — cùng năng lực, khác cách viết
 
@@ -97,117 +63,29 @@ Python SDK **chính chủ**: package [`claude-agent-sdk`](https://pypi.org/proje
 | Structured output | JSON Schema / Zod | JSON Schema / Pydantic |
 | CLI đi kèm | Cần cài Claude Code riêng | Wheel **bundle sẵn Claude Code CLI** (override bằng `cli_path=...`) |
 
+> **Cách đọc bảng này:** chọn cột ngôn ngữ bạn định dùng, rồi đối chiếu từng dòng — cùng một năng lực, chỉ khác cách gọi; dòng "CLI đi kèm" là khác biệt thực dụng nhất khi setup máy mới.
+
 > Trong CI, muốn ép mọi workflow agent chạy cùng 1 model (ổn định chi phí) → đặt env `CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL` (≥2.1.296) ở job env, cạnh `ANTHROPIC_MODEL`.
+
+> **Tóm gọn 1 câu:** SDK cho bạn vòng lặp Claude trong app riêng — TS hay Python cùng một sức mạnh, chỉ khác camelCase và snake_case.
 
 ---
 
 ## 3. CI/CD: GitHub Actions & GitLab (không tắt guardrails)
 
+Mục này là bản dựng thực tế trên pipeline: 2 workflow copy-paste được và bộ công cụ review sâu cho CI. Đọc để đem về repo và chạy ngay, không phải nghĩ từ đầu.
+
 Pattern: `claude -p` với scope hẹp + `dontAsk` + allowlist tools tối thiểu, secrets qua env runner. Có sẵn trên Sub/Console/Bedrock/AWS/GCP (Foundry ✗ — [bài 10](./10-permissions-modes-availability.md)). Setup chuẩn bị 1 lần (`Setup` hook event, `--init-only`/`--maintenance` trong `-p`).
 
 ### 3.1. Workflow 1 — auto-review PR mới (hoàn chỉnh, copy-paste)
 
-```yaml
-# .github/workflows/claude-review.yml
-name: claude-review
-on:
-  pull_request:
-    types: [opened, synchronize]
-
-permissions:
-  contents: read
-  pull-requests: write   # để post comment findings
-
-jobs:
-  review:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-
-      # Setup Claude (1 lần): curl -fsSL https://claude.ai/install.sh | bash
-      #   + echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-      # Warmup (Setup hooks): claude --init-only
-      # Secrets: ANTHROPIC_API_KEY (Console) hoặc OAuth token (subscription) — không echo ra log.
-
-      - name: Review diff (guardrailed)
-        run: |
-          claude -p "Review git diff origin/${{ github.base_ref }}...HEAD. Output JSON: {findings: [{severity, file, line, msg, fix}]}. Tối đa 10 findings, chỉ lỗi thực sự." \
-            --output-format json \
-            --permission-mode dontAsk \
-            --allowedTools "Read, Grep, Glob, Bash" > review.json
-          cat review.json | jq '.findings'
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-
-      - name: Post findings as PR comment
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { findings = [] } = JSON.parse(require('fs').readFileSync('review.json', 'utf8'));
-            const body = findings.length
-              ? `## Claude Review (${findings.length})\n` + findings.map(f =>
-                  `- **[${f.severity}]** \`${f.file}:${f.line}\` — ${f.msg}\n  Fix: ${f.fix}`).join('\n')
-              : `## Claude Review\nKhông thấy issue.`;
-            await github.rest.issues.createComment({ ...context.repo, issue_number: context.issue.number, body });
-```
+> 📄 **Code ví dụ:** [`examples/04-3-1-workflow-1-auto-review-pr-moi.yaml`](examples/04-3-1-workflow-1-auto-review-pr-moi.yaml)
 
 ### 3.2. Workflow 2 — overnight CI failure analysis
 
-```yaml
-# .github/workflows/claude-ci-triage.yml
-name: claude-ci-triage
-on:
-  schedule:
-    - cron: "0 22 * * *"   # nightly 22:00 UTC
-  workflow_dispatch: {}     # + nút chạy tay
+> 📄 **Code ví dụ:** [`examples/05-3-2-workflow-2-overnight-ci-failure-analysis.yaml`](examples/05-3-2-workflow-2-overnight-ci-failure-analysis.yaml)
 
-permissions:
-  contents: read
-  actions: read
-  issues: write            # mở issue khi CI fail
-
-jobs:
-  triage:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      # actions/checkout (fetch-depth: 0) + Setup Claude: y hệt workflow 1
-
-      - name: Analyze latest failures
-        run: |
-          gh run list --branch main --limit 5 --json conclusion,name,headSha > runs.json
-          claude -p "Đọc runs.json (5 runs gần nhất main). Với runs failed: gh run view <id> --log-failed để lấy logs, tóm tắt root cause + đề xuất fix (tối đa 5 bullets/run). Output markdown." \
-            --output-format text \
-            --permission-mode dontAsk \
-            --allowedTools "Read, Grep, Glob, Bash" > triage.md
-          cat triage.md
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Open issue if failures found
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const body = require('fs').readFileSync('triage.md', 'utf8');
-            if (/no failures|all passed/i.test(body)) { console.log('All green.'); return; }
-            await github.rest.issues.create({
-              ...context.repo, title: `CI triage ${new Date().toISOString().slice(0,10)}`, body, labels: ['ci'] });
-```
-
-```yaml
-# GitLab CI tương đương (khung — .gitlab-ci.yml)
-# claude_review:
-#   image: node:22
-#   script:
-#     - curl -fsSL https://claude.ai/install.sh | bash
-#     - export PATH="$HOME/.local/bin:$PATH"
-#     - claude -p "review diff..." --output-format json --permission-mode dontAsk --allowedTools "Read, Grep, Glob, Bash"
-#   rules: [{ if: '$CI_PIPELINE_SOURCE == "merge_request_event"' }]
-# Secrets: ANTHROPIC_API_KEY via GitLab CI/CD variables (masked).
-```
+> 📄 **Code ví dụ:** [`examples/06-3-2-workflow-2-overnight-ci-failure-analysis.yaml`](examples/06-3-2-workflow-2-overnight-ci-failure-analysis.yaml)
 
 > **Không dùng `bypassPermissions` trên runner persistent** — chỉ hợp sandbox ephemeral. Secrets luôn qua `${{ secrets.* }}` / masked vars, không echo ra log.
 
@@ -218,19 +96,17 @@ Ngoài tự viết workflow `claude -p`, từ 2026 có 2 lựa chọn dựng s�
 - **`/ultrareview`** (trong session, public preview từ Week 17/2026): phóng đội bug-hunting agents chạy trên cloud, tổng hợp findings — dùng khi muốn soi kỹ 1 diff/branch lớn hơn khả năng 1 reviewer.
 - **`claude ultrareview`** (CLI, từ Week 18/2026): cùng cơ chế chạy được trong CI job — thay/kèm workflow auto-review tự viết khi cần review sâu:
 
-```yaml
-# Thay step "Review diff" bằng:
-      - name: Ultrapreview (fleet bug-hunting)
-        run: claude ultrareview --output-format json > review.json
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-```
+> 📄 **Code ví dụ:** [`examples/07-3-3-ultrareview-fleet-bug-hunting-cho-ci.yaml`](examples/07-3-3-ultrareview-fleet-bug-hunting-cho-ci.yaml)
 
 > Cả 2 đang là **public preview** — check `claude ultrareview --help` ở bản của bạn. Review nhẹ hàng ngày thì workflow `claude -p` mục 3.1 vẫn rẻ và ổn định hơn.
+
+> **Tóm gọn 1 câu:** CI chạy Claude = `claude -p` scope hẹp là nền tảng, còn `/ultrareview` là "gọi đội đặc nhiệm" khi cần soi kỹ một diff lớn.
 
 ---
 
 ## 4. Routines (`/schedule`) — việc định kỳ trên cloud
+
+Mục này nói về việc giao Claude những nhiệm vụ chạy theo giờ khi bạn vắng mặt — báo sáng, audit tuần, sync docs tối — giống thuê bảo vệ trực ca.
 
 Cần subscription (không phải API-key-only provider, trừ lưu ý theo [bài 10](./10-permissions-modes-availability.md)). Viết prompt routine như viết skill: steps + verify + output format; gắn skill để tái dùng. Từ v2.1.196: skill `disable-model-invocation: true` cũng không chạy khi scheduled task fire với skill làm prompt.
 
@@ -258,9 +134,13 @@ check docs/ có cập nhật tương ứng? Liệt kê docs thiếu. Không tự
 
 Chọn đúng: cần chạy trên cloud theo lịch + dùng MCP → routine; cần chạy trong repo runner + parse JSON → `claude -p` trong Actions.
 
+> **Tóm gọn 1 câu:** Routine là "ca trực theo lịch" trên cloud — nhớ viết prompt như giao việc cho ca đêm: chỉ báo cáo, không tự quyết khi vắng người.
+
 ---
 
 ## 5. Setup maintainable cho team
+
+Mục này gom tất cả thành bản đồ setup tổng thể: thứ nào nằm ở đâu, ai giữ gì, và thứ tự dựng cho team từ con số 0.
 
 ### 5.1. Cấu trúc đề xuất
 
@@ -271,7 +151,7 @@ Chọn đúng: cần chạy trên cloud theo lịch + dùng MCP → routine; c�
 Routines: /schedule cho việc định kỳ (cloud)
 ```
 
-Nguyên tắc: facts mỗi session → CLAUDE.md; việc lặp → skill; cô lập → subagent; ngoài repo → MCP; phải-chạy-mỗi-lần → hook; share nhiều repo → plugin; lặp theo lịch → routine; nhúng hệ khác → SDK/CI.
+Nguyên tắc: facts mỗi session → CLAUDE.md; việc lặp → skill; cô lập → subagent; ngoài repo → MCP; phải-chạy-mỗi-lần → hook; share nhiều repo → plugin; lặp theo lịch → routine; nhúng hệ khác → SDK/CI. Câu liệt kê này giống tủ phân loại đồ đạc: mỗi loại đồ một ngăn — tìm ra dễ, nhà không lộn xộn.
 
 ### 5.2. Walkthrough setup team từ 0 (checklist 1 giờ)
 
@@ -292,6 +172,10 @@ Nguyên tắc: facts mỗi session → CLAUDE.md; việc lặp → skill; cô l�
 | Routine tự deploy khi vắng người | Routine chỉ báo cáo/digest; deploy luôn cần người duyệt |
 | SDK load cả `~/.claude/` personal vào CI | `settingSources: ["project"]` trong CI |
 | GitLab/Foundry thiếu integration | Check bảng availability ([bài 10](./10-permissions-modes-availability.md)); fallback `claude -p` generic |
+
+> **Cách đọc bảng này:** cột "Pitfall" là cảnh báo dạng "chuyện đã xảy ra", cột "Fix" là cách tránh ngay từ đầu — đọc kỹ trước khi dựng CI, rẻ hơn nhiều so với sự cố thật.
+
+> **Tóm gọn 1 câu:** Setup bền cho team = mỗi thứ đúng ngăn của nó, secrets không bao giờ ra log, và runner thường không bao giờ được `bypassPermissions`.
 
 ### 5.4. Bài tập + link chéo
 

@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/logout
-/logout --all
-/logout --account <tên>
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,15 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Làm xong, trước khi trả máy:
-/logout --all
-# → "Signed out of all accounts (2 profiles)."
-
-# Kiểm tra chắc chắn:
-/status
-# → "Not signed in."
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -40,10 +28,7 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-/status
-# → "Not signed in."; nếu vẫn còn tài khoản khác thì chạy /logout --all
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
 
@@ -52,6 +37,10 @@ Kết quả mong đợi:
 | `/logout` xong `/status` vẫn hiện đã login | Có nhiều profile, mới logout 1 cái | `/logout --all` hoặc logout đúng `--account` đang active |
 | Logout khi offline báo revoke failed | Không gọi được server để revoke | Không sao — token local đã xoá; có mạng thì login lại 1 lần rồi logout lại để revoke sạch |
 | Login lại ngay mà báo `rate limited` | Logout/login liên tục kích hoạt chống abuse | Đợi 2-5 phút rồi login lại |
+
+> **Cách đọc bảng này:** cột "Triệu chứng" là hiện tượng sau khi logout, cột "Vì sao" là cơ chế phía server/local, cột "Cách sửa" là việc làm ngay — hàng nào đúng tình huống thì làm đúng hàng đó.
+
+> **Tóm gọn 1 câu:** `/logout` là rút chìa khoá khỏi máy — token biến mất ngay, nhưng dữ liệu và code trên máy thì ở nguyên.
 
 ## Tham khảo
 

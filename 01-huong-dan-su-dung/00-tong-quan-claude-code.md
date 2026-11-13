@@ -21,6 +21,8 @@
 | Hook | Luật tự động chạy theo lifecycle event | Sau mỗi Edit tự chạy `eslint` |
 | MCP | Phích cắm ra thiết bị ngoài | `mcp__github__create_pr`, `mcp__postgres__query` |
 
+> **Cách đọc bảng này:** đọc cột "Hiểu nôm na là gì" trước để nắm ý, rồi nhìn cột "Ví dụ thấy ngay" để hình dung trong thực tế.
+
 ## Mục lục
 
 1. [Claude Code là gì?](#1-claude-code-là-gì)
@@ -38,6 +40,8 @@
 
 ## 1. Claude Code là gì?
 
+Mục này trả lời câu hỏi đầu tiên và quan trọng nhất: Claude Code khác gì một chatbot? Nắm được cái này thì mọi phần sau dễ hiểu.
+
 **Claude Code** là coding agent của Anthropic: CLI (và IDE/Desktop/Web app) chạy model Claude với quyền truy cập trực tiếp filesystem + terminal. Khác chatbot ở chỗ:
 
 | Chatbot (claude.ai chat) | Claude Code (vòng lặp agent) |
@@ -46,6 +50,8 @@
 | 1 lượt request → 1 response | 1 task → N vòng: reasoning → tool_use → observation |
 | Có tools: Read, Edit, Write, Glob, Grep, Bash, WebSearch, Task (subagent), MCP tools | Bạn là người làm việc nặng (copy/paste/chạy) — agent làm việc nặng, bạn review + quyết định |
 
+> **Cách đọc bảng này:** so từng dòng đối xứng — bên trái là chatbot thường, bên phải là agent; dòng nào càng lệch nhau thì khác biệt càng lớn.
+
 Vòng lặp agent cốt lõi (giống nhau trên mọi bề mặt — terminal, IDE, desktop, web):
 
 ```text
@@ -53,7 +59,7 @@ Bạn prompt → Claude reasoning → gọi tools (đọc/sửa/chạy) → đ�
 → reasoning tiếp → ... → đạt mục tiêu thì dừng, báo cáo + diff
 ```
 
-Điểm mấu chốt: **harness không phải model**. Model chỉ sinh text + tool calls; CLI binary trên máy bạn mới là thứ chạm disk, kiểm tra quyền, chạy hooks, nhét kết quả vào context. Nhờ vậy permission/hook enforce được kể cả khi model muốn lách, và cùng 1 model hành xử nhất quán trên mọi bề mặt.
+Điểm mấu chốt: **harness không phải model**. Model chỉ sinh text + tool calls; CLI binary trên máy bạn mới là thứ chạm disk, kiểm tra quyền, chạy hooks, nhét kết quả vào context. Ví von: model là thợ, harness là ông quản đốc giữ kho chìa khóa — thợ muốn vào đâu cũng phải qua ông ấy. Nhờ vậy permission/hook enforce được kể cả khi model muốn lách, và cùng 1 model hành xử nhất quán trên mọi bề mặt.
 
 Vì sao "agent" khác "autocomplete"? Copilot đoán **dòng tiếp theo**; Claude Code giải **task đóng** ("fix failing tests", "thêm OAuth"): tự khám phá repo → lập kế hoạch nhiều bước → thực thi bằng tools → tự kiểm chứng. Tư duy đúng: giao việc như giao cho junior dev giỏi — mục tiêu + tiêu chí xong + ranh giới, đừng prompt như hỏi Google:
 
@@ -67,11 +73,15 @@ Tìm root cause, fix, thêm regression test, chạy pnpm --filter @acme/api test
 Đừng sửa gì ngoài scope này."
 ```
 
+> **Tóm gọn 1 câu:** Claude Code là agent có tay chân (tools) chạy theo vòng lặp đọc-sửa-chạy, giao việc như giao junior dev giỏi chứ đừng hỏi như chatbot.
+
 ---
 
 ## 2. Vòng lặp agent — giải phẫu và khi nào hỏng
 
-Mỗi vòng lặp gồm 4 pha: **REASONING** (model nghĩ cần đọc file nào, lệnh gì xác nhận) → **TOOL_USE** (gọi 1..n tools song song) → **OBSERVATION** (harness trả kết quả: file content / stdout / exit code) → **ĐIỀU KIỆN DỪNG** (chưa xong → quay lại; xong → báo cáo).
+Mục này mổ xẻ vòng lặp agent: bên trong có gì, và nó chết ở đâu. Hiểu được cái này, bạn biết cách "cấp cứu" khi agent loay hoay.
+
+Mỗi vòng lặp gồm 4 pha: **REASONING** (model nghĩ cần đọc file nào, lệnh gì xác nhận) → **TOOL_USE** (gọi 1..n tools song song) → **OBSERVATION** (harness trả kết quả: file content / stdout / exit code) → **ĐIỀU KIỆN DỪNG** (chưa xong → quay lại; xong → báo cáo). Nói đơn giản: nghĩ → làm → xem kết quả → quyết định làm tiếp hay nghỉ.
 
 Trace 1 task thật — *"Thêm rate-limit cho POST /login"*:
 
@@ -95,13 +105,19 @@ Khi nào vòng lặp thất bại (3 nguyên nhân gốc):
 | Thiếu verification (tự tin sai) | Báo "xong" nhưng test fail | Fix bằng hooks + reviewer subagent (bài 07, 06) |
 | Loop quá dài (context đầy rác) | Càng sửa càng nát sau turn 15+ | Fix bằng `/clear`, `/compact`, subagent cô lập (bài 04, 06) |
 
+> **Cách đọc bảng này:** cột "Dấu hiệu" giúp bạn nhận bệnh khi agent có vấn đề; cột "Thuộc về" chỉ chỗ cần đi sửa trong các bài sau.
+
 > Quy tắc vàng: task >15 turns không tiến triển → dừng, `/clear`, chia nhỏ, giao lại. Sai 2 lần liên tiếp → `/rewind` + re-prompt rẻ hơn "argue" với agent (bài 11). Lưu ý: `/rewind` khôi phục được cả conversation đã `/clear` trước đó — `/clear` không mất dữ liệu checkpoint.
 
 Agentic loop vs workflow: việc mới/lạ → để agent tự explore (linh hoạt, tốn token). Việc lặp >3 lần → đóng thành skill/workflow chạy deterministic (bài 05).
 
+> **Tóm gọn 1 câu:** Vòng lặp agent là chuỗi nghĩ-làm-xem kết quả; nó hỏng vì thiếu context, thiếu verify, hoặc loop quá dài — mỗi bệnh đều có thuốc riêng.
+
 ---
 
 ## 3. Các nhóm tool toàn tập
+
+Mục này điểm danh toàn bộ đồ nghề của Claude, chia làm 4 nhóm. Biết tool nào làm gì để bạn hiểu agent "đang cầm cái gì trên tay".
 
 | Nhóm | Tool | Việc | Lưu ý |
 |---|---|---|---|
@@ -110,20 +126,19 @@ Agentic loop vs workflow: việc mới/lạ → để agent tự explore (linh h
 | 3 — Suy luận mở rộng | `Task` / `TodoWrite` / `WebSearch` / `WebFetch` / `AskUserQuestion` | Spawn subagent; checklist >3 bước; tra docs/web; hỏi bạn khi 2+ hướng | WebSearch/WebFetch tùy provider (bài 10) |
 | 4 — MCP tools | `mcp__<server>__<tool>` | Tool động từ server ngoài, ví dụ `mcp__github__create_pr` | Discover lúc startup; càng nhiều tools visible càng dễ chọn nhầm → 3–6 servers (bài 08) |
 
-```bash
-# Trong session, hỏi trực tiếp (Claude tự liệt kê tools khả dụng):
-# > "liệt kê tất cả tools mày đang có + 1 câu mô tả mỗi tool"
-claude mcp list   # ngoài session: kiểm tra MCP tools đang expose
+> **Cách đọc bảng này:** mỗi dòng là một nhóm nghề — cột Tool liệt kê tên đồ cụ thể, cột Việc nói chúng dùng để làm gì, cột Lưu ý là kinh nghiệm xương máu khi dùng.
 
-# Task nền: > "Chạy pnpm build ở background, báo tao khi xong"
-# Claude dùng Bash(run_in_background) + BashOutput. Kill nếu kẹt: Ctrl+X Ctrl+K hai lần trong 3 giây.
-```
+> **Tóm gọn 1 câu:** Bốn nhóm tool — tìm file, chạy lệnh, suy luận mở rộng, MCP — nhớ nguyên tắc Glob trước, Grep sau, Read cuối.
+
+> 📄 **Code ví dụ:** [`examples/01-3-cac-nhom-tool-toan-tap.sh`](examples/01-3-cac-nhom-tool-toan-tap.sh)
 
 ---
 
 ## 4. Vì sao CLAUDE.md phình làm bạn tốn tiền?
 
-Mỗi turn nạp lại **toàn bộ context** (CLAUDE.md + history + tool results). Task 20 turns với CLAUDE.md 500 dòng = trả tiền cho 500 dòng đó 20 lần.
+Mục này nói về tiền: vì sao file dặn dò càng dày thì hóa đơn càng đắt. Hiểu cơ chế này bạn sẽ biết cắt gì trước.
+
+Mỗi turn nạp lại **toàn bộ context** (CLAUDE.md + history + tool results). Task 20 turns với CLAUDE.md 500 dòng = trả tiền cho 500 dòng đó 20 lần. Ví von: như trả tiền thuê kênh truyền cáp theo số kênh — dù bạn chỉ xem 2 kênh, vẫn đóng tiền cho cả gói 500 kênh mỗi tháng.
 
 | Feature | Load khi nào | Chi phí | Chiến lược |
 |---|---|---|---|
@@ -134,25 +149,25 @@ Mỗi turn nạp lại **toàn bộ context** (CLAUDE.md + history + tool result
 | Hooks (`command`) | Tại event, chạy ngoài model | **0 model tokens** | Rule quan trọng → nâng thành hook |
 | Image/PDF attach | Khi paste | Cao (vision tokens) | Chỉ attach ảnh cần thiết |
 
+> **Cách đọc bảng này:** so cột "Load khi nào" với cột "Chi phí" — cái gì nạp càng sớm, càng giữ lâu thì càng đắt; cột "Chiến lược" là cách trị.
+
 Nhẩm nhanh: CLAUDE.md 150 dòng ≈ 2.500 tokens; 10 turns = 25k tokens. Phình 600 dòng (≈10k tokens) → 100k tokens cho cùng task. 1 giờ dọn CLAUDE.md (bài 03) tiết kiệm hơn 1 tuần tối ưu prompt.
 
-```bash
-# Trong session, sau 1 task dài:
-# > /context     # grid: ai ngốn context nhất
-# > /usage       # breakdown theo skills/subagents/plugins/MCP
-# > /cost        # tiền session này
-# Rồi hỏi: "đề xuất 3 thứ cắt giảm context mà không mất chất lượng"
-```
+> 📄 **Code ví dụ:** [`examples/02-4-vi-sao-claude-md-phinh-lam-ban.sh`](examples/02-4-vi-sao-claude-md-phinh-lam-ban.sh)
 
 Checklist tiết kiệm token (dán vào team wiki): CLAUDE.md <200 dòng (`wc -l CLAUDE.md`); checklist dài → skill; MCP ≤6 servers, tools visible ≤10; research rộng → subagent Explorer; task mới → `/clear` trước; context >80% → `/compact [focus]`; rule bị miss 2 lần → nâng thành hook.
+
+> **Tóm gọn 1 câu:** CLAUDE.md được nạp lại mỗi turn nên càng dày càng đắt — giữ dưới 200 dòng, phần dài chuyển thành skill, rule bắt buộc chuyển thành hook.
 
 ---
 
 ## 5. Claude Code làm được gì (thực tế)
 
+Mục này trả lời câu hỏi "dùng nó vào việc gì đây?" — liệt kê 5 nhóm việc thật mà agent gánh được hằng ngày.
+
 - **Build feature / fix bug đa file**: mô tả ý định, Claude tự tìm file, sửa, chạy test.
 - **Việc nhàm chán**: viết test thiếu, fix lint toàn repo, resolve merge conflict, upgrade dependency, release notes.
-- **Git/GitHub**: stage, commit message, branch, PR, đọc PR comments (`/pr_comments`).
+- **Git/GitHub**: stage, commit message, branch, PR, đọc PR comments (hỏi trực tiếp Claude).
 - **MCP**: đọc Google Drive, Jira, Slack, DB, browser (Playwright).
 - **Tự động hóa**: hooks, routines (`/schedule`), CI/CD, Agent SDK.
 
@@ -171,9 +186,13 @@ login.test.ts. Sau 5 files đầu dừng báo cáo để tao review trước khi
 feat/x và mở PR với mô tả + checklist test đã chạy. Không merge."
 ```
 
+> **Tóm gọn 1 câu:** Từ fix bug, viết test, làm git cho tới nối Google Drive/Slack — cứ việc gì có lệnh chạy được là agent gánh được.
+
 ---
 
 ## 6. Các bề mặt sử dụng — chọn cái nào?
+
+Mục này so sánh các "cửa vào" Claude Code: terminal, IDE, desktop, web, mobile. Chọn đúng cửa giúp việc nặng nhẹ khác nhau đỡ mệt.
 
 | Surface | Code chạy ở đâu | Dùng local config? | Khi nào dùng |
 |---|---|---|---|
@@ -184,13 +203,19 @@ feat/x và mở PR với mô tả + checklist test đã chạy. Không merge."
 | **Mobile + Remote Control** | Máy bạn (qua remote) / cloud | Tùy loại session | Monitor/approve từ điện thoại (`/mobile` hiện QR) |
 | **Slack, CI/CD** | Cloud/CI runner | Tùy cấu hình | Team workflow, auto-fix PR (bài 12) |
 
+> **Cách đọc bảng này:** cột "Code chạy ở đâu" quyết định nó có đụng tới máy bạn hay không; cột "Khi nào dùng" là gợi ý chọn nhanh theo loại task.
+
 > Hành vi agent **giống nhau mọi nơi** — chỉ khác nơi code chạy và config nào được dùng. Local dùng `~/.claude/` + `.claude/` + env máy bạn; cloud chỉ thấy repo + env đặt trên web (chi tiết bài 02).
 
 Hỏi nhanh: task fix typo 2 phút → Terminal; refactor 1 giờ → Web cloud; review 25 files → Desktop/IDE.
 
+> **Tóm gọn 1 câu:** Cùng một agent nhưng nhiều cửa vào — việc lẹ thì Terminal, việc dài thì Web, việc cần xem trực quan thì Desktop/IDE.
+
 ---
 
 ## 7. Bản đồ mở rộng + tính năng 2026 cần biết
+
+Mục này là bản đồ các lớp mở rộng quanh vòng lặp agent — coi như hộp đồ nghề nâng cao. Đọc để biết cái gì tồn tại, chừng nào cần thì quay lại học.
 
 Lớp mở rộng trên vòng lặp agent — học thuộc bảng này:
 
@@ -205,6 +230,8 @@ Lớp mở rộng trên vòng lặp agent — học thuộc bảng này:
 | **Hook** | Script chạy theo lifecycle event | Việc **phải** chạy, không được quên | 07 |
 | **Plugin** | Đóng gói skills+hooks+subagents+MCP thành 1 unit | Tái dùng cross-repo, share team | 09 |
 
+> **Cách đọc bảng này:** cột "Là gì" định nghĩa, cột "Khi nào dùng" là tình huống phù hợp, cột "Bài" chỉ bài nào dạy chi tiết — tra nhanh theo nhu cầu.
+
 Tính năng mới 2026 đáng nhớ (chi tiết ở các bài tương ứng):
 
 - **Auto mode** là permission mode mặc định cho session mới trên Pro/Max/Team từ 14/08/2026; chặn destructive git + `rm -rf`, có hard deny rules (bài 10).
@@ -216,17 +243,17 @@ Tính năng mới 2026 đáng nhớ (chi tiết ở các bài tương ứng):
 - **`claude agents`** — Agent view một màn hình cho mọi session đang chạy (bài 06).
 - **`/code-review`** chạy background subagent; `/ultrareview` fleet bug-hunting trên cloud (public preview) (bài 04).
 
+> **Tóm gọn 1 câu:** Vòng lặp agent chỉ là lõi — CLAUDE.md, skill, subagent, hook, MCP, plugin là các lớp vây quanh, mỗi lớp sinh ra để trị một dạng việc cụ thể.
+
 ---
 
 ## 8. Đi từng bước cho người mới
 
+Mục này là lộ trình 30 phút đầu tay, từ `/init` tới task nhỏ đầu tiên. Làm đúng thứ tự là bạn thấy cả vòng lặp chạy trước mắt.
+
 Yêu cầu: đã cài xong (bài 01). 30 phút đầu chuẩn:
 
-```bash
-cd /path/to/repo-cua-ban
-claude
-# Lần đầu: onboarding (theme, permissions) → chọn defaults.
-```
+> 📄 **Code ví dụ:** [`examples/03-8-i-tung-buoc-cho-nguoi-moi.sh`](examples/03-8-i-tung-buoc-cho-nguoi-moi.sh)
 
 ```text
 1. /init     # Claude quét repo, sinh CLAUDE.md nháp. Đọc, xóa 50% câu chung chung (bài 03).
@@ -240,9 +267,13 @@ claude
 
 Checklist hiểu bài 00: giải thích được vòng lặp agent trong 2 phút; kể được 4 nhóm tools; biết vì sao CLAUDE.md phình tốn tiền; chạy xong 5 bước trên với 1 task pass thật.
 
+> **Tóm gọn 1 câu:** Bắt đầu bằng `/init`, giao 2 task nhỏ để quan sát vòng lặp, rồi `/cost` xem giá — xong 5 bước là bạn hiểu bài.
+
 ---
 
 ## 9. Hiểu nhầm và bẫy thường gặp
+
+Mục này tổng hợp các hiểu nhầm đắt giá nhất của người mới, kèm sự thật và cách trị. Đọc trước khi bị "đánh thuế" bằng tiền và thời gian.
 
 | Hiểu nhầm / Bẫy | Sự thật / Fix |
 |---|---|
@@ -258,9 +289,15 @@ Checklist hiểu bài 00: giải thích được vòng lặp agent trong 2 phút
 | Sửa 10 turns vẫn sai | Quy tắc 2 lần: sai 2 lần → `/rewind` + re-prompt sạch |
 | Dùng `--dangerously-skip-permissions` trên máy dev | Chỉ trong sandbox/CI; máy dev dùng `auto` + rules hẹp (bài 10) |
 
+> **Cách đọc bảng này:** cột trái là điều nhiều người tin nhầm, cột phải là sự thật kèm cách sửa — đối chiếu từng dòng với thói quen của bạn.
+
+> **Tóm gọn 1 câu:** Câu thần chú chống bẫy: agent cần lệnh verify thật, CLAUDE.md ngắn, prompt có scope, và sai 2 lần thì `/rewind` chứ không cãi.
+
 ---
 
 ## 10. Bài tập + đi tiếp tới đâu?
+
+Mục này chốt bài bằng 4 bài tập thực hành và lộ trình đọc tiếp các bài 01–12. Làm tay là cách duy nhất để không "đọc hiểu mà làm không được".
 
 **Bài tập (4 bài, ~70 phút):**
 
@@ -280,3 +317,5 @@ Checklist hiểu bài 00: giải thích được vòng lặp agent trong 2 phút
 - **[07 — Hooks](./07-hooks-tu-dong-hoa.md)** — rule hay quên thành luật enforce thật.
 - **[08 — MCP](./08-mcp-ket-noi-cong-cu-ngoai.md)** — nối GitHub/DB/browser/Slack.
 - **[09 — Plugins](./09-plugins-marketplaces.md)** / **[10 — Permissions](./10-permissions-modes-availability.md)** / **[11 — Worktrees & checkpoints](./11-git-worktrees-checkpoints.md)** / **[12 — SDK & CI/CD](./12-agent-sdk-ci-cd-automation.md)**.
+
+> **Tóm gọn 1 câu:** Làm đủ 4 bài tập là bạn dùng Claude Code thành thạo mức nền; muốn sâu thì đi tiếp bài 03 (CLAUDE.md) và 05 (Skills) trước.

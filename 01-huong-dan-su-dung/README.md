@@ -20,6 +20,8 @@
 | CLAUDE.md | File ghi quy ước dự án, nạp lại mỗi session | "Dùng pnpm, chạy test trước khi commit" |
 | Bề mặt sử dụng (surface) | Nơi bạn ngồi gõ Claude Code | terminal, VS Code, web, desktop |
 
+> **Cách đọc bảng này:** gặp thuật ngữ lạ ở dưới bài thì quay lên đây dò — cột giữa dịch sang tiếng đời thường, cột cuối cho ví dụ gặp ngay trong repo.
+
 ## Mục lục
 
 - [Mục tiêu folder](#mục-tiêu-folder)
@@ -80,7 +82,7 @@ Ngày 5: 02 tips 06 → 10 + 03 FAQ tra cứu khi gặp lỗi
 
 ## Tra cứu lệnh chi tiết trong commands
 
-Cần tra 1 lệnh cụ thể mà không muốn đọc bài dài → vào thẳng thư mục lệnh, mỗi lệnh 1 folder 60 dòng.
+Cần tra 1 lệnh cụ thể mà không muốn đọc bài dài → vào thẳng thư mục lệnh, mỗi lệnh 1 folder 60 dòng — coi như các ngăn kéo có nhãn, mở đúng ngăn cần lấy.
 
 - Tổng số: **78** thư mục lệnh + 5 group index + 1 index tổng (`commands/README.md`).
 - Index đầy đủ theo 4 nhóm: [commands/README.md](./commands/README.md)
@@ -92,3 +94,5 @@ Cần tra 1 lệnh cụ thể mà không muốn đọc bài dài → vào thẳn
 **Kiểm tra nhanh:** mở được [00-tong-quan-claude-code.md](./00-tong-quan-claude-code.md) và [commands/README.md](./commands/README.md); tra được 1 lệnh bất kỳ (vd `/plan` → `commands/model-mode/plan/README.md`) dưới 30 giây; chỉ ra được file nào trả lời câu hỏi của bạn trong bảng 18 bài.
 
 > Mẹo 1 dòng: gặp lỗi lạ thì mở [`03-cau-hoi-thuong-gap/08-loi-thuong-gap-troubleshooting.md`](../03-cau-hoi-thuong-gap/08-loi-thuong-gap-troubleshooting.md) trước, rồi gõ `/doctor`.
+
+> **Tóm gọn 1 câu:** Folder này là lộ trình 18 bài của Claude Code — mới học thì đọc theo thứ tự 00 → 17, cần lẻ tẻ thì tra bảng và thư mục lệnh.

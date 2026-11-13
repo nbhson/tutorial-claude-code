@@ -11,9 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/export`
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -21,13 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Cuối ca, session 80 turns, người sau không thể đọc hết
-/compact Tóm tắt để bàn giao: đã xong auth, đang dở payments bước webhook, file cần đọc src/payments/*.
-/export
-# → "Lưu vào docs/handover-2026-10-04.md"
-# → gửi file cho ca sau, họ đọc 2 phút là vào việc
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -36,9 +28,7 @@ Kết quả mong đợi:
 
 Verify (30 giây):
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
 
@@ -47,6 +37,8 @@ Verify (30 giây):
 | Không biết file export nằm đâu | Mỗi bản gợi ý đường dẫn khác nhau, dễ bỏ qua | Đọc kỹ câu trả lời sau `/export`, hoặc dặn trước "lưu vào docs/handover.md" |
 | File export quá dài (5000+ dòng) | Xuất nguyên session 100+ turns chưa compact | `/compact` trước rồi export; hoặc dặn "chỉ xuất quyết định + bước tiếp theo" |
 | Export thiếu đoạn trước compact | Đúng thiết kế: đoạn cũ đã nén thành summary | Muốn full thì soi `.jsonl` gốc, hoặc export thường xuyên hơn |
+
+> **Cách đọc bảng này:** cột **Triệu chứng** là chuyện hay xảy ra ngay sau khi bấm export, **Vì sao** nói rõ lỗi nằm ở mình hay ở thiết kế lệnh, **Cách sửa** là cách né cho lần tới.
 
 ## Tham khảo
 
@@ -57,3 +49,5 @@ Verify (30 giây):
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
 > Mẹo 1 dòng: _`/compact` rồi mới `/export` để file bàn giao gọn; export ngay cuối ca trước khi `/clear`._
+
+> **Tóm gọn 1 câu:** `/export` in cả cuốn hội thoại thành một file bàn giao — đồng đội đọc vài phút là bắt nhịp được việc.

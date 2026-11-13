@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/background`
-`/tasks`
-`Ctrl+X Ctrl+K ×2`
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,16 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Bạn: "đọc 10 file src/auth, tìm mọi chỗ verify JWT, báo cáo file:dòng"
-# → việc đọc lâu, không cần nhìn nó đọc:
-/background
-# → "Detached as a3f9. Terminal free."
-
-# Bạn mở session mới review PR đồng nghiệp (10 phút)...
-# /tasks → "a3f9 running (7/10)"
-# ...5 phút nữa: "a3f9 done — report ready"
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -41,17 +28,21 @@ Kết quả mong đợi:
 
 Verify (30 giây):
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
+
+> **Tóm gọn 1 câu:** `/background` là giao việc cho đàn em làm ở phòng bên: bạn rảnh tay đi họp, nhưng vẫn phải ghé phòng (`/tasks`) kiểm tra — đàn em dùng chung chìa khóa quyền của bạn nên đừng giao việc phá nhà.
 
 ## Lỗi thường gặp
+
+Bảng dưới là những lần "giao việc hụt" hay gặp — đối chiếu triệu chứng với cột đầu rồi xử theo cột cuối.
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/background` xong terminal vẫn bận | Detach fail (tool đang chạy dở 1 lệnh dài) | Chờ lệnh hiện tại xong hẳn rồi `/background` lại |
 | `Ctrl+X Ctrl+K` không kill | Bấm 1 lần (mới là hỏi), hoặc focus không ở terminal (đang ở IDE pane) | Bấm đủ 2 lần, focus đúng terminal; `/tasks` xác nhận stopped |
 | `/tasks` không thấy agent vừa detach | Session ID chưa sync (detach ngay khi mạng lag) | Đợi 5s `/tasks` lại; không thấy nữa thì `/resume` mới nhất |
+
+> **Cách đọc bảng này:** mỗi dòng là một hiện tượng sau khi detach; cột "Vì sao" cho biết chậm ở đâu (tool đang chạy, phím bấm, mạng), cột "Cách sửa" là thao tác xử lý theo đúng thứ tự.
 
 ## Tham khảo
 

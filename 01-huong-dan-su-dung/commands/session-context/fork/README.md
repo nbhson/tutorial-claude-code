@@ -11,10 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/fork`
-`/fork <hướng-thử>`
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 > Fork mode (subagent hưởng nguyên context) bật mặc định từ ≥2.1.232, tắt bằng `CLAUDE_CODE_FORK_SUBAGENT=0`.
@@ -23,11 +20,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Bản gốc đang làm Postgres queue, muốn thử Redis queue mà sợ hỏng
-/fork Thử lại bằng Redis queue, so sánh latency. Giữ nguyên API ở src/queue/.
-# → nhánh mới tự do đập phá, bản gốc vẫn còn nếu Redis thua
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -36,9 +29,7 @@ Kết quả mong đợi:
 
 Verify (30 giây):
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
 
@@ -47,6 +38,8 @@ Verify (30 giây):
 | Fork xong 2 nhánh sửa cùng file loạn | Chung filesystem, không cách ly file | Dùng `git worktree` / `git branch` riêng cho mỗi hướng |
 | Fork từ session 80% RAM, nhánh mới đã đầy | Copy nguyên history nặng | `/compact` trước khi fork, hoặc fork sớm hơn |
 | Không biết đang ở nhánh nào | Quên rename sau fork | `/rename` ngay sau fork; kiểm tra picker `/resume` |
+
+> **Cách đọc bảng này:** dòng nào cũng xoay quanh một sự thật: fork chỉ chia trí nhớ, không chia đĩa — **Vì sao** nói về chung filesystem, **Cách sửa** là cách tách thật hoặc đặt nhãn.
 
 ## Tham khảo
 
@@ -57,3 +50,5 @@ Verify (30 giây):
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
 > Mẹo 1 dòng: _fork khi session còn nhẹ; session đã ~80% thì `/compact` trước để nhánh mới không đầy ngay._
+
+> **Tóm gọn 1 câu:** `/fork` cho bạn một bản sao không sợ hỏng để đi thử hướng khác — bản gốc vẫn nằm đó nếu hướng thử thua.

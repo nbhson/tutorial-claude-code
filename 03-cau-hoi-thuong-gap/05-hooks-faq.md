@@ -63,6 +63,8 @@ flowchart TD
 | Hook lỗi/timeout thì sao? | `onFailure: "block"` (≥2.1.295) = chặn luôn; mặc định thả qua |
 | Version đổi schema? | `/status` + release notes |
 
+> **Cách đọc bảng này:** bảng đầu chọn *loại* hook — đọc cột "Dùng khi nào" để đừng dùng dao mổ trâu giết gà; bảng sau là checklist 6 bước khi hook im — tra từ trên xuống, bước nào chưa chắc thì dừng lại check bước đó trước.
+
 ---
 
 ## 1. Hook không lửa — debug theo thứ tự nào? (event → matcher → dry-run)
@@ -81,25 +83,19 @@ flowchart TD
 | Chạy đầu session | `SessionStart` | Tưởng lửa mỗi prompt (chỉ 1 lần) |
 | Check prompt user | `UserPromptSubmit` | Tưởng chặn được tool (chỉ thấy prompt) |
 
+> **Cách đọc bảng này:** cột "Muốn" là điều bạn đang cần — tìm dòng khớp rồi lấy đúng "Event"; cột "Gắn nhầm hay gặp" là lỗi của người đi trước, quét nhanh để khỏi lặp lại.
+
 **Bệnh #2 — matcher sai case.** Tên tool phải viết hoa đúng: `Edit`, `Write`, `Bash`, `Read`. Gõ `edit`, `bash` thường → không khớp → im re, không báo lỗi.
 
-```json
-{
-  "hooks": {
-    "PreToolUse": [{ "matcher": "Bash", "hooks": [{ "type": "command", "command": "./scripts/guard-no-push-main.sh" }] }]
-  }
-}
-```
+> 📄 **Code ví dụ:** [`examples/01-1-hook-khong-lua-debug-theo-thu-tu.json`](examples/01-1-hook-khong-lua-debug-theo-thu-tu.json)
 
 Dry-run hook tay với stdin mẫu — không ra JSON đúng là script hỏng, không phải matcher:
 
-```bash
-/hooks    # xem tất cả hooks theo events — hook không list = config sai file/JSON parse lỗi
-echo '{"tool_name":"Bash","tool_input":{"command":"git push origin main"}}' | ./scripts/guard-no-push-main.sh
-# → phải ra {"decision":"block",...}
-```
+> 📄 **Code ví dụ:** [`examples/02-1-hook-khong-lua-debug-theo-thu-tu.sh`](examples/02-1-hook-khong-lua-debug-theo-thu-tu.sh)
 
 **Đào sâu:** [bài 07 — hooks & tự động hóa](../01-huong-dan-su-dung/07-hooks-tu-dong-hoa.md) · [lệnh `/hooks`](../01-huong-dan-su-dung/commands/knowledge-system/hooks/README.md)
+
+> **Tóm gọn 1 câu:** Hook im re 9/10 là do "gửi sai bưu cục" — sai event hoặc sai matcher case; gõ `/hooks` xem thư đã đến đâu rồi mới đi tìm lỗi ở chỗ khác.
 
 ---
 
@@ -111,10 +107,7 @@ echo '{"tool_name":"Bash","tool_input":{"command":"git push origin main"}}' | ./
 
 Chưa trust → skip + log mờ, dễ tưởng "hook hỏng". `-p` headless không tính là trusted. Ngoại lệ chạy luôn: user-level agents (`~/.claude/agents/`) và `--agents` inline JSON.
 
-```bash
-/agents    # xem agents + hooks kèm
-# Mở folder trong terminal/IDE → hiện "trust this folder?" → Accept → chạy lại
-```
+> 📄 **Code ví dụ:** [`examples/03-2-folder-a-trust-chua.sh`](examples/03-2-folder-a-trust-chua.sh)
 
 Hook format của agent chạy trên máy bạn (đã trust) nhưng im trên máy đồng nghiệp (bấm Deny trust) → đúng 1 nguyên nhân này.
 
@@ -128,15 +121,7 @@ Hook format của agent chạy trên máy bạn (đã trust) nhưng im trên má
 >
 > **Trả lời 1 câu:** Headless không có người bấm Yes/No — hook nào `read -p`, mở editor, gọi OAuth browser sẽ treo tới timeout rồi fail mờ.
 
-```bash
-# ✅ Hook headless-safe: đọc stdin, in JSON, thoát
-#!/bin/bash
-input=$(cat)
-echo "$input" | grep -q 'rm -rf' && echo '{"decision":"block","reason":"deny rm-rf"}' && exit 0
-echo '{"decision":"approve"}'
-
-# ❌ TRONG HOOK: read -p "chắc không?"; vim file; open browser...
-```
+> 📄 **Code ví dụ:** [`examples/04-3-chay-headless-p-ci-hook-nao-can.sh`](examples/04-3-chay-headless-p-ci-hook-nao-can.sh)
 
 Từ ≥2.1.295, khai thêm `onFailure: "block"` để hook lỗi/timeout thì **chặn** hành động thay vì thả qua — dùng cho guard critical trong CI, để lỗi không âm thầm mở toang.
 
@@ -152,9 +137,7 @@ Mọi hook sẽ chạy trong `-p`/background/CI → test bằng pipe stdin tay (
 >
 > **Trả lời 1 câu:** Hook nào finish **cuối** thì thắng, mà thứ tự finish không đảm bảo — nên đừng để overlap: 1 matcher → 1 hook sửa input, các hook khác chỉ approve/block.
 
-```json
-{ "hooks": { "PreToolUse": [{ "matcher": "Edit", "hooks": [{ "type": "command", "command": "./scripts/normalize-edit.sh" }] }] } }
-```
+> 📄 **Code ví dụ:** [`examples/05-4-hai-hook-cung-sua-updatedinput-ai-thang.json`](examples/05-4-hai-hook-cung-sua-updatedinput-ai-thang.json)
 
 ```text
 ✅ 1 hook sửa Edit-input + 1 hook block Bash-nguy-hiểm (khác matcher, không clash)
@@ -171,14 +154,7 @@ Mọi hook sẽ chạy trong `-p`/background/CI → test bằng pipe stdin tay (
 >
 > **Trả lời 1 câu:** Interrupt (Esc/Ctrl-C) không lửa `Stop` (API error lửa event riêng `StopFailure`); sau **8 lần block liên tiếp** Claude được override để thoát (chống treo vô hạn) — gate phải thiết kế hội tụ.
 
-```json
-{
-  "hooks": {
-    "Stop": [{ "hooks": [{ "type": "command", "command": "./scripts/verify-done.sh" }] }],
-    "StopFailure": [{ "hooks": [{ "type": "command", "command": "./scripts/report-failure.sh" }] }]
-  }
-}
-```
+> 📄 **Code ví dụ:** [`examples/06-5-stop-hook-interrupt-stopfailure-va-gate-bi.json`](examples/06-5-stop-hook-interrupt-stopfailure-va-gate-bi.json)
 
 ```text
 ❌ "Chưa hoàn hảo thì block" (không bao giờ đạt → override ở block 8)
@@ -188,6 +164,8 @@ Mọi hook sẽ chạy trong `-p`/background/CI → test bằng pipe stdin tay (
 Gate chặn CI push/merge → luôn có đường "cho qua có điều kiện" trước block 8, và chấp nhận interrupt là đường thoát hợp lệ của user — đừng trông chờ Stop-hook chống interrupt.
 
 **Đào sâu:** [tips 06 — công thức hooks](../02-tips-thuc-chien/06-hooks-recipes.md) · [FAQ 08 — lỗi thường gặp](08-loi-thuong-gap-troubleshooting.md)
+
+> **Tóm gọn 1 câu:** Stop-gate giống giám thị chấm bài: Esc là xin nghỉ thi (hợp lệ), block 8 lần là giám thị phải cho về — nên đề thi (điều kiện gate) phải có điểm đỗ rõ ràng, không thể "chưa hoàn hảo là rớt" vô hạn.
 
 ---
 
@@ -202,13 +180,13 @@ Gate chặn CI push/merge → luôn có đường "cho qua có điều kiện" t
 3. **Agent (experimental, 60s/50 turns trần):** verify cần đọc code + chạy lệnh — đắt, chỉ gate quan trọng.
 4. **HTTP/MCP-tool:** tích hợp ngoài (ghi audit log, gọi policy service).
 
-```json
-{ "hooks": { "UserPromptSubmit": [{ "hooks": [{ "type": "prompt", "prompt": "Prompt này có yêu cầu xóa/ghi đè không backup? Trả lời block/approve." }] }] } }
-```
+> 📄 **Code ví dụ:** [`examples/07-6-prompt-hook-agent-hook-command-hook-chon.json`](examples/07-6-prompt-hook-agent-hook-command-hook-chon.json)
 
 Vì hook chạy bằng quyền của bạn (đọc FS, gọi network, ghi disk — hook độc = RCE trá hình), trước khi cài plugin/skill lạ có hooks: đọc scripts, check `git grep -E 'curl|rm -rf|sudo' -- .claude/hooks/`, chỉ trust nguồn quen (xem [FAQ 09](09-bao-mat-quyen-rieng-tu.md)).
 
 **Đào sâu:** [bài 07 — hooks & tự động hóa](../01-huong-dan-su-dung/07-hooks-tu-dong-hoa.md) · [FAQ 09 — bảo mật & riêng tư](09-bao-mat-quyen-rieng-tu.md)
+
+> **Tóm gọn 1 câu:** Chọn loại hook như chọn người gác cổng: người máy (shell) rẻ, đúng giờ, không kể lể — chỉ thuê "người có suy nghĩ" (prompt/agent) khi việc gác cần phán đoán.
 
 ---
 
@@ -223,10 +201,7 @@ Vì hook chạy bằng quyền của bạn (đọc FS, gọi network, ghi disk �
 3. **Đối chiếu [WRITING-STYLE.md — Phần B](../WRITING-STYLE.md)** (bản v2.1.296): bảng "tính năng | version tối thiểu" là nguồn sự thật của repo này.
 4. **Hook im re sau update?** Rơi lại đúng chuỗi debug câu 1: event → matcher → trust → headless → version.
 
-```bash
-# dry-run mẫu — hook nhận cùng JSON thật từ stdin
-echo '{"tool_name":"Bash","tool_input":{"command":"git push"}}' | ./scripts/guard-no-push-main.sh; echo "exit=$?"
-```
+> 📄 **Code ví dụ:** [`examples/08-7-hook-api-oi-theo-version-chong-drift.sh`](examples/08-7-hook-api-oi-theo-version-chong-drift.sh)
 
 **Đào sâu:** [Phần B — dữ kiện chuẩn](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-11102026) · [FAQ 08 — lỗi thường gặp](08-loi-thuong-gap-troubleshooting.md)
 

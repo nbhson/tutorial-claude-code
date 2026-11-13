@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/exit
-/quit
-Ctrl+C ×2
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,15 +19,7 @@ Ctrl+C ×2
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Đang dở task refactor, 18h rồi:
-/exit
-# → "Session abc123 saved."
-
-# Sáng mai:
-claude --resume
-# → "Resumed session abc123 (47 messages). Tiếp tục?"
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -40,10 +28,7 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-claude --resume --list
-# → session vừa thoát còn trong danh sách để resume
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
 
@@ -52,6 +37,10 @@ claude --resume --list
 | `--resume` báo `no session found` | Hôm qua đóng X terminal, checkpoint hỏng | `claude --resume --list` xem còn gì; rút kinh nghiệm `/exit` |
 | `Ctrl+C` 1 lần thoát luôn (không ở lại) | Bấm 2 lần quá nhanh | Dùng `/exit` gõ tay khi muốn chắc; 1 lần Ctrl+C = huỷ lệnh, đợi 1s rồi mới bấm tiếp nếu muốn thoát |
 | Exit nhưng tiến trình node còn treo | MCP server con không dọn kịp | `ps aux \| grep claude` rồi kill tay; bản mới tự dọn tốt hơn |
+
+> **Cách đọc bảng này:** cột "Triệu chứng" là hiện tượng sau khi thoát, cột "Vì sao" giải thích chuyện gì xảy ra lúc đóng, cột "Cách sửa" là việc làm ngay — mai resume được hay không phụ thuộc hàng này.
+
+> **Tóm gọn 1 câu:** `/exit` là đóng cửa đi về mà rời chìa lại — mai mở `claude --resume` là tiếp tục đúng chỗ cũ, nhưng code chưa commit thì không ai lưu thay bạn.
 
 ## Tham khảo
 

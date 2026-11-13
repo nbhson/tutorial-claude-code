@@ -11,10 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/hooks    # mở trung tâm quản lý hooks
-# Hook định nghĩa trong settings.json (project) hoặc settings.local.json (máy)
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -22,18 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-#!/bin/bash
-# lint-stop.sh — model báo xong thì kiểm, fail bắt làm tiếp (tối đa 3 vòng)
-COUNT_FILE=/tmp/lint-loop-count
-COUNT=$(cat $COUNT_FILE 2>/dev/null || echo 0)
-if [ "$COUNT" -ge 3 ]; then echo 0 > $COUNT_FILE; exit 0; fi
-if ! uvx ruff check . 2>/dev/null; then
-  echo $((COUNT+1)) > $COUNT_FILE
-  echo "LINT FAIL — sửa các lỗi trên rồi mới được dừng" >&2
-  exit 2   # exit 2 = chặn model dừng, trả stderr về cho nó sửa tiếp
-fi
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -44,11 +30,17 @@ Kết quả mong đợi:
 
 ## Lỗi thường gặp
 
+Mục này là "sổ bệnh án" của `/hooks`: hook im lặng, không chạy, chặn oan — ba bệnh hay gặp nhất và cách xử lý.
+
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Hook không chạy bao giờ | Matcher sai (`Edit,Write` thay vì `Edit\|Write`) | Sửa thành regex `Edit\|Write`; test bằng echo JSON pipe tay |
 | Hook báo permission denied | Quên `chmod +x` | `chmod +x .claude/hooks/*.sh` |
 | PreToolUse chặn cả lệnh lành | Regex quá rộng (`*rm*`) | Thu hẹp (`rm -rf`, `rm -rf /`); test với lệnh lành |
+
+> **Cách đọc bảng này:** cột "Triệu chứng" là hành vi sai của hook, "Vì sao" gần như luôn nằm ở matcher/quyền chạy/regex, "Cách sửa" là lệnh test hoặc sửa cấu hình.
+
+> **Tóm gọn 1 câu:** `/hooks` là lắp phản xạ có điều kiện cho Claude Code — luật máy kiểm được thì để máy gác, viết ẩu thì phản xạ sai còn nguy hơn không có.
 
 ## Tham khảo
 

@@ -1,0 +1,7 @@
+// Cách 2 — .claude/settings.json bật cho cả team (khuyến nghị):
+{
+  "codeIntelligence": {
+    "enabled": true,
+    "servers": ["typescript", "pyright"]
+  }
+}

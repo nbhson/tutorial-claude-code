@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/agents                  # mở trung tâm quản lý subagent (Running / Library)
-/agents <tên-agent>      # xem hoặc sửa 1 agent cụ thể
-# Subagent được gọi qua Task tool; định nghĩa trong .claude/agents/*.md
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -39,11 +35,17 @@ Kết quả mong đợi:
 
 ## Lỗi thường gặp
 
+Mục này là "sổ bệnh án" của `/agents`: khi đội quân chạy song song gặp trục trặc, tra đây trước.
+
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Con trả về chung chung, không dùng được | Prompt mơ hồ, không format output | Ghi rõ: "trả về danh sách file:dòng, ≤15 dòng, dạng bảng" |
 | Con chạy 15 phút không xong | Ôm việc quá to (đọc cả repo) | Kill trong Running, chia nhỏ prompt (1 thư mục/con) |
 | Hai con ghi đè nhau | Cùng ghi 1 file | Đổi sang mỗi con 1 file, mẹ gộp; hoặc chạy tuần tự |
+
+> **Cách đọc bảng này:** mỗi dòng một bệnh hay gặp của subagent; "Triệu chứng" nhận diện, "Vì sao" thường là prompt hoặc scope, "Cách sửa" áp dụng cho lần spawn sau.
+
+> **Tóm gọn 1 câu:** `/agents` là thuê đệ đông mà không nhàu nát chính mình — mỗi đứa một việc nhỏ rõ đầu ra, agent mẹ chỉ gộp và kiểm tra.
 
 ## Tham khảo
 

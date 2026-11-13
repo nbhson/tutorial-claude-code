@@ -13,6 +13,8 @@
 | Guard `sec-default@builtin` | Người gác có sẵn chặn lệnh nguy hiểm hiển nhiên — nhưng không lục được đồ trong cặp khách (Mod tự gọi) | Deny `Read(.env*)` chặn Claude đọc `.env` nhưng không chặn `$.fs.read(".env")` trong Mod | `claude --debug-file /tmp/mod-debug.log` tìm `sec-default/guard` có load không |
 | Thứ tự check (managed>guard>mod>hook) | Ai to hơn thì thắng khi cãi nhau allow/deny | Managed deny vs user mod allow → deny thắng | Test: managed deny `rm -rf /data` + mod allow → `echo ok && rm -rf /data` vẫn BLOCK |
 
+> **Cách đọc bảng này:** Mỗi dòng là một khái niệm về Mod. Đọc cột "Nôm na 1 câu" trước; khi cần tự kiểm chứng, dùng lệnh ở cột "Cách verify".
+
 ---
 
 ## 1. Mods là gì và vì sao phải học riêng?
@@ -24,16 +26,17 @@ calls (không phải subprocess bị nhốt). Env CLAUDE_CODE_ENABLE_FUNCTION_HO
 bị LỜ từ bản này — cách tắt thật ở mục 6.
 ```
 
-Hooks thường ([bài 07](./07-hooks-tu-dong-hoa.md)) là subprocess với JSON stdin/stdout — hỏng 1 lần chạy, muốn đọc secrets phải cố ý code thêm. Mods thì in-process, giữ state, thấy + sửa prompt/tool calls, gọi model, spawn process, fetch network — 1 Mod độc = keylogger + exfiltrator trong session bạn. Vì Mod ở cùng phòng với secrets, trust bar cao hơn plugin thường ([bài 09](./09-plugins-marketplaces.md)): chỉ cài bản đã audit (quy trình mục 5).
+Hooks thường ([bài 07](./07-hooks-tu-dong-hoa.md)) là subprocess với JSON stdin/stdout — hỏng 1 lần chạy, muốn đọc secrets phải cố ý code thêm. Hãy hình dung hook như người bán hàng ngoài cổng: chỉ nhận giấy qua khe cửa. Mods thì in-process — sống chung trong nhà, thấy mọi phòng, mở được cả két sắt. Nó giữ state, thấy + sửa prompt/tool calls, gọi model, spawn process, fetch network — 1 Mod độc = keylogger + exfiltrator trong session bạn. Vì Mod ở cùng phòng với secrets, trust bar cao hơn plugin thường ([bài 09](./09-plugins-marketplaces.md)): chỉ cài bản đã audit (quy trình mục 5).
 
-```bash
-claude --version   # cần ≥2.1.287 mới có Mods on-by-default; thấp hơn → update
-npm view @anthropic-ai/claude-code dist-tags   # so stable vs latest — số trên máy bạn mới đúng
-```
+> 📄 **Code ví dụ:** [`examples/01-1-mods-la-gi-va-vi-sao-phai.sh`](examples/01-1-mods-la-gi-va-vi-sao-phai.sh)
+
+> **Tóm gọn 1 câu:** Mod chạy chung process với Claude Code nên quyền lực và rủi ro đều lớn hơn hook thường — chỉ cài khi đã audit kỹ.
 
 ---
 
 ## 2. Mod làm được gì
+
+Mục này là "bảng kê khai tài sản" của Mod: nó được phép làm những gì. Đọc kỹ vì mỗi dòng là 1 attack surface nếu Mod độc — biết được khả năng của nó mới biết phải đề phòng gì.
 
 Bảng sự thật (đọc kỹ — mỗi dòng là 1 attack surface nếu Mod độc):
 
@@ -48,6 +51,8 @@ Bảng sự thật (đọc kỹ — mỗi dòng là 1 attack surface nếu Mod �
 | Gọi model (sub-agent call) | ✅ | Tốn quota bạn, hoặc hỏi model để refine attack |
 | Bị sandbox cover | ❌ | **Sandbox KHÔNG cover Mods** — đừng trông vào sandbox |
 
+> **Cách đọc bảng này:** Mỗi dòng là một khả năng. Cột giữa cho biết Mod có được không (✅/❌), cột phải là thứ nó có thể gây ra nếu Mod độc.
+
 ```text
 Red flags (gặp là dừng, audit kỹ — mục 5): $.env.get (đọc env/key?) /
 $.settings.read (policy/secrets?) / $.process.run (chạy gì? args từ đâu?) /
@@ -55,11 +60,15 @@ $.http.fetch (gửi đi đâu? body gì?) / $.prompt.submit (sửa gate?) /
 tool.check (approve hộ?) / obfuscation (base64 blob, eval/Function).
 ```
 
+> **Tóm gọn 1 câu:** Mod đọc được file, chạy được lệnh, gọi được mạng và sửa được tool call — sandbox không che được, nên soi red flags là lớp phòng vệ chính.
+
 ---
 
 ## 3. Thứ tự check tool call (ai thắng ai)
 
-Thứ tự cố định, không đổi:
+Mục này trả lời câu hỏi then chốt: khi các tầng bảo vệ cãi nhau về allow/deny, ai thắng? Biết thứ tự này, bạn biết đặt rule chặn ở đâu để "chắc chắn" — và vì sao hook thường không chặn được Mod.
+
+Thứ tự cố định, không đổi — như tầng nhà: tầng trên cao hơn thì tiếng nói lớn hơn:
 
 ```text
 1. Managed hooks (org policy — cao nhất, không cãi)
@@ -77,12 +86,16 @@ Deny ở tầng trên thắng allow ở tầng dưới. Allow dưới KHÔNG n�
 | User mod allow vs user hook deny | Hook deny (vẫn hỏi tiếp) | Mod allow ≠ duyệt cuối — hook vẫn được chặn |
 | User mod deny vs mọi allow dưới | Mod deny thắng | Tầng 3 > tầng 4; managed/guard vẫn trên Mod |
 
+> **Cách đọc bảng này:** Mỗi dòng là một tình huống hai tầng cãi nhau. Cột "Ai thắng" là kết quả cuối, cột "Vì sao" giải thích bằng thứ tự tầng.
+
 ```text
 2 hệ quả: (a) user mod CHẠY TRƯỚC user hooks → hook bạn viết chỉ thấy bản ĐÃ
 QUA Mod (vì sao audit Mod quan trọng hơn audit hook). (b) Muốn CẤM CHẮC trước
 Mod lạ? → managed hooks / guard deny (tầng trên), không phải thêm hook thường
 (chạy sau Mod).
 ```
+
+> **Tóm gọn 1 câu:** Tầng trên luôn thắng tầng dưới, và Mod chạy trước hook thường — muốn chặn chắc Mod phải dùng tầng trên nó.
 
 ---
 
@@ -114,18 +127,13 @@ claude --debug-file /tmp/mod-debug.log
 
 ## 5. Quy trình audit: `plugin test` + `plugin validate`
 
-Cài plugin/Mod lạ = chạy code lạ in-process (mục 2). Nguồn có thể là marketplace, git URL, hay file `.zip`/URL tải tạm (`--plugin-dir ./plugin.zip`, `--plugin-url https://...`) — càng lạ càng phải audit trước, tin sau. Quy trình 5 bước:
+Mục này là quy trình thực hành: cài plugin/Mod lạ = chạy code lạ ngay trong nhà bạn (mục 2). Nguồn có thể là marketplace, git URL, hay file `.zip`/URL tải tạm (`--plugin-dir ./plugin.zip`, `--plugin-url https://...`). Càng lạ càng phải audit trước, tin sau — như kiểm tra giấy tờ khách trước khi cho vào nhà. Quy trình 5 bước:
+
+> **Tóm gọn 1 câu:** Đừng bao giờ tin plugin lạ ngay từ cái nhìn đầu — chạy thử cách ly, đọc khai báo, soi red flags, rồi mới cho vào nhà.
 
 ### 5.1. Bước 1–2: chạy thử cách ly + check khai báo
 
-```bash
-claude plugin test <plugin-name>      # chạy thử cách ly: Mod nào load? hooks? permissions?
-claude plugin validate <plugin-name> > /tmp/before.txt
-# → đọc từng dòng: Mod nào? xin quyền gì? calls: nào? Có gì KHÔNG liên quan
-#   chức năng quảng cáo? (vd: plugin format mà xin network?)
-claude plugin details   # hỗ trợ: chi tiết plugin, gồm ước tính token cost
-claude plugin eval      # hỗ trợ: đánh giá plugin trước khi tin — cần ≥2.1.269
-```
+> 📄 **Code ví dụ:** [`examples/02-5-1-buoc-1-2-chay-thu-cach.sh`](examples/02-5-1-buoc-1-2-chay-thu-cach.sh)
 
 ### 5.2. Bước 3–4: đọc `hooks:`/`calls:` + red flags checklist
 
@@ -158,6 +166,8 @@ diff /tmp/before.txt /tmp/after.txt
 
 Chi tiết lệnh: [commands/plugin-validate](./commands/knowledge-system/plugin-validate/README.md).
 
+> **Tóm gọn 1 câu:** Audit một lần chưa đủ — pin version và diff lại `calls:/permissions` sau mỗi update, vì update có thể lén thêm quyền mới.
+
 ---
 
 ## 6. Tắt Mods (4 cách, từ nhẹ tới nặng)
@@ -174,14 +184,7 @@ Cách 4 — policy mod khóa cứng (org/máy chung): allowManagedModsOnly +
   Chỉ Mods org duyệt được chạy; cấm sideload flags lạ.
 ```
 
-```bash
-claude --safe-mode              # cách 1: 1 session sạch
-# settings: { "disableAllHooks": true }   # cách 2: mọi session
-claude --bare -p "..."          # cách 3: API run sạch (CI)
-# cách 4: managed policy JSON (org admin) — tên flags chính xác xem docs bản bạn:
-# { "allowManagedModsOnly": true, "disableSideloadFlags": true,
-#   "prependPlugins": ["org-policy-mod"], ".catch": "refuse" }
-```
+> 📄 **Code ví dụ:** [`examples/03-6-tat-mods-4-cach-tu-nhe-toi.sh`](examples/03-6-tat-mods-4-cach-tu-nhe-toi.sh)
 
 ---
 
@@ -239,21 +242,11 @@ claude --version
 
 ### 8.2. Viết negative test cho rules từ changelog
 
-```bash
-# Negative test = test "cái XẤU phải bị chặn". Mỗi dòng changelog về security
-# → ít nhất 1 negative test. Không có negative test thì fix chỉ tồn tại trên giấy.
-# (hook/guard exit 2 khi block):
-echo ok && rm -rf /data          # expect BLOCK (compound)
-echo ok; rm -rf /data            # expect BLOCK
-echo "a && b"                    # expect PASS (quotes — không false positive)
-TZ=UTC rm -rf /data              # expect BLOCK (env-prefix)
-A=1 B=2 rm -rf /data             # expect BLOCK
-ln -s /data /tmp/link && rm -rf /tmp/link   # expect BLOCK (realpath)
-bash -c 'rm -rf /data'           # expect BLOCK (deny interpreter)
-# Họ nested mod: test trong plugin validate — user mod xin nested approval → REFUSE.
-```
+> 📄 **Code ví dụ:** [`examples/04-8-2-viet-negative-test-cho-rules-tu.sh`](examples/04-8-2-viet-negative-test-cho-rules-tu.sh)
 
-Đưa negative tests vào CI (tầng 4 bài 15): mỗi PR sửa rules/hooks phải chạy bộ này, test đỏ = rule hở → không merge — đây là cách "changelog thành guardrail".
+Đưa negative tests vào CI (tầng 4 bài 15): mỗi PR sửa rules/hooks phải chạy bộ này, test đỏ = rule hở → không merge — đây là cách "changelog thành guardrail". Như khóa cửa rồi tự thử mở lại: rule viết xong mà chưa thử phá thì chưa biết có kín không.
+
+> **Tóm gọn 1 câu:** Mỗi rule trong changelog đều cần một negative test trong CI — test đỏ tức là rule đang hở, đừng merge.
 
 ---
 
@@ -283,12 +276,19 @@ Bước 6: Thử safe-mode 1 session: task còn chạy? → biết mình phụ t
 | Ở npm stable .285 vì "ổn định" | Chưa có fix deny-bypass | Lên ≥.289 (check dist-tags thật) |
 | Quên test compound/env-prefix/symlink | Rule hở mà tưởng kín | Negative tests mục 8.2 vào CI |
 
+> **Cách đọc bảng này:** Mỗi dòng là một bẫy hay dính. Cột "Vì sao" giải thích sai lầm nằm ở đâu, cột "Fix" là cách thoát bẫy.
+
 ### 9.3. Bài tập thực hành
 
-**Bài 1 (15 phút):** `npm view dist-tags` + `claude --version`. Bạn ở bản nào? Có fix deny-bypass chưa? 1 dòng kết luận + action.
-**Bài 2 (15 phút):** Soát ALLOW rules: có allow rộng (`Bash(*)`, `bash -c`) không? Thu hẹp 1 rule + 2 negative tests (pass/block) chứng minh.
-**Bài 3 (15 phút):** Lấy 1 plugin có Mod đang dùng. Validate + đối chiếu red flags (mục 5.2). Bảng: hit nào + cần/không + dòng code. Có obfuscation?
+**Bài 1 (15 phút):** `npm view dist-tags` + `claude --version`. Bạn ở bản nào? Có fix deny-bypass chưa? Viết 1 dòng kết luận + việc cần làm tiếp.
+
+**Bài 2 (15 phút):** Soát ALLOW rules: có allow rộng (`Bash(*)`, `bash -c`) không? Thu hẹp 1 rule + 2 negative tests (pass/block) chứng minh — như siết khóa cũ rồi thử cả chìa đúng lẫn chìa sai.
+
+**Bài 3 (15 phút):** Lấy 1 plugin có Mod đang dùng. Validate + đối chiếu red flags (mục 5.2). Lập bảng: hit nào + cần/không + dòng code. Có obfuscation?
+
 **Bài 4 (15 phút):** Chạy negative tests (mục 8.2) lên `templates/.claude/hooks/bash-guard.sh`. Ghi kết quả từng case. Fail? Sửa guard hoặc ghi issue.
+
+> **Tóm gọn 1 câu:** Bài tập luyện đúng nhịp phòng thủ: kiểm tra version, thu hẹp allow rule, audit Mod lạ, và test guard bằng negative tests.
 
 ## 10. Link chéo
 
@@ -298,3 +298,5 @@ Bước 6: Thử safe-mode 1 session: task còn chạy? → biết mình phụ t
 - **[Bài 09 — Plugins & marketplaces](./09-plugins-marketplaces.md)**: `claude plugin eval`/`install --marketplace`, trust bar của Mods với plugin thường.
 - **[03-FAQ/09 — Bảo mật](../03-cau-hoi-thuong-gap/09-bao-mat-quyen-rieng-tu.md)**: câu hỏi thường gặp về Mods/bảo mật.
 - **templates/.claude/hooks/bash-guard.sh**: mẫu guard tách segments + strip env-prefix.
+
+> **Tóm gọn 1 câu:** Mods là vùng nguy hiểm nhất của Claude Code — audit trước khi cài, chặn bằng tầng trên, và luôn test rule bằng negative tests.

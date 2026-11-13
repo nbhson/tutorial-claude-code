@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/mcp                        # mở trung tâm quản lý server
-/mcp add <tên> -- <lệnh>    # thêm server
-/mcp remove <tên>           # gỡ server
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,16 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Bước 1: thêm server (DSN qua env, không hardcode pass)
-/mcp add db -- npx -y @bytebase/dbhub --dsn "${DB_DSN}"
-
-# Bước 2: kiểm tra tools
-/mcp show db
-# → query, list_tables, describe_table
-
-# Bước 3: dùng ngay trong chat
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -41,13 +28,19 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:** `/mcp` xem status (xanh/đỏ); nếu đỏ thì `/mcp logs` đọc lỗi.
 
+> **Tóm gọn 1 câu:** `/mcp` giống bảng điện tổng của căn nhà: cắm server vào đây là Claude "có tay" chạm ra thế giới ngoài — đèn xanh là chạy, đèn đỏ thì đọc logs.
+
 ## Lỗi thường gặp
+
+Mục này gom mấy trục trặc hay gặp nhất khi cắm MCP server — đối chiếu triệu chứng trên màn hình của bạn với cột đầu, rồi làm theo cột cuối.
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `MCP error: connection closed` sau sleep | Process stdio bị kill | `/mcp reconnect <tên>`; hoặc chuyển sang server HTTP |
 | `auth expired` (vàng) | OAuth token hết hạn | `/mcp reconnect` để login lại |
 | Thêm server mà model không thấy tools | Sai tên/cấu trúc `.mcp.json`, hoặc chưa handshake | `/mcp` xem status đỏ → `/mcp logs` đọc lỗi; validate JSON; thử lệnh `npx ...` tay ngoài terminal |
+
+> **Cách đọc bảng này:** mỗi dòng là một sự cố; cột "Triệu chứng" là điều bạn thấy trên màn hình, "Vì sao" chỉ nguyên nhân gốc, "Cách sửa" là lệnh chạy được ngay — đọc từ trái sang phải.
 
 ## Tham khảo
 

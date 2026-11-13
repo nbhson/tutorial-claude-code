@@ -55,6 +55,8 @@ flowchart TD
 | ZDR / provider telemetry | Data gửi về vendor | Contract + provider docs | Hỏi admin, đừng đoán |
 | Supply-chain (skills/plugins/hooks) | Code độc trá hình | Đọc trước khi cài | — (review tay) |
 
+> **Cách đọc bảng này:** các lớp xếp theo tầng phòng thủ, từ trong (dirs) ra ngoài (supply-chain); cột "Bypass được?" là cột quan trọng nhất khi đánh giá rủi ro — dòng nào ghi **KHÔNG** là chỗ bạn đặt niềm tin thật, còn lại chỉ là "cửa kéo" có thể bị lùa.
+
 ---
 
 ## 1. Claude Code có đọc hết máy tôi không? (working dirs + `--add-dir`)
@@ -64,16 +66,13 @@ flowchart TD
 
 Thêm dir thừa = mở rộng vùng nổ (blast radius) khi có lệnh ngáo chạy trong session: task chỉ cần `api/` mà bạn mở cả repo + home → 1 lệnh `grep -r` ngáo là nó quét secrets khắp máy.
 
-```bash
-/permissions    # xem working dirs hiện tại
-# → danh sách chỉ có repo hiện tại (hoặc 1-2 thư mục phụ), không thấy ~/
-claude --add-dir ../shared-contracts
-# ❌ claude --add-dir ~   (mở cả home cho 1 task nhỏ)
-```
+> 📄 **Code ví dụ:** [`examples/01-1-claude-code-co-oc-het-may-toi.sh`](examples/01-1-claude-code-co-oc-het-may-toi.sh)
 
 Mở session lạ/repo lạ → mở `/permissions` kiểm tra dirs trước khi cho Claude chạy lệnh. Đừng `bypassPermissions` trên máy dev.
 
 **Đào sâu:** [FAQ 03 — permissions & modes](03-permissions-modes.md) · [lệnh `permissions`](../01-huong-dan-su-dung/commands/model-mode/permissions/README.md)
+
+> **Tóm gọn 1 câu:** Working dirs là "hàng rào quanh sân" — Claude không nhảy qua được, nhưng bạn rào càng rộng thì sân càng khó canh, nên rào vừa đủ chỗ nó làm việc thôi.
 
 ## 2. Deny nào không bypass được + khi nào được dùng bypass?
 
@@ -88,24 +87,15 @@ Mở session lạ/repo lạ → mở `/permissions` kiểm tra dirs trước khi
 
 Deny rule thường trong settings vẫn bị bypass bỏ qua → việc critical luôn đặt hook, đừng tin mỗi rule.
 
-```bash
-# Guard mẫu sống qua bypass:
-#!/bin/bash
-input=$(cat)
-echo "$input" | grep -qE 'rm -rf|sudo ' && echo '{"decision":"block","reason":"critical blocked even with bypass"}' && exit 0
-echo '{"decision":"approve"}'
-```
+> 📄 **Code ví dụ:** [`examples/02-2-deny-nao-khong-bypass-uoc-khi-nao.sh`](examples/02-2-deny-nao-khong-bypass-uoc-khi-nao.sh)
 
 **Bypass chỉ hợp lệ khi** nơi chạy là sandbox cô lập thật sự: container dùng 1 lần, không secrets thật, không network ra ngoài. Trên máy dev/cloud session bình thường: KHÔNG BAO GIỜ.
 
-```bash
-# ✅ Sandbox dùng 1 lần, không secrets thật:
-claude -p "migrate test" --dangerously-skip-permissions
-# ❌ Máy dev / máy có .env thật — thay bằng:
-# --safe-mode (cân bằng an toàn hơn) hoặc --permission-mode dontAsk + allowlist hẹp (FAQ 10)
-```
+> 📄 **Code ví dụ:** [`examples/03-2-deny-nao-khong-bypass-uoc-khi-nao.sh`](examples/03-2-deny-nao-khong-bypass-uoc-khi-nao.sh)
 
 **Đào sâu:** [FAQ 03 câu 7 — `--dangerously-skip-permissions` / `--safe-mode`](03-permissions-modes.md#7-khi-nào-dùng---dangerously-skip-permissions) · [FAQ 05 — hooks](05-hooks-faq.md) · [FAQ 10 — CI an toàn](10-ci-sdk-routines-web.md)
+
+> **Tóm gọn 1 câu:** Bypass là "bùng hết trạm thu phí" — 3 trạm vẫn không bỏ được (hook deny, org rule, managed policy), và chỉ được bùng trong bãi tập không có xe người khác (CI sandbox).
 
 ## 3. Secrets: khai sao + lộ rồi xử lý thế nào?
 
@@ -114,36 +104,21 @@ claude -p "migrate test" --dangerously-skip-permissions
 
 **Khai qua env** — file commit lên git được mà không lộ token:
 
-```json
-{
-  "mcpServers": {
-    "github": { "env": { "GITHUB_TOKEN": "${GITHUB_TOKEN}" } }
-  }
-}
-```
+> 📄 **Code ví dụ:** [`examples/04-3-secrets-khai-sao-lo-roi-xu-ly.json`](examples/04-3-secrets-khai-sao-lo-roi-xu-ly.json)
 
-```bash
-export GITHUB_TOKEN="ghp_xxx"
-git grep -E 'ghp_|sk-ant_|xoxb-|lin_' -- .mcp.json .claude/  # phải RỖNG
-claude mcp reset-project-choices   # khi đổi approvals project
-```
+> 📄 **Code ví dụ:** [`examples/05-3-secrets-khai-sao-lo-roi-xu-ly.sh`](examples/05-3-secrets-khai-sao-lo-roi-xu-ly.sh)
 
 `reset-project-choices` xóa lựa chọn approvals cũ — nếu không chạy, người đến sau có thể dùng ké token của người cũ. Gắn lệnh `git grep` vào CI để tự chặn (xem [FAQ 10](10-ci-sdk-routines-web.md)).
 
 **Lộ rồi — 4 bước đúng thứ tự:**
 
-```bash
-# 1. Rotate NGAY (vô hiệu token cũ) — làm trước, dọn sau
-# 2. Xóa approvals/project choices cũ:
-claude mcp reset-project-choices
-# 3. Rà còn sót:
-git grep -E 'ghp_|sk-ant_|xoxb-|AKIA' -- .mcp.json .claude/ .
-# 4. Dọn history (nếu đã push): BFG/filter-repo + force-push + báo team rotate tiếp
-```
+> 📄 **Code ví dụ:** [`examples/06-3-secrets-khai-sao-lo-roi-xu-ly.sh`](examples/06-3-secrets-khai-sao-lo-roi-xu-ly.sh)
 
-Commit nhầm `GITHUB_TOKEN` vào `.mcp.json` → rotate trên GitHub trước (30 giây), rồi mới dọn git. Làm ngược thì token sống thêm ~10 phút trong tay crawler.
+Commit nhầm `GITHUB_TOKEN` vào `.mcp.json` → rotate trên GitHub trước (30 giây), rồi mới dọn git. Làm ngược thì token sống thêm ~10 phút trong tay crawler. Token đã lên git giống chìa khóa rơi giữa chợ: đừng chạy về nhà thay ổ trước — khóa lại (rotate) cái chìa đang rơi đã, rồi hẵng dọn.
 
 **Đào sâu:** [lệnh `mcp`](../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md) · [FAQ 04 — MCP & secrets](04-mcp-faq.md)
+
+> **Tóm gọn 1 câu:** Secret chỉ sống qua env vars; lỡ lộ thì rotate trước, dọn history sau — thứ tự ngược là tự tăng thêm vài phút "kẻ xấu gõ cửa".
 
 <!-- CHUNK2 -->
 
@@ -156,18 +131,13 @@ Commit nhầm `GITHUB_TOKEN` vào `.mcp.json` → rotate trên GitHub trước (
 
 Đừng tin mặc định — đọc provider docs, default có thể đổi theo version. Team dùng Bedrock: mặc định không gửi về Anthropic, nhưng error-reporting bật ở client thì vẫn gửi crash log → tắt khi contract yêu cầu.
 
-```bash
-# Checklist trước khi cam kết với khách hàng:
-# 1. Hỏi admin: contract có ZDR không? scope (prompts? outputs? errors?)
-# 2. Đọc provider docs hiện tại (trang data-handling)
-/status          # provider đang dùng thật là gì?
-/config          # xem telemetry/error-reporting settings
-claude doctor    # có cảnh báo config lạ không
-```
+> 📄 **Code ví dụ:** [`examples/07-4-zdr-telemetry-hoi-ai-tat-o-au.sh`](examples/07-4-zdr-telemetry-hoi-ai-tat-o-au.sh)
 
 Mỗi lần onboard máy cho enterprise/compliance, và sau mỗi `claude update` → rà lại (default có thể đổi).
 
 **Đào sâu:** [FAQ 01 — provider](01-tai-khoan-pricing-cai-dat.md) · [lệnh `doctor`](../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md)
+
+> **Tóm gọn 1 câu:** ZDR và telemetry không có công tắc chung để tự tắt — đây là điều khoản hợp đồng: hỏi admin, đọc provider docs, đừng tự kết luận "mặc định là an toàn".
 
 ---
 
@@ -178,18 +148,11 @@ Mỗi lần onboard máy cho enterprise/compliance, và sau mỗi `claude update
 
 Một plugin cộng đồng có thể xin cùng lúc quyền đọc file + chạy shell + gọi mạng = full access. Plugin "theme đẹp" kèm hook `PostToolUse` âm thầm gửi file đã sửa về URL lạ → đúng kiểu exfil; đọc Browse 2 phút là bắt được.
 
-```bash
-# Trước khi cài plugin lạ:
-/plugin    # mở Browse, đọc: commands? agents? skills? hooks? MCP? permissions xin gì?
-# Plugin xin (Read + Bash(*) + network) mà việc chỉ là "format" → KHÔNG CÀI
-
-# Sau khi cài, rà nhanh:
-ls .claude/hooks/ && cat .claude/hooks/*.sh
-git grep -E 'curl|rm -rf|sudo|exfil|ngrok' -- .claude/
-# → git grep RỖNG = không có script nào exfil ra ngoài
-```
+> 📄 **Code ví dụ:** [`examples/08-5-skill-plugin-hook-co-nguy-hiem-khong.sh`](examples/08-5-skill-plugin-hook-co-nguy-hiem-khong.sh)
 
 **Đào sâu:** [lệnh `plugin`](../01-huong-dan-su-dung/commands/knowledge-system/plugin/README.md) · [Bài 09 — plugin & marketplace](../01-huong-dan-su-dung/09-plugins-marketplaces.md) · [FAQ 05 câu 6 — hook độc = RCE](05-hooks-faq.md)
+
+> **Tóm gọn 1 câu:** Cài plugin lạ giống mời người lạ vào nhà trọn gói chìa khóa (đọc file, chạy lệnh, ra mạng) — đọc "lý lịch" (script) 2 phút trước khi mời, đừng mở cửa vì theme đẹp.
 
 ---
 
@@ -203,17 +166,13 @@ git grep -E 'curl|rm -rf|sudo|exfil|ngrok' -- .claude/
 3. **Human** đọc lại diff cuối — nhất là phần auth, tiền bạc, migrate.
 4. **Tests xanh** — `/verify` chạy app thật, đừng tin lời model nói "xong rồi".
 
-```bash
-# "Dùng fresh subagent review diff này, chỉ báo security + sai logic, bỏ qua style"
-/code-review
-/verify
-npm test
-# → review sạch + verify PASS + tests xanh = đủ điều kiện merge
-```
+> 📄 **Code ví dụ:** [`examples/09-6-review-code-ai-viet-the-nao-4.sh`](examples/09-6-review-code-ai-viet-the-nao-4.sh)
 
 PR đụng auth/migrate → bắt buộc thêm 1 lượt human đọc diff.
 
 **Đào sâu:** [lệnh `code-review`](../01-huong-dan-su-dung/commands/code-repo/code-review/README.md) · [lệnh `verify`](../01-huong-dan-su-dung/commands/code-repo/verify/README.md) · [Bài tips 04 — verification thật](../02-tips-thuc-chien/04-verification-done-that.md)
+
+> **Tóm gọn 1 câu:** Code AI = code của intern giỏi nhưng chưa biết mình nhầm ở đâu: reviewer fresh soi, người thật chốt chỗ đụng tiền, test chạy thật mới tính xong.
 
 ---
 
@@ -222,28 +181,15 @@ PR đụng auth/migrate → bắt buộc thêm 1 lượt human đọc diff.
 > **Hỏi ngắn gọn:** Repo mới sắp cho Claude vào làm — bước nào cần chạy trước?
 > **Trả lời 1 câu:** Checklist 5 bước: dirs hẹp → secrets sạch → MCP thừa tắt → hooks lạ đọc script → `/doctor` xanh.
 
-```bash
-/permissions              # 1. dirs hẹp? deny rm-rf/sudo/.env có?
-git grep -E 'ghp_|sk-ant_' -- .mcp.json .claude/   # 2. secrets sạch?
-/mcp                      # 3. servers thừa? tắt cái không dùng
-/hooks                    # 4. hooks lạ? đọc scripts
-/doctor                   # 5. điểm security? đỏ thì vá trước
-# → grep RỖNG + doctor không cảnh báo đỏ = repo sạch để làm việc
-```
+> 📄 **Code ví dụ:** [`examples/10-7-checklist-bao-mat-repo-moi-5-phut.sh`](examples/10-7-checklist-bao-mat-repo-moi-5-phut.sh)
 
-```json
-{
-  "permissions": {
-    "allow": ["Read", "Glob", "Grep", "Bash(npm test:*)", "Bash(npm run lint:*)", "Bash(git status:*)", "Bash(git diff:*)"],
-    "ask": ["Edit", "Write", "Bash(npm install:*)", "Bash(git push:*)"],
-    "deny": ["Bash(rm -rf:*)", "Bash(sudo:*)", "Read(.env)", "Read(.env.*)"]
-  }
-}
-```
+> 📄 **Code ví dụ:** [`examples/11-7-checklist-bao-mat-repo-moi-5-phut.json`](examples/11-7-checklist-bao-mat-repo-moi-5-phut.json)
 
-Chạy mỗi lần setup repo mới, dọn mỗi tháng 1 lần, và trước khi onboard member mới. `/doctor` còn đỏ → vá trước khi cho Claude động tay.
+Chạy mỗi lần setup repo mới, dọn mỗi tháng 1 lần, và trước khi onboard member mới. `/doctor` còn đỏ → vá trước khi cho Claude động tay. Năm bước này là "kỹ thuật an toàn trước khi khởi động" của phi công: mất 5 phút mỗi lần, đỡ một chuyến hạ cánh khẩn cấp.
 
 **Đào sâu:** [FAQ 03 — permissions](03-permissions-modes.md) · [templates/](../templates/)
+
+> **Tóm gọn 1 câu:** Repo mới cho Claude vào làm thì rà đúng 5 phút: dirs hẹp, secrets sạch, MCP thừa tắt, hooks lạ đọc script, `/doctor` xanh — hết đỏ mới mở cửa.
 
 ---
 
@@ -255,11 +201,7 @@ Chạy mỗi lần setup repo mới, dọn mỗi tháng 1 lần, và trước kh
 4. ZDR/compliance → hỏi admin + đọc provider docs, đừng tự kết luận.
 5. Đã thử hết → `/debug` chẩn đoán session; `/bug` kèm `/status` + `claude doctor`.
 
-```bash
-git grep -E 'ghp_|sk-ant_|xoxb-|AKIA' -- . .
-/permissions
-/hooks
-```
+> 📄 **Code ví dụ:** [`examples/12-van-loi-thi-sao-bao-mat.sh`](examples/12-van-loi-thi-sao-bao-mat.sh)
 
 ---
 

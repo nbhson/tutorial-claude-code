@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/restart`
-`/update`
-`/exit` + mở lại
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,16 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Gõ mãi mới ra chữ, MCP timeout liên tục:
-# 1. Chờ tool đang chạy xong (không restart giữa chừng!)
-
-# 2. Restart
-/restart
-# → "Session saved (58 messages). Restarting… Back in 4s. 58 messages restored."
-
-# 3. Kiểm tra còn lag không: hỏi 1 câu ngắn
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -41,9 +28,7 @@ Kết quả mong đợi:
 
 Verify (30 giây):
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
 
@@ -52,6 +37,8 @@ Verify (30 giây):
 | `/update` báo unknown command | Bản bạn không có bí danh này | Dùng `/restart` (gợi ý nâng cấp nằm trong đó) |
 | Restart xong session trống | Snapshot fail (disk đầy / crash đúng lúc ghi) | `/resume` tìm session ID gần nhất; dọn disk; đừng restart khi máy báo disk full |
 | Restart xong vẫn lag | Bệnh ở model/provider mạng, không phải tiến trình local | Đổi model nhẹ (`/model haiku`, nay là Haiku 5.5, ≥2.1.293), check mạng; `/status` xem provider |
+
+> **Cách đọc bảng này:** **Triệu chứng** là chuyện xảy ra ngay sau restart hoặc khi gọi bí danh, **Vì sao** cho biết lỗi nằm ở snapshot, bí danh hay đường mạng, **Cách sửa** là cách cứu tương ứng.
 
 ## Tham khảo
 
@@ -62,3 +49,5 @@ Verify (30 giây):
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
 > Mẹo 1 dòng: _luôn chờ tool đang ghi file chạy xong hẳn trước khi `/restart` — cắt ngang dễ làm hỏng thao tác đang dở._
+
+> **Tóm gọn 1 câu:** `/restart` là khởi động lại máy mà tab vẫn mở: CLI mới toanh, hội thoại còn nguyên từng chữ.

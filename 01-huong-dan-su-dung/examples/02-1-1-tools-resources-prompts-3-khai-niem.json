@@ -1,0 +1,3 @@
+// github.create_pr — write tool (sẽ hỏi approval), input schema JSON:
+{ "name": "github.create_pr", "inputSchema": { "type": "object",
+  "required": ["owner", "repo", "title", "head", "base"] } }

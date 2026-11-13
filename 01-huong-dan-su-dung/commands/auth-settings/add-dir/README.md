@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/add-dir <path>
-/add-dir <p1> <p2>...
-/add-dir --list
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,16 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Đang ở api, stack trace chỉ vào shared/lib.ts:
-/add-dir ../shared
-# → "Added shared · CLAUDE.md loaded (env flag on)"
-
-# Đọc chéo:
-# Read packages/shared/src/lib.ts → thấy hàm sai
-# Edit ở shared, test ở api (Bash vẫn chạy main=api)
-npm test
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -41,10 +28,7 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-/add-dir --list
-# → danh sách root hiện đủ dir cũ + dir vừa thêm
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
 
@@ -53,6 +37,10 @@ Kết quả mong đợi:
 | Add rồi mà luật dir phụ không áp | CLAUDE.md chưa load (thiếu env flag) | `/status` kiểm tra → bật flag → remove + add lại |
 | `Blocked by Cd deny rule` khi add | Dir nằm trong deny | Đúng thiết kế; cần thật thì sửa settings (chịu trách nhiệm) |
 | Trust prompt lặp lại mỗi session | Mới `Trust once`, chưa remember | Trust & remember; hoặc session mới ở máy khác chưa có trust store |
+
+> **Cách đọc bảng này:** "Triệu chứng" là thứ bạn thấy trên terminal, "Vì sao" là gốc rễ ẩn dưới đó, "Cách sửa" là việc làm ngay — tra theo đúng hàng đang dính.
+
+> **Tóm gọn 1 câu:** `/add-dir` là mở thêm phòng trong nhà đang ở — dir cũ giữ nguyên, dir mới mang luật mới, và mỗi phòng thêm vào đều phải xét trust riêng.
 
 ## Tham khảo
 

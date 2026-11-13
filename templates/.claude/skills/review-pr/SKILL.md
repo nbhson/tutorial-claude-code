@@ -11,21 +11,14 @@ allowed-tools: Bash, Read, Grep, Glob
 > Ví dụ gọi: `/review-pr 123` hoặc `/review-pr main...HEAD`.
 > File này tiếng Việt để team dễ đọc; output review giữ tiếng Việt.
 
+Coi mỗi lượt review như hội đồng chấm thi: lấy đủ đề (context), chấm theo 3 tiêu chí cố định (correctness → security → tests), rồi mới concluded VERDICT — không chấm cảm tính.
+
 ## Inputs (xác định $ARGUMENTS là gì)
 
 1. Nếu `$ARGUMENTS` là số (vd `123`) thì lấy diff bằng GitHub CLI:
-   ```bash
-   # Lấy diff của PR số 123 (chạy thật, không đoán)
-   gh pr diff 123
-   gh pr view 123 --json title,body,baseRefName,headRefName
-   ```
+   > 📄 **Code ví dụ:** [`examples/01-inputs-xac-inh-arguments-la-gi.sh`](examples/01-inputs-xac-inh-arguments-la-gi.sh)
 2. Nếu `$ARGUMENTS` là branch/range (vd `main...HEAD`) thì:
-   ```bash
-   # So sánh với nhánh base (chạy thật)
-   git fetch origin --prune
-   git diff main...HEAD --stat
-   git diff main...HEAD
-   ```
+   > 📄 **Code ví dụ:** [`examples/02-inputs-xac-inh-arguments-la-gi.sh`](examples/02-inputs-xac-inh-arguments-la-gi.sh)
 3. Nếu `$ARGUMENTS` rỗng → hỏi user: "Cho mình PR number hoặc branch range", rồi dừng.
 
 ## Steps (làm đúng thứ tự)
@@ -55,13 +48,12 @@ allowed-tools: Bash, Read, Grep, Glob
 
 - [ ] PR có test cho handler/logic mới không?
 - [ ] Chạy focused test liên quan:
-  ```bash
-  # Chạy test focused cho package vừa đổi (thay tên package thật)
-  pnpm --filter @acme/api test
-  ```
+  > 📄 **Code ví dụ:** [`examples/03-buoc-4-checklist-tests-kiem-chung.sh`](examples/03-buoc-4-checklist-tests-kiem-chung.sh)
 - [ ] Nếu không chạy được test (thiếu env), ghi rõ `NOT-RUN: <lý do>`.
 
 ## Output format (bắt buộc theo mẫu này)
+
+Thang findings giống phân loại hàng hóa tại cửa hải quan: có thứ phải giữ lại (BLOCKER), có thứ nên xử lý thêm (SHOULD-FIX), có thứ chỉ góp ý thoảng qua (NIT).
 
 > Thang findings: `[BLOCKER]` = phải sửa mới merge; `[SHOULD-FIX]` = nên sửa; `[NIT]` = góp ý nhỏ, không chặn.
 
@@ -90,3 +82,5 @@ allowed-tools: Bash, Read, Grep, Glob
 - NEVER approve khi còn BLOCKER hoặc tests chưa chạy mà không ghi NOT-RUN.
 - NEVER sửa code giùm trong skill này — chỉ liệt kê findings.
 - ALWAYS trích `file:line` cụ thể, không nói chung chung kiểu "code chưa tốt".
+
+> **Tóm gọn 1 câu:** Review PR là chấm bài theo 3 tiêu chí (đúng logic, an toàn, có test), trích `file:line` từng finding theo thang BLOCKER/SHOULD-FIX/NIT — chỉ báo cáo, không sửa giùm.

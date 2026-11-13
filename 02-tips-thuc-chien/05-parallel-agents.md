@@ -19,9 +19,13 @@
 | Worktree | Bản sao repo ở thư mục khác để 2 luồng việc không đè nhau | `git worktree add ../wt/stream-refund -b feat/refund` |
 | `/batch` | Chia 1 việc lặp thành nhiều worktree-subagent, mỗi con 1 PR nhỏ | `/batch Thêm missing tests cho src/utils/*.ts` |
 
+> **Cách đọc bảng này:** 7 thuật ngữ là ngôn ngữ chung của cả bài — đọc cột "Hiểu nôm na là gì" trước, cột "Ví dụ thấy ngay" giúp hình dung tức thì.
+
 ---
 
 ## 1. Vì sao chạy song song? (và vì sao loạn?)
+
+Mục này trả lời câu hỏi "đáng không?" trước khi dạy "làm sao?" — song song là đòn bẩy, không phải phím ma thuật.
 
 ### 1.1. Lợi ích
 
@@ -36,11 +40,17 @@
 | Overhead mỗi con | ~20K tokens | Spawn 5 con bừa = 100K bay hơi (ước tính cộng đồng); token cộng dồn 1→3→9 khi spawn lồng |
 | Merge conflicts | Tăng theo số writer cùng repo | 2+ writers cùng branch = đau đầu |
 
+> **Cách đọc bảng này:** Hai dòng là hai hóa đơn phải trả: token bay hơi mỗi lần spawn, và xung đột khi nhiều người cùng ghi một trang giấy.
+
 > Kết luận: parallel là **đòn bẩy có giá**. Dùng cho việc độc lập + hẹp + đáng tiền. Không dùng "cho vui".
+
+> **Tóm gọn 1 câu:** Song song giúp nhanh 3 lần và sạch context, nhưng mỗi "nhân công" đều ăn token — dùng có chọn lọc mới đáng tiền.
 
 ---
 
 ## 2. Nguyên tắc fan-out
+
+Năm nguyên tắc này là "luật giao thông" của fan-out: đi đúng luật thì nhanh, lệch luật là va nhau.
 
 1. **1 subagent = 1 task hẹp + output format.** Không có "QA agent chung chung", "helper agent đa năng".
 2. **Trần khuyên dùng 3–5 concurrent.** Harness cho phép mặc định 20 (v2.1.217+, đổi bằng `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`) — nhưng quá 5 khó theo dõi; hơn thì worktrees + `/batch` (mục 7).
@@ -48,9 +58,13 @@
 4. **Read-only trước, write sau.** Explorers/reviewers read-only. Chỉ 1 writer tại 1 thời điểm trên cùng branch (trừ khi worktrees).
 5. **Luôn có output contract:** "trả quyết định + evidence, không dump 200 dòng log".
 
+> **Tóm gọn 1 câu:** Fan-out đúng luật: 1 agent = 1 việc hẹp, tối đa 5 con, đọc trước ghi sau, và luôn ký "hợp đồng output".
+
 ---
 
 ## 3. Bốn recipes chuẩn (copy-paste)
+
+Bốn "công thức" dưới đây dùng được ngay: explorer đọc, planner viết plan, reviewer soi, tester chạy test. Chép nguyên khung rồi thay tên module.
 
 Hooks đi kèm chi tiết ở [Tips 06](./06-hooks-recipes.md).
 
@@ -99,9 +113,13 @@ Không sửa code, chỉ chạy và báo.
 
 - Tools: `Bash` (chỉ lệnh test), `Read`. Hook bound: giới hạn test command, block `rm -rf`, block deploy.
 
+> **Tóm gọn 1 câu:** Bốn recipes = bốn vai trong một nhóm: explorer thăm dò, planner vẽ kế hoạch, reviewer soi lỗi, tester chạy test — ai cũng bị giới hạn quyền.
+
 ---
 
 ## 4. Writer/Reviewer tách context
+
+Mục này là "mẹo đắt nhất" của bài: người viết và người chấm không nên dùng chung một cái đầu.
 
 Pattern đắt giá nhất trong bài này. Giữ cho mọi PR nontrivial.
 
@@ -113,7 +131,9 @@ reviewer trả gaps → writer fix → re-review nếu còn HIGH
 
 > **Lưu ý fork mode:** từ w33/2026 fork mode bật **mặc định** — subagent hưởng nguyên conversation của main. Muốn reviewer thật sự fresh: đặt `CLAUDE_CODE_FORK_SUBAGENT=0` trong `env` của `settings.json`, hoặc dùng `/subtask <task>` khi cần fork có chủ đích (fork thấy luôn reasoning của writer). `/fork` (w29/2026) thì copy cả session thành 1 background session riêng.
 
-Vì sao tách? Writer nhớ "lúc đó nghĩ gì" → tự bao biện; reviewer fresh chỉ thấy code + plan → bắt nhiều hơn 30–50% (kinh nghiệm team). Chi tiết calibration ở [Tips 04](./04-verification-done-that.md).
+Vì sao tách? Writer nhớ "lúc đó nghĩ gì" → tự bao biện; reviewer fresh chỉ thấy code + plan → bắt nhiều hơn 30–50% (kinh nghiệm team). Giống chuyện bạn sửa bài mình: nhìn hoài không thấy lỗi, bạn cùng lớp nhìn phát là thấy. Chi tiết calibration ở [Tips 04](./04-verification-done-that.md).
+
+> **Tóm gọn 1 câu:** Reviewer "mới tinh" không bị reasoning cũ chi phối — bắt lỗi nhiều hơn rõ rệt; tắt fork mode để giữ sự mới.
 
 ### Copy-paste full vòng
 
@@ -132,6 +152,8 @@ Trả về [SEVERITY] file:line — mô tả — fix. Verdict PASS/NEEDS-FIX."
 
 - Nếu reviewer nhắc đúng reasoning của writer ("vì bạn bảo...") → reviewer đang hưởng context của writer: đặt `CLAUDE_CODE_FORK_SUBAGENT=0` rồi spawn lại.
 
+> **Tóm gọn 1 câu:** Vòng chuẩn: writer xong → spawn reviewer fresh với diff + plan → fix HIGH → re-review, không HIGH mới mở PR.
+
 ---
 
 ## 5. Ví dụ: fan-out 3 explorers song song
@@ -149,6 +171,10 @@ Main chỉ tổng hợp 3 summaries thành 1 table root-cause nghi ngờ.
 
 Kết quả: 3 summaries ~1500 tokens về main, thay vì 30K raw reads. Main "nghi service nhất" → giao planner plan fix service (chain, không parallel tiếp).
 
+Giống chia ba người đi khảo sát ba chợ khác nhau: mỗi người về trình một tờ giấy tóm tắt, chủ quán đọc 3 tờ rồi mới quyết — chứ không ba người xông vào nấu ăn cùng lúc.
+
+> **Tóm gọn 1 câu:** Chia 3 explorer đọc 3 module song song là đổi 30K token đọc thô lấy 1.5K token tóm tắt gọn.
+
 ---
 
 ## 6. Walkthrough: feature lớn với 5 agents
@@ -161,18 +187,17 @@ Kết quả: 3 summaries ~1500 tokens về main, thay vì 30K raw reads. Main "n
 
 Tổng concurrent tối đa 3 (Wave 1). **Song song ở explore, nối tiếp ở implement.**
 
+Ba wave giống dây chuyền xây nhà: khảo sát song song, chốt bản vẽ nối tiếp, thi công từng bước — đúng chỗ nào song song, chỗ nào xếp hàng.
+
+> **Tóm gọn 1 câu:** Feature lớn đi 3 wave: explore song song → plan có người duyệt → implement nối tiếp với verify từng bước.
+
 ---
 
 ## 7. Worktrees + batch cho scale
 
 ### 7.1. 2+ streams sửa cùng repo → mỗi stream 1 worktree
 
-```bash
-# Mỗi stream 1 worktree (copy-paste, đổi tên)
-git worktree add ../myrepo-worktrees/stream-refund -b feat/refund
-git worktree add ../myrepo-worktrees/stream-cart -b feat/cart-promo
-git worktree remove ../myrepo-worktrees/stream-cart  # mỗi stream 1 session riêng; xong thì remove
-```
+> 📄 **Code ví dụ:** [`examples/01-7-1-2-streams-sua-cung-repo-moi.sh`](examples/01-7-1-2-streams-sua-cung-repo-moi.sh)
 
 > Xem [../01-huong-dan-su-dung/11-git-worktrees-checkpoints.md](../01-huong-dan-su-dung/11-git-worktrees-checkpoints.md) và [Tips 09](./09-teamwork-chuan-hoa.md).
 
@@ -180,13 +205,13 @@ git worktree remove ../myrepo-worktrees/stream-cart  # mỗi stream 1 session ri
 
 Migrate 20 files, thêm test toàn repo → `/batch` = 5–30 worktree-subagents, mỗi đứa 1 PR nhỏ.
 
-```bash
-/batch Migrate 20 files trong src/legacy/ sang src/new/: mỗi file 1 PR nhỏ, chạy focused test file đó, dán log. Tối đa 10 concurrent.
-```
+> 📄 **Code ví dụ:** [`examples/02-7-2-1-change-lap-pattern-batch.sh`](examples/02-7-2-1-change-lap-pattern-batch.sh)
 
 > Xem [../01-huong-dan-su-dung/commands/code-repo/batch/README.md](../01-huong-dan-su-dung/commands/code-repo/batch/README.md).
 
 Lead plan + teammates security/perf/tests song song — chỉ bật khi task đủ lớn (multi-day, multi-module). Nếu lead + 2 teammates mà tổng turns < 1.5x single-agent thì đáng.
+
+Worktree là "bản sao căn hộ để hai người không dẫm chân nhau trong bếp": mỗi stream một bản repo riêng, làm xong mới gộp lại.
 
 | Tình huống | Dùng gì | Vì sao |
 |---|---|---|
@@ -194,9 +219,15 @@ Lead plan + teammates security/perf/tests song song — chỉ bật khi task đ�
 | 2 features sửa cùng repo | 2 worktrees + 2 sessions | Tách đĩa + context |
 | Migrate 20 files lặp pattern | `/batch` 5–30 worktree-agents | Mỗi đứa 1 PR, dễ review |
 
+> **Cách đọc bảng này:** Mỗi dòng là một tình huống điển hình — cột "Dùng gì" là công cụ, cột "Vì sao" là lý do chọn nó thay vì cách khác.
+
+> **Tóm gọn 1 câu:** Khi nhiều luồng cùng sửa một repo, tách worktree cho từng luồng; việc lặp pattern quy mô lớn thì giao cho `/batch`.
+
 ---
 
 ## 8. Bảng: song song vs nối tiếp vs một mình
+
+Bảng này là "chọn phương tiện đi lại": việc độc lập đi nhóm (fan-out), việc nối tiếp đi chuyến nối chuyến (chain), việc lặp nhiều thì đi tàu chở hàng (/batch).
 
 | Kiểu | Ví dụ | Khi dùng |
 |---|---|---|
@@ -204,18 +235,21 @@ Lead plan + teammates security/perf/tests song song — chỉ bật khi task đ�
 | Song song (fan-out) | 3 explorers 3 modules | Việc độc lập, cùng cấp |
 | Scale (worktrees/batch) | 2 streams / 20 files | Sửa song song cùng repo / lặp pattern |
 
+> **Cách đọc bảng này:** Ba hàng là ba "phương thức đi lại" cho việc — cột "Ví dụ" và "Khi dùng" giúp chọn đúng ngay.
+
 ---
 
 ## 9. Vận hành: theo dõi + kill + output contract
 
-```bash
-/agents   # xem Running (đang chạy gì) + Library (agents khả dụng)
-/tasks    # xem tasks nền, tiến độ, model mỗi con đang chạy (v2.1.242+)
-```
+> 📄 **Code ví dụ:** [`examples/03-9-van-hanh-theo-doi-kill-output-contract.sh`](examples/03-9-van-hanh-theo-doi-kill-output-contract.sh)
 
 - Đặt tên task rõ khi spawn ("explorer-payments-api", không "agent-1"). Con nào >10 phút không trả → ping 1 lần, không trả nữa → stop (phím `x` trên row trong panel subagent) + spawn lại hẹp hơn.
 - Output contract ép từ prompt: `"Trả về: quyết định + evidence (file:line, log 5 dòng). Không dump 200 dòng log. Tối đa 15 bullet. Không đủ info thì ghi BLOCKED + thiếu gì, đừng đoán."`
 - Spawn lồng: mặc định tối đa **3 tầng dưới main** (đổi bằng `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`); token cộng dồn 1→3→9 nên rule của bài: cấp 2 read-only + hẹp hơn cấp 1, cấm cấp 3.
+
+Quản subagent như quản team thầu: đặt tên rõ ràng, có deadline (10 phút), có hợp đồng output, và biết chấm dứt hợp đồng khi thầu "mất liên lạc".
+
+> **Tóm gọn 1 câu:** Đặt tên task rõ, ép output contract, kill con nào treo quá 10 phút — vận hành gọn là song song bền.
 
 ---
 
@@ -229,6 +263,8 @@ Lead plan + teammates security/perf/tests song song — chỉ bật khi task đ�
 | Reviewer cùng context writer | Toàn PASS mù | Tắt fork mode cho reviewer (mục 4) |
 | Subagent dump 200 dòng log | Main nhiễm rác | Output contract: quyết định + evidence, ≤15 bullet |
 
+> **Cách đọc bảng này:** Mỗi dòng là một "cú ngã" kinh điển khi fan-out — cột Fix đều trỏ về nguyên tắc ở mục 2-4.
+
 ---
 
 ## 11. Bài tập
@@ -236,6 +272,8 @@ Lead plan + teammates security/perf/tests song song — chỉ bật khi task đ�
 - **Bài 1 (15 phút):** viết 4 prompts explorer/planner/reviewer/tester cho 1 module thật (copy khung mục 3), chạy 1 explorer, chấm summary có đủ "files + flow + options" không.
 - **Bài 2 (30 phút):** lấy 1 diff nhỏ, chạy vòng mục 4 (reviewer fresh → fix HIGH → re-review). Đếm HIGH/MED/LOW, so với tự review.
 - **Bài 3 (30 phút):** tạo 2 worktrees cho 2 streams nhỏ làm song song 20 phút; thử `/batch` cho 1 việc lặp (thêm test 5 files utils), đo thời gian vs làm tay.
+
+> **Tóm gọn 1 câu:** Ba bài tập tương ứng ba kỹ năng: viết prompt hẹp, chạy vòng reviewer fresh, và scale bằng worktree/batch.
 
 ---
 

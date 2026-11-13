@@ -60,6 +60,8 @@ flowchart TD
 | Secrets | env vars `${TOKEN}`, không commit | Đỏ nếu hardcode token |
 | Cloud | Cấu hình lại servers/vars/setup trong environment | Local không tự lên cloud |
 
+> **Cách đọc bảng này:** các dòng xếp theo vòng đời của một server — từ add, xem, nối lại, tắt/bật tới xử lý token — dùng như mục lục: đang vướng bước nào thì đọc đúng dòng đó, cột "Lệnh" dán được vào terminal ngay.
+
 ---
 
 ## 1. Thêm server thế nào? (transport + scope + secrets)
@@ -78,33 +80,21 @@ Từ Claude Code **≥2.1.292** (06/10/2026), MCP mặc định negotiate protoc
 | `--scope local` | máy bạn (không commit) | Chỉ bạn | Token cá nhân, thử nghiệm |
 | `--scope user` | `~/.claude/` | Mọi project của bạn | Server cá nhân đa project |
 
-```bash
-# stdio (chạy local):
-claude mcp add --transport stdio github -- npx -y @modelcontextprotocol/server-github
-# http remote (SaaS) + scope project cho team:
-claude mcp add --scope project --transport http linear --url https://mcp.linear.app/mcp --headers "Authorization: Bearer ${LINEAR_TOKEN}"
-```
+> **Cách đọc bảng này:** chọn scope bằng cột "Ai thấy" — càng xuống dưới càng rộng; quy tắc an toàn: bắt đầu từ `local` khi thử, chỉ lên `project` khi server đã ổn định và không dính secret thẳng.
+
+> 📄 **Code ví dụ:** [`examples/01-1-them-server-the-nao-transport-scope-secrets.sh`](examples/01-1-them-server-the-nao-transport-scope-secrets.sh)
 
 Secrets: `.mcp.json` được commit git → token phải nằm ở env `${VAR}`, không ghi thẳng vào file (hardcode = `claude doctor` báo đỏ):
 
-```json
-{
-  "mcpServers": {
-    "github": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"], "env": { "GITHUB_TOKEN": "${GITHUB_TOKEN}" } },
-    "linear": { "transport": "http", "url": "https://mcp.linear.app/mcp", "headers": { "Authorization": "Bearer ${LINEAR_TOKEN}" } }
-  }
-}
-```
+> 📄 **Code ví dụ:** [`examples/02-1-them-server-the-nao-transport-scope-secrets.json`](examples/02-1-them-server-the-nao-transport-scope-secrets.json)
 
-```bash
-export GITHUB_TOKEN="ghp_xxx"
-claude mcp list   # check connected
-git grep -E 'ghp_|sk-ant_|lin_' -- .mcp.json   # phải RỖNG
-```
+> 📄 **Code ví dụ:** [`examples/03-1-them-server-the-nao-transport-scope-secrets.sh`](examples/03-1-them-server-the-nao-transport-scope-secrets.sh)
 
 Onboard member mới → họ chỉ cần `export 2 VAR` là chạy; đổi token → đổi env, không sửa file.
 
 **Đào sâu:** [bài 08 — transports & scope precedence](../01-huong-dan-su-dung/08-mcp-ket-noi-cong-cu-ngoai.md) · [FAQ 09 — bảo mật & riêng tư](09-bao-mat-quyen-rieng-tu.md)
+
+> **Tóm gọn 1 câu:** Thêm server nhớ đúng ba chữ: dây nào (transport), ai thấy (scope), khóa ở đâu (secrets qua `${VAR}`) — sai scope là cách nhanh nhất để lọt token.
 
 ---
 
@@ -122,6 +112,8 @@ Onboard member mới → họ chỉ cần `export 2 VAR` là chạy; đổi toke
 
 **Đào sâu:** [bài 08 — kết nối công cụ ngoài](../01-huong-dan-su-dung/08-mcp-ket-noi-cong-cu-ngoai.md) · [lệnh `/mcp`](../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md)
 
+> **Tóm gọn 1 câu:** Tools là "nút bấm", Resources là "kệ tài liệu đọc-only", Prompts là "mẫu đơn điền sẵn" — cùng một server, ba kiểu dùng khác nhau.
+
 ---
 
 ## 3. Xem / sửa connections
@@ -130,21 +122,7 @@ Onboard member mới → họ chỉ cần `export 2 VAR` là chạy; đổi toke
 >
 > **Trả lời 1 câu:** Trong session thì `/mcp` kèm `reconnect` / `enable` / `disable`; ngoài terminal thì `claude mcp list|get|remove|login|logout|reset-project-choices`.
 
-```bash
-# Trong session:
-/mcp                        # list + trạng thái + tools count
-/mcp reconnect github       # nối lại 1 server
-/mcp disable playwright     # tắt server nặng khi không cần
-/mcp enable playwright      # bật lại
-
-# CLI (ngoài session):
-claude mcp list
-claude mcp get github
-claude mcp login linear     # đăng nhập OAuth server từ terminal (≥ Week 26/2026)
-claude mcp logout linear
-claude mcp remove old-server
-claude mcp reset-project-choices   # xóa approvals project cũ khi đổi policy
-```
+> 📄 **Code ví dụ:** [`examples/04-3-xem-sua-connections.sh`](examples/04-3-xem-sua-connections.sh)
 
 Lưu ý version: `-p` headless cần ≥2.1.205 mới có `/mcp` no-arg in text; cũ hơn thì dùng CLI `claude mcp list`.
 
@@ -162,16 +140,13 @@ Lưu ý version: `-p` headless cần ≥2.1.205 mới có `/mcp` no-arg in text;
 2. **URL sai / server chết:** curl thử URL remote; stdio thì check binary còn không.
 3. **OAuth chưa xong:** 1 số servers (Google, Notion...) cần hoàn OAuth — `/mcp` hiện `auth required` → `claude mcp login <name>` hoặc hoàn tất trong browser rồi reconnect.
 
-```bash
-echo ${GITHUB_TOKEN:+token-set}
-curl -sI https://mcp.linear.app/mcp | head -3
-/mcp reconnect linear
-claude mcp get linear   # soi config sai chỗ nào
-```
+> 📄 **Code ví dụ:** [`examples/05-4-server-disconnected-check-gi.sh`](examples/05-4-server-disconnected-check-gi.sh)
 
-Laptop sleep dậy → stdio servers chết (process bị kill) → `/mcp reconnect all` hoặc restart session. Đây là bệnh kinh niên của stdio, không phải config sai — đừng xóa server vội.
+Laptop sleep dậy → stdio servers chết (process bị kill) → `/mcp reconnect all` hoặc restart session. Đây là bệnh kinh niên của stdio, không phải config sai — đừng xóa server vội. Quan hệ với server disconnect cũng vậy: sleep dậy reconnect là chuyện thường, giống đi elevator mất sóng điện thoại, ra khỏi elevator là sóng lại đầy.
 
 **Đào sâu:** [FAQ 08 — lỗi MCP disconnected](08-loi-thuong-gap-troubleshooting.md) · [lệnh `/mcp`](../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md)
+
+> **Tóm gọn 1 câu:** Disconnected thì check đúng 3 cửa: token → URL → OAuth, và nhớ bệnh kinh niên "sleep kill stdio" — reconnect trước khi vội xóa server.
 
 ---
 
@@ -188,15 +163,13 @@ Cần biết hàm login viết sao?        → Read trực tiếp (trong repo)
 
 Mỗi server thêm tools vào context ngay cả khi không gọi tới — "càng nhiều" không đồng nghĩa "càng mạnh". Server nào 30+ tools mà tuần dùng 1 lần → disable khi không cần; mỗi tháng rà `/mcp` 1 lần, server 3 tháng không gọi → remove.
 
-```bash
-/mcp                    # đếm servers + tools
-/mcp disable heavy-one  # tắt cái ít dùng
-/usage                  # xem MCP nào ngốn nhất tuần
-```
+> 📄 **Code ví dụ:** [`examples/06-5-khi-nao-can-mcp-vs-oc-repo.sh`](examples/06-5-khi-nao-can-mcp-vs-oc-repo.sh)
 
-12 servers (120 tools) → `/usage` thấy 5 cái chiếm 90% calls → disable 7 cái → accuracy lên, bill xuống. Gắn MCP GitHub chỉ để đọc file trong repo đã clone → tốn 2k tokens/session vô ích; MCP GitHub chỉ đáng khi xem PR comments, CI status.
+12 servers (120 tools) → `/usage` thấy 5 cái chiếm 90% calls → disable 7 cái → accuracy lên, bill xuống. Gắn MCP GitHub chỉ để đọc file trong repo đã clone → tốn 2k tokens/session vô ích; MCP GitHub chỉ đáng khi xem PR comments, CI status. MCP giống nhân viên ứng viên: mỗi người nhận một bộ đồ nghề mang theo cả ngày dù hôm đó có việc hay không — tuyển vừa đủ người đang cần việc thật.
 
 **Đào sâu:** [FAQ 02 — MCP nhiều có sao không](02-model-context-token.md) · [bài 08 — skill + MCP cặp bài trùng](../01-huong-dan-su-dung/08-mcp-ket-noi-cong-cu-ngoai.md)
+
+> **Tóm gọn 1 câu:** Chỉ data ngoài repo mới cần MCP, và 3–6 servers là vừa — server nào không gọi tới vẫn đang "mang bộ đồ nghề" trong context của bạn.
 
 ---
 
@@ -206,16 +179,13 @@ Mỗi server thêm tools vào context ngay cả khi không gọi tới — "càn
 >
 > **Trả lời 1 câu:** Cloud session chỉ thấy repo + cloud environment — stdio chết (không có binary trên cloud), env vars laptop cũng không tồn tại ở đó; phải khai lại trong environment.
 
-```bash
-# Trong terminal đã login Sub:
-/web-setup    # sync token, tạo cloud environment từ repo
-# → khai báo lại: MCP servers cần, env vars, setup script (npm ci, migrate...)
-claude --cloud "task"   # chạy thử trên cloud
-```
+> 📄 **Code ví dụ:** [`examples/07-6-len-cloud-mat-mcp-local-xu-ly.sh`](examples/07-6-len-cloud-mat-mcp-local-xu-ly.sh)
 
 Local có Postgres stdio → cloud không có → trong environment khai DB URL cloud/staging + add MCP http tương ứng. Đừng mong "teleport lên là chạy y chang".
 
 **Đào sâu:** [FAQ 10 — routines, Web, CI](10-ci-sdk-routines-web.md) · [Bài 02 — từng bề mặt dùng](../01-huong-dan-su-dung/02-cac-be-mat-terminal-ide-web-desktop.md)
+
+> **Tóm gọn 1 câu:** Lên cloud là chuyển hẳn sang nhà làm khác: đồ đạc local (stdio, env vars) không tự nhảy theo — phải khai lại trong environment trước rồi mới trông nó chạy.
 
 ---
 
@@ -237,6 +207,8 @@ description: Lấy ticket Linear về tóm tắt + tạo branch đúng chuẩn. 
 
 **Đào sâu:** [FAQ 06 — skills & commands](06-skills-commands-claude-md.md) · [bài 07 tips — thiết kế skills](../02-tips-thuc-chien/07-thiet-ke-skills.md)
 
+> **Tóm gọn 1 câu:** MCP mua dây điện, skill viết bản hướng dẫn sử dụng — có dây mà không có hướng dẫn thì mỗi người cắm một kiểu, chập chờn là ở chỗ ấy.
+
 ---
 
 ## Vẫn lỗi thì sao? (MCP)
@@ -248,11 +220,7 @@ description: Lấy ticket Linear về tóm tắt + tạo branch đúng chuẩn. 
 5. `claude doctor` — quét `.mcp.json` hardcode secret, tools thừa.
 6. `/debug` — session vẫn lạ → chẩn đoán; `/bug` nếu nghi lỗi core.
 
-```bash
-/mcp
-/mcp reconnect github
-claude mcp get github
-```
+> 📄 **Code ví dụ:** [`examples/08-van-loi-thi-sao-mcp.sh`](examples/08-van-loi-thi-sao-mcp.sh)
 
 Thứ tự debug chung mọi lỗi: `/status` → `claude doctor` → `/permissions` → `/debug` → `/bug` — chi tiết [FAQ 08](08-loi-thuong-gap-troubleshooting.md).
 

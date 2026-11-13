@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/rules              # xem/quản lý rules
-/rules show         # kiểm tra paths + nội dung
-/rules add <file>   # thêm rule mới
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,13 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Bước 1: tạo 4 file rules
-/rules add python
-/rules add api
-/rules add frontend
-/rules add sql
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -38,13 +28,19 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:** `/rules show` xem glob; thử sửa 1 file khớp pattern để thấy rule áp dụng.
 
+> **Tóm gọn 1 câu:** `/rules` chia luật thành từng "biển báo theo khu vực" — vào thư mục nào gặp pattern nào thì luật đó được bốc lên, khỏi ôm cả thành phố trong một tấm CLAUDE.md.
+
 ## Lỗi thường gặp
+
+Bảng dưới là mấy kiểu "biển báo gãy" hay gặp — nhìn cột triệu chứng trước rồi mới sửa.
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Tạo rule mà model không tuân | Paths sai/không khớp file đang sửa | `/rules show` kiểm tra glob; test `docs/*` vs `docs/**/*` |
 | Hai rules đánh nhau | Mâu thuẫn nội dung, không priority | Thêm `priority: high` cho ngoại lệ; paths cụ thể hơn thắng |
 | Rule nạp chậm/không ổn định | Body quá dài (>500 dòng), model bỏ qua phần cuối | Tách rule lớn thành 2-3 rules nhỏ, mỗi cái <200 dòng |
+
+> **Cách đọc bảng này:** mỗi dòng là một kiểu rule "hỏng" và cách chữa; đọc cột "Vì sao" trước để hiểu rule của bạn đang lệch ở glob, ở priority hay ở độ dài.
 
 ## Tham khảo
 

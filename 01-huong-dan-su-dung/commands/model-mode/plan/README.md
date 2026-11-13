@@ -12,11 +12,7 @@
 
 ## Cách gọi
 
-```bash
-/plan
-/plan <mô tả task>
-Shift+Tab
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -24,12 +20,7 @@ Shift+Tab
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Bước 1: vào plan, ép đọc trước
-/plan Thêm MoMo và VNPay vào module payments hiện chỉ có Stripe.
-Yêu cầu: interface chung, idempotency, webhook verify, không phá API cũ.
-Chỉ lập plan, chưa code.
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -38,17 +29,21 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
+
+> **Tóm gọn 1 câu:** `/plan` là phòng vẽ bản đồ trước khi phá tường: chỉ xem, chỉ vẽ kế hoạch, chìa khóa sửa code bị thu hồi đến khi bạn duyệt — muốn động tay thì mở khóa bằng Shift+Tab.
 
 ## Lỗi thường gặp
+
+Bảng dưới là những lúc "phòng vẽ bản đồ" không khóa như bạn tưởng — đối chiếu triệu chứng với cột đầu rồi xử theo cột cuối.
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/plan` xong model vẫn sửa file | Chưa thật sự ở plan mode (mới gõ text, chưa Enter lệnh) | Kiểm tra status bar hiện `plan`; gõ lại `/plan` |
 | Ở plan nhưng cần ghi 1 file plan ra đĩa | Plan chặn ghi là đúng | Bảo "hiển thị plan dạng markdown để tôi copy", hoặc tạm Shift+Tab về `acceptEdits` ghi 1 file rồi quay lại plan |
 | Duyệt plan rồi model làm ẩu 10 bước | Duyệt cả cục + effort thấp | Duyệt 1–2 bước; `/effort high` cho bước khó |
+
+> **Cách đọc bảng này:** mỗi dòng là một kiểu "lộ trình trượt"; cột "Vì sao" cho biết bạn chưa vào mode đúng, mode khóa đúng nhưng bạn cần ghi, hay duyệt ẩu — cột "Cách sửa" là bước xử lý từng loại.
 
 ## Tham khảo
 

@@ -26,11 +26,13 @@
 7. [Lệnh vắng mặt: version / provider / đã gỡ](#7-lệnh-vắng-mặt-version--provider--đã-gỡ)
 8. [Bài tập + link chéo](#8-bài-tập--link-chéo)
 
-Gõ `/` trong session hiện dropdown lệnh khả dụng **ở máy bạn** (khác plan/provider/version hiện khác nhau). Cột "Chi tiết" trỏ file `commands/<nhóm>/<slug>/README.md` — link 404 ở máy bạn → xem mục 7.
+Gõ `/` trong session hiện dropdown lệnh khả dụng **ở máy bạn** (khác plan/provider/version hiện khác nhau). Cột "Chi tiết" trỏ file `commands/<nhóm>/<slug>/README.md` — link 404 ở máy bạn → xem mục 7. Hãy coi 4 bảng sắp tới như danh bạ điện thoại: không thuộc, chỉ cần biết tra theo nhóm nào.
 
 ---
 
 ## 1. Nhóm 1 — Session & Context
+
+Mục này liệt kê các lệnh quản "trí nhớ làm việc" của session: xóa, nén, xem đang tốn bao nhiêu, quay lui và fork. Đọc khi bạn muốn dọn dẹp hoặc cứu vãn context.
 
 | Lệnh | Mô tả | Chi tiết |
 |---|---|---|
@@ -49,6 +51,10 @@ Gõ `/` trong session hiện dropdown lệnh khả dụng **ở máy bạn** (kh
 | `/todos` | Xem todo list của task nhiều bước | [todos](./commands/session-context/todos/README.md) |
 | `/branch` · `/copy` · `/export` · `/help` · `/restart` | Tách branch session; copy clipboard; export file; help; restart CLI giữ session | tương ứng trong `commands/session-context/` |
 
+> **Cách đọc bảng này:** cột "Lệnh" là tên nút, cột "Mô tả" là nút đó làm gì trong 1 câu, cột "Chi tiết" trỏ trang tra sâu khi cần — tra theo nhu cầu, không cần học thuộc cả bảng.
+
+> **Tóm gọn 1 câu:** Nhóm này là "bộ dọn dẹp + camera" của context: `/clear` khi đổi việc, `/compact` khi chạm ~75%, `/context /usage /cost` để biết ai ngốn.
+
 ```text
 # Task mới sau khi fix CSS 45 phút:
 /clear
@@ -66,11 +72,13 @@ Hãy đọc docs/payment-spec.md và triển khai POST /api/payments theo spec.
 
 ## 2. Nhóm 2 — Model & Mode + Code
 
+Mục này gom lệnh "vặn núm máy" (đổi model, độ kỹ suy luận, permission mode) và lệnh làm việc với code (review, verify, chia việc). Đọc khi muốn chọn đúng sức mạnh và quy trình cho từng việc.
+
 | Lệnh | Mô tả | Chi tiết |
 |---|---|---|
 | `/model` | Đổi model giữa session (việc khó → Opus, việc lặp → model rẻ) | [model](./commands/model-mode/model/README.md) |
 | `/effort` | Độ kỹ suy luận low/medium/high/xhigh/max/auto (≥2.1.205) | [effort](./commands/model-mode/effort/README.md) |
-| `/fast` | Fast mode cho Opus (~2.5× nhanh, tính thêm tiền) — cần `/extra-usage` bật quota trước | [fast](./commands/model-mode/fast/README.md) |
+| `/fast` | Fast mode cho Opus (~2.5× nhanh, tính thêm tiền) — cần `/usage-credits` bật quota trước | [fast](./commands/model-mode/fast/README.md) |
 | `/plan` | Plan mode read-only, duyệt plan trước khi code | [plan](./commands/model-mode/plan/README.md) |
 | `/goal` | Đặt điều kiện hoàn thành, Claude tự loop tới khi đạt (≥2.1.139) | [goal](./commands/model-mode/goal/README.md) |
 | `/permissions` | Quản lý allow/ask/deny rules | [permissions](./commands/model-mode/permissions/README.md) |
@@ -85,6 +93,10 @@ Hãy đọc docs/payment-spec.md và triển khai POST /api/payments theo spec.
 | `/btw` | Hỏi nhanh dùng full context nhưng không thêm vào history | [btw](./commands/code-repo/btw/README.md) |
 | `/security-review` | Quét bảo mật on-demand trên branch hiện tại | [security-review](./commands/code-repo/security-review/README.md) |
 | `/loop` · `/run` · `/radio` · `/design-sync` · `/fewer-permission-prompts` | Lặp theo schedule; chạy app thật; hỏi-đáp realtime; kéo design Figma; đề xuất allowlist | tương ứng trong `commands/code-repo/` |
+
+> **Cách đọc bảng này:** nửa trên là lệnh "vặn núm" (model/effort/mode), nửa dưới là lệnh làm việc với code; cột "Mô tả" kèm version ≥... nghĩa là lệnh đó có "đỉnh cửa" bản tối thiểu — không thấy thì xem mục 7.
+
+> **Tóm gọn 1 câu:** Nhóm 2 là bàn điều khiển: `/model` + `/effort` chọn sức mạnh, `/plan` chốt phương án trước, và review-verify là "2 mắt soi + chạy thật" trước khi kết thúc.
 
 ```text
 # Task khó, model giỏi nhất + suy kỹ (≥2.1.205):
@@ -103,6 +115,8 @@ Hãy đọc docs/payment-spec.md và triển khai POST /api/payments theo spec.
 
 ## 3. Nhóm 3 — Tri thức & hệ thống
 
+Mục này là lệnh quản "kho tri thức và dây điện" của Claude Code: memory, rules, MCP, plugin, hooks, doctor. Đọc khi cần bảo trì hệ thống chứ không phải làm task code.
+
 | Lệnh | Mô tả | Chi tiết |
 |---|---|---|
 | `/memory` | Sửa CLAUDE.md entries + bật/tắt auto-memory | [memory](./commands/knowledge-system/memory/README.md) |
@@ -116,12 +130,18 @@ Hãy đọc docs/payment-spec.md và triển khai POST /api/payments theo spec.
 | `/skill-doctor` | Báo skill nào ngốn context, skill nào chết (≥2.1.252) | [skill-doctor](./commands/knowledge-system/skill-doctor/README.md) |
 | `/bug` | Report bug cho Anthropic | [bug](./commands/knowledge-system/bug/README.md) |
 | `/claude-api` | Hướng dẫn gọi Claude API / migrate SDK | [claude-api](./commands/knowledge-system/claude-api/README.md) |
-| `/pr_comments` | Liệt kê PR comments để address từng cái | [pr_comments](./commands/code-repo/pr_comments/README.md) |
+| `/pr-comments` | Liệt kê PR comments để address từng cái (đã gỡ v2.1.91 — xem mục 7) | [pr-comments](./commands/code-repo/pr-comments/README.md) |
 | `/simplify` · `/insights` · `/stats` · `/mcp-serve` · `/plugin-validate` · `/run-skill-generator` | Rút gọn code; thói quen coding; thống kê; biến Claude thành MCP server; audit plugin; ghi recipe thành skill | tương ứng trong `commands/` |
+
+> **Cách đọc bảng này:** cột "Lệnh" là công cụ bảo trì, cột "Mô tả" là việc nó làm; các lệnh nằm dòng gộp cuối (dấu `·`) ít dùng hơn — để đó, cần thì tra.
+
+> **Tóm gọn 1 câu:** Nhóm 3 là "bộ quản nhà": memory/rules nuôi tri thức, `/mcp /plugin /hooks` nối dây điện, `/doctor /debug /skill-doctor` khám bệnh khi hệ thống khó ở.
 
 ---
 
 ## 4. Nhóm 4 — Auth/Remote/Settings
+
+Mục này liệt kê lệnh "hồ sơ cá nhân": đăng nhập, đổi thư mục, nối IDE, điều khiển từ xa và tinh chỉnh giao diện. Đọc khi cần cấu hình môi trường làm việc của chính bạn.
 
 | Lệnh | Mô tả | Chi tiết |
 |---|---|---|
@@ -139,13 +159,19 @@ Hãy đọc docs/payment-spec.md và triển khai POST /api/payments theo spec.
 | `/sandbox` | Quản lý sandbox côisolated lệnh nguy hiểm | [sandbox](./commands/auth-settings/sandbox/README.md) |
 | `/exit` · `/keybindings` · `/vim` · `/statusline` · `/terminal-setup` · `/setup-bedrock` · `/setup-vertex` | Thoát; phím tắt; vim mode; statusline; terminal setup; wizard Bedrock/Vertex | tương ứng trong `commands/auth-settings/` |
 
+> **Cách đọc bảng này:** mỗi dòng là một "cài đặt cá nhân"; lệnh dòng gộp cuối là nhóm ít đụng đến — setup 1 lần rồi quên. Đổi account thì tìm `/login /logout`, đổi chỗ làm thì tìm `/cd /add-dir`.
+
+> **Tóm gọn 1 câu:** Nhóm 4 là hồ sơ cá nhân của bạn trong session — login, thư mục, IDE, điều khiển từ xa: setup xong phần lớn là "đặt-và-quên".
+
 ---
 
 ## 5. Công thức 5 lệnh mỗi repo + 5 lệnh hằng ngày
 
-Thuộc 10 lệnh này là dùng được ~90% Claude Code.
+Mục này chưng cất cả bài thành 10 lệnh cần thuộc. Đọc mục này trước, phần còn lại của bài tra khi cần — thuộc 10 lệnh là dùng được ~90% Claude Code.
 
 ### 5 lệnh chạy 1 lần mỗi repo
+
+Khối lệnh này như giấy khai sinh của repo: điền một lần, sau đó mọi session hưởng lợi.
 
 ```text
 /init → /memory → /mcp → /agents → /permissions
@@ -159,13 +185,19 @@ Thuộc 10 lệnh này là dùng được ~90% Claude Code.
 
 ### 5 lệnh hằng ngày
 
+Chuỗi 5 lệnh này như thói quen sáng-tối trong ngày làm việc: mở việc bằng `/clear`, đóng việc bằng `/cost`.
+
 `/clear` (đầu task) → `/model` (đổi loại việc: khó lên Opus, lặp xuống model rẻ) → `/review` (sau khi code) → `/compact` (khi context chạm ~75%) → `/cost` (xem tiền).
 
-**Cross-session (w32-33/2026):** từ 1 session có thể **`@` mention session khác** để hỏi/giao tin, và nhận **cross-session messaging** từ session khác đang chạy (macOS/Linux) — hữu ích khi chạy nhiều session song song mà không muốn merge context.
+**Cross-session (w32-33/2026):** từ 1 session có thể **`@` mention session khác** để hỏi/giao tin, và nhận **cross-session messaging** từ session khác đang chạy (macOS/Linux) — hữu ích khi chạy nhiều session song song mà không muốn merge context. Giống 2 đồng nghiệp ngồi phòng riêng nhưng vẫn nhắn tin cho nhau, khỏi phải dồn hết giấy tờ vào một bàn.
+
+> **Tóm gọn 1 câu:** 5 lệnh setup mỗi repo + 5 lệnh mỗi ngày — thuộc 10 cái này là đi được 90% đường, phần còn lại tra khi cần.
 
 ---
 
 ## 6. Hiểu nhầm thường gặp
+
+Mục này phá mấy tin đồn về slash command hay khiến người dùng tự trách hoặc bỏ cuộc. Đọc để khỏi chẩn đoán sai khi lệnh "hành xử lạ".
 
 | Hiểu nhầm | Sự thật |
 |---|---|
@@ -176,9 +208,15 @@ Thuộc 10 lệnh này là dùng được ~90% Claude Code.
 | `/verify` + `/code-review` tự chạy sau mỗi task | Từ ≥2.1.215 chỉ chạy khi gọi tay — đừng chờ tự trigger |
 | Skill `user-invocable: false` là hỏng | Là cố ý: chỉ Claude tự gọi khi ngữ cảnh khớp (bài 05) |
 
+> **Cách đọc bảng này:** cột trái là câu bạn từng nói ("sao nó...?"); đọc sang cột phải để biết chuyện gì thật sự xảy ra — dòng nào đang tin thì thử ngay dòng đó.
+
+> **Tóm gọn 1 câu:** Lệnh vắng không phải bug mà là version floor; `/review` khen chưa chắc code đúng — cần `/code-review` và `/verify` chốt hạ.
+
 ---
 
 ## 7. Lệnh vắng mặt: version / provider / đã gỡ
+
+Mục này là "hồ sơ truy tìm lệnh mất tích": 3 lý do khiến một lệnh không hiện ở máy bạn, xếp theo tần suất. Đọc khi dropdown không có lệnh bạn cần.
 
 **Lý do 1 — version floor** (gom từ các bảng trên):
 
@@ -189,19 +227,21 @@ Thuộc 10 lệnh này là dùng được ~90% Claude Code.
 | `/subtask` ≥2.1.212 · `/verify`+`/code-review` gọi tay ≥2.1.215 | |
 | `/skill-doctor` ≥2.1.252 · `/diff` panel ≥2.1.260 (terminal ≥110 cột + git repo) | |
 
+> **Cách đọc bảng này:** mỗi dòng gộp nhiều lệnh với "đỉnh cửa" version; đối chiếu `claude --version` — bản thấp hơn con số nào là lệnh ở dòng đó chưa hiện.
+
 **Lý do 2 — provider cắt:** `/design-sync`, `/radio` và vài bundled skills vắng trên Bedrock/Vertex/GCP Agent Platform; Bedrock/Vertex còn mất fast mode, web search (bài 10).
 
 **Lý do 3 — đã gỡ:** `/ultraplan` (CLI) gỡ w32/2026 — trong CLI dùng plan mode `/plan`; tính năng Ultraplan vẫn có trên Claude Code web/cloud (w15/2026).
 
-```bash
-# Checklist khi lệnh vắng mặt:
-/status && claude --version   # đối chiếu floor ở trên
-# Rồi gõ / (dropdown thực tế ở máy bạn) — version đủ mà vẫn vắng → do provider (bài 10)
-```
+> 📄 **Code ví dụ:** [`examples/01-7-lenh-vang-mat-version-provider-a-go.sh`](examples/01-7-lenh-vang-mat-version-provider-a-go.sh)
+
+> **Tóm gọn 1 câu:** Lệnh mất tích lần lượt xét 3 "hồ sơ": bản chưa đủ, provider cắt, hoặc đã bị gỡ — kiểm tra theo đúng thứ tự đó trước khi report bug.
 
 ---
 
 ## 8. Bài tập + link chéo
+
+Mục này cho bạn 4 bài tập luyện tay với chính dropdown của máy mình, rồi đường sang các bài liên quan. Làm xong 10 phút đầu là bạn thuộc sẵn danh bạ của riêng máy bạn.
 
 1. **Dropdown drill (10'):** gõ `/`, chụp list lệnh ở máy bạn; đối chiếu 4 bảng — lệnh nào vắng → check floor + provider, ghi lý do.
 2. **Công thức 5 lệnh (15'):** repo thật chạy đủ `/init → /memory → /mcp → /agents → /permissions` + 1 task end-to-end; lưu `/cost` + `/export`.

@@ -24,14 +24,20 @@
 
 ## 1. Vì sao skills? (cơ chế load)
 
-- **Rẻ lúc start, đắt khi cần mới trả:** startup chỉ load tên + description (~100 tokens/skill → 20 skills ≈ 2K); khi user nói "deploy" hoặc Claude thấy khớp use-case mới load body + references/scripts. So với nhét tất cả vào `CLAUDE.md` (trả thuế mọi turn), skills **trả tiền khi dùng** ([Tips 01](./01-context-hygiene.md), [Tips 08](./08-tiet-kiem-cost-token.md)).
-- **Agent Skills standard:** cùng file `SKILL.md` chạy được ở nhiều tool (đổi tool không phải viết lại). Cấu trúc: `SKILL.md` + `references/*.md` + `scripts/*.sh` + `examples/`.
-- **Hot-reload:** sửa SKILL.md trên đĩa, session đang mở nhận bản mới trong vài giây (từ 2.1.0) — không cần restart; tạo thư mục skill mới thì restart 1 lần.
+Mục này giải thích skills là gì và vì sao đáng dùng — hiểu cơ chế thì bạn mới biết đặt thứ gì vào skill, thứ gì không.
+
+- **Rẻ lúc start, đắt khi cần mới trả:** startup chỉ load tên + description (~100 tokens/skill → 20 skills ≈ 2K); khi user nói "deploy" hoặc Claude thấy khớp use-case mới load body + references/scripts. So với nhét tất cả vào `CLAUDE.md` (trả thuế mọi turn), skills **trả tiền khi dùng** — giống thuê cộng tác viên thời vụ: chỉ trả lương khi có việc ([Tips 01](./01-context-hygiene.md), [Tips 08](./08-tiet-kiem-cost-token.md)).
+- **Agent Skills standard:** cùng file `SKILL.md` chạy được ở nhiều tool (đổi tool không phải viết lại). Cấu trúc: `SKILL.md` + `references/*.md` + `scripts/*.sh` + `examples/`. Như một quy trình chuẩn viết ra file, ai cầm cũng làm được.
+- **Hot-reload:** sửa SKILL.md trên đĩa, session đang mở nhận bản mới trong vài giây (từ 2.1.0) — không cần restart; tạo thư mục skill mới thì restart 1 lần. Nôm na: sửa nội quy xong là mọi người có bản mới ngay, không phải họp lại từ đầu.
 - **Khi nào skill là đáp án đúng:** quy trình lặp lại ≥3 lần/tháng, cần người phán đoán (deploy, review, ship, tạo issue); phân phối team bằng plugin ([Tips 09](./09-teamwork-chuan-hoa.md)). Không phải đáp án khi: rule máy check được 100% → hook ([Tips 06](./06-hooks-recipes.md)); việc 1 lần → prompt ([Tips 02](./02-prompt-engineering.md)).
+
+> **Tóm gọn 1 câu:** skill là SOP nạp theo nhu cầu — rẻ lúc khởi động, đắt đúng lúc dùng, và chỉ đáng làm cho quy trình lặp lại nhiều lần.
 
 ---
 
 ## 2. Quy tắc 30 giây: SOP 4 mảnh
+
+Mục này đưa tiêu chuẩn "đủ dùng" cho một skill: người mới (hoặc Claude fresh) đọc 30 giây là làm theo được. SOP = quy trình thao tác chuẩn — như quy trình vận hành ở quán ăn: ai vào ca cũng làm giống nhau.
 
 Skill tốt = SOP mà người mới (hoặc Claude fresh) đọc 30 giây là làm theo được:
 
@@ -42,9 +48,13 @@ Skill tốt = SOP mà người mới (hoặc Claude fresh) đọc 30 giây là l
 
 Thiếu 1 trong 4 → skill yếu: hoặc không ai gọi (thiếu 1), hoặc gọi xong vẫn sai (thiếu 2/3), hoặc output mỗi lần 1 kiểu (thiếu 4).
 
+> **Tóm gọn 1 câu:** skill đủ chuẩn phải trả lời được 4 câu trong 30 giây — khi nào dùng, làm bước nào, check gì, output trông thế nào.
+
 ---
 
 ## 3. Đặt tên + description (50% skill có được dùng)
+
+Mục này về phần quyết định số phận skill: Claude có tự gọi nó hay không. Tên và description giống biển hiệu cửa hàng — hiệu không rõ thì khách đi lướt qua dù trong bán hàng tốt.
 
 ### 3.1. Đặt tên: động từ + đối tượng
 
@@ -65,8 +75,10 @@ TỆ: "Skill hỗ trợ nhiều việc liên quan tới dự án, có thể dùn
 TỐT: "Sinh implementation plan chuẩn (deps, steps, verify). Dùng khi user nói plan/lên kế hoạch. Không dùng cho bug 1 dòng." → 3 trigger + 1 loại trừ.
 ```
 
-- **Listing (VD: gõ `/` để xem danh sách skill) truncate ~1.536 ký tự** (docs xác nhận: description + when_to_use) — dồn quan trọng lên đầu, câu 1 = use case + từ trigger.
+- **Listing (VD: gõ `/` để xem danh sách skill) truncate ~1.536 ký tự** (docs xác nhận: description + when_to_use) — dồn quan trọng lên đầu, câu 1 = use case + từ trigger. Truncate nghĩa là phần thừa bị cắt cụt — như lời giới thiệu bị cắt giữa câu trên biển menu.
 - Mặc định để Claude tự trigger. Chỉ thêm `disable-model-invocation: true` khi muốn gọi tay (deploy/ship/release — việc nguy hiểm).
+
+> **Tóm gọn 1 câu:** đặt tên theo "động từ + đối tượng" và viết description có từ trigger ở câu đầu — thiếu hai thứ này thì skill đẹp mấy cũng không ai gọi.
 
 ### 3.3. Frontmatter đủ dùng (copy-paste)
 
@@ -80,9 +92,13 @@ tools: Read, Bash, Grep, Glob
 
 - `tools`: khai báo hẹp (reviewer không cần `Write`, planner không cần đụng source) — xem [Tips 05](./05-parallel-agents.md).
 
+> **Tóm gọn 1 câu:** frontmatter gọn gồm name, description có trigger, và tools hẹp theo vai — chép khung trên rồi thay nội dung.
+
 ---
 
 ## 4. Cấu trúc SKILL.md chuẩn team (copy-paste)
+
+Mục này cho khung file SKILL.md chuẩn để cả team dùng chung một dáng — copy về, thay phần trong ngoặc là có skill đúng chuẩn ngay.
 
 ````markdown
 # <Tên> — 1 dòng mục đích, nhận $ARGUMENTS gì
@@ -113,9 +129,13 @@ tools: Read, Bash, Grep, Glob
 
 Kèm trong thư mục skill: `SKILL.md` + `references/` + `scripts/` + `examples/output.md` (1 example input/output thật đã duyệt — không bịa; 1 script cho bước máy làm tốt hơn, `chmod +x`).
 
+> **Tóm gọn 1 câu:** SKILL.md chuẩn có 5 phần — mục đích, khi nào dùng/không dùng, steps có lệnh + check, constraints NEVER/ALWAYS, output mẫu — kèm thư mục references/scripts/examples.
+
 ---
 
 ## 5. Ba skills mẫu đầy đủ
+
+Mục này cho 3 skill hoàn chỉnh để chép về chạy thử — học qua mẫu cụ thể luôn nhanh hơn đọc quy tắc suông.
 
 ### Ví dụ 1 — `/plan` (sinh plan chuẩn)
 
@@ -178,9 +198,13 @@ Steps: hỏi thiếu (repro? scope? acceptance?) → sinh ticket `Tiêu đề | 
 
 **Kiểm tra nhanh:** tạo đủ 3 thư mục skill, gõ `/` trong session → tìm `/plan`, `/deploy`, `/issues`. Không thấy → kiểm tra tên thư mục (thư mục = command) + frontmatter `name`/`description`.
 
+> **Tóm gọn 1 câu:** chép 3 mẫu `/plan`, `/deploy`, `/issues` về chỉnh theo repo là có bộ skill khởi điểm — nhớ kiểm tra gõ `/` thấy đủ 3 cái.
+
 ---
 
 ## 6. Bộ 5 skills mọi team nên có
+
+Mục này là "giỏ quà mặc định" cho team: 5 skill phủ đủ chu trình làm việc, cài là chạy.
 
 | Skill | Nội dung | Gọi khi nào |
 |---|---|---|
@@ -190,11 +214,17 @@ Steps: hỏi thiếu (repro? scope? acceptance?) → sinh ticket `Tiêu đề | 
 | `/ship` | End-to-end: test → review diff → bump version → changelog → commit → PR | Đóng feature thành PR |
 | `/issues` | Biến ý thô thành ticket chuẩn (repro, scope, acceptance) | Log bug, ghi backlog |
 
+> **Cách đọc bảng này:** mỗi dòng là một skill nên có — cột 2 nói nó làm gì, cột 3 cho biết tình huống nào thì gọi. Đối chiếu team mình thiếu cái nào.
+
 Đừng gộp 5 thành 1 "super-skill" (trigger loạn, body phình). Khung `/review`: 1 correctness → 2 security → 3 arch drift → 4 edge → 5 tests; trả `[SEVERITY] file:line — mô tả — fix` + verdict PASS/NEEDS-FIX.
+
+> **Tóm gọn 1 câu:** team nên có 5 skill /plan, /review, /deploy, /ship, /issues — mỗi cái một việc, đừng gộp thành một "super-skill" cả.
 
 ---
 
 ## 7. So sánh: skill vs hook vs subagent vs CLAUDE.md
+
+Mục này trả lời câu hỏi hay nhầm: "việc này nên bỏ vào skill, hook, subagent hay CLAUDE.md?" Chọn sai chỗ là tốn token hoặc mất kiểm soát — như dùng dao cạo để chặt củi.
 
 | Cơ chế | Trigger | Tốn tokens | Dùng khi nào |
 |---|---|---|---|
@@ -203,22 +233,30 @@ Steps: hỏi thiếu (repro? scope? acceptance?) → sinh ticket `Tiêu đề | 
 | Hook | Event (Pre/Post/Stop/Start) | 0 (chạy ngoài model) | Rule máy check được, phải đúng 100% |
 | Subagent | Main spawn | ~20K overhead/con | Việc hẹp độc lập, cần fresh context |
 
+> **Cách đọc bảng này:** mỗi dòng là một "cơ chế" (cách gắn quy tắc/việc vào Claude). Cột 2 cho biết cái gì kích hoạt nó, cột 3 là giá token, cột 4 là lúc nào nên dùng.
+
 > Viết sai chỗ là tốn: quy trình trong `CLAUDE.md` (thuế mọi turn), việc cần người quyết đặt vào hook (máy không quyết được), skill cho việc 1 lần (setup đắt hơn lợi).
+
+> **Tóm gọn 1 câu:** luật chung → CLAUDE.md, quy trình cần người quyết → skill, rule máy kiểm tra 100% → hook, việc hẹp độc lập → subagent.
 
 ---
 
 ## 8. Chống skill hỏng dần (skill-rot)
 
-Skill-rot = skills đống thành rác: không ai gọi, gọi sai lúc, description lỗi thời.
+Mục này về bảo trì: skill không phải viết xong là xong — để lâu không chăm nó "mốc meo" như tủ lạnh hết thức ăn cũ. Skill-rot là hiện tượng skill dần vô dụng: không ai gọi, gọi sai lúc, hoặc description lỗi thời.
 
 1. **Skill 1 tháng không ai gọi → xóa hoặc merge.** Check bằng `/usage` (breakdown per-skill, w21/2026) và `/skill-doctor` (w36/2026 — xem chi phí context + usage từng skill); `/doctor` (alias `/checkup`) báo skill cấu hình lỗi.
 2. **Skill load sai lúc → hẹp description/`when_to_use`:** thêm loại trừ ("Không dùng cho ..."), bớt từ trigger chung chung.
 3. **Review định kỳ hàng tháng:** cả team lướt list skills — giữ/gộp/xóa. Ghi version Claude đã test (tools schema đổi theo version).
 4. **Test đổi tool:** cùng file chạy được tool khác → tránh syntax Claude-only; script dùng `${CLAUDE_SKILL_DIR}` / relative path, không hardcode.
 
+> **Tóm gọn 1 câu:** mỗi tháng rà skills một lần — bỏ cái không ai dùng, hẹp description cái hay gọi sai, và ghi version đã test.
+
 ---
 
 ## 9. Checklist + pitfalls
+
+Mục này gom lại phần trên thành phiếu kiểm tra nhanh khi bạn viết skill mới.
 
 **Checklist skill mới:** 30 giây đọc xong biết khi nào/steps/check/output? Tên động từ + đối tượng? Description câu đầu = use case + trigger + loại trừ? Steps có lệnh + check? Constraints NEVER/ALWAYS? Example thật + script `${CLAUDE_SKILL_DIR}`? `tools:` hẹp + `disable-model-invocation` đúng (nguy hiểm → true)? Test 3 ca: fire đúng / đồng nghĩa / KHÔNG fire khi loại trừ?
 
@@ -231,17 +269,27 @@ Skill-rot = skills đống thành rác: không ai gọi, gọi sai lúc, descrip
 | Skill nguy hiểm auto-fire | `disable-model-invocation: true` (deploy/ship) |
 | Script hardcode path | `${CLAUDE_SKILL_DIR}` + relative |
 
+> **Cách đọc bảng này:** cột trái là lỗi hay gặp, cột phải là cách sửa kèm mục tham chiếu — dò cột trái trước khi công bố skill.
+
+> **Tóm gọn 1 câu:** soát checklist 8 câu và dò bảng pitfall trước khi chia sẻ skill — lỗi nhỏ phát hiện sớm rẻ hơn nhiều lần ai đó gọi sai.
+
 ---
 
 ## 10. Bài tập
+
+Ba bài dưới đây bắt bạn dùng lại skill thật của mình — làm tay mới thấy skill nào đang "gõ nhầm chuông".
 
 - **Bài 1 (15 phút):** chạy `/usage` + `/skill-doctor`, liệt kê skills 1 tháng chưa gọi; lấy 1 skill hay fire sai, viết lại description theo mục 3, test 3 ca.
 - **Bài 2 (25 phút):** lấy 1 file docs quy trình 50+ dòng, biến thành skill theo khung mục 4 (dùng Ví dụ 2 làm base); nhờ 1 đồng nghiệp chưa biết quy trình dùng thử.
 - **Bài 3 (20 phút):** đối chiếu team với bảng mục 6, viết khung skill thiếu nhất; lên kế hoạch plugin phân phối ([Tips 09](./09-teamwork-chuan-hoa.md)).
 
+> **Tóm gọn 1 câu:** làm cả 3 bài — audit skills cũ, biến 1 quy trình thành skill, vá skill thiếu của team — để kỹ năng này thành việc hàng tháng.
+
 ---
 
 ## 11. Tham khảo chéo
+
+Mục này nối sang các bài và lệnh liên quan khi cần đào sâu thêm.
 
 - [../01-huong-dan-su-dung/05-skills-custom-commands.md](../01-huong-dan-su-dung/05-skills-custom-commands.md) — quản lý skills · [../01-huong-dan-su-dung/commands/knowledge-system/skill-doctor/README.md](../01-huong-dan-su-dung/commands/knowledge-system/skill-doctor/README.md) — audit skills
 - [../01-huong-dan-su-dung/commands/knowledge-system/plugin/README.md](../01-huong-dan-su-dung/commands/knowledge-system/plugin/README.md) — đóng plugin phân phối · [../01-huong-dan-su-dung/commands/session-context/usage/README.md](../01-huong-dan-su-dung/commands/session-context/usage/README.md) — per-skill cost

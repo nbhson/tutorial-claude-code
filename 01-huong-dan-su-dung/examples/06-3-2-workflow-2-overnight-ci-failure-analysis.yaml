@@ -1,0 +1,9 @@
+# GitLab CI tương đương (khung — .gitlab-ci.yml)
+# claude_review:
+#   image: node:22
+#   script:
+#     - curl -fsSL https://claude.ai/install.sh | bash
+#     - export PATH="$HOME/.local/bin:$PATH"
+#     - claude -p "review diff..." --output-format json --permission-mode dontAsk --allowedTools "Read, Grep, Glob, Bash"
+#   rules: [{ if: '$CI_PIPELINE_SOURCE == "merge_request_event"' }]
+# Secrets: ANTHROPIC_API_KEY via GitLab CI/CD variables (masked).

@@ -11,12 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/stats            # số hôm nay
-/stats --week     # gộp tuần
-/stats --month    # gộp tháng
-/stats --by-task  # gom theo tên session
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -24,11 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-/stats
-# → "Hôm nay đã dùng 50%, còn ~1M token. Cache-hit 70% (tốt)."
-# → Quyết định: đủ xăng refactor module X hôm nay. Nếu còn 10% thì để mai.
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -37,13 +28,19 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:** đối chiếu với `/cost` cùng nguồn; nếu 0 token thì kiểm tra account đang login.
 
+> **Tóm gọn 1 câu:** `/stats` là đồng hồ xăng của phiên làm việc: nhìn một cái biết còn bao nhiêu quota, tuần này đốt tiền vào việc nào — còn chẩn bệnh thì giao cho `/insights`.
+
 ## Lỗi thường gặp
+
+Bảng dưới là mấy lần "đồng hồ báo sai" hay gặp — so triệu chứng của bạn với cột đầu rồi xử theo cột cuối.
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/stats` trống (0 token) | Nhầm profile/account, hoặc log mới xoá | Kiểm tra account đang login; đúng `~/.claude/` |
 | Tiền hiển thị 0$ dù đã dùng | Plan unlimited/team tính khác | Xem quota % thay vì $; hỏi admin team |
 | `--by-task` gom sai việc | Session đặt tên trùng/không tên | Đặt tên session rõ (`refactor-auth` thay vì `untitled-12`) |
+
+> **Cách đọc bảng này:** mỗi dòng là một con số "không như bạn nghĩ"; cột "Vì sao" cho biết lỗi nằm ở account, ở gói hay ở cách đặt tên, cột "Cách sửa" là bước kiểm tra cụ thể.
 
 ## Tham khảo
 

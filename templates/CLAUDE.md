@@ -34,3 +34,5 @@
 <!-- GIỮ FILE NÀY <200 DÒNG. Claude nạp lại CLAUDE.md MỖI TURN, nên file càng dài càng tốn token — đây là lý do kinh tế, không phải thẩm mỹ. Procedures dài → .claude/skills/. Rules theo path → .claude/rules/. -->
 Giữ file này <200 dòng. Procedures dài → `.claude/skills/`. Rules theo path → `.claude/rules/`.
 Rule hay bị miss → nâng thành hook trong `.claude/settings.json`.
+
+> **Tóm gọn 1 câu:** CLAUDE.md là trí nhớ ngắn được nạp lại mỗi turn — ghi ngắn, chỉ ghi cái model hay quên, phần dài và chi tiết đẩy xuống skills và rules.

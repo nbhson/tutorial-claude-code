@@ -1,0 +1,2 @@
+`/rename <tên>`
+`/rename`

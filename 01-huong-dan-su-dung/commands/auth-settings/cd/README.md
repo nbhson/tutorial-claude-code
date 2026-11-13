@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/cd <đường-dẫn>
-/cd ..
-/cd -
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,16 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Sáng ở root:
-/status
-# → "cwd: /repo · cache hit 91%"
-
-# Vào api sửa bug:
-/cd packages/api
-# → "cwd: /repo/packages/api · cache reused 84% · loaded api/CLAUDE.md (+12 rules)"
-# → sửa code, chạy test ở đây (đường dẫn tương đối đúng luôn)
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -41,10 +28,7 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-/status
-# → dòng cwd hiện đường dẫn mới; cache reused > 0%
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
 
@@ -53,6 +37,10 @@ Kết quả mong đợi:
 | `Blocked by Cd deny rule` | Path nằm trong deny (≥2.1.169) | Đúng thiết kế — đừng vào đó; cần thật thì sửa settings (và chịu trách nhiệm) |
 | Trust prompt hỏi mỗi lần vào dù đã Trust | Chọn `Trust once` thay vì `Trust & remember`, hoặc trust store bị xoá | Chọn remember; kiểm tra config trust store còn không |
 | `/cd` xong lệnh Bash vẫn chạy dir cũ | Dùng `cd` shell thay vì `/cd`, hoặc tool Bash có cwd riêng | Dùng `/cd`; `/status` xác minh cwd session |
+
+> **Cách đọc bảng này:** mỗi hàng là một chuyện đã xảy ra thật — "Triệu chứng" ở cột đầu, tìm đúng hàng rồi làm theo "Cách sửa"; cột "Vì sao" chỉ đọc khi muốn hiểu nguyên nhân.
+
+> **Tóm gọn 1 câu:** `/cd` là chuyển phòng trong cùng toà nhà — người và hành lý (context, cache) theo nguyên vẹn, chỉ có luật phòng là thay.
 
 ## Tham khảo
 

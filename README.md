@@ -2,7 +2,7 @@
 
 Một bạn dev mới nghe tên Claude Code. Bạn hiểu terminal, nhưng chưa biết AI agent là gì. Đây là nơi bắt đầu — và kết thúc.
 
-Bài học này không phải là tài liệu tham khảo để dò tìm. Nó là một khóa học: bạn đọc theo thứ tự, làm theo bài tập, và sau 5 ngày bạn dùng Claude Code như một đồng nghiệp.
+Bài học này không phải là tài liệu tham khảo để dò tìm. Nó là một khóa học: bạn đọc theo thứ tự, làm theo bài tập, và sau 5 ngày bạn dùng Claude Code như một đồng nghiệp. Hãy hình dung việc học Claude Code giống học lái xe: đọc lý thuyết ít thôi, quan trọng là ngồi lên ghế lái mỗi ngày.
 
 ## Bạn có nên đọc khóa học này không?
 
@@ -17,7 +17,7 @@ Nếu bạn đã dùng Claude Code ổn định hàng ngày và không bị lỗ
 
 ## Khóa học gồm 4 phần
 
-Mỗi phần là một folder. Đọc theo thứ tự.
+Mục này trả lời câu hỏi "trong khóa có gì và đọc theo thứ tự nào". Mỗi phần là một folder — hãy hình dung 4 phần như 4 ga của một chuyến tàu: lên đúng ga, đúng thứ tự thì tới đích.
 
 | Folder | Giống một | Có trong đó |
 |---|---|---|
@@ -25,6 +25,8 @@ Mỗi phần là một folder. Đọc theo thứ tự.
 | [`02-tips-thuc-chien/`](./02-tips-thuc-chien/) | Bài học sâu | 11 bài: giữ context sạch, viết prompt, plan, kiểm chứng, làm song song |
 | [`03-cau-hoi-thuong-gap/`](./03-cau-hoi-thuong-gap/) | Sổ tay chữa bệnh | 10 bài Q&A, tra khi gặp lỗi |
 | [`templates/`](./templates/) | File mẫu | Copy vào repo thật, sửa 20% là chạy |
+
+> **Cách đọc bảng này:** mỗi dòng là một folder, cột "Giống một" là ví von cho kiểu nội dung, cột "Có trong đó" cho biết khối lượng — đọc từ trên xuống đúng thứ tự học.
 
 ## Lộ trình 5 ngày
 
@@ -49,6 +51,8 @@ Nhớ 4 câu này là đủ 80% sức mạnh:
 3. **CLAUDE.md là gợi ý, hooks là luật.** Rule nào hay bị quên thì viết thành hook.
 4. **Việc ồn ào đẩy sang subagent.** Main thread chỉ giữ quyết định.
 
+> **Tóm gọn 1 câu:** Cả 4 quy tắc xoay quanh một điều: context là tài nguyên quý nhất — dùng tiết kiệm, kiểm chứng trước khi tin, và việc nặng đẩy cho agent khác làm hộ.
+
 ## Phiên bản & nguồn
 
 Claude Code **v2.1.x**, bản mới nhất tại thời điểm viết: **v2.1.296** (09/10/2026).
@@ -70,6 +74,8 @@ Kiểm tra máy bạn: `claude doctor` hoặc trong session gõ `/doctor` / `/st
 Tất cả số liệu version/model/giá trong repo được tập hợp tại [`WRITING-STYLE.md`](./WRITING-STYLE.md).
 
 ## Cách dùng repo này
+
+Mục này là "sách hướng dẫn sử dụng" ngắn: 4 dòng sau nói cách đọc repo cho hiệu quả.
 
 - Đọc theo thứ tự file `00-*` → `NN-*` trong mỗi folder.
 - Mọi code block đều copy-paste được.

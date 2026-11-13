@@ -11,12 +11,7 @@
 
 ## Cách gọi
 
-```bash
-# go / trong session, go chu dau lenh de loc
-/diff
-/verify
-/batch
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 Kiểm tra lệnh có ở máy bạn không: mở session, gõ `/` rồi gõ tiếp chữ đầu lệnh — version/provider khác nhau hiện lệnh khác nhau.
 
@@ -24,14 +19,14 @@ Kiểm tra lệnh có ở máy bạn không: mở session, gõ `/` rồi gõ ti�
 
 Bạn vừa để Claude sửa 1 file, muốn xem nó đổi gì:
 
-```bash
-/diff
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 - Mong đợi: panel diff hiện từng hunk thay đổi, bạn bấm chọn dòng nào thì prompt tiếp được dòng đó (feature ≥2.1.260, terminal ≥110 cột).
 - Kiểm tra (≤30 giây): xem diff có đúng chỗ bạn muốn không; nếu panel không hiện, xem terminal có đủ 110 cột và repo có phải git repo không.
 
 ## Lỗi thường gặp
+
+Mục này nói về những sự cố hay gặp khi dùng cả nhóm lệnh: đọc để biết triệu chứng → nguyên nhân → cách xử lý, đừng mò mẫm.
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
@@ -39,11 +34,15 @@ Bạn vừa để Claude sửa 1 file, muốn xem nó đổi gì:
 | Session "hờn", model lặp lại 1 lỗi, context đầy giữa task | Context window đầy; /loop hoặc /batch chạy bypass ngốn quota liên tục | Dùng /compact để nén, /context xem ai tốn context, dừng /loop khi không cần; đặt `autoCompactWindow` cho subagent (≥2.1.296) để tự compact sớm hơn |
 | /subtask kẹt (subagent không về), /code-review "dễ dãi" bỏ sót | Subagent context riêng nhưng spawn ẩu; review chỉ đọc + nhận xét, không verify | Chạy /verify (build + chạy thật) sau review; chia /subtask nhỏ hơn; /tasks để kill job kẹt |
 
+> **Cách đọc bảng này:** tìm dòng khớp triệu chứng bạn gặp ở cột "Triệu chứng", đọc ngang sang "Vì sao" rồi "Cách sửa" — xử lý được trong vài phút.
+
 ## Bộ 3 phải nhớ
 
 > /diff duyệt từng hunk sau mỗi bước | /verify build + chạy thật lấy output | /batch chia worktree song song
 
 ## Các lệnh (17)
+
+Mục này là danh mục đầy đủ 17 lệnh của nhóm — coi như thực đơn của nhà hàng: chọn món ở đây rồi nhảy sang file riêng của lệnh đó.
 
 | Lệnh | Mức rủi ro | Một dòng |
 |---|---|---|
@@ -55,7 +54,7 @@ Bạn vừa để Claude sửa 1 file, muốn xem nó đổi gì:
 | [/fewer-permission-prompts](./fewer-permission-prompts/README.md) | Thấp | Đề xuất allowlist read-only để bớt bị hỏi quyền |
 | [/init](./init/README.md) | Không | Đọc repo rồi sinh CLAUDE.md + docs/settings |
 | [/loop](./loop/README.md) | Trung bình | Chạy lặp một task nhiều vòng; coi chừng tốn quota khi auto/bypass |
-| [/pr_comments](./pr_comments/README.md) | Không | Xử lý comment PR: sửa code theo góp ý |
+| [/pr-comments](./pr-comments/README.md) | Không | Xử lý comment PR: sửa code theo góp ý (đã gỡ v2.1.91) |
 | [/radio](./radio/README.md) | Thấp | Hỏi-đáp + nghe realtime trong session (version-gated) |
 | [/review](./review/README.md) | Không | Review code trong context phiên hiện tại, chỉ đọc + nhận xét |
 | [/run](./run/README.md) | Thấp | Chạy app local theo recipe; tốn port/CPU, có thể ghi DB dev |
@@ -64,6 +63,8 @@ Bạn vừa để Claude sửa 1 file, muốn xem nó đổi gì:
 | [/subtask](./subtask/README.md) | Thấp | Giao việc phụ cho session con trong cùng session (≥2.1.212) |
 | [/ultrareview](./ultrareview/README.md) | Không | Review sâu trong sandbox cách ly; tốn nhiều quota nhất |
 | [/verify](./verify/README.md) | Thấp | Build + chạy thật lấy output làm bằng chứng |
+
+> **Cách đọc bảng này:** mỗi dòng một lệnh; cột "Mức rủi ro" cho biết có nên cẩn trọng không (chạy ẩu là tốn quota thật), cột "Một dòng" đủ để quyết định có đọc tiếp file riêng hay không.
 
 ## Sơ đồ quyết định (30 giây)
 
@@ -75,11 +76,9 @@ Gõ / trong session để xem lệnh nào hiện ở máy bạn.
 
 ## Cách dùng nhóm này cho đúng
 
-```bash
-# 1. Hoc 3 lenh tru truoc (xem "Bo 3 phai nho" o tren)
-# 2. Con lai tra khi gap viec that, dung hoc het 1 luc
-# 3. Loi la trong nhom nay -> /status -> /doctor -> doc lenh tuong ung
-```
+> 📄 **Code ví dụ:** [`examples/03-cach-dung-nhom-nay-cho-ung.sh`](examples/03-cach-dung-nhom-nay-cho-ung.sh)
+
+> **Tóm gọn 1 câu:** nhóm này là bộ dụng cụ làm việc với code thật — `/diff` soi từng bước, `/verify` lấy bằng chứng sống, `/batch` chia việc song song, còn quota là nguyên liệu phải dùng có kế hoạch.
 
 ## Tham khảo
 

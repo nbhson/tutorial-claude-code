@@ -1,0 +1,3 @@
+// .mcp.json dùng env placeholder (commit an toàn):
+{ "mcpServers": { "postgres": { "command": "npx",
+  "args": ["@modelcontextprotocol/server-postgres@latest", "${DATABASE_URL}"] } } }

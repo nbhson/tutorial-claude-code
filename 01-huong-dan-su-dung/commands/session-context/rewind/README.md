@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/rewind`
-`Esc Esc` (nhấn Esc 2 lần)
-`/rewind` + chọn checkpoint
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,16 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# 10:20 checkpoint tự tạo "trước khi refactor src/auth/ (8 files)"
-# 10:20-11:10: sửa 8 files, test từ 2 fail lên 14 fail, càng fix càng rối
-
-/rewind
-# → picker: chọn "10:20 trước khi refactor src/auth/"
-# → xác nhận "Revert 8 files + cắt 25 turns sau checkpoint? [Yes]"
-# → về 10:20: test lại xanh như cũ, đầu óc nhẹ
-
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -41,9 +28,7 @@ Kết quả mong đợi:
 
 Verify (30 giây):
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
 
@@ -52,6 +37,8 @@ Verify (30 giây):
 | Picker checkpoints trống / ít | Session mới, chưa có edit rủi ro nào; hoặc project không git nên ít snapshot | Làm tiếp để có checkpoints; `git init + commit` để snapshot tin cậy hơn |
 | Rewind xong file không về như cũ | File untracked/rename ngoài tầm backup; hoặc edits sau checkpoint có bước manual ngoài Claude | Kiểm tra `git status`/`git stash list`, phục hồi tay; lần sau stash trước |
 | Rewind nhầm checkpoint quá cũ (mất 1 tiếng) | Chọn vội, không đọc mô tả/preview | Đọc preview diff + thời gian kỹ; export trước luôn để có đường lui |
+
+> **Cách đọc bảng này:** đây là bảng của lệnh rủi ro nhất nhóm — **Triệu chứng** là chuyện xảy ra sau khi rewind, **Vì sao** cho biết mất gì và vì sao, **Cách sửa** là cách cứu hoặc phòng trước bằng checkpoint đều đặn.
 
 ## Tham khảo
 
@@ -62,3 +49,5 @@ Verify (30 giây):
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
 > Mẹo 1 dòng: _/rewind chỉ "cứu" được khi đã có checkpoint — chạy `/diff` sau mỗi bước để tạo mốc._
+
+> **Tóm gọn 1 câu:** `/rewind` là nút undo cho cả trí nhớ lẫn bàn tay: hội thoại và file code cùng quay về mốc checkpoint — và chỉ "cứu" được khi bạn đã tạo mốc.

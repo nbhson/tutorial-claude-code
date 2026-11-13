@@ -11,10 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/rename <tên>`
-`/rename`
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -22,15 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# 18h00, đang dở bước webhook
-/todos
-/rename payments-webhook-dang-do-mai-fix-tiep
-
-# Sáng mai trong cùng thư mục:
-/resume payments-webhook-dang-do-mai-fix-tiep
-# → trúng ngay, khỏi lướt picker
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -39,9 +28,7 @@ Kết quả mong đợi:
 
 Verify (30 giây):
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
 
@@ -50,6 +37,8 @@ Verify (30 giây):
 | `/resume <tên>` báo not found | Sai chính tả, sai dấu, khác hoa/thường | `/resume` (picker) để copy tên chính xác; dùng kebab-case không dấu |
 | 2 sessions cùng tên | Đặt tên chung chung (`fix`, `test`) | Đặt tên duy nhất có ngày/phạm vi; rename lại 1 trong 2 |
 | Tên có khoảng trắng bị cắt | Shell/parse tách từ | Quote: `/rename "my session"` hoặc dùng gạch ngang |
+
+> **Cách đọc bảng này:** cả 3 dòng đều là chuyện "đặt tên mà mai không tìm ra" — **Vì sao** nói về cách tên bị so khớp, **Cách sửa** là quy tắc đặt tên an toàn.
 
 ## Tham khảo
 
@@ -60,3 +49,5 @@ Verify (30 giây):
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
 > Mẹo 1 dòng: _đặt tên kebab-case kèm ngày/phạm vi (vd `payments-webhook-2026-10-11`) — tên chung chung dễ trùng._
+
+> **Tóm gọn 1 câu:** `/rename` dán nhãn hộp đồ cho session — mai resume trúng ngay đích, khỏi lục lại từng hộp không nhãn.

@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/compact`
-`/compact <focus>`
-Auto-compact
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 > Từ ≥2.1.296, subagent có `autoCompactWindow` để tự compact sớm hơn cửa sổ chính — hữu ích khi bạn giao việc phụ dài.
@@ -24,16 +20,7 @@ Auto-compact
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Bước 1: kiểm tra
-/context
-# → usage 72%, phần lớn là log test cũ
-
-# Bước 2: compact có focus
-/compact Giữ lại: mục tiêu chuyển sang JWT rotation, 8 file đã sửa trong src/auth/, quyết định dùng refresh-token 7 ngày, bước tiếp theo là fix 2 test fail ở auth.test.ts.
-
-# Bước 3: tiếp tục ngay, không cần đọc lại file
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -42,9 +29,7 @@ Kết quả mong đợi:
 
 Verify (30 giây):
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
 
@@ -53,6 +38,8 @@ Verify (30 giây):
 | Compact xong model quên tên file quan trọng | Focus quá chung chung ("tóm tắt giúp tôi") | Compact lại không cứu được (history đã mất); lần sau focus nêu tên file cụ thể. Trước mắt bảo model đọc lại file / `glob` tìm lại |
 | Compact xong todos biến mất | Summary bỏ qua todos | Gõ `/todos` kiểm tra, tạo lại tay; lần sau focus ghi "giữ nguyên todo list" |
 | Auto-compact tự chạy giữa chừng, summary xấu | Chạm ngưỡng ~80% mà không compact tay trước | Chủ động `/compact <focus>` ở ~60%; vào settings chỉnh ngưỡng nếu bản bạn cho phép |
+
+> **Cách đọc bảng này:** cột **Triệu chứng** là chuyện xảy ra sau khi compact, **Vì sao** thường là lỗi của focus (nội dung dặn khi nén), **Cách sửa** nêu cả cách cứu trước mắt lẫn phòng lần sau.
 
 ## Tham khảo
 
@@ -63,3 +50,5 @@ Verify (30 giây):
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
 > Mẹo 1 dòng: _chủ động `/compact <focus>` ở ~60% (nêu rõ file + quyết định cần giữ), đừng đợi auto-compact ở ~80% cho summary xấu._
+
+> **Tóm gọn 1 câu:** `/compact` gấp cả cuốn hội thoại dày thành một trang ghi chú rồi chạy tiếp từ đó — nhanh, nhưng chi tiết bị gấp mất là không mở lại được.

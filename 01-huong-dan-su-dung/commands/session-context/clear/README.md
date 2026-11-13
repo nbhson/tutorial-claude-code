@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/clear`
-`clear` _(gõ nhanh)_
-`/clear` + prompt mới
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,16 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Bước 1: đang ở cuối cuộc fix CSS
-# (context ~45%, toàn chuyện padding, margin, flexbox)
-
-# Bước 2: reset
-/clear
-
-# Bước 3: bắt đầu task mới sạch sẽ, nạp đúng tài liệu cần
-Hãy đọc docs/payment-spec.md và triển khai POST /api/payments theo spec.
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -41,9 +28,7 @@ Kết quả mong đợi:
 
 Verify (30 giây):
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
 
@@ -52,6 +37,8 @@ Verify (30 giây):
 | `/clear` xong model vẫn "nhớ" chuyện cũ | Nhớ từ `CLAUDE.md` / memory file, không phải từ conversation | Sửa `CLAUDE.md` / `~/.claude/CLAUDE.md`, không phải lỗi clear |
 | Gõ `/clear` báo `unknown command` | Bản CLI quá cũ hoặc gõ trong `--print` non-interactive | Update `npm i -g @anthropic-ai/claude-code`, hoặc mỗi lần gọi CLI đã là session mới nên không cần clear |
 | Clear xong `/resume` vẫn thấy đoạn cũ | Transcript `.jsonl` vẫn lưu, resume đọc từ đĩa | Đúng hành vi; muốn quên hẳn thì không resume session đó nữa, bắt session mới |
+
+> **Cách đọc bảng này:** thấy hiện tượng lạ ở cột **Triệu chứng** thì nhìn sang **Vì sao** để hiểu nguyên nhân, rồi áp **Cách sửa** — cả 3 dòng đều là "clear không sạch như tưởng".
 
 ## Tham khảo
 
@@ -62,3 +49,5 @@ Verify (30 giây):
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
 > Mẹo 1 dòng: _đổi hẳn task thì `/clear`; còn cùng task mà phình thì `/compact` — đừng để rác task cũ trộn sang việc mới._
+
+> **Tóm gọn 1 câu:** `/clear` là nút reset não — xóa trí nhớ hội thoại cho task mới tinh tươm, còn file và cấu hình vẫn nằm nguyên trên đĩa.

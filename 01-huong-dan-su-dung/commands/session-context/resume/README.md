@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/resume`
-`/resume <id-hoặc-tên>`
-`claude --continue`
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,16 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Tối thứ Sáu: đang dở bước mock webhook, đặt tên trước khi về
-/rename payments-fix
-
-# Sáng thứ Hai: mở terminal trong cùng thư mục dự án
-/resume payments-fix
-# → model: "Chào, hôm trước ta đang dở bước mock webhook ở src/payments/webhook.test.ts. Tiếp tục nhé?"
-
-# Hỏi tiếp, không cần giải thích lại
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -41,9 +28,7 @@ Kết quả mong đợi:
 
 Verify (30 giây):
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
 
@@ -52,6 +37,8 @@ Verify (30 giây):
 | `/resume` picker trống | Đứng sai thư mục / sai profile / transcript bị xóa | `pwd` kiểm tra repo, đăng nhập đúng account, kiểm tra `~/.claude/projects/` còn file không |
 | `/resume <tên>` báo not found | Sai tên (phân biệt hoa/thường, dấu `-`/`_`) hoặc tên có khoảng trắng chưa quote | Gõ `/resume` không tham số để picker rồi copy tên chính xác; quote nếu có space: `/resume "my session"` |
 | Resume xong context vọt 70% | Session cũ quá dài, nạp nguyên 100+ turns | `/compact` ngay với focus rõ; lần sau compact trước khi nghỉ |
+
+> **Cách đọc bảng này:** mỗi dòng là một kiểu "resume không vào được" — **Vì sao** nói về chuyện picker tìm ở đâu, **Cách sửa** là cách lấy lại đúng session hoặc làm nhẹ context.
 
 ## Tham khảo
 
@@ -62,3 +49,5 @@ Verify (30 giây):
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
 > Mẹo 1 dòng: _đặt tên session bằng `/rename` trước khi nghỉ; hôm sau `/resume <tên>` vào việc trong vài giây._
+
+> **Tóm gọn 1 câu:** `/resume` là cỗ máy thời gian của phiên: mở lại đúng chỗ dang dở thay vì kể lại chuyện cũ từ đầu.

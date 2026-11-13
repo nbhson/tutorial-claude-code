@@ -12,11 +12,7 @@
 
 ## Cách gọi
 
-```bash
-/goal <điều kiện>
-/goal
-/goal clear
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -24,11 +20,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Bước 1: đặt goal trước khi cho làm
-/goal Refactor src/auth/ xong khi: pytest tests/auth/ pass toàn bộ (không skip),
-ruff + mypy sạch, và grep "old_login" không còn kết quả trong src/.
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -37,17 +29,21 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
+
+> **Tóm gọn 1 câu:** `/goal` là hợp đồng nghiệm thu với model: viết điều kiện đo được ("test xanh, lint sạch"), có giám định viên soát từng lượt — xong thật nó mới dừng, không phải model tự bảo xong.
 
 ## Lỗi thường gặp
+
+Bảng dưới là ba trục trặc của "hợp đồng nghiệm thu" này — đối chiếu triệu chứng rồi sửa theo cột cuối.
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/goal` báo `unknown command` | Bản < 2.1.139 | Update CLI ≥2.1.139 |
 | Evaluator PASS ẩu dù còn lỗi | Goal mơ hồ ("làm cho xong") | Viết lại goal có số đo (pass, <, file tồn tại) |
 | Loop mãi không PASS (20+ turns) | Goal bất khả thi hoặc thiếu tools test | Hạ goal khả thi; kiểm tra Bash/pytest có bị chặn không; ngắt tay |
+
+> **Cách đọc bảng này:** mỗi dòng là một kiểu "hợp đồng trục trặc"; cột "Vì sao" cho biết lỗi ở bản CLI, ở cách viết goal hay ở vòng lặp vô hạn, cột "Cách sửa" là bước cụ thể kèm điều kiện nên viết.
 
 ## Tham khảo
 

@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/mobile
-/mobile --list
-/mobile --revoke <device>
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,15 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Ở nhà, trước khi ra ngoài:
-# Task refactor đang chạy test 45 phút, không muốn ngồi chờ:
-/mobile
-# → QR hiện lên. Mở app → quét → "Paired: iphone-15 ✓"
-# → Ra ngoài. Test chạy tới bước cần duyệt:
-#   Điện thoại rung: "Allow Bash(npm run migrate)? [Yes/No]"
-# → Đọc kỹ lệnh rồi bấm Yes. Về nhà task xong.
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -40,10 +28,7 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-/mobile --list
-# → thấy device vừa pair kèm trạng thái online/offline
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
 
@@ -52,6 +37,10 @@ Kết quả mong đợi:
 | Quét QR báo `expired` | Pairing token TTL 5-10 phút, để lâu quá | `/mobile --qr` sinh mới rồi quét ngay |
 | Quét QR báo `account mismatch` | App login mail khác với desktop | Đăng xuất app, login đúng mail desktop rồi quét lại |
 | App hiện `host offline` | Desktop sleep/mất mạng/tắt | Bật desktop, tắt sleep (`caffeinate` macOS); desktop tắt là remote chịu |
+
+> **Cách đọc bảng này:** cột "Triệu chứng" là thông báo trên app hoặc terminal, "Vì sao" giải thích pairing hoạt động kiểu gì, "Cách sửa" là việc làm ngay — pair thất bại hay remote im lặng đều tra được ở đây.
+
+> **Tóm gọn 1 câu:** `/mobile` là cầm remote TV ra sân — bạn điều khiển từ xa được, nhưng "cái TV" (session, code) vẫn chạy ở desktop, và bấm Yes từ xa cũng phải đọc kỹ như ngồi trước màn hình.
 
 ## Tham khảo
 

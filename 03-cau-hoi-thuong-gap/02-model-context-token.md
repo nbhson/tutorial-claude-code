@@ -53,15 +53,7 @@ flowchart TD
 >
 > **Trả lời 1 câu:** Không cần thoát — `/model` đổi họ model, `/effort` chỉnh độ suy nghĩ sâu, `/fast` ép nhanh khi việc đơn giản.
 
-```bash
-/model              # xem model hiện tại
-/model sonnet       # việc thường: implement, refactor
-/model opus         # việc khó: kiến trúc, security, bug hiểm
-/model haiku        # việc rẻ: research, rewrite, quét ồn
-/model fable        # mạnh nhất, chậm nhất — cần ≥2.1.257
-/fast               # ép nhanh khi việc đơn giản
-/effort high        # cần suy luận sâu cho bug khó
-```
+> 📄 **Code ví dụ:** [`examples/01-1-oi-model-giua-session-the-nao-model.sh`](examples/01-1-oi-model-giua-session-the-nao-model.sh)
 
 **Đào sâu:** Lưu ý tiền của `/fast`: nó bật fast mode của Opus 5.5, tính **$8 input / $40 output** (gấp đôi giá thường, đổi lấy ~2.5× tốc độ) — xem bảng giá ở [câu 2](#2-route-model-chuẩn-haiku--sonnet--opus--fable-khi-nào). Chi tiết: [lệnh `/model`](../01-huong-dan-su-dung/commands/model-mode/model/README.md) · [lệnh `/effort`](../01-huong-dan-su-dung/commands/model-mode/effort/README.md)
 
@@ -89,7 +81,13 @@ Giá API (USD / 1 triệu tokens, tra 11/10/2026, nguồn [WRITING-STYLE — Ph�
 | Claude Haiku 5.5 | $0.10 | $0.50 | $0.01 | 1M | Cần ≥2.1.293; **mặc định Haiku trên API**; prompt >100K: $0.50/$2.50 |
 | Claude Haiku 4.5 | $1 | $5 | $0.10 | 200K | Mặc định Haiku trên Bedrock/GCP/AWS; không hỗ trợ effort |
 
+> **Cách đọc bảng này:** đọc theo dòng model bạn định dùng — cột "Input/Output" là giá mỗi 1 triệu tokens, cột "Context" là sức chứa (chú ý riêng Haiku 4.5 chỉ 200K), cột "Ghi chú" nói bản Claude Code tối thiểu và vai trò mặc định; giá tra ngày 11/10/2026, dùng trước khi route.
+
 Đọc cột **Context** trước khi quét việc lớn: Haiku 4.5 chỉ có 200K, còn lại đều 1M.
+
+Chọn model cũng như chọn xe đưa đón: xe máy (Haiku) đi chợ lẹ gọn, sedan (Sonnet) chạy hàng ngày, xe sang (Opus/Fable) để đám cưới đám ma — sai cỡ xe thì hoặc phí xăng, hoặc không kịp giờ.
+
+> **Tóm gọn 1 câu:** Route model là "đúng xe cho đúng chuyến": Haiku quét ồn, Sonnet chạy hàng ngày, Opus soi việc hiểm, Fable gánh việc dài nhất — nhìn cột Context trước khi giao việc lớn.
 
 **Đào sâu:** [bài 14 — models 5.x, chọn model đúng](../01-huong-dan-su-dung/14-models-5x-chon-model-dung.md) · [lệnh `/model`](../01-huong-dan-su-dung/commands/model-mode/model/README.md)
 
@@ -101,22 +99,13 @@ Giá API (USD / 1 triệu tokens, tra 11/10/2026, nguồn [WRITING-STYLE — Ph�
 >
 > **Trả lời 1 câu:** Cứu theo thứ tự nhẹ → nặng: `/compact [focus]` → `/clear` + paste plan → rewind double-Esc → đẩy research sang subagent.
 
-Dấu hiệu context loãng: quên rule đầu session, trả lời lan man, sửa A hỏng B, đọc lại file vừa đọc → chạy `/context` xác nhận rồi mới compact; đừng "nói thêm cho nó nhớ" khi đã đầy, càng nói càng loãng.
+Dấu hiệu context loãng: quên rule đầu session, trả lời lan man, sửa A hỏng B, đọc lại file vừa đọc → chạy `/context` xác nhận rồi mới compact; đừng "nói thêm cho nó nhớ" khi đã đầy, càng nói càng loãng. Hãy hình dung context như cốc nước: cốc đã đầy thì đổ thêm chỉ làm tràn — muốn hòa thêm thứ mới, phải chắt bớt (compact) hoặc thay cốc (`/clear`).
 
-```bash
-# Cách 1 — /compact [focus] (nhẹ nhất, giữ session):
-/context            # xem đã đầy bao nhiều %
-/compact            # tóm tắt toàn bộ, giữ mạch
-/compact auth-flow  # chỉ giữ focus auth, vứt phần còn lại
-
-# Cách 2 — /clear + paste plan: bảo Claude xuất plan ra file trước, rồi:
-/clear
-# Paste lại plan + chỉ files cần cho phase tiếp theo
-# Cách 3 — Rewind: double-Esc → chọn checkpoint trước khi context loãng
-# Cách 4 — Phòng bệnh: "Dùng subagent Explore quét auth, trả 10 dòng tóm tắt"
-```
+> 📄 **Code ví dụ:** [`examples/02-3-context-ay-thi-cuu-the-nao-4.sh`](examples/02-3-context-ay-thi-cuu-the-nao-4.sh)
 
 **Đào sâu:** [bài 02 tips — vệ sinh context](../02-tips-thuc-chien/01-context-hygiene.md) · [lệnh `/compact`](../01-huong-dan-su-dung/commands/session-context/compact/README.md) · [lệnh `/rewind`](../01-huong-dan-su-dung/commands/session-context/rewind/README.md)
+
+> **Tóm gọn 1 câu:** Context đầy cứ cứu theo thang nhẹ → nặng — chắt bớt (compact) trước, thay cốc (clear) sau, đừng đổ thêm nước vào cốc đã tràn.
 
 ---
 
@@ -138,11 +127,15 @@ Single-thread đọc 10 files gọn = ~10-15k (RẺ HƠN NHIỀU)
 | 3 hướng độc lập song song được | Việc tuần tự, bước sau cần bước trước |
 | Muốn giữ main context sạch | Cần nhớ chi tiết history |
 
+> **Cách đọc bảng này:** mỗi dòng là một tình huống có 2 lối đi — cột trái trả phí "20k overhead", cột trái giữ main sạch; cột phải miễn phí nhưng context main dơ. Ghép tình huống thật của mình vào dòng nào rồi chọn cột tương ứng.
+
 Riêng `description` của subagents được nạp 1 lần lúc khởi động và nằm suốt session — trả tiền cả khi không gọi agent nào. Quy tắc: **description = "khi nào gọi", body = "làm thế nào"** — 1-2 câu use case, đừng kể cách implement (vừa phình vừa làm model chọn agent sai). `/agents` xem library, description nào dài thì cắt.
 
-Trước khi spawn, hỏi "việc này có đủ ồn/độc lập để đáng 20k không" — không thì làm trực tiếp hoặc dùng `/subtask` (≥2.1.212).
+Trước khi spawn, hỏi "việc này có đủ ồn/độc lập để đáng 20k không" — không thì làm trực tiếp hoặc dùng `/subtask` (≥2.1.212). Spawn subagent giống thuê xe ôm chở thùng hàng nhỏ: cước khởi điểm đắt hơn tiền hàng, gửi thì nên gửi cả đợt chứ không gửi từng cái một.
 
 **Đào sâu:** [FAQ 07 — subagents, teams, workflows](07-subagents-teams-workflows.md) · [lệnh `/agents`](../01-huong-dan-su-dung/commands/knowledge-system/agents/README.md) · [bài 05 tips — chạy song song](../02-tips-thuc-chien/05-parallel-agents.md)
+
+> **Tóm gọn 1 câu:** Subagent là "trợ lý tính cước khởi điểm" — việc càng ồn càng rẻ khi giao, việc vặt giao là lỗ; còn description của chúng đóng tiền thuê mặt bằng cả session dù chẳng ai gọi.
 
 ---
 
@@ -152,12 +145,9 @@ Trước khi spawn, hỏi "việc này có đủ ồn/độc lập để đáng 
 >
 > **Trả lời 1 câu:** Giữ dưới 200 dòng — vì nó được nạp lại mỗi turn, mỗi dòng thừa là tiền trả mãi mãi.
 
-Chỉ giữ always-on facts (stack, lệnh test/lint/build, cấu trúc thư mục, 5-10 quy ước bất di bất dịch); quy trình dài tách sang skill, luật theo path sang `.claude/rules/` + `paths`, rule hay bị miss thì viết hook. Ranh giới chi tiết xem [FAQ 06 câu 6](06-skills-commands-claude-md.md#6-claudemd-ranh-giới-ở-đâu-init-hay-viết-tay).
+Chỉ giữ always-on facts (stack, lệnh test/lint/build, cấu trúc thư mục, 5-10 quy ước bất di bất dịch); quy trình dài tách sang skill, luật theo path sang `.claude/rules/` + `paths`, rule hay bị miss thì viết hook. CLAUDE.md giống tiền thuê nhà tính theo ngày: mỗi dòng là một món đồ để trong phòng — đồ nào không dùng hằng ngày thì cất vào kho (skill/rule), đừng để chiếm phòng. Ranh giới chi tiết xem [FAQ 06 câu 6](06-skills-commands-claude-md.md#6-claudemd-ranh-giới-ở-đâu-init-hay-viết-tay).
 
-```bash
-wc -l CLAUDE.md        # vượt 150 → vàng, vượt 300 → đỏ, tách ngay
-/doctor claude-md      # khám: dài quá? mâu thuẫn? trùng rules? (trim cần ≥2.1.206)
-```
+> 📄 **Code ví dụ:** [`examples/03-5-claude-md-bao-nhieu-dong-la-u.sh`](examples/03-5-claude-md-bao-nhieu-dong-la-u.sh)
 
 CLAUDE.md 320 dòng → `/doctor` báo đỏ → tách sang `/rules`, còn 45 dòng → tiết kiệm ~2.7k token/session.
 
@@ -173,17 +163,13 @@ CLAUDE.md 320 dòng → `/doctor` báo đỏ → tách sang `/rules`, còn 45 d�
 
 So sánh: 30 skills không dùng ~3k tokens startup; 30 MCP tools luôn on ~8-10k; 1 subagent spawn ~20k. Có procedure mới thì viết skill đầu tiên, đừng nhét vào CLAUDE.md, đừng spawn agent chỉ để "nhớ quy trình". Rule nào nhắc 3 lần model vẫn quên (format, không commit secret, chạy test sau sửa) → chuyển thành hook:
 
-```json
-{
-  "hooks": {
-    "PostToolUse": [{ "matcher": "Edit|Write", "hooks": [{ "type": "command", "command": "./scripts/lint-changed.sh" }] }]
-  }
-}
-```
+> 📄 **Code ví dụ:** [`examples/04-6-skills-va-hooks-ton-bao-nhieu-token.json`](examples/04-6-skills-va-hooks-ton-bao-nhieu-token.json)
 
-Mỗi lần sửa file tự lint, tốn 0 token model, không bao giờ miss.
+Mỗi lần sửa file tự lint, tốn 0 token model, không bao giờ miss. Rule mà phải dặn đi dặn lại thì giống đưa chìa khóa cho người dễ mất: thay vì nhắc mỗi ngày, gắn khóa số là xong.
 
 **Đào sâu:** [FAQ 06 — skills, commands, CLAUDE.md](06-skills-commands-claude-md.md) · [FAQ 05 — hooks](05-hooks-faq.md) · [bài 08 tips — tiết kiệm cost & token](../02-tips-thuc-chien/08-tiet-kiem-cost-token.md)
+
+> **Tóm gọn 1 câu:** Skill rẻ lúc chưa gọi, hook miễn phí vì nằm ngoài model — việc nào lặp lại mà bắt buộc đúng, hãy để hook gác còn skill hướng dẫn.
 
 ---
 
@@ -199,15 +185,15 @@ Mỗi lần sửa file tự lint, tốn 0 token model, không bao giờ miss.
 | `/cost` | Session này tốn bao nhiêu tiền? | Cuối session, muốn biết bill |
 | `/usage` | Breakdown theo skills/subagents/plugins/MCP + rate limits | Cuối tuần, tìm chỗ tốn để cắt |
 
-```bash
-/context    # đầy >70% → compact ngay
-/cost       # session này bao nhiều?
-/usage      # tuần này cái gì ngốn nhất?
-```
+> **Cách đọc bảng này:** cột giữa là "câu hỏi" mỗi lệnh trả lời — giữ 3 lệnh như 3 ngăn trong ví sức khỏe: `/context` là thể lực, `/cost` là ví tiền hôm nay, `/usage` là sao kê tháng; hỏi đúng câu thì gõ đúng lệnh.
+
+> 📄 **Code ví dụ:** [`examples/05-7-usage-vs-cost-vs-context-xem-cai.sh`](examples/05-7-usage-vs-cost-vs-context-xem-cai.sh)
 
 `/cost` thấy session 4$ → `/usage` thấy MCP ngốn 60% → tắt 5 servers thừa → tuần sau còn 1.5$/session.
 
 **Đào sâu:** [lệnh `/usage`](../01-huong-dan-su-dung/commands/session-context/usage/README.md) · [lệnh `/cost`](../01-huong-dan-su-dung/commands/session-context/cost/README.md) · [FAQ 04 — MCP nhiều có sao không](04-mcp-faq.md)
+
+> **Tóm gọn 1 câu:** Ba lệnh là ba kiểu tra sức khỏe: đo thể lực (`/context`), xem ví (`/cost`), đọc sao kê (`/usage`) — chẩn bệnh xong mới kê đơn tắt được.
 
 ---
 

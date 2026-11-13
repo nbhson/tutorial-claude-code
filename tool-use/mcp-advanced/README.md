@@ -21,6 +21,8 @@
 | Tool search | Claude Code hoãn nạp schema của tool, cần thì mới load — để giữ tool nhiều mà không phình context | mô tả tool dài tới 16.384 ký tự |
 | Scope (`project`/`local`/`user`) | Cấu hình server sống ở tầng nào | `.mcp.json` commit lên repo = `project` |
 
+> **Cách đọc bảng này:** cột giữa là giải thích nôm na, cột phải là hình ảnh thấy ngay trong repo; quay lại bảng này mỗi khi gặp thuật ngữ lạ trong bài.
+
 ## Mục lục
 
 1. [Cấu hình MCP server nâng cao](#1-cấu-hình-mcp-server-nâng-cao)
@@ -38,11 +40,9 @@ Mục này trả lời câu: ngoài thêm/xóa server cơ bản, bạn tinh ch�
 
 ### 1.1. Protocol negotiation (≥ v2.1.292)
 
-Từ Claude Code **v2.1.292** (06/10/2026), MCP mặc định negotiate **protocol version `2026-07-28`** — áp cho cả server local `stdio` lẫn remote `sse`/`http`, và cả connector claude.ai. Muốn quay lại cách bắt tay cũ:
+Từ Claude Code **v2.1.292** (06/10/2026), MCP mặc định negotiate **protocol version `2026-07-28`** — áp cho cả server local `stdio` lẫn remote `sse`/`http`, và cả connector claude.ai. Ví von: negotiation giống hai người bắt tay và thống nhất nói thứ tiếng nào trước khi trò chuyện. Muốn quay lại cách bắt tay cũ:
 
-```bash
-export MCP_PROTOCOL_NEGOTIATION=legacy   # quay lại handshake bản cũ
-```
+> 📄 **Code ví dụ:** [`examples/01-1-1-protocol-negotiation-v2-1-292.sh`](examples/01-1-1-protocol-negotiation-v2-1-292.sh)
 
 Spec `2026-07-28` chuyển kết nối tool sang mô hình **stateless**: server không cần giữ session dài nữa, nên remote MCP server dễ scale sau load balancer hơn.
 
@@ -54,17 +54,7 @@ Mô tả MCP tool giờ cho phép tới **4.096 ký tự mặc định** (trư�
 
 Mở rộng `${VAR}` chạy được ở **command args, env blocks, URLs và headers** — dùng ở mọi nơi, không hardcode secret:
 
-```json
-{
-  "mcpServers": {
-    "internal-api": {
-      "type": "http",
-      "url": "${INTERNAL_API_URL}/mcp",
-      "headers": { "Authorization": "Bearer ${INTERNAL_API_TOKEN}" }
-    }
-  }
-}
-```
+> 📄 **Code ví dụ:** [`examples/02-1-3-mo-rong-bien-moi-truong-trong.json`](examples/02-1-3-mo-rong-bien-moi-truong-trong.json)
 
 ### 1.4. Các nút bấm cấu hình theo server
 
@@ -78,6 +68,8 @@ Bảng này tra khi bạn cần bật/tắt 1 server hoặc soi config đã merg
 | Import hàng loạt config từ Claude Desktop | `claude mcp add-from-claude-desktop` |
 | Xem config merged của 1 server | `claude mcp get <name>` |
 
+> **Tóm gọn 1 câu:** Tầng config là bảng điều khiển: negotiate protocol như bắt tay, mô tả tool là lời tựa giới thiệu, và `${VAR}` là cách đưa chìa khóa mà không dán khóa lên tường.
+
 ---
 
 ## 2. Tự viết MCP tool
@@ -88,35 +80,11 @@ Một MCP server tối thiểu chỉ cần implement `tools/list` và `tools/cal
 
 ### 2.1. Server TypeScript tối thiểu
 
-```typescript
-// tools/hello-mcp/src/index.ts
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { z } from "zod";
-
-const server = new McpServer({ name: "hello-mcp", version: "1.0.0" });
-
-server.tool(
-  "get_build_status",
-  "Return CI status for a branch",
-  { branch: z.string().describe("Branch name, e.g. main") },
-  async ({ branch }) => {
-    const res = await fetch(`https://ci.internal/api/status?branch=${branch}`);
-    return { content: [{ type: "text", text: JSON.stringify(await res.json()) }] };
-  }
-);
-
-await server.connect(new StdioServerTransport());
-```
+> 📄 **Code ví dụ:** [`examples/03-2-1-server-typescript-toi-thieu.ts`](examples/03-2-1-server-typescript-toi-thieu.ts)
 
 ### 2.2. Đăng ký vào Claude Code
 
-```bash
-claude mcp add --transport stdio build-status --scope project -- \
-  node /path/to/hello-mcp/dist/index.js
-# Kiểm tra:
-claude mcp list
-```
+> 📄 **Code ví dụ:** [`examples/04-2-2-ang-ky-vao-claude-code.sh`](examples/04-2-2-ang-ky-vao-claude-code.sh)
 
 ### 2.3. Quy tắc thiết kế tool tự viết
 
@@ -126,9 +94,13 @@ claude mcp list
 - **Bắt lỗi phải hành động được.** Trả thông báo model xử lý được ("branch 'foo' not found; try `list_branches` first"), không trả stack trace.
 - **Viết kèm 1 skill** chứa convention cho tool của bạn (xem bài 08, mục 5).
 
+> **Tóm gọn 1 câu:** Tự viết tool là mở quán: mỗi món một lý do tồn tại (1 tool = 1 ý đồ), menu miêu tả rõ (description), phần ăn vừa phải (output có giới hạn), và phục vụ lỗi có hướng xử lý.
+
 ---
 
 ## 3. Resource template
+
+Mục này trả lời câu: dữ liệu chỉ đọc và đánh địa chỉ được thì lấy thế nào cho rẻ hơn tool call — câu trả lời là resource template, 1 khai báo phủ cả nghìn thực thể, như một cái kệ menu thay vì gọi từng món qua trung gian.
 
 Resource phơi dữ liệu read-only theo URI. **Resource template** tham số hóa URI đó — 1 khai báo phủ hàng nghìn thực thể:
 
@@ -153,9 +125,13 @@ Chúng hoạt động thế nào trong Claude Code:
 - **Ưu tiên resource thay vì tool call** khi dữ liệu đánh địa chỉ được và read-only — rẻ hơn, cache được, không phải đàm phán arguments.
 - **Chặn lộ diện:** template dạng `file:///{path}` thực chất là primitive đọc filesystem — chặn root phía server và dựa vào permission rules (bài 10).
 
+> **Tóm gọn 1 câu:** Resource template là "1 kệ sách thay vì 1.000 cuốn mượn lẻ": dữ liệu chỉ đọc, đánh địa chỉ được thì dùng resource — rẻ hơn, cache được, an toàn hơn tool call.
+
 ---
 
 ## 4. Orchestration nhiều MCP server
+
+Mục này nói về việc nuôi nhiều MCP server mà model vẫn chọn đúng tool: giới hạn ngân sách tool, đặt tên có nghĩa, phân tầng config, và chọn pattern phối hợp phù hợp với team.
 
 ### 4.1. Giữ ngân sách tool thấp
 
@@ -189,17 +165,19 @@ user scope            → remote cá nhân (notion, linear)
 | **Compose qua hooks** | Hook `mcp_tool` gọi server B sau tool từ server A | PostToolUse: sau `Edit`, log thay đổi lên linear |
 | **Chained agents** | Subagent A (mang bộ MCP A) báo cáo → main agent gọi server B | Explore bằng server read-only, rồi act bằng server write |
 
+> **Cách đọc bảng này:** mỗi dòng là một kiểu phối hợp server — cột "Cách làm" là công thức, cột "Use case" cho biết dùng khi nào; đọc từ trên xuống theo mức độ phổ biến giảm dần.
+
 ### 4.5. Bảo trì sức khỏe (2 tuần 1 lần)
 
-```bash
-/usage        # số call theo server — server nào 0 call?
-/mcp          # trạng thái kết nối
-claude mcp remove <name>   # sau 1 tuần thử tắt mà không ai notice
-```
+> 📄 **Code ví dụ:** [`examples/05-4-5-bao-tri-suc-khoe-2-tuan.sh`](examples/05-4-5-bao-tri-suc-khoe-2-tuan.sh)
+
+> **Tóm gọn 1 câu:** Điều hành nhiều server giống quản lý một bàn tiệc: bàn chỉ chứa nổi ~10 món (ngân sách tool), tên món phải gọi được ra (đặt tên theo domain), và định kỳ nhẩm lại xem món nào chưa ai gọi thì dọn khỏi menu.
 
 ---
 
 ## 5. Best practices MCP trong Claude Code (2025 → 2026)
+
+Mục này gom 8 kinh nghiệm xương máu được đo đạc thực tế — coi như quy tắc bếp của quán MCP: áp đủ thì model chọn đúng tool, thiếu thì rối ngay.
 
 1. **Bắt đầu với 3–6 servers, cắt định kỳ.** Độ chính xác chọn tool giảm sau ~10 tool hiển thị; dùng `/usage` tìm server ế.
 2. **Secret chỉ nằm trong env expansion (`${VAR}`), không bao giờ trong config commit lên.** Audit bằng `grep -riE "sk-|token|password" .mcp.json` — phải trả về rỗng.
@@ -209,6 +187,8 @@ claude mcp remove <name>   # sau 1 tuần thử tắt mà không ai notice
 6. **Chốt kỳ vọng protocol.** Từ ≥2.1.292 spec `2026-07-28` là mặc định; chỉ đặt `MCP_PROTOCOL_NEGOTIATION=legacy` khi server cũ hành xử sai.
 7. **Thử mô tả tool bằng prompt thật.** Với hạn mức 4.096 ký tự (16.384 qua tool search), mô tả chính xác cải thiện đo được việc chọn tool.
 8. **Audit sau mỗi lần thêm server:** số tool hiển thị ≤ 10, grep secret sạch, 1 skill cho mỗi server sâu, cloud session cấu hình lại (stdio local không theo lên cloud).
+
+> **Tóm gọn 1 câu:** MCP chạy bền nhờ kỷ luật: ít server mà chất, secret chỉ ở env, naming theo domain, và audit lại mỗi lần thêm người mới vào bàn.
 
 ---
 

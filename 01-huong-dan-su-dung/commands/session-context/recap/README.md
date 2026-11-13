@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/recap`
-`/recap --short`
-`/recap --decisions`
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,16 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Tối qua 23h nghỉ giữa chừng, sáng mở máy:
-/recap
-# → "Tối qua: refactor payments.
-#    Xong: tách stripe.ts riêng, test 12/12 PASS.
-#    Dở: webhook verify signature (mới research, chưa code).
-#    Chốt: giữ public API, không đụng test cũ.
-#    Tiếp: code webhook verify → /verify → /security-review."
-
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -41,9 +28,7 @@ Kết quả mong đợi:
 
 Verify (30 giây):
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
 
@@ -52,6 +37,8 @@ Verify (30 giây):
 | Recap chung chung ("đang refactor") | Session mới 5 tin, chưa có gì để tóm | Session ngắn thì khỏi recap; đọc trực tiếp 5 tin |
 | Recap sót todo quan trọng | Todo tạo muộn, nằm sâu trong tool log | Luôn `/todos` sau recap; ghi todo ngay khi phát sinh, đừng để trong đầu |
 | Recap ghi "đã xong" cái chưa xong | Model suy từ câu "OK để đó" nhầm thành done | Đọc kỹ mục done, gạch cái chưa xong; dặn rõ "chưa xong, mai làm" trước khi nghỉ |
+
+> **Cách đọc bảng này:** mỗi dòng là một kiểu recap "kém tin cậy" — **Vì sao** thường do session ít dữ kiện hoặc model suy diễn, **Cách sửa** là cách buộc recap chính xác hơn.
 
 ## Tham khảo
 
@@ -62,3 +49,5 @@ Verify (30 giây):
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
 > Mẹo 1 dòng: _quay lại sau break: `/recap` để nhớ mạch rồi `/todos` để nắm việc còn dở._
+
+> **Tóm gọn 1 câu:** `/recap` là bản bàn ca của đồng nghiệp trực: đọc một phát là bắt lại được mạch, khỏi cuộn 200 tin nhắn.

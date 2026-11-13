@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/remote-env
-/remote-env set <K> <V>
-/remote-env unset <K>
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,16 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Vừa /teleport cloud, chạy build:
-npm run build
-# → "Error: DATABASE_URL is not defined"
-
-# So rồi cấp:
-/remote-env diff
-# → "Missing on remote: DATABASE_URL, STRIPE_KEY"
-# Lưu ý: endpoint CLOUD, đừng paste localhost sang:
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -41,17 +28,20 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-/remote-env diff
-# → danh sách "Missing on remote" rút ngắn sau khi set
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
+
+Mục này nói về các sự cố hay gặp khi cấu hình env cho session remote — gặp đúng triệu chứng dưới đây thì làm theo cột "Cách sửa".
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `DATABASE_URL is not defined` trên cloud dù local có | `.env` không bay theo (đúng thiết kế) | `/remote-env set` lại phía remote |
 | Set rồi mà process cũ không nhận | Process đang chạy giữ env cũ | Restart process/session remote sau khi set |
+
+> **Cách đọc bảng này:** đọc theo hàng — cột "Triệu chứng" là thứ bạn thấy trên màn hình, "Vì sao" chỉ gốc rễ, "Cách sửa" là việc cần làm ngay.
+
+> **Tóm gọn 1 câu:** `/remote-env` là chỗ cấp "đồ dùng" cho chuyến đi cloud — env không tự bay theo, thiếu thứ gì thì set lại ngay phía đó.
 
 ## Tham khảo
 

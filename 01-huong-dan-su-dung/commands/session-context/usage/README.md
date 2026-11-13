@@ -11,9 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/usage`
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -21,15 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Bạn bảo: "Tìm hiểu codebase giúp tôi" (quá chung chung)
-/usage
-# → Explore 5 runs, 500K in. Mỗi run đọc cả repo vì không biết trọng tâm.
-
-# Fix: hỏi hẹp + giới hạn
-Hãy chỉ explore thư mục src/payments/, trả về tối đa 10 file quan trọng nhất, không đọc tests.
-# → /usage lần sau: Explore 1 run, 60K. Tiết kiệm 88%.
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -38,9 +28,7 @@ Kết quả mong đợi:
 
 Verify (30 giây):
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
 
@@ -49,6 +37,8 @@ Verify (30 giây):
 | `/usage` trống / chỉ có tổng | Bản CLI cũ chưa có bảng phân bổ theo MCP | Update `npm i -g @anthropic-ai/claude-code` |
 | Rate limits trống khi dùng API key | Pay-as-you-go không có quota 5h/weekly kiểu subscription | Đúng hành vi; xem dashboard billing thay vì quota |
 | Subagent tên lạ ngốn nhiều | Plugin/agent-teams tự spawn agent phụ | Xem bài subagents/agent-teams để nhận diện; tắt plugin nếu không cần |
+
+> **Cách đọc bảng này:** mỗi dòng là một kiểu "bảng usage trống hoặc lạ" — **Vì sao** cho biết đó là hạn chế của bản CLI hay hành vi đúng, **Cách sửa** là cách cập nhật hoặc truy nguồn khác.
 
 ## Tham khảo
 
@@ -59,3 +49,5 @@ Verify (30 giây):
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
 > Mẹo 1 dòng: _thấy Explore đọc cả repo thì siết phạm vi ("chỉ src/payments/, tối đa 10 file") — `/usage` lần sau sẽ nhẹ hơn._
+
+> **Tóm gọn 1 câu:** `/usage` là camera an ninh chi tiêu: không chỉ nói tốn bao nhiêu mà chỉ luôn tốn vào việc gì — Skill, subagent, plugin hay MCP nào.

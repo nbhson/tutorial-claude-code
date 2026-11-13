@@ -1,0 +1,3 @@
+/add-dir <path>
+/add-dir <p1> <p2>...
+/add-dir --list

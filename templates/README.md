@@ -4,6 +4,8 @@
 > **Cho ai:** dev/tech lead muốn dựng nhanh cấu hình Claude Code cho một repo mà chưa muốn viết từ đầu.
 > **Cách dùng:** copy khung về repo đích, sửa tên/lệnh cho khớp repo là chạy được. Setup mất ~15 phút.
 
+Hãy hình dung thư mục này như dãy nhà mẫu trong khu đô thị mới: đi xem từng mẫu, chọn mẫu hợp nhà mình, mang về và sơn lại theo màu đội — đừng xây từ móng.
+
 ## Từng file/folder là gì (đọc bảng này trước khi copy)
 
 | Đường dẫn | Để làm gì (1 câu) | Khi nào đụng tới |
@@ -29,26 +31,15 @@
 | `.github/workflows/*.yml` | Workflow CI mẫu (review PR, triage issue) — **tùy chọn** | Copy riêng khi muốn CI đọc PR tự động |
 | `.mcp.json` | Khai báo MCP servers (DB, GitHub...) — secrets qua env, không hardcode | Sửa URL/token theo môi trường |
 
+> **Cách đọc bảng này:** mỗi dòng là một file/folder mẫu; cột "Để làm gì" trả lời nó là gì, cột "Khi nào đụng tới" trả lời lúc nào cần bận tâm — khi copy, cứ đi từng dòng và quyết định giữ/bỏ/sửa.
+
 ## Cách copy vào project (3 bước copy-paste)
 
-```bash
-# 1. Copy cả khung sang repo thật (đứng ở root repo đích)
-cp -r /path/to/tutorial-claude-code/templates/.claude ./
-cp /path/to/tutorial-claude-code/templates/CLAUDE.md ./
-cp /path/to/tutorial-claude-code/templates/.mcp.json ./
-# Tùy chọn: copy workflow CI mẫu (chỉ khi dùng GitHub Actions)
-# cp -r /path/to/tutorial-claude-code/templates/.github ./
-
-# 2. Cho quyền chạy hooks (bắt buộc trên macOS/Linux)
-chmod +x .claude/hooks/*.sh
-./.claude/hooks/lint-on-write.sh --help 2>/dev/null || echo "hook ok (chờ stdin JSON)"
-
-# 3. Kiểm tra Claude nhận đủ config
-# Mở Claude Code trong repo đích rồi gõ lần lượt: /agents, /hooks, /mcp
-# Cả 3 đều hiện đúng như bảng trên là đạt. Thiếu cái nào -> sửa file tương ứng rồi gõ lại.
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-copy-vao-project-3-buoc-copy-paste.sh`](examples/01-cach-copy-vao-project-3-buoc-copy-paste.sh)
 
 ## Thứ tự setup khuyên dùng (15 phút, làm đúng thứ tự này)
+
+Mục này là lộ trình dựng 15 phút: thứ tự bên dưới được xếp theo độ ưu tiên — làm lệch thứ tự dễ xây phòng khách trước móng nhà.
 
 1. **CLAUDE.md trước (5')**: sửa stack + 4 lệnh Dev/Build/Test/Full-check (chỉ ghi lệnh đã chạy thử).
 2. **Rules theo path (2')**: giữ `backend-api.md` nếu có `apps/api/`, giữ `mobile-swift.md` nếu có app Swift; xóa cái không dùng.
@@ -59,3 +50,5 @@ chmod +x .claude/hooks/*.sh
 7. **Verify cuối**: nhờ Claude làm 1 task nhỏ end-to-end (sửa 1 handler + chạy test + review) để chắc mọi mảnh đều chạy.
 
 > Nếu vẫn lỗi: `/doctor` trước (quét settings/MCP), rồi `/debug` trong session, rồi mới sửa tay từng file.
+
+> **Tóm gọn 1 câu:** Bộ template là dãy nhà mẫu: chọn đúng mẫu hợp repo (CLAUDE.md → rules → agents → skills → hooks → MCP), dựng theo thứ tự 15 phút, rồi nhờ Claude chạy 1 task thật để nghiệm thu.

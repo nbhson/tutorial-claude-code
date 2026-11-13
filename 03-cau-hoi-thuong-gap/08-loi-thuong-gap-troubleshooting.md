@@ -42,6 +42,8 @@ flowchart TD
 
 ## Bảng full: 14 lỗi hay gặp nhất
 
+Mục này là "sổ tay bệnh viện" của cả bài: 14 bệnh hay gặp nhất, mỗi bệnh một dòng — tra triệu chứng, lấy fix, chưa ổn mới đọc sâu.
+
 | # | Triệu chứng | Check → Fix (1 dòng) | Chi tiết |
 |---|---|---|---|
 | 1 | `Unknown command: /cd` (lệnh mới vắng) | `/status` version cũ → `claude update` | Câu 1 |
@@ -59,6 +61,8 @@ flowchart TD
 | 13 | Session treo / chậm lạ | `/debug` → rewind / `/clear` / restart | [Câu 13](#13-session-treo--chậm-lạ) |
 | 14 | Nghi bug của core | `/bug` + `/status` + `claude doctor` | [Câu 14](#14-muốn-gửi-bug-cho-anthropic), [FAQ 01](01-tai-khoan-pricing-cai-dat.md) |
 
+> **Cách đọc bảng này:** quét cột "Triệu chứng" để tìm dòng khớp lỗi đang gặp, rồi làm theo "Check → Fix (1 dòng)" — chưa ổn mới bấm link ở cột "Chi tiết" để đọc câu đầy đủ; bảng này thay cho việc đọc lướt cả bài.
+
 ## 1. `Unknown command: /cd` (hoặc lệnh mới vắng)
 
 > **Hỏi ngắn gọn:** gõ lệnh mới mà báo `Unknown command`?
@@ -66,11 +70,7 @@ flowchart TD
 
 `/cd` cần ≥2.1.169, `/verify` ≥2.1.145, `/goal` ≥2.1.139, trim CLAUDE.md ≥2.1.206, `/subtask` ≥2.1.212, `/skill-doctor` ≥2.1.252, `/diff` live panel ≥2.1.260 (bảng version chi tiết ở [FAQ 01 câu 5](01-tai-khoan-pricing-cai-dat.md#5-claude-update-và-version-floor-lệnh-lạ-90-là-version-cũ)).
 
-```bash
-/status    # trong session: xem version
-claude update && claude --version   # ngoài terminal
-# Mở session MỚI rồi gõ lại (session cũ giữ bản cũ)
-```
+> 📄 **Code ví dụ:** [`examples/01-1-unknown-command-cd-hoac-lenh-moi-vang.sh`](examples/01-1-unknown-command-cd-hoac-lenh-moi-vang.sh)
 
 **Đào sâu:** [Bài 04 — slash commands toàn tập](../01-huong-dan-su-dung/04-slash-commands-toan-tap.md) · [WRITING-STYLE — B6 lệnh theo bản](../WRITING-STYLE.md#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-11102026)
 
@@ -81,11 +81,7 @@ claude update && claude --version   # ngoài terminal
 
 Lỗi hook gần như luôn nằm ở 1 trong 5 điểm trên, không phải script sai. Hook guard chạy tay ngon mà trong session im → 90% matcher `bash` thường thay vì `Bash`.
 
-```bash
-/hooks
-echo '{"tool_name":"Bash","tool_input":{"command":"git push origin main"}}' | ./scripts/guard-no-push-main.sh
-/status    # version đổi schema?
-```
+> 📄 **Code ví dụ:** [`examples/02-2-hook-khong-chay.sh`](examples/02-2-hook-khong-chay.sh)
 
 **Đào sâu:** [FAQ 05 — hooks](05-hooks-faq.md) · [lệnh `hooks`](../01-huong-dan-su-dung/commands/knowledge-system/hooks/README.md)
 
@@ -96,12 +92,7 @@ echo '{"tool_name":"Bash","tool_input":{"command":"git push origin main"}}' | ./
 
 Sáng mở máy thấy 3 servers vàng → sleep đêm qua kill stdio → reconnect all.
 
-```bash
-echo ${GITHUB_TOKEN:+token-set}
-/mcp
-/mcp reconnect github
-claude mcp get github
-```
+> 📄 **Code ví dụ:** [`examples/03-3-mcp-disconnected.sh`](examples/03-3-mcp-disconnected.sh)
 
 **Đào sâu:** [FAQ 04 — MCP](04-mcp-faq.md) · [lệnh `mcp`](../01-huong-dan-su-dung/commands/knowledge-system/mcp/README.md)
 
@@ -112,11 +103,7 @@ claude mcp get github
 
 Luôn xem bản gộp thực tế, đừng đoán theo file local — managed/org có thể chặn trên đầu. Allow `Bash(curl:*)` local mà vẫn deny → managed chặn → hỏi admin.
 
-```bash
-/permissions    # XEM MERGED, đừng đoán
-# Pre-approve read-only hay dùng:
-# → allow: Read, Glob, Grep, Bash(git status:*), Bash(git diff:*)
-```
+> 📄 **Code ví dụ:** [`examples/04-4-permission-deny-lien-tuc.sh`](examples/04-4-permission-deny-lien-tuc.sh)
 
 **Đào sâu:** [FAQ 03 — permissions & modes](03-permissions-modes.md) · [lệnh `permissions`](../01-huong-dan-su-dung/commands/model-mode/permissions/README.md)
 
@@ -125,11 +112,7 @@ Luôn xem bản gộp thực tế, đừng đoán theo file local — managed/or
 > **Hỏi ngắn gọn:** Claude bắt đầu quên rule, trả lời lan man, sửa chỗ này hỏng chỗ kia?
 > **Trả lời 1 câu:** Dấu hiệu context đầy — 4 cách cứu nhẹ → nặng: `/compact [focus]` → `/clear` + paste plan → rewind → đẩy research sang subagent.
 
-```bash
-/context            # xác nhận đầy bao nhiêu %
-/compact auth-flow  # giữ focus, vứt còn lại
-/clear              # nặng hơn: + paste plan đã xuất trước đó
-```
+> 📄 **Code ví dụ:** [`examples/05-5-context-ay-claude-quen-rule-lan-man.sh`](examples/05-5-context-ay-claude-quen-rule-lan-man.sh)
 
 **Đào sâu:** [FAQ 02 — model, context & token](02-model-context-token.md) · [Bài tips 01 — context hygiene](../02-tips-thuc-chien/01-context-hygiene.md)
 
@@ -151,11 +134,7 @@ Luôn xem bản gộp thực tế, đừng đoán theo file local — managed/or
 > **Hỏi ngắn gọn:** sửa mãi không xong, càng sửa càng lún?
 > **Trả lời 1 câu:** Quy tắc: **sửa 2 lần không xong thì dừng argue** — càng argue trong context bẩn càng lún.
 
-```bash
-# Bấm Esc 2 lần → chọn checkpoint trước khi sai
-# Re-prompt mẫu:
-# "Hàm X phải trả A khi input B (hiện trả C). Chỉ sửa file Y, giữ signature. VD: input B → A."
-```
+> 📄 **Code ví dụ:** [`examples/06-7-sua-2-lan-van-sai-argue-loop.sh`](examples/06-7-sua-2-lan-van-sai-argue-loop.sh)
 
 **Đào sâu:** [Bài tips 03 — plan-first workflow](../02-tips-thuc-chien/03-plan-first-workflow.md) · [lệnh `rewind`](../01-huong-dan-su-dung/commands/session-context/rewind/README.md)
 
@@ -182,9 +161,7 @@ Chỉ báo: security, sai logic, perf >2x. Bỏ qua: style, naming trừ khi gâ
 "Test đỏ: chạy lại 3 lần. Vẫn đỏ cả 3 → mới debug. Đỏ 1/3 → ghi FLAKY + tên test, DỪNG đoán nguyên nhân."
 ```
 
-```bash
-npm test -- --retries 3  # hoặc loop tay 3 lần
-```
+> 📄 **Code ví dụ:** [`examples/07-9-flaky-test-oan-sai.sh`](examples/07-9-flaky-test-oan-sai.sh)
 
 **Đào sâu:** [Bài tips 04 — verification](../02-tips-thuc-chien/04-verification-done-that.md) · [lệnh `verify`](../01-huong-dan-su-dung/commands/code-repo/verify/README.md)
 
@@ -195,12 +172,7 @@ npm test -- --retries 3  # hoặc loop tay 3 lần
 
 Nhóm lỗi "ma" (lúc được lúc không, version nhảy), nguyên nhân thường là môi trường chứ không phải code.
 
-```bash
-which -a claude
-claude doctor
-npm uninstall -g @anthropic-ai/claude-code  # nếu duplicate (giữ native)
-python3 -c "import json; json.load(open('.claude/settings.json'))"  # check JSON
-```
+> 📄 **Code ví dụ:** [`examples/08-10-2-ban-claude-path-loi-settings-parse.sh`](examples/08-10-2-ban-claude-path-loi-settings-parse.sh)
 
 **Đào sâu:** [FAQ 01 — câu 4](01-tai-khoan-pricing-cai-dat.md#4-cài-thế-nào-cho-sạch--dọn-duplicate-install) · [lệnh `doctor`](../01-huong-dan-su-dung/commands/knowledge-system/doctor/README.md)
 
@@ -209,10 +181,7 @@ python3 -c "import json; json.load(open('.claude/settings.json'))"  # check JSON
 > **Hỏi ngắn gọn:** lên cloud thì thiếu MCP/vars/setup?
 > **Trả lời 1 câu:** Cloud không thấy local — phải cấu hình lại trong environment.
 
-```bash
-/web-setup    # dựng environment từ repo
-claude --cloud "task thử"   # chạy thử trước task thật
-```
+> 📄 **Code ví dụ:** [`examples/09-11-cloud-thieu-config-local.sh`](examples/09-11-cloud-thieu-config-local.sh)
 
 **Đào sâu:** [FAQ 04 — MCP](04-mcp-faq.md) · [FAQ 10 — CI, SDK, routines, web](10-ci-sdk-routines-web.md)
 
@@ -221,10 +190,7 @@ claude --cloud "task thử"   # chạy thử trước task thật
 > **Hỏi ngắn gọn:** bị báo rate limit / chạm trần usage?
 > **Trả lời 1 câu:** `/usage` hiện rate limits + breakdown; trần thì: đợi reset / đổi key / chuyển việc rẻ sang Haiku / cắt MCP-subagents ngốn.
 
-```bash
-/usage        # xem trần gì + cái gì ngốn
-/model haiku  # việc rẻ chuyển hết sang Haiku
-```
+> 📄 **Code ví dụ:** [`examples/10-12-rate-limit-usage-tran.sh`](examples/10-12-rate-limit-usage-tran.sh)
 
 **Đào sâu:** [Bài tips 08 — tiết kiệm cost/token](../02-tips-thuc-chien/08-tiet-kiem-cost-token.md) · [lệnh `usage`](../01-huong-dan-su-dung/commands/session-context/usage/README.md)
 
@@ -233,10 +199,7 @@ claude --cloud "task thử"   # chạy thử trước task thật
 > **Hỏi ngắn gọn:** đang làm thì session treo hoặc chậm lạ?
 > **Trả lời 1 câu:** Checklist: context đầy? hook treo (>5s)? MCP treo? — hỏi `/debug`, nó chẩn đoán session hiện tại (khác `/doctor` khám config).
 
-```bash
-/debug
-# Thử nhẹ → nặng: rewind → /compact → /clear → thoát mở session mới
-```
+> 📄 **Code ví dụ:** [`examples/11-13-session-treo-cham-la.sh`](examples/11-13-session-treo-cham-la.sh)
 
 **Đào sâu:** [Bài tips 10 — debugging power moves](../02-tips-thuc-chien/10-debugging-power-moves.md) · [lệnh `debug`](../01-huong-dan-su-dung/commands/knowledge-system/debug/README.md)
 
@@ -245,11 +208,7 @@ claude --cloud "task thử"   # chạy thử trước task thật
 > **Hỏi ngắn gọn:** nghi bug của core, gửi báo cáo thế nào?
 > **Trả lời 1 câu:** `/bug` gói conversation; kèm `/status` (version/provider/model) + `claude doctor` output — chỉ gửi sau khi đi hết 6 bước debug bên dưới.
 
-```bash
-/status
-/bug
-claude doctor   # ngoài terminal, paste kèm
-```
+> 📄 **Code ví dụ:** [`examples/12-14-muon-gui-bug-cho-anthropic.sh`](examples/12-14-muon-gui-bug-cho-anthropic.sh)
 
 **Đào sâu:** [lệnh `bug`](../01-huong-dan-su-dung/commands/knowledge-system/bug/README.md) · [FAQ 01 — tài khoản, pricing & cài đặt](01-tai-khoan-pricing-cai-dat.md)
 
@@ -265,6 +224,10 @@ claude doctor   # ngoài terminal, paste kèm
 ```
 
 > Quy tắc ngón tay cái: **lệnh lạ → update; hook im → 5 check; deny → merged; loãng → compact; sai 2 lần → rewind; hết cách → /bug.**
+
+6 bước này giống quy trình cấp cứu: đo sinh hiệu (status), khám tổng quát (doctor), đo xét nghiệm (context/cost/usage), soi các ống dẫn (hooks/mcp/permissions), chụp sâu (debug), và chỉ nhập viện (bug report) khi hết phương án — đảo thứ tự là tốn tiền trước, tìm ra bệnh sau.
+
+> **Tóm gọn 1 câu:** Thuộc lòng 6 bước `/status` → `doctor` → context/cost/usage → hooks/mcp/permissions → `/debug` → `/bug` — đi từ rẻ tới đắt, từ chung tới riêng, đừng nhảy cóc.
 
 ## Vẫn lỗi thì sao?
 

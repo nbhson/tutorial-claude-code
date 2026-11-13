@@ -1,7 +1,7 @@
 # /branch — Tạo nhánh thử nghiệm what-if từ conversation hiện tại
 
 > **Loại:** Built-in · **Nhóm:** Session & Context · **Mức rủi ro:** Không (không xóa/sửa file; chỉ copy context sang nhánh thử nghiệm — an toàn nếu kết hợp git riêng)
-> **Nói nôm na:** `/branch` giống `/fork` nhưng mang ngữ nghĩa "thử giả thuyết": tách 1 nhánh what-if để trả lời "nếu làm theo cách B thì sao?", trong khi nhánh chính vẫn đi cách A.
+> **Nói nôm na:** `/branch` giống `/fork` nhưng mang ngữ nghĩa "thử giả thuyết": tách 1 nhánh what-if để trả lời "nếu làm theo cách B thì sao?", trong khi nhánh chính vẫn đi cách A. Hãy hình dung như phòng thí nghiệm tách khỏi dây chuyền chính: làm thử thoải mái, dây chuyền chính vẫn chạy.
 
 ## Khi nào dùng
 
@@ -11,10 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/branch`
-`/branch <giả-thuyết>`
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -22,11 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Nhánh chính đang dùng Zod lỏng, muốn biết strict thì vỡ bao nhiêu chỗ
-/branch Nếu bật Zod strict cho packages/billing/, liệt kê số lỗi type và ước lượng giờ fix. Không sửa file, chỉ báo cáo.
-# → 20 phút sau có con số để quyết định, nhánh chính không nhiễm
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -35,9 +28,7 @@ Kết quả mong đợi:
 
 Verify (30 giây):
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
 
@@ -46,6 +37,8 @@ Verify (30 giây):
 | Nhánh thử sửa hỏng code nhánh chính | Chung filesystem | Dùng `git worktree` riêng; hoặc chỉ cho nhánh thử quyền đọc (`--permission-mode plan`) |
 | Không phân biệt `/branch` và `/fork` | Ngữ nghĩa gần nhau, dễ lẫn | What-if ngắn, chỉ để lấy số liệu → `/branch`; rẽ hướng dài, muốn tách code → `/fork`. Về kỹ thuật hai lệnh gần như nhau |
 | Picker đầy nhánh thử cũ | Không dọn | Đặt tên ngày + bỏ resume nhánh thua; xóa `.jsonl` nếu nhạy cảm |
+
+> **Cách đọc bảng này:** dò cột **Triệu chứng** theo thứ bạn đang gặp, cột **Vì sao** cho biết gốc rễ, cột **Cách sửa** là việc cần làm ngay.
 
 ## Tham khảo
 
@@ -56,3 +49,5 @@ Verify (30 giây):
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
 > Mẹo 1 dòng: _what-if ngắn chỉ để lấy số liệu thì dùng `/branch`; rẽ hướng dài cần tách code thật thì dùng `/fork` kèm `git worktree`._
+
+> **Tóm gọn 1 câu:** `/branch` cho bạn một căn phòng riêng để hỏi "nếu làm cách B thì sao" mà không ai đụng vào hội thoại chính.

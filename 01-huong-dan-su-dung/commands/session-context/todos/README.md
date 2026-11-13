@@ -11,9 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/todos`
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 > `TodoWrite`/`TaskCreate` bị gỡ khỏi Opus 4.8 / Sonnet 5 / Fable 5 (w33/2026), bật lại bằng `CLAUDE_CODE_ENABLE_TODO_TOOLS=1`.
@@ -22,12 +20,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Đang migration billing 5 bước, muốn biết tới đâu
-/todos
-# → 1.done 2.done 3.doing 4.pending 5.pending
-# → nhắn: "Làm tiếp bước 3, xong báo tôi."
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -36,9 +29,7 @@ Kết quả mong đợi:
 
 Verify (30 giây):
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
 
@@ -47,6 +38,8 @@ Verify (30 giây):
 | `/todos` trống dù task dài | Model chưa tạo todos (task ít bước hoặc prompt chung) | Dặn: "Tạo todo list 5 bước cho task này" |
 | Todos mất sau compact/clear | Gắn với conversation đã nén/xóa | Tạo lại tay; lần sau nêu "giữ todo list" trong focus compact, export trước clear |
 | Model tick done nhưng code chưa xong | Tick theo kế hoạch, không verify | Bắt verify: "Mỗi todo done phải kèm lệnh test đã chạy + kết quả" |
+
+> **Cách đọc bảng này:** cả 3 dòng đều là chuyện "bảng việc thất thường" — **Vì sao** cho biết todo sống và chết cùng context session, **Cách sửa** là cách dặn model giữ và verify todo.
 
 ## Tham khảo
 
@@ -57,3 +50,5 @@ Verify (30 giây):
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
 > Mẹo 1 dòng: _dặn "tạo todo list 5 bước" và "mỗi todo done phải kèm lệnh test đã chạy" — đừng tin tick suông._
+
+> **Tóm gọn 1 câu:** `/todos` là bảng việc dán tường của phiên — xem model đang nợ gì, và đừng tin tick done khi chưa thấy lệnh test chạy.

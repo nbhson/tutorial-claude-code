@@ -11,10 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/help`
-`/help <lệnh>`
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -22,13 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-/help
-# → đọc thấy: /clear (xóa), /compact (nén), /rewind (quay lại), Esc Esc
-# → thử ngay lệnh an toàn:
-/context
-# → hiểu % RAM, tự tin làm tiếp
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -37,9 +28,7 @@ Kết quả mong đợi:
 
 Verify (30 giây):
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
 
@@ -48,6 +37,8 @@ Verify (30 giây):
 | `/help` thiếu lệnh mới (branch/fork) | CLI cũ | `npm i -g @anthropic-ai/claude-code` rồi `/help` lại |
 | `/help <lệnh>` không ra chi tiết | Bản bạn chỉ hỗ trợ `/help` tổng | Hỏi trực tiếp: "Giải thích /<lệnh> + ví dụ" hoặc mở file deep-dive |
 | Lệnh trong help gõ báo unknown | Lệnh của plugin/MCP đã tắt | Bật lại plugin/MCP hoặc xem bài plugins/MCP |
+
+> **Cách đọc bảng này:** cột **Triệu chứng** là chuyện help "thiếu" hoặc "kêu unknown", **Vì sao** gần như luôn do bản CLI cũ hoặc plugin đã tắt, **Cách sửa** là bật lại hoặc update.
 
 ## Tham khảo
 
@@ -58,3 +49,5 @@ Verify (30 giây):
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
 > Mẹo 1 dòng: _mới vào session gõ `/help` một lần để biết máy mình có gì; lệnh không hiện thì update CLI._
+
+> **Tóm gọn 1 câu:** `/help` là tờ ghi chú dán cạnh màn hình: quên lệnh hay phím tắt là tra trong 5 giây, khỏi mở docs web.

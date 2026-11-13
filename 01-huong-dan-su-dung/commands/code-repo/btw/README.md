@@ -1,7 +1,7 @@
 # /btw — hỏi nhanh trong context hiện tại, không mở mạch dài
 
 > Loại Built-in · Nhóm Session/Realtime · Mức rủi ro Không
-> **Nói nôm na:** `/btw` giúp bạn hỏi 1 câu ngắn, gọn trong context hiện tại mà không kéo turn dài. Trả lời nhanh, sạch history.
+> **Nói nôm na:** `/btw` giúp bạn hỏi 1 câu ngắn, gọn trong context hiện tại mà không kéo turn dài. Trả lời nhanh, sạch history. Giống như hỏi nhỏ bên tai đồng nghiệp đang ngồi cạnh: nhanh, gọn, không bắt ai đứng dậy đi đọc tài liệu giùm.
 
 ## Khi nào dùng
 
@@ -11,10 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/btw <câu hỏi>`
-`/btw`
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -22,10 +19,7 @@
 
 **Prompt thật (paste vào Claude Code):**
 
-```bash
-/btw idempotency key là gì, vì sao webhook MoMo cần nó? 3 dòng thôi.
-# → trả lời gọn từ context payments đang có.
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 **Kết quả mong đợi:**
 
@@ -34,17 +28,21 @@
 
 **Verify (30 giây):**
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
+
+Mục này nói về các tình huống `/btw` không trả lời được như bạn mong — tra đúng triệu chứng rồi làm theo cột "Cách sửa".
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/btw` trả lời sai về file X | File X chưa trong context, `/btw` không đọc mới | Hỏi trực tiếp (có tools) để model đọc file rồi trả lời |
 | `/btw` báo unknown command | Bản cũ chưa có | Hỏi thường ngắn gọn thay thế |
 | Ý hay từ `/btw` bị mất | Không lưu history by design | Hỏi lại bằng câu thường + bảo ghi ra file |
+
+> **Cách đọc bảng này:** đọc theo hàng — "Triệu chứng" là hiện tượng bạn thấy, "Vì sao" cho biết giới hạn của `/btw` nằm ở đâu, "Cách sửa" là cách hỏi thay thế.
+
+> **Tóm gọn 1 câu:** `/btw` là câu hỏi nhỏ bên tai — gọn, không làm bẩn mạch chính, nhưng đừng đòi nó đọc file hay sửa code giùm.
 
 ## Tham khảo
 

@@ -18,6 +18,8 @@
 | `/batch` | Chạy nền 1 loạt việc theo plan, kiểm tra chéo giữa các worker | Migrate 50 files → 10 PRs |
 | Explore / Plan | 2 agent có sẵn: 1 chỉ đọc, 1 chỉ lên kế hoạch | Khi chạy qua 2 agent này, CLAUDE.md project bị bỏ qua |
 
+> **Cách đọc bảng này:** Đọc cột "Hiểu nôm na là gì" trước để hình dung, rồi nhìn cột "Ví dụ thấy ngay" để nối vào thực tế. Thuật ngữ nào còn mơ hồ thì quay lại bảng này sau.
+
 ## Mục lục
 
 1. [Vì sao cần subagent?](#1-vì-sao-cần-subagent)
@@ -45,6 +47,8 @@
 - **Chi phí:** nhiều worker tốn 3–4x single-thread (số liệu cộng đồng) → trần thực tế **3–5 worker song song**.
 - Từ w27/2026, **subagents chạy background mặc định** — spawn xong làm việc khác được, check bằng `/tasks` (hoặc `/agents`), dừng bằng `Ctrl+X Ctrl+K ×2`.
 
+> **Tóm gọn 1 câu:** Subagent là đệ tử đi chợ hộ: giao việc ồn cho nó để giữ đầu óc (context) bạn còn sạch, nhưng mỗi đệ tử đều ăn tiền phí xuất phát ~20k tokens.
+
 ---
 
 ## 2. 4 cách chạy song song — chọn sai là tốn tiền
@@ -55,6 +59,8 @@
 | **Agent view** | Bạn giao việc, check lại sau | Nhiều session độc lập, attach khi cần | 3 sessions song song 3 features |
 | **Agent teams** (experimental, `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) | Lead lập kế hoạch, giao việc, giám sát | Feature mới, debug đa giả thuyết, review song song | Lead + 3 teammates (security/perf/tests) |
 | **Dynamic workflows** (`/batch`...) | Script giữ plan, bung N worker + kiểm tra chéo | Việc lớn chia nhỏ có kiểm chứng | Migrate 50 files → 10 PRs |
+
+> **Cách đọc bảng này:** Cột "Ai điều phối?" là mấu chốt — ai ra lệnh thì ai chịu trách nhiệm gom kết quả. Chọn sai hàng ở đây là trả tiền gấp 3-4 lần.
 
 Bảng quyết định 30 giây:
 
@@ -69,9 +75,13 @@ Hỏi nhanh giữa task?                          → /btw (bài 04)
 
 Đừng nhầm: `Bash` tool = 1 lệnh shell không chặn (không phải agent); worker từ fork = cách tạo kế thừa conversation, không phải bề mặt riêng; routine = session theo lịch trên cloud. Chạy nhiều session độc lập mà cần trao đổi trực tiếp → cross-session messaging + `@` mention session khác (macOS/Linux, w32-33/2026).
 
+> **Tóm gọn 1 câu:** Bốn cách chạy song song khác nhau ở chỗ "ai điều phối" — chọn theo cách bạn muốn quản lý, không theo cảm giác.
+
 ---
 
 ## 3. 4 file agent mẫu (copy-paste)
+
+Mục này cho 4 file agent dùng được ngay: explorer, planner, security-reviewer, tester. Chép về là chạy, không cần chỉnh gì trước lần đầu.
 
 > Đặt vào `.claude/agents/<ten>.md` (project) hoặc `~/.claude/agents/` (personal). Gọi: tự động qua `description`, hoặc tường minh `"dùng subagent X làm Y"`.
 
@@ -162,9 +172,13 @@ nguyên nhân 1 dòng (ghi rõ là đoán) + lệnh đã chạy để luồng ch
 
 > Mô tả cộng dồn các agent vượt 15.000 tokens sẽ bị cảnh báo lúc khởi động — giữ `description` ngắn, chi tiết dồn vào body. Chạy cả session dưới 1 persona: `claude --agent explorer "tìm mọi file liên quan tới billing"`; khai agent inline JSON không cần file: `claude --agents '{"quick-review":{"prompt":"...","tools":["Read","Grep"]}}'`.
 
+> **Tóm gọn 1 câu:** Bốn agent mẫu phủ đủ 4 vai: tìm, lập kế hoạch, soi bảo mật, chạy test — cài xong là có ngay đội hình làm việc song song.
+
 ---
 
 ## 4. Giới hạn worker được làm gì
+
+Mục này trả lời câu hỏi lo lắng nhất: worker có sửa lung tung không? Có — nếu bạn không chốt list tool và quyền.
 
 - **`tools:`** là then chốt — ngoài list không gọi được dù prompt dụ gì. Kèm `disallowedTools: Write, Edit` cho agent chỉ đọc + `permissionMode: plan` làm lớp dự phòng.
 - **Hooks riêng trong frontmatter** (`PreToolUse`/`PostToolUse`/`Stop`→`SubagentStop`...) chỉ chạy khi agent đó active; project-level cần trust workspace dialog. `SubagentStart/Stop` ở settings.json, matcher = tên agent (tên có `:` là regex → anchor `^...$`).
@@ -174,9 +188,13 @@ nguyên nhân 1 dòng (ghi rõ là đoán) + lệnh đã chạy để luồng ch
 
 Cấu hình nâng cao: subagent spawn subagent — giới hạn depth mặc định **3**, trần tối đa **5 cấp** (w24/2026); hạ về 1 bằng `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1`; ngoài ra có giới hạn số worker song song. Tự compact sớm: `autoCompactWindow` trong frontmatter (≥2.1.296). Ép workflow agent chạy 1 model: `CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL` (≥2.1.296). Hiện text của worker ở luồng chính: `--forward-subagent-text`.
 
+> **Tóm gọn 1 câu:** Chốt worker bằng `tools:` + `disallowedTools:` + `permissionMode` — list tool là rào cản thật, prompt ngon ngọt không vượt qua được.
+
 ---
 
 ## 5. Mẫu điều phối + cách tính chi phí
+
+Mục này cho công thức tính tiền trước khi bung worker. Tính 30 giây trước, đừng tiếc 500k sau.
 
 ### 4 mẫu điều phối
 
@@ -215,16 +233,15 @@ Quy tắc: N ≤ 3-5 worker cùng lúc; task <10k tokens → làm trực tiếp;
 việc dễ giao Haiku (tester → haiku, reviewer → opus).
 ```
 
-```bash
-# Kiểm tra bill sau khi chia việc:
-/usage    # breakdown subagents ngốn bao nhiêu
-/cost     # tổng session
-# Hỏi: "phân tích cost vừa rồi: lần spawn nào đáng, lần nào phí?"
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-tinh-chi-phi-truoc-khi-chia-viec.sh`](examples/01-cach-tinh-chi-phi-truoc-khi-chia-viec.sh)
+
+> **Tóm gọn 1 câu:** Tính công thức trước khi chia việc: worker dưới 3-5 đứa, task dưới 10k tokens thì làm thẳng, đừng spawn cho có.
 
 ---
 
 ## 6. Walkthrough 45 phút + khi nào KHÔNG dùng
+
+Mục này chia làm 2 nửa: nửa đầu tập làm theo 4 bước (45 phút), nửa sau cho biết lúc nào đừng đụng vào subagent.
 
 **Walkthrough:**
 
@@ -244,9 +261,15 @@ việc dễ giao Haiku (tester → haiku, reviewer → opus).
 | "Review PR quan trọng" | Reviewer ngữ cảnh mới | Không định kiến người viết |
 | "Migrate 50 files" | `/batch` | Chia nhỏ + kiểm tra chéo |
 
+> **Cách đọc bảng này:** Cột "Chọn" là đáp án. Nếu tình huống của bạn nằm trong bảng thì cứ theo đáp án, đừng tự nghĩ cách khác.
+
+> **Tóm gọn 1 câu:** Đi đủ 4 bước walkthrough là tự tin dùng; còn việc nhỏ, việc theo chuẩn, việc hỏi nhanh thì dùng công cụ khác đỡ tiền hơn subagent.
+
 ---
 
 ## 7. Bẫy, hiểu nhầm, bài tập, link
+
+Mục cuối này gom phần "phòng tránh" và phần luyện tập. Đọc bảng bẫy trước khi chạy thật.
 
 ### Bẫy + fix
 
@@ -259,6 +282,8 @@ việc dễ giao Haiku (tester → haiku, reviewer → opus).
 | Worker tạo worker không điểm dừng | Depth mặc định 3 / trần 5 (w24/2026), hạ `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1`; dặn "không spawn tiếp, tự làm" |
 | Plugin agent hooks không chạy | Bị bỏ qua theo thiết kế — copy ra `.claude/agents/` |
 
+> **Cách đọc bảng này:** Mỗi dòng là một "ố đau" có thật từ cộng đồng. Cột "Fix" là bài thuốc — áp đúng là hết.
+
 ### Hiểu nhầm thường gặp
 
 | Hiểu nhầm | Sự thật |
@@ -268,12 +293,16 @@ việc dễ giao Haiku (tester → haiku, reviewer → opus).
 | "Agent Teams bật mặc định" | Experimental, tắt mặc định — bật `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` |
 | "Việc gì cũng nên tạo worker" | Chuẩn X → Skill; hỏi nhanh → `/btw`; đọc 1 file → trực tiếp. Chỉ spawn khi ồn + cần cô lập |
 
+> **Cách đọc bảng này:** Cột trái là lời nói hay nghe trong team; cột phải là sự thật cần nhớ. Đọc 2 bảng (Bẫy + Hiểu nhầm) một lần trước khi chạy agent thật.
+
 ### Bài tập
 
 1. (20') Cài 4 agents; test explorer + tester trên repo thật; đo `/cost` so với làm trực tiếp.
 2. (20') Mẫu B (chuỗi) cho 1 task multi-file: explorer → planner → implement → tester; ghi output từng chặng.
 3. (15') Mẫu C (phản biện): đếm findings reviewer bắt được mà implementer miss; sửa prompt reviewer.
 4. (15', cost) Tạo 3 explorers song song, ghi `/usage` + `/cost`; so với 1 explorer — kết luận task nào của team nên spawn, task nào không.
+
+> **Tóm gọn 1 câu:** Xong 4 bài tập là bạn biết spawn cái gì, bao nhiêu đứa, và bao nhiêu tiền — đủ tự tin chạy subagent thật mà không sợ bill nổ.
 
 ### Link chéo
 

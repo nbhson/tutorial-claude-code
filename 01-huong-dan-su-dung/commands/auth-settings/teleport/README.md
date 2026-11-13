@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/teleport
-/teleport cloud
-/teleport local
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,16 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# 17h55 ở công ty, task còn nửa:
-git add -A && git commit -m "WIP: teleport checkpoint"
-/teleport cloud
-# → "Session live on cloud. Link: https://claude.ai/s/abc123"
-
-# Về nhà, mở laptop:
-/teleport local
-# → "Pulled 12 new messages (cloud ran tests while you commuted)."
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -41,18 +28,21 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-/status
-# → cwd + session đúng như bên đích; /teleport --list thấy device hai đầu
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
+
+Mục này nói về các sự cố hay gặp khi dời session giữa các máy — tra đúng triệu chứng rồi làm theo cột "Cách sửa".
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/teleport cloud` treo ở `Uploading...` | Diff quá lớn (node_modules/build lọt vào) hoặc mạng yếu | `git status` xem diff; thêm `.gitignore` đúng; commit bớt rồi teleport lại; thử region gần hơn |
 | Kéo về báo `conflict: 3 files` | Cả 2 bên cùng sửa lúc xa nhau | Đọc diff từng file (`git diff`), chọn tay; đừng `--force` mù |
 | `--list` thấy device `(offline)` | Máy kia sleep/tắt/mất mạng | Bật máy kia hoặc đi vòng qua cloud relay |
+
+> **Cách đọc bảng này:** đọc theo hàng — "Triệu chứng" là thông báo bạn thấy lúc teleport, "Vì sao" chỉ nguyên nhân (diff to, mạng, máy tắt), "Cách sửa" là bước xử lý tương ứng.
+
+> **Tóm gọn 1 câu:** `/teleport` là bê nguyên bàn làm việc sang phòng khác — commit checkpoint trước thì đến đâu làm tiếp đến đó, không mất công dở dang.
 
 ## Tham khảo
 

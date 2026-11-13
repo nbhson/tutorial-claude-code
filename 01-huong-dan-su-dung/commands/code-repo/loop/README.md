@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/loop <task>`
-`/loop <task> --max <n>`
-`/schedule <cron> <task>`
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,10 +19,7 @@
 
 **Prompt thật (paste vào Claude Code):**
 
-```bash
-/loop Toàn bộ src/legacy/ pass ruff check + mypy (0 errors), không đổi logic
-# (verify bằng pytest legacy/ vẫn pass sau mỗi 10 file)
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 **Kết quả mong đợi:**
 
@@ -35,24 +28,28 @@
 
 **Verify (30 giây):**
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
+
+Mục này là "sổ bệnh án" của `/loop`: những triệu chứng hay gặp khi chạy lặp, nguyên nhân đằng sau và cách xử lý ngay.
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Loop 20 vòng không dừng | Không goal / goal bất khả thi / thiếu --max | Ngắt (Ctrl+C); đặt goal khả thi + `--max`; chia task nhỏ |
 | Loop càng sửa càng hỏng | Scope quá rộng, model quên đã sửa gì | Thu scope (3 file/vòng); ghi progress ra file; `/compact` + tóm tắt |
-| Bill nổ sau loop qua đêm | Quên trần + effort max + opus | Luôn --max + sonnet+medium cho loop; đặt cap extra-usage |
+| Bill nổ sau loop qua đêm | Quên trần + effort max + opus | Luôn --max + sonnet+medium cho loop; đặt cap usage-credits |
+
+> **Cách đọc bảng này:** tìm dòng khớp triệu chứng bạn đang gặp ở cột "Triệu chứng", đọc ngang sang "Vì sao" để hiểu gốc rễ, rồi áp cột "Cách sửa" — xử lý được trong vài phút.
+
+> **Tóm gọn 1 câu:** `/loop` như máy chạy bộ có đồng hồ mục tiêu — đặt đích dừng và `--max` trước khi lên máy, chạy tới khi đạt chứ không chạy mù qua đêm.
 
 ## Tham khảo
 
 - [../../model-mode/goal/README.md](../../model-mode/goal/README.md)
 - [../batch/README.md](../../code-repo/batch/README.md)
 - [../verify/README.md](../../code-repo/verify/README.md)
-- [../../model-mode/extra-usage/README.md](../../model-mode/extra-usage/README.md)
+- [../../model-mode/usage-credits/README.md](../../model-mode/usage-credits/README.md)
 
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 

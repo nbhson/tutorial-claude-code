@@ -1,0 +1,24 @@
+{
+  "name": "acme-standard",
+  "version": "1.0.0",
+  "description": "Standard workflow cho team Acme: deploy, review-pr, guards, agents.",
+  "author": "Acme Platform Team <platform@acme.example>",
+  "license": "MIT",
+  "skills": ["skills/deploy", "skills/review-pr"],
+  "agents": ["agents/explorer.md", "agents/security-reviewer.md"],
+  "hooks": {
+    "PreToolUse": [
+      { "matcher": "Bash", "type": "command", "command": "${CLAUDE_PLUGIN_DIR}/hooks/block-main-push.sh" }
+    ],
+    "PostToolUse": [
+      { "matcher": "Edit|Write", "type": "command", "command": "${CLAUDE_PLUGIN_DIR}/hooks/lint-on-write.sh" }
+    ]
+  },
+  "mcpServers": {
+    "github": { "command": "npx", "args": ["@anthropic/mcp-github@latest"] },
+    "fetch": { "command": "npx", "args": ["@modelcontextprotocol/server-fetch@latest"] }
+  },
+  "lspServers": {
+    "typescript": { "command": "typescript-language-server", "args": ["--stdio"] }
+  }
+}

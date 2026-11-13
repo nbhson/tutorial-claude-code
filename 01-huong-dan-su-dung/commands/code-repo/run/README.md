@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/run`
-`/run <tên-app>`
-`/run --record`
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,10 +19,7 @@
 
 **Prompt thật (paste vào Claude Code):**
 
-```bash
-/run --record
-# → dev server lên → mở /login → điền test@test.com/test1234 → bấm Đăng nhập
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 **Kết quả mong đợi:**
 
@@ -35,17 +28,21 @@
 
 **Verify (30 giây):**
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
+
+Mục này là "sổ bệnh án" của `/run`: vì sao app không mở được, mở được mà trang trắng — và cách xử lý từng trường hợp.
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/run` báo "no recipe" rồi hỏi 3 câu mỗi lần | Chưa `--record` nên không có skill lưu | Chạy 1 lần `/run --record`, commit `.claude/skills/run-*/` |
 | Dev server timeout 60s không lên | Thiếu `.env`, deps chưa install, port bận | Đọc log cuối; `cp .env.example .env`; `npm i`; `lsof -i :3000` kill |
 | PASS nhưng mở tay thấy trang trắng | Recipe chỉ check `/healthz`, không check đúng route | Sửa SKILL.md thêm bước vào đúng route + screenshot; chạy lại |
+
+> **Cách đọc bảng này:** tra cột "Triệu chứng" theo hiện tượng bạn thấy, "Vì sao" giải thích nhánh lỗi phổ biến nhất, "Cách sửa" là lệnh chạy được ngay.
+
+> **Tóm gọn 1 câu:** `/verify` cho bạn log PASS, còn `/run` cho bạn ngồi lên xe lái thử — bằng chứng sống mà mắt thấy thì mới yên tâm.
 
 ## Tham khảo
 

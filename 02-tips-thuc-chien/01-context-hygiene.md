@@ -20,36 +20,37 @@
 
 ## 1. Vì sao vệ sinh context quyết định 80%?
 
-Hầu hết "Claude dở đi" không phải do model kém, mà do **context bẩn**: bắt đầu bằng bug CSS 15 phút, tiện hỏi luôn chuyện deploy, rồi viết SQL, rồi refactor auth — 90 phút sau context 140K tokens, model quên rule `CLAUDE.md`, sửa A hỏng B.
+Hầu hết "Claude dở đi" không phải do model kém, mà do **context bẩn**: bắt đầu bằng bug CSS 15 phút, tiện hỏi luôn chuyện deploy, rồi viết SQL, rồi refactor auth — 90 phút sau context 140K tokens, model quên rule `CLAUDE.md`, sửa A hỏng B. Hãy hình dung context như bàn làm việc: bàn càng chất nhiều giấy vụn, càng dễ lấy nhầm tờ — model cũng vậy, context càng rác nó càng dễ "chạm" nhầm thông tin.
 
 > Quy tắc vàng: **files persist, context thì không** (cái gì quan trọng thì save ra file); **1 task = 1 session sạch** (đổi task là đổi session); **việc ồn ào đẩy sang chỗ khác** (subagent, `/btw`, file trung gian) — giữ main session gọn để ra quyết định.
 
-Ba con số cần ghim vào đầu: **~70–80%** là ngưỡng bắt đầu compact/reset (chạy `/context`, đừng đợi 95%); **~15K tokens** là trần cộng dồn subagent descriptions lúc startup (quá là bị warning); **~10 tools** là ngưỡng MCP tools visible bắt đầu chọn sai (prune server không dùng).
+Ba con số cần ghim vào đầu: **~70–80%** là ngưỡng bắt đầu compact/reset (chạy `/context`, đừng đợi 95%); **~15K tokens** là trần cộng dồn subagent descriptions lúc startup (quá là bị warning); **~10 tools** là ngưỡng MCP tools visible bắt đầu chọn sai (prune server không dùng). Coi 3 con số này như vạch đèn báo xăng trên xe: chạm tới là đổ (dọn context), đừng đợi cạn giữa đường.
+
+> **Tóm gọn 1 câu:** Claude dở đi 9/10 là do bàn làm việc (context) chất rác — dọn sớm bằng `/clear`/`/compact` rẻ hơn nhiều so với ngồi dọn khi đã chật.
 
 ---
 
 ## 2. Cơ chế: context window hoạt động thế nào?
 
+Mục này giải thích "vì sao dọn context lại có tác dụng" — hiểu cơ chế thì bạn biết cái gì gánh theo, cái gì ném đi được, thay vì nhớ máy móc các lệnh.
+
 Mỗi prompt gửi đi gồm `[system prompt + CLAUDE.md + skills + MCP tool defs] + [history] + [tool calls/results] + [prompt mới]` — mọi thứ đã làm đều bị "thuế" mỗi turn sau (đọc 20 files → 20 file contents gánh theo; paste log 800 dòng → gánh theo 20 turns). Ba cơ chế khiến context đầy thì model dở: **(1) Attention dilution** — 150K tokens rác làm rule quan trọng bị "chìm" (quên convention, đổi API không xin phép); **(2) Recency bias + lost-in-the-middle** — model nhớ đầu/cuối, quên giữa, nên quyết định chốt ở turn 12 bị "chôn" dưới log ở turn 40 → ghi quyết định ra `plan.md`/`decisions.md`; **(3) Auto-compact mất kiểm soát** — chạm ~80–90% là tự nén, hay mất plan giữ vụn → compact chủ động với focus trước.
 
 > Không vệ sinh: 10 turns × 100K rác = 1M input lãng phí. Vệ sinh: 10 × 5K = 50K → rẻ hơn ~95% (xem [Tips 08](./08-tiet-kiem-cost-token.md)).
+
+> **Tóm gọn 1 câu:** Mỗi thứ trong context là "hành lý" mang theo mọi turn sau — hành lý ít đi thì mỗi turn rẻ hơn và model tỉnh táo hơn.
 
 ---
 
 ## 3. Năm thói quen nền
 
+Mục này là 5 thói quen lõi của cả bài — giống 5 thao tác rửa tay trước khi ăn: làm quen một lần, dùng cả ngày.
+
 ### 3.1. `/clear` giữa các task không liên quan
 
-Thói quen ROI cao nhất: drop toàn bộ history, giữ file trên đĩa + nạp lại `CLAUDE.md`/settings/skills. Dùng khi: xong việc vặt → chuyển feature lớn; paste log khổng lồ xong; chuẩn bị demo; model "ám ảnh" chuyện cũ.
+Thói quen ROI cao nhất: drop toàn bộ history, giữ file trên đĩa + nạp lại `CLAUDE.md`/settings/skills. Giống xóa bảng trắng sau mỗi buổi họp — bảng sạch cho buổi sau, còn biên bản đã chụp ảnh (file) thì vẫn còn. Dùng khi: xong việc vặt → chuyển feature lớn; paste log khổng lồ xong; chuẩn bị demo; model "ám ảnh" chuyện cũ.
 
-```bash
-/clear
-
-# Task mới sạch, nạp đúng spec
-Hãy đọc docs/payment-spec.md và triển khai POST /api/payments theo spec.
-Chỉ sửa trong src/payments/, không đụng tới CSS.
-Done = pnpm test payments xanh + pnpm lint 0 error.
-```
+> 📄 **Code ví dụ:** [`examples/01-3-1-clear-giua-cac-task-khong-lien.sh`](examples/01-3-1-clear-giua-cac-task-khong-lien.sh)
 
 Trước khi clear task dài: `/export` rồi copy quyết định vào `docs/decisions.md`, sau đó nạp lại (`Hãy đọc docs/decisions.md và tiếp tục bước 3 trong plan.md.`). Từ w26/2026 `/rewind` vẫn resume được ngay cả sau `/clear` — nhưng đừng dựa vào đó thay cho save file.
 
@@ -69,10 +70,7 @@ trước và liệt kê 3 cases phải giữ xanh."
 
 `/btw` = full context, **no tools**, không thêm vào history:
 
-```bash
-/btw hàm retryWithBackoff này để làm gì, giải thích 3 dòng?
-/btw tại sao repo này dùng pnpm thay vì npm?
-```
+> 📄 **Code ví dụ:** [`examples/02-3-3-btw-cho-cau-hoi-phu.sh`](examples/02-3-3-btw-cho-cau-hoi-phu.sh)
 
 Không dùng khi cần chạy tools (→ subagent) hoặc muốn lưu quyết định (→ hỏi thường + ghi file).
 
@@ -91,22 +89,19 @@ Dùng subagent explore src/auth/ với phạm vi hẹp:
 
 ### 3.5. `/compact [focus]` khi >80% + `/context` + `/usage`
 
-```bash
-/compact Tập trung vào plan refactor auth trong plan.md, giữ decisions 1-5, bỏ log test cũ.
-/usage
-# → từ w21/2026: breakdown per-MCP/skill/subagent/plugin + rate limits
-# → skill/subagent nào 0 lần gọi 2 tuần → candidate tắt
-```
+> 📄 **Code ví dụ:** [`examples/03-3-5-compact-focus-khi-80-context-usage.sh`](examples/03-3-5-compact-focus-khi-80-context-usage.sh)
+
+> **Tóm gọn 1 câu:** Năm thói quen trên là bộ "dọn bàn định kỳ" — clear khi đổi việc, rewind khi đi sai, hỏi phụ ngoài mạch chính, việc ồn giao trợ lý, và compact có dặn dò trước khi bàn chật.
 
 ---
 
 ## 4. Trần context: CLAUDE.md + skills + subagents + MCP + doctor
 
-"Thuế ẩn" — không paste gì mà context vẫn nặng vì config phình.
+Mục này nói về "thuế ẩn" — thứ bạn không paste gì mà context vẫn nặng vì config phình. Muốn cắt bill thì phải rà đủ 5 nguồn này, không chỉ dọn hội thoại.
 
 ### 4.1. CLAUDE.md <200 dòng
 
-Nạp **mọi turn** — 800 dòng rules = trả thuế 800 dòng × 100 turns.
+Nạp **mọi turn** — 800 dòng rules = trả thuế 800 dòng × 100 turns. Giống tiền thuê nhà tính theo ngày: càng để nhiều đồ thừa, càng trả nhiều mỗi ngày.
 
 ```markdown
 # Project X — 5 dòng mô tả + stack chính
@@ -136,18 +131,17 @@ Tất cả tool defs nằm trong context; quá nhiều → chọn sai tool, retr
 
 ### 4.5. `/doctor` định kỳ
 
-```bash
-/doctor
-# → skills nào cài mà không dùng, MCP nào nặng, hooks nào chậm, version mới
-/doctor checkup   # bí danh /checkup từ w28/2026
-claude doctor     # chạy ngoài terminal khi /doctor báo setup lỗi
-```
+> 📄 **Code ví dụ:** [`examples/04-4-5-doctor-inh-ky.sh`](examples/04-4-5-doctor-inh-ky.sh)
 
 Lịch: mỗi tháng 1 lần (team) hoặc sau khi cài 2–3 plugins/skills mới; `/skill-doctor` đi sâu riêng context cost của skills.
+
+> **Tóm gọn 1 câu:** Context nặng không chỉ vì hội thoại — CLAUDE.md, skills, subagent descriptions và MCP đều "gánh theo" mỗi turn; rà định kỳ bằng `/doctor` là cắt thuế ẩn.
 
 ---
 
 ## 5. Dấu hiệu context bẩn và cách cứu
+
+Mục này là bảng "bệnh sĩ": đối chiếu triệu chứng đang gặp vào dòng tương ứng để biết chẩn đoán và lệnh cứu ngay.
 
 | Dấu hiệu | Chẩn đoán | Cứu ngay (copy-paste) |
 |---|---|---|
@@ -157,28 +151,21 @@ Lịch: mỗi tháng 1 lần (team) hoặc sau khi cài 2–3 plugins/skills m�
 | `/context` >75% giữa task | Rác research còn nằm lại | `/export` → `/clear` → nạp lại `plan.md` gọn |
 | Subagent trả dump 200 dòng log | Thiếu output contract | `"Chỉ trả quyết định + evidence, không dump log"` |
 
+> **Cách đọc bảng này:** quét cột "Dấu hiệu" trước để tìm dòng khớp triệu chứng đang gặp; cột "Cứu ngay (copy-paste)" là lệnh dán được vào session luôn — không cần đọc cột giữa nếu đã gấp.
+
+> **Tóm gọn 1 câu:** Context bẩn có "mặt mũi" riêng (quên rule, lan man, sửa A hỏng B) — gặp đúng bệnh thì dùng đúng thuốc, đừng xoá cả session khi chỉ cần compact.
+
 ---
 
 ## 6. Recipes session sạch (copy-paste)
 
 ### Recipe A — Ngày nhiều task vặt (1 session 1 việc)
 
-```bash
-Hãy fix bug X trong src/cart/. Verify bằng pnpm test cart rồi dừng.
-/clear
-Hãy đọc src/api/ và viết docs/api.md gồm 3 endpoints chính + ví dụ curl.
-/clear
-Hãy đọc docs/sprint-12.md và implement task P1 đầu tiên theo plan mode.
-```
+> 📄 **Code ví dụ:** [`examples/05-recipe-a-ngay-nhieu-task-vat-1-session.sh`](examples/05-recipe-a-ngay-nhieu-task-vat-1-session.sh)
 
 ### Recipe B — Cứu session đang bẩn (không mất việc)
 
-```bash
-/context                        # → 78%, toàn log cũ
-/export                         # → lưu transcript, copy decisions vào docs/decisions.md
-/compact Giữ decisions trong docs/decisions.md + plan.md phase hiện tại, bỏ log test và file đã đọc.
-# Nếu vẫn >60% sau compact → /clear + nạp lại plan.md gọn hơn
-```
+> 📄 **Code ví dụ:** [`examples/06-recipe-b-cuu-session-ang-ban-khong-mat.sh`](examples/06-recipe-b-cuu-session-ang-ban-khong-mat.sh)
 
 ### Recipe C — Hỏi phụ không bẩn mạch chính
 
@@ -195,7 +182,11 @@ Hãy đọc docs/sprint-12.md và implement task P1 đầu tiên theo plan mode.
 | Ngày 2 | Implement | `/clear` → `"Đọc plan.md. Chỉ làm Phase 1 (tách types). Chạy pnpm test auth, dán log, dừng."` (lặp Phase 2) |
 | Ngày 3 | Review (fresh) | `"Reviewer fresh review diff vs plan.md. Finding = bug/security/test-gap. [SEVERITY] file:line — fix."` |
 
-Kết quả: 5–6 sessions gọn (<50% context mỗi cái) thay vì 1 session 95% đầy rác 3 ngày.
+Kết quả: 5–6 sessions gọn (<50% context mỗi cái) thay vì 1 session 95% đầy rác 3 ngày. Giống chia marathon thành các chặng tiếp nước: mỗi chặng chạy hết sức, nghỉ 5 phút, lại chạy tiếp.
+
+> **Cách đọc bảng này:** đọc theo cột "Ngày" từ trên xuống là đúng trình tự làm; cột "Prompt mở đầu (copy-paste)" dán thẳng vào session mới — mỗi dòng là một session riêng, không gộp chung.
+
+> **Tóm gọn 1 câu:** Việc 3 ngày không phải 1 cự ly marathon mà là 3 chặng tiếp nước — mỗi chặng một session fresh, kế hoạch là cây gậy tiếp nước đã cắm sẵn ở `plan.md`.
 
 ---
 
@@ -210,16 +201,24 @@ Kết quả: 5–6 sessions gọn (<50% context mỗi cái) thay vì 1 session 9
 | `/btw` | Không ghi vào history | Có | 1 turn, no tools | Hỏi phụ nhanh |
 | Subagent | Main chỉ nhận summary | Tùy (read-only được) | Overhead ~20K/con | Explore ồn, review fresh |
 
+> **Cách đọc bảng này:** cột "Giữ context cũ?" và "Tốn tokens?" giúp bạn lọc nhanh cái rẻ/cái đắt; chốt lựa chọn ở cột "Dùng khi nào?" — đối chiếu tình huống của mình với 6 dòng là chọn được ngay.
+
 > Quy tắc ngón tay: **cùng task đầy RAM → `/compact`; khác task RAM bẩn → `/clear`; sai hướng → rewind; thử 2 hướng → `/fork`; hỏi phụ → `/btw`; explore ồn → subagent.**
+
+> **Tóm gọn 1 câu:** Sáu công cụ = sáu loại xe trong gara — chọn theo chuyến đi (tình huống) chứ không phải theo xe đẹp nhất.
 
 ---
 
 ## 9. Checklist context sạch mỗi ngày
 
+Mục này gom mọi thói quen trên thành checklist theo nhịp ngày–tuần: sáng dọn, giữa task kiểm, cuối ngày chốt.
+
 - [ ] Sáng: `/context` còn rác hôm qua → `/clear`; mở đúng branch + spec.
 - [ ] Giữa task (mỗi 30–45p): chạm 70% → `/compact` có focus hoặc `/clear` + `plan.md`; quyết định quan trọng ghi file ngay; hỏi phụ → `/btw`, explore rộng → subagent.
 - [ ] Cuối task/ngày: `/export` nếu transcript giá trị; ghi todos ra file; `/clear` để mai sạch.
 - [ ] Tuần/tháng: prune MCP (`/mcp`, `/usage`); `CLAUDE.md` <200 dòng; `/doctor` + `/skill-doctor`; xóa subagents 1 tháng không gọi.
+
+> **Tóm gọn 1 câu:** Nhịp dọn context giống dọn nhà: sáng dọn bàn, giữa ngày bắt tay dọn ngay khi thấy rác, tối cất hết đồ — chứ đừng đợi cuối tháng mới đại tu.
 
 ---
 
@@ -233,6 +232,10 @@ Kết quả: 5–6 sessions gọn (<50% context mỗi cái) thay vì 1 session 9
 | Compact không focus → mất decisions | Compact tay với focus; decisions đã lưu file trước |
 | CLAUDE.md 600 dòng rules | <200 dòng + `@import` + skills; front-load rule hay sai nhất |
 | Tin "should work" | Đòi log/diff/test xanh (xem [Tips 04](./04-verification-done-that.md)) |
+
+> **Cách đọc bảng này:** cột trái là "bệnh", cột phải là "thuốc" — tra theo cột trái khi gặp sự cố, còn khi review thói quen bản thân thì đọc hết cả bảng.
+
+> **Tóm gọn 1 câu:** Sáu cạm bẫy này đều sinh ra từ một thói quen: tối ưu cho "tiện lúc đó" — còn cái rẻ lúc đó thường là cái đắt về sau.
 
 ---
 

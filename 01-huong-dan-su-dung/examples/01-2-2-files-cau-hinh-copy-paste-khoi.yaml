@@ -1,0 +1,9 @@
+# MẪU 2 rules (file thật xem templates/.claude/security-patterns.json)
+- id: aws-key
+  pattern: "AKIA[0-9A-Z]{16}"
+  message: "Nghi AWS access key hardcode — dùng env/secret manager."
+  severity: high
+- id: private-key-block
+  pattern: "-----BEGIN (RSA )?PRIVATE KEY-----"
+  message: "Private key trong code — xóa ngay, rotate key."
+  severity: critical

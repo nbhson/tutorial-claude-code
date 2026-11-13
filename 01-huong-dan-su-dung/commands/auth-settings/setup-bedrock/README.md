@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/setup-bedrock
-/setup-bedrock --check
-/status
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,16 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Máy đã có AWS CLI + SSO org:
-aws sso login --profile team-dev
-# → browser SSO OK
-
-/setup-bedrock
-# → region: ap-southeast-1 [Yes]
-# → auth: SSO profile team-dev [Yes]
-# → model: sonnet (đã enable) [Yes]
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -41,18 +28,21 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-/status
-# → provider = Bedrock, region + model đã enable đúng
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
+
+Mục này nói về các lỗi kết nối/quyền hay gặp khi cắm Claude Code vào AWS Bedrock — lỗi nào cũng báo rõ qua message, tra đúng dòng rồi làm theo cột "Cách sửa".
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | "Model not available in region" dù auth OK | Sai region hoặc model chưa enable trong console | Console → Bedrock → Model access → Enable; chọn region có Claude |
 | "ExpiredToken / InvalidClientTokenId" | Key cũ 90 ngày / SSO session hết hạn | `aws sso login` lại; key cứng thì chuyển SSO/role cho bền |
 | "AccessDenied: not authorized bedrock:InvokeModel" | IAM policy thiếu quyền | Xin policy `bedrock:InvokeModel` trên ARN model; test bằng `aws bedrock list-foundation-models` |
+
+> **Cách đọc bảng này:** đọc theo hàng — "Triệu chứng" là message lỗi bạn copy được từ log, "Vì sao" chỉ tầng gây lỗi (region/auth/quyền), "Cách sửa" là bước xử lý tương ứng.
+
+> **Tóm gọn 1 câu:** `/setup-bedrock` cắm phích một lần là xong: region đúng, auth đúng, model enable — sau đó mọi session chạy qua hạ tầng AWS nhà mình.
 
 ## Tham khảo
 

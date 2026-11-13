@@ -1,0 +1,39 @@
+# .github/workflows/claude-ci-triage.yml
+name: claude-ci-triage
+on:
+  schedule:
+    - cron: "0 22 * * *"   # nightly 22:00 UTC
+  workflow_dispatch: {}     # + nút chạy tay
+
+permissions:
+  contents: read
+  actions: read
+  issues: write            # mở issue khi CI fail
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      # actions/checkout (fetch-depth: 0) + Setup Claude: y hệt workflow 1
+
+      - name: Analyze latest failures
+        run: |
+          gh run list --branch main --limit 5 --json conclusion,name,headSha > runs.json
+          claude -p "Đọc runs.json (5 runs gần nhất main). Với runs failed: gh run view <id> --log-failed để lấy logs, tóm tắt root cause + đề xuất fix (tối đa 5 bullets/run). Output markdown." \
+            --output-format text \
+            --permission-mode dontAsk \
+            --allowedTools "Read, Grep, Glob, Bash" > triage.md
+          cat triage.md
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Open issue if failures found
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = require('fs').readFileSync('triage.md', 'utf8');
+            if (/no failures|all passed/i.test(body)) { console.log('All green.'); return; }
+            await github.rest.issues.create({
+              ...context.repo, title: `CI triage ${new Date().toISOString().slice(0,10)}`, body, labels: ['ci'] });

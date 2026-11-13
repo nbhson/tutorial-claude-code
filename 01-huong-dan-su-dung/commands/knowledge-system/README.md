@@ -9,14 +9,11 @@
 - Bạn gặp lỗi lạ (treo, chậm, trả lời vô lý) và cần "khám tổng" bằng /doctor, /debug — không tự đoán.
 - Bạn muốn dọn hệ thống tri thức: CLAUDE.md phình, skill ế, plugin lỗi — dùng /skill-doctor, /plugin-validate, /simplify.
 
+> **Tóm gọn 1 câu:** Nhóm này là "bệnh viện + xưởng nâng cấp" cho Claude Code: khám bệnh (/doctor, /debug), cắm tay robot (/mcp, /hooks, /agents), và dọn kho tri thức (/skill-doctor, /simplify).
+
 ## Cách gọi
 
-```bash
-# go / trong session, go chu dau lenh de loc
-/mcp
-/hooks
-/doctor
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 Kiểm tra lệnh có ở máy bạn không: mở session, gõ `/` rồi gõ tiếp chữ đầu lệnh — version/provider khác nhau hiện lệnh khác nhau.
 
@@ -24,14 +21,16 @@ Kiểm tra lệnh có ở máy bạn không: mở session, gõ `/` rồi gõ ti�
 
 Bạn thấy session chạy chậm / trả lời lạ, không rõ vì sao:
 
-```bash
-/doctor
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 - Mong đợi: /doctor audit repo — CLAUDE.md, permissions, MCP, hooks, plugin; báo từng mục đạt/chưa + gợi ý sửa.
 - Kiểm tra (≤30 giây): đọc output, đếm số mục "cảnh báo"; sửa rồi /doctor lại, thấy số cảnh báo giảm.
 
+> **Tóm gọn 1 câu:** ĐAU thì /doctor khám tổng trước, đừng tự bấm huyệt mò: một lệnh quét cả CLAUDE.md, permissions, MCP, hooks, plugin rồi sửa theo từng cảnh báo nó in ra.
+
 ## Lỗi thường gặp
+
+Mục này là sổ khám bệnh của nhóm lệnh: ba bệnh hay gặp nhất khi cấu hình hooks/MCP/plugin/skill sai cách — đối chiếu triệu chứng của bạn với cột đầu, rồi làm theo cột cuối.
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
@@ -39,13 +38,15 @@ Bạn thấy session chạy chậm / trả lời lạ, không rõ vì sao:
 | MCP "disconnected" — tool ngoài không hiện, gọi tool báo lỗi | Cấu hình MCP sai, server không chạy, hoặc >~10 tool hiển thị | Gõ /mcp xem trạng thái, tắt server thừa, chạy lại; /doctor mục MCP |
 | CLAUDE.md phình tốn token mỗi turn, hoặc plugin lỗi làm lệnh chạy sai | CLAUDE.md nạp lại mọi turn (phình >200 dòng); plugin/mod không audit | Trim CLAUDE.md <200 dòng, audit bằng /plugin-validate trước khi cài plugin |
 
+> **Cách đọc bảng này:** mỗi dòng là một "bệnh" của hệ thống tri thức; cột "Vì sao" cho biết bệnh nằm ở skill, ở MCP hay ở CLAUDE.md/plugin, cột "Cách sửa" là lệnh/thao tác chữa cụ thể.
+
 ## Bộ 3 phải nhớ
 
 > /mcp cắm tools ngoài | /hooks biến rule hay quên thành luật cứng | /doctor khám tổng khi lỗi lạ
 
 ## Các lệnh (16)
 
-Bảng dưới liệt kê 16 lệnh trong nhóm — liếc cột **Mức rủi ro** trước khi gõ, rồi bấm vào tên lệnh để xem chi tiết.
+Bảng dưới liệt kê 16 lệnh trong nhóm — liếc cột **Mức rủi ro** trước khi gõ, rồi bấm vào tên lệnh để xem chi tiết. Giống danh bạ điện thoại: mỗi dòng một "người phụ trách", biết ai phụ trách việc gì là bấm đúng số ngay lần đầu.
 
 | Lệnh | Mức rủi ro | Một dòng |
 |---|---|---|
@@ -66,6 +67,8 @@ Bảng dưới liệt kê 16 lệnh trong nhóm — liếc cột **Mức rủi r
 | [/skill-doctor](./skill-doctor/README.md) | Không | Báo cáo skill ngốn context / chết lâm sàng |
 | [/stats](./stats/README.md) | Không | Token, chi phí, hạn mức hôm nay |
 
+> **Cách đọc bảng này:** xếp theo tên lệnh A→Z; cột "Mức rủi ro" là đèn giao thông (Không = chạy thẳng, Có = dừng đọc cấu hình trước), cột "Một dòng" đủ để quyết định có mở trang chi tiết hay không — cần chi tiết mới bấm vào tên lệnh.
+
 ## Sơ đồ quyết định (30 giây)
 
 ```text
@@ -76,11 +79,7 @@ Gõ / trong session để xem lệnh nào hiện ở máy bạn.
 
 ## Cách dùng nhóm này cho đúng
 
-```bash
-# 1. Hoc 3 lenh tru truoc (xem "Bo 3 phai nho" o tren)
-# 2. Con lai tra khi gap viec that, dung hoc het 1 luc
-# 3. Loi la trong nhom nay -> /status -> /doctor -> doc lenh tuong ung
-```
+> 📄 **Code ví dụ:** [`examples/03-cach-dung-nhom-nay-cho-ung.sh`](examples/03-cach-dung-nhom-nay-cho-ung.sh)
 
 ## Tham khảo
 

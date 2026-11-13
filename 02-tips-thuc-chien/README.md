@@ -33,7 +33,10 @@ Section này trả lời câu: 11 bài trong folder gộp lại giúp bạn đi�
 Folder này là phần "áp dụng" của khóa: folder `01` dạy bạn thao tác gì, folder này dạy **việc đó
 đưa ra kết quả tốt hay không**. Mỗi bài theo cùng khung: lý thuyết gọn → ≥3 ví dụ copy-paste →
 walkthrough theo phút → bảng so sánh → bài tập. Đọc hết 11 bài là bạn có đủ thói quen làm việc
-hiệu quả với Claude Code hằng ngày.
+hiệu quả với Claude Code hằng ngày. Hãy hình dung folder này như phòng gym: folder `01` dạy cầm máy
+thế nào, còn ở đây bạn tập thành thói quen mỗi ngày.
+
+> **Tóm gọn 1 câu:** Folder `01` dạy động tác, folder này biến động tác thành thói quen — 11 bài, mỗi bài một nhóm cơ.
 
 ## Danh sách 11 bài
 
@@ -54,6 +57,7 @@ Cần chọn nhanh bài hợp với việc đang làm → dùng bảng này: m�
 | 11 | Nâng cao Desktop & Web: extension, computer use, artifacts, remote, voice | Khai thác bản Desktop/Web cho workflow nặng | [11-nang-cao-desktop-web.md](./11-nang-cao-desktop-web.md) |
 
 > Tên cột "Bài" lấy đúng tiêu đề H1 của từng file — bấm link vào là thấy ngay.
+> **Cách đọc bảng này:** quét cột "Mô tả 1 dòng" để tìm bài khớp vấn đề đang gặp rồi bấm link; khi không chắc đọc gì trước, nhảy xuống mục "Thứ tự đọc đề xuất" bên dưới.
 
 ## Thứ tự đọc đề xuất
 
@@ -65,6 +69,8 @@ Chưa biết bắt đầu từ đâu → đọc theo thứ tự 4 nhóm dưới 
 4. **Tối ưu & team:** 08 → 09 → 11 — tiết kiệm cost, chuẩn hóa team, nâng cao Desktop/Web.
 
 Gói theo lộ trình 5 ngày của [`README.md` gốc](../README.md): ngày 4 đọc tips 01 → 05, ngày 5 đọc tips 06 → 10.
+
+> **Tóm gọn 1 câu:** Đọc theo 4 nhóm như leo thang: nền tảng trước, chất lượng sau, mở rộng rồi tối ưu — đừng nhảy cóc giữa các bậc.
 
 ## Link tra cứu
 

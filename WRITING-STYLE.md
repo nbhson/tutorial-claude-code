@@ -1,14 +1,18 @@
 # Quy chuẩn viết cho repo Khóa Học Claude Code
 
 > File này trả lời 2 câu hỏi: **(1) viết thế nào cho người đọc hiểu**, **(2) dữ kiện nào đang được coi là đúng**.
-> Mọi file `.md` trong repo phải tuân file này. Trước khi sửa hoặc thêm nội dung, đọc hết phần A.
+> Hãy hình dung file này như "quy chế nhà": mọi file `.md` trong repo phải theo nhà này. Trước khi sửa hoặc thêm nội dung, đọc hết phần A.
 > Cần tra nhanh version/model/giá → nhảy thẳng [Phần B — Dữ kiện chuẩn](#phần-b--dữ-kiện-chuẩn-làm-tròn-thời-gian-11102026).
 
 ---
 
 ## Mục A — Quy chuẩn viết
 
+Phần A là "sổ tay nấu ăn": mỗi mục là một bước để viết ra một file dễ đọc.
+
 ### A0. Tài liệu này cho ai?
+
+Mục này trả lời câu hỏi đầu tiên: viết cho ai, để bạn biết "độ sâu" cần dùng.
 
 Bốn nhóm người đọc, ưu tiên theo thứ tự:
 
@@ -19,25 +23,35 @@ Bốn nhóm người đọc, ưu tiên theo thứ tự:
 | 3 | Tech lead chuẩn hóa cho team | Copy được **quy tắc, template, checklist** về team ngay |
 | 4 | Người Việt đọc tiếng Anh chưa giỏi | **Không phải đoán** thuật ngữ Anh giữa chừng |
 
-Nguyên tắc chung: **viết cho người đọc nhóm 1, dày đủ cho nhóm 3.** Đừng viết cho tác giả.
+> **Cách đọc bảng này:** cột "Ưu tiên" là thứ tự quan trọng; khi phải chọn giữa hai nhu cầu, chọn nhu cầu của nhóm có số nhỏ hơn.
+
+Nguyên tắc chung: **viết cho người đọc nhóm 1, dày đủ cho nhóm 3.** Đừng viết cho tác giả. Hãy nghĩ như nấu cho khách: khách muốn ăn gì thì nấu, không phải mình thích gì thì nấu.
+
+> **Tóm gọn 1 câu:** Viết cho người mới nhất, đủ cho người chuyên nhất, và luôn nghĩ tới người đọc chứ không phải tác giả.
 
 ---
 
 ### A1. Năm nguyên tắc nền
 
+Mục này là 5 "quy tắc vàng". Đọc kỹ một lần, mọi file sau đó sẽ theo cùng khuôn.
+
 1. **Mỗi file phải có "lối vào".** Trong 10 dòng đầu, người đọc phải trả lời được 3 câu:
-   *File này cho ai? Cần gì trước? Đọc xong làm được gì?*
+   *File này cho ai? Cần gì trước? Đọc xong làm được gì?* Giống như bảng hiệu trước cửa quán: xem qua là biết quán bán gì.
 2. **Mỗi section phải có mục tiêu.** Câu đầu của section phải nói section này trả lời câu gì.
    Không mở đầu bằng dữ kiện rồi mới để người đọc tự đoán chủ đề.
 3. **Không mất nội dung.** Khi viết lại: mọi bảng, mọi ví dụ, mọi lệnh, mọi bài tập, mọi link
    trong bản cũ phải còn — trừ khi trùng lặp *nội dung y hệt* thì gộp và ghi rõ đã gộp.
 4. **Không lặp cùng một nội dung 2 lần trong 1 file.** Bảng nào đã có ở mục A thì không hiện lại
    y hệt ở mục B; câu trả lời không được in ở cả "Trả lời 1 câu" và "Giải thích".
-5. **Dữ kiện phải có nguồn + ngày.** Xem [A10](#a10-quy-tắc-chống-out-date).
+5. **Dữ kiện phải có nguồn + ngày.** Xem [A10](#a10-quy-tắc-chống-out-date). Số không nguồn giống tin đồn: nghe hay mà không tin được.
+
+> **Tóm gọn 1 câu:** Mỗi file cần lối vào, mỗi section cần mục tiêu, không mất nội dung, không lặp, và mọi con số phải có nguồn kèm ngày.
 
 ---
 
 ### A2. Khung mở đầu file (bắt buộc)
+
+Mục này quy định phần mở đầu của mỗi bài. Mở đầu như bảng hiệu quán ăn: ai nên vào, cần chuẩn bị gì, ăn xong được gì.
 
 Mọi bài viết (folder `01-`, `02-`, `03-`) mở đầu theo đúng khung này:
 
@@ -67,9 +81,13 @@ Quy tắc riêng:
   `Tổng Quan Claude Code: Tư Duy Agent, Không Phải Chatbot`.
 - Khối `> **Bài này cho ai:**` dùng blockquote `>` để tách khỏi nội dung.
 
+> **Tóm gọn 1 câu:** Mở đầu mỗi bài bằng khung 4 dòng (cho ai, cần gì, làm được gì, mất bao lâu) và đặt bảng thuật ngữ lên đầu để người mới không phải đoán.
+
 ---
 
 ### A3. Cấu trúc theo từng loại file
+
+Mục này nói về "khung xương" của từng loại file. Cùng một nhà nhưng phòng khách, bếp, ngủ khác nhau — bài hướng dẫn, tips, FAQ mỗi loại có khung riêng.
 
 | Loại file | Cấu trúc bắt buộc | Ghi chú |
 |---|---|---|
@@ -80,13 +98,19 @@ Quy tắc riêng:
 | README index (root, folder) | Mục tiêu folder → Bảng danh sách file + 1 dòng mô tả → Lộ trình đọc → Link tra cứu | |
 | Template `templates/` | Dùng được ngay → Giải thích 1 dòng mỗi phần → Cách sửa | |
 
+> **Cách đọc bảng này:** chọn dòng khớp loại file bạn đang viết; cột "Cấu trúc bắt buộc" là thứ tự các phần phải có, đọc từ trái sang phải.
+
 **Không được** nhét nội dung không thuộc chủ đề vào một section chỉ vì "chưa có chỗ".
 Ví dụ sai (đã từng có): mục `## Bài tập cuối bài` lại chứa bảng thuật ngữ, sơ đồ mermaid và
-bảng hiểu nhầm. Nội dung đó phải là các mục riêng đứng ngang hàng.
+bảng hiểu nhầm. Nội dung đó phải là các mục riêng đứng ngang hàng. Giống như nhét cả đũa, muỗng, máy xay vào một ngăn kéo — mỗi thứ một chỗ mới dễ lấy.
+
+> **Tóm gọn 1 câu:** Mỗi loại file có một khung cố định; cứ theo khung đó và đừng nhét nội dung lạc đề vào chỗ chưa có chỗ.
 
 ---
 
 ### A4. Quy tắc section
+
+Mục này nói về cách viết từng section. Section tốt giống từng món ăn một đĩa: rõ tên, đủ dùng, không trộn lẫn.
 
 - **Câu đầu section = mục tiêu section.** Đúng hay sai:
   - Đúng: `## 4. Vì sao CLAUDE.md phình làm bạn tốn tiền?` → mở đầu `Mỗi turn, model nạp lại toàn bộ CLAUDE.md...`
@@ -95,9 +119,13 @@ bảng hiểu nhầm. Nội dung đó phải là các mục riêng đứng ngang
 - **Mỗi section kết bằng thứ người đọc làm được** (lệnh chạy, checklist, hoặc ví dụ), không kết bằng lý thuyết suông.
 - Số thứ tự mục phải liên tục, không nhảy, không có mục con "mồ côi" (11.5 nằm dưới 11.1... nhưng nội dung không liên quan bài tập).
 
+> **Tóm gọn 1 câu:** Mỗi section mở đầu bằng mục tiêu, đủ ngắn để chia nhỏ, và khép lại bằng thứ người đọc làm được.
+
 ---
 
 ### A5. Quy tắc từ ngữ & giọng chữ
+
+Mục này chọn "giọng nói" của cả repo. Hãy viết như đang trò chuyện với bạn học, không như đọc báo cáo.
 
 **Giọng: xưng "bạn", thân thiện, trung tính.** Duy nhất 1 ngôi throughout file.
 
@@ -106,6 +134,8 @@ bảng hiểu nhầm. Nội dung đó phải là các mục riêng đứng ngang
 | `bạn` | `mày`, `tao`, `thằng em` | Giọng khẩu ngữ trộn trang trọng gây khó đọc |
 | `Claude tự đọc file` | `nó tự đọc file` | `nó` thiếu chủ ngữ rõ ràng |
 | Prompt mẫu bên trong code block giữ nguyên khẩu ngữ | — | Prompt là chuỗi lệnh, không phải văn viết |
+
+> **Cách đọc bảng này:** cột "Dùng" là lựa chọn đúng, cột "Không dùng" là lỗi hay gặp, cột "Lý do" giải thích vì sao.
 
 **Tiếng Anh và thuật ngữ:**
 
@@ -118,9 +148,13 @@ bảng hiểu nhầm. Nội dung đó phải là các mục riêng đứng ngang
 - Câu hỏi tiếng Anh trộn trong tiêu đề: gộp lại cho hết câu, ví dụ
   `## 2. Agentic loop deep-dive (why, không chỉ what)` → `## 2. Vòng lặp agent hoạt động ra sao, vì sao phải hiểu?`
 
+> **Tóm gọn 1 câu:** Xưng "bạn" xuyên suốt, giữ tiếng Anh cho tên lệnh và tool, giải thích thuật ngữ mới ngay lần đầu gặp.
+
 ---
 
 ### A6. Quy tắc 7 mục của file lệnh `commands/`
+
+Mục này cho biết một file lệnh gồm 7 phần nào. Cứ coi mỗi file lệnh như một thẻ hướng dẫn sử dụng thiết bị: ngắn, đúng thứ tự, đủ ý.
 
 Giữ nguyên khung hiện tại, chỉ viết lại cho dễ:
 
@@ -132,9 +166,13 @@ Giữ nguyên khung hiện tại, chỉ viết lại cho dễ:
 6. `## Lỗi thường gặp` — bảng 3 cột `Triệu chứng | Vì sao | Cách sửa`, 2–3 dòng.
 7. `## Tham khảo` — 3–4 link + kết thúc bằng `> Mẹo 1 dòng: _..._`.
 
+> **Tóm gọn 1 câu:** File lệnh gồm 7 phần ngắn gọn theo đúng thứ tự, tổng cộng không quá 60 dòng.
+
 ---
 
 ### A7. Quy tắc FAQ (5 khối)
+
+Mục này nói về cách trả lời một câu hỏi FAQ. Câu trả lời giống cấp cứu: truyền dịch trước (1 câu), rồi mới giải thích chi tiết.
 
 Khung 5 khối giữ nguyên, nhưng:
 
@@ -147,9 +185,13 @@ Khung 5 khối giữ nguyên, nhưng:
 - Không lặp cụm từ y hệt ở 2 khối liên tiếp.
 - Sửa mọi bảng markdown hỏng (thiếu ô, `|---|` lẻ) trước khi ghi file.
 
+> **Tóm gọn 1 câu:** Mỗi câu FAQ phải có câu trả lời thật ở khối "Trả lời 1 câu", rồi mới giải thích ở khối "Giải thích".
+
 ---
 
 ### A8. Quy tắc Verify, ví dụ, bảng, code block
+
+Mục này quy định 3 thứ hay làm hỏng file: bước kiểm tra, bảng, và code block. Cứ coi đây là 3 "vùng dễ cháy" cần cẩn thận.
 
 **Verify:** nội dung "kiểm tra xong thấy gì" là **bắt buộc giữ**, nhưng cách bày:
 
@@ -158,6 +200,8 @@ Khung 5 khối giữ nguyên, nhưng:
 | Không chèn blockquote `> Kỳ vọng / Verify` giữa đoạn văn liên tục >2 lần liên tiếp | Gom thành **1 khối `**Kiểm tra nhanh:**`** ở cuối section, gộp các bước verify liên quan vào đó |
 | Giữ nguyên mọi câu "làm xong thấy gì" | Có thể viết lại lời, không được bỏ thông tin |
 | Code block | Giữ nguyên hành vi lệnh; comment trong codeblock tiếng Việt không dấu |
+
+> **Cách đọc bảng này:** cột "Bắt buộc" là điều không được vi phạm; cột "Cách bày" chỉ đúng cách trình bày tương ứng.
 
 **Bảng:**
 - Đảm bảo mọi dòng có cùng số cột (check bằng mắt trước khi ghi).
@@ -168,18 +212,26 @@ Khung 5 khối giữ nguyên, nhưng:
 - Mõm đầu block ghi ngôn ngữ (`bash`, `text`, `json`, `mermaid`).
 - Mọi lệnh phải copy-paste được; secret qua `${ENV}`, không hardcode.
 
+> **Tóm gọn 1 câu:** Bước verify phải giữ đủ, bảng phải đều cột và không lặp, code block phải ghi ngôn ngữ và chạy được ngay.
+
 ---
 
 ### A9. Quy tắc link chéo
+
+Mục này nói về cách "giăng dây" giữa các bài. Link chéo giống biển chỉ đường giữa các quán: khách đọc hết bài này biết đường sang bài kia.
 
 - Link nội bộ: đường dẫn **tương đối**, không hardcode tên miền.
 - Mỗi bài ≥3 link chéo tới bài/commands liên quan (giữ yêu cầu hiện tại của `CONTRIBUTING.md`).
 - Không được đổi tên file/mục mà không sửa toàn bộ link trỏ tới (grep toàn repo trước khi đổi).
 - Anchor mục lục phải khớp heading sau khi đổi tiêu đề (kiểm tra lại TOC).
 
+> **Tóm gọn 1 câu:** Link chéo dùng đường dẫn tương đối, mỗi bài ít nhất 3 link, và đổi tên file là phải sửa mọi link trỏ tới.
+
 ---
 
 ### A10. Quy tắc chống out-date
+
+Mục này chống "sách mốc meo". Đồ công nghệ đổi nhanh, con số hôm nay có thể sai ngày mai — nên mọi số phải tra nguồn chuẩn và ghi ngày.
 
 1. **Số version, model, giá, tính năng mới** → tra mục B trước khi viết. Nếu chưa có trong mục B,
    phải tự tra nguồn chính thức (liệt kê A10.1) và **bổ sung vào mục B kèm ngày**.
@@ -196,9 +248,13 @@ Khung 5 khối giữ nguyên, nhưng:
 5. Không viết "sắp ra mắt" trừ khi có ngày công bố chính thức; viết `(tháng 9/2026)` cho mọi
    dự kiến.
 
+> **Tóm gọn 1 câu:** Mọi con số tra ở mục B, ghi bản tối thiểu, dùng nguồn chính thức theo đúng thứ tự ưu tiên.
+
 ---
 
 ### A11. Checklist bắt buộc trước khi ghi file (không mất nội dung)
+
+Mục này là "ra-đa cuối cùng" trước khi lưu file. Tick đủ 9 ô là file không sơ suất.
 
 Tick đủ trước khi kết thúc lượt sửa 1 file:
 
@@ -212,14 +268,18 @@ Tick đủ trước khi kết thúc lượt sửa 1 file:
 - [ ] Giọng "bạn" đồng nhất, không còn `mày/tao/nó` ngoài prompt mẫu.
 - [ ] Tiếng Việt không title-case.
 
+> **Tóm gọn 1 câu:** Trước khi lưu file, tick đủ checklist 9 mục để chắc chắn không mất nội dung và không lệch giọng.
+
 ---
 
 ## Phần B — Dữ kiện chuẩn (làm tròn thời gian: 11/10/2026)
 
 > Mục này là **nguồn sự thật chung** cho mọi file trong repo. Khi viết lại nội dung, đối chiếu vào đây.
-> Cập nhật bằng cách thêm dòng mới **có ngày**, không xóa dòng cũ đang còn đúng.
+> Cập nhật bằng cách thêm dòng mới **có ngày**, không xóa dòng cũ đang còn đúng. Hãy coi đây như sổ ghi chép của tiệm: ghi thêm trang mới, không xé trang cũ.
 
 ### B1. Claude Code — phiên bản & tài liệu
+
+Mục này trả lời: bản Claude Code mới nhất là bao nhiêu và tra tài liệu ở đâu.
 
 | Hạng mục | Giá trị chuẩn (11/10/2026) |
 |---|---|
@@ -232,7 +292,11 @@ Tick đủ trước khi kết thúc lượt sửa 1 file:
 | Kiểm tra bản đang cài | `claude --version` (ngoài terminal), `/status` hoặc `/doctor` (trong session) |
 | Cách update | `claude update` — **update trước, debug sau** |
 
+> **Cách đọc bảng này:** dòng đầu là bản mới nhất kèm ngày phát hành; các dòng sau là địa chỉ tra cứu và lệnh kiểm tra/update.
+
 ### B2. Model (giá API, USD / 1 triệu tokens)
+
+Mục này là bảng giá model API. Đọc như xem bảng giá menu: mỗi dòng một món, cột giữa là giá, cột cuối là ghi chú quan trọng.
 
 | Model | Input | Output | Cache read | Context | API ID | Ghi chú |
 |---|---|---|---|---|---|---|
@@ -243,9 +307,15 @@ Tick đủ trước khi kết thúc lượt sửa 1 file:
 | Claude Haiku 5.5 | $0.10 | $0.50 | $0.01 | 1M | `claude-haiku-5-5` | Cần ≥2.1.293; **mặc định Haiku trên API**. Prompt >100K: $0.50/$2.50 (cache $0.05) |
 | Claude Haiku 4.5 | $1 | $5 | $0.10 | 200K | `claude-haiku-4-5-20251001` | Nhanh, rẻ; mặc định Haiku trên Bedrock/GCP/AWS; không hỗ trợ effort |
 
+> **Cách đọc bảng này:** mỗi dòng là một model; "Input/Output" là giá USD cho mỗi 1 triệu tokens, "Ghi chú" nói model nào cần bản Claude Code nào và mặc định ở đâu.
+
 Nguồn: platform.claude.com/docs/en/about-claude/pricing + code.claude.com/docs/en/model-config + claude.com/pricing (tra 11/10/2026).
 
+> **Tóm gọn 1 câu:** Bảng giá model chuẩn theo ngày 11/10/2026 — luôn đối chiếu cột "Ghi chú" để biết bản tối thiểu trước khi dùng.
+
 ### B3. Gói subscription (claude.com/pricing, tra 11/10/2026)
+
+Mục này là bảng giá gói thuê bao. Câu hỏi chính: gói nào cho dùng Claude Code, và hết hạn mức thì làm gì.
 
 | Gói | Giá | Claude Code? | Ghi chú |
 |---|---|---|---|
@@ -256,6 +326,8 @@ Nguồn: platform.claude.com/docs/en/about-claude/pricing + code.claude.com/docs
 | Team (Standard) | $20/tháng năm, $25/tháng | ✅ | Tối thiểu 2 ghế, tối đa 150 |
 | Team (Premium) | $100/tháng năm, $125/tháng | ✅ | 5× Standard |
 
+> **Cách đọc bảng này:** mỗi dòng là một gói; cột "Claude Code?" cho biết gói có dùng được Claude Code không, cột "Ghi chú" so hạn mức với gói khác.
+
 - Hạn mức tính theo **phiên 5 giờ cuộn** + **hạn tuần**; chat web + Claude Code dùng chung 1 hạn mức.
 - Hết hạn mức → chờ reset, nâng gói, hoặc bật **usage credits** (trả theo giá API).
 - **Fable không nằm trong hạn mức thường**: trên Pro bill bằng usage credits, trên Max tốn ~50% hạn tuần
@@ -263,7 +335,11 @@ Nguồn: platform.claude.com/docs/en/about-claude/pricing + code.claude.com/docs
 - (06/5/2026) Anthropic đã **nhân đôi** hạn mức 5 giờ của Claude Code cho Pro/Max/Team/Enterprise
   và bỏ giảm hạn mức giờ cao điểm.
 
+> **Tóm gọn 1 câu:** Free không có Claude Code; mọi gói trả phí tính hạn theo phiên 5 giờ cuộn cộng hạn tuần, và Fable đi theo usage credits riêng.
+
 ### B4. Tính năng mới đáng cập nhật (2026)
+
+Mục này là "tin mới" của năm 2026. Mỗi dòng là một tính năng, kèm bản tối thiểu và ý nghĩa với người học.
 
 | Tính năng | Bản cần có / thời điểm | Ý nghĩa với người học |
 |---|---|---|
@@ -290,7 +366,13 @@ Nguồn: platform.claude.com/docs/en/about-claude/pricing + code.claude.com/docs
 | MCP mặc định negotiate protocol `2026-07-28` | ≥2.1.292 | Áp cho cả connector claude.ai lẫn MCP local stdio/remote; `MCP_PROTOCOL_NEGOTIATION=legacy` để tắt |
 | **`/ultraplan` đã bị gỡ** | w32/2026 (03–07/8/2026) | Thay bằng plan mode hoặc Claude Code trên web |
 
+> **Cách đọc bảng này:** cột giữa là bản Claude Code tối thiểu hoặc tuần phát hành; dòng cuối là tính năng đã gỡ — đừng viết hướng dẫn cho nó nữa.
+
+> **Tóm gọn 1 câu:** Bảng này là nơi cập nhật tính năng mới kèm bản tối thiểu, và ghi rõ tính năng nào đã bị gỡ.
+
 ### B5. Sự thật lâu dài (ít đổi, vẫn dùng)
+
+Mục này gom những dữ kiện "gần như không bao giờ đổi". Coi như nguyên lý vật lý của repo: không cần tra lại mỗi tuần.
 
 - **Harness ≠ model.** Model sinh text + tool call; CLI (harness) mới là thứ đọc/ghi file, chạy
   lệnh, enforce permission, chạy hook, rồi đưa kết quả vào lại context.
@@ -304,7 +386,11 @@ Nguồn: platform.claude.com/docs/en/about-claude/pricing + code.claude.com/docs
 - **Quy tắc 15 turn**: task >15 turn không tiến triển → dừng, `/clear`, chia nhỏ (kinh nghiệm
   thực tế, không phải số chính thức của Anthropic).
 
+> **Tóm gọn 1 câu:** Các sự thật nền tảng: harness khác model, CLAUDE.md nạp mỗi turn, skill và hook tiết kiệm token, subagent có context riêng.
+
 ### B6. Lệnh quen thuộc — bản tối thiểu (tra nhanh)
+
+Mục này là "bảng cửu chương" của lệnh: lệnh nào cần bản Claude Code bao nhiêu mới chạy được.
 
 | Lệnh | Bản tối thiểu | Ghi chú |
 |---|---|---|
@@ -321,4 +407,8 @@ Nguồn: platform.claude.com/docs/en/about-claude/pricing + code.claude.com/docs
 | Haiku 5.5 | ≥2.1.293 | Mặc định Haiku trên API |
 | Trim CLAUDE.md trong `/doctor` | ≥2.1.206 | |
 
+> **Cách đọc bảng này:** mỗi dòng là một lệnh; cột giữa cho biết bản Claude Code tối thiểu để lệnh đó chạy được trên máy bạn.
+
 > Mọi lệnh: gõ `/` trong session để xem máy bạn có không — version/provider khác nhau hiện khác nhau.
+
+> **Tóm gọn 1 câu:** Tra lệnh nào thiếu bản tối thiểu ở bảng này, và luôn gõ `/` trong session để kiểm tra lệnh có thật trên máy không.

@@ -16,6 +16,8 @@
 | Fork (`context: fork`) | Chạy trong worker riêng, không dính lịch sử chat chính | Skill research chạy nền, trả tóm tắt |
 | Bundled skill | Skill đi sẵn với Claude Code | `/code-review`, `/verify`, `/skill-doctor` |
 
+> **Cách đọc bảng này:** cột giữa là cách hiểu đời thường của từng thuật ngữ; cột phải là ví dụ bạn gặp thật khi gõ lệnh hoặc mở repo.
+
 ## Mục lục
 
 1. [Skill là gì và vì sao đáng viết](#1-skill-là-gì-và-vì-sao-đáng-viết)
@@ -29,37 +31,31 @@
 
 ## 1. Skill là gì và vì sao đáng viết
 
+Mục này giải thích skill là gì, chạy theo cơ chế nào, và vì sao đáng mất 40 phút viết một cái.
+
 **Nôm na 1 câu:** Skill là *công thức nấu ăn dán trên tủ lạnh* — thay vì mỗi lần nấu gọi điện hỏi mẹ (paste checklist dài), bạn dán sẵn 1 tờ, ai vào bếp cũng nấu đúng vị.
 
 **Ví dụ kỹ thuật copy-paste (khung tối thiểu chạy được):**
 
-```bash
-mkdir -p .claude/skills/deploy
-cat > .claude/skills/deploy/SKILL.md <<'EOF'
----
-name: deploy
-description: Deploy staging/prod với checklist migrate + smoke test. Dùng khi user nói deploy/release/ship.
----
-# Deploy
-Nhận `$ARGUMENTS` (vd `/deploy staging`).
-1. `git status --short` phải sạch.
-2. Chạy `${CLAUDE_SKILL_DIR}/scripts/migrate.sh --dry-run $ARGUMENTS`
-EOF
-```
+> 📄 **Code ví dụ:** [`examples/01-1-skill-la-gi-va-vi-sao-ang.sh`](examples/01-1-skill-la-gi-va-vi-sao-ang.sh)
 
-Cơ chế: Claude so ngữ cảnh với `description` (câu đầu là trường hợp dùng chính) → khớp thì nạp phần thân, không khớp thì bỏ qua. Startup chỉ tốn ~100 tokens/skill (tên + description); phần thân chỉ nạp khi được gọi → rẻ.
+Cơ chế hoạt động thế nào? Claude lấy ngữ cảnh hiện tại so với `description` của skill (câu đầu là trường hợp dùng chính). Khớp thì nạp phần thân, không khớp thì bỏ qua. Về giá: startup chỉ tốn ~100 tokens/skill (tên + description); phần thân chỉ nạp khi được gọi → rẻ.
 
-- Skill = **cách làm đóng gói**: không tự chạy, không kết nối ra ngoài (khác MCP/hook/subagent). Muốn chạy lịch → Routines `/schedule` (bài 12).
-- Theo **Agent Skills open standard** (Anthropic 12/2025): ~40 tool hỗ trợ (Codex CLI, Gemini CLI, Copilot...) — viết 1 lần chạy nhiều nơi.
+- Skill = **cách làm đóng gói**: không tự chạy, không kết nối ra ngoài (khác MCP/hook/subagent). Muốn chạy theo lịch → Routines `/schedule` (bài 12).
+- Theo **Agent Skills open standard** (Anthropic 12/2025): ~40 tool hỗ trợ (Codex CLI, Gemini CLI, Copilot...) — viết 1 lần chạy nhiều nơi, như sạc chung một loại cổng cho nhiều máy.
 - **Hot-reload từ v2.1.0 (01/2026)**: sửa SKILL.md trong session là có hiệu lực, không cần restart.
 - 3 vị trí: `~/.claude/skills/` (personal) · `.claude/skills/` (project, commit) · `<plugin>/skills/` (namespaced `/plugin:skill`).
 - Lệnh `.claude/commands/*.md` kiểu cũ vẫn chạy, nên chuyển sang skill để được kích hoạt theo ngữ cảnh.
 
-So với các thứ khác: checklist chỉ cần lúc deploy → skill rẻ hơn CLAUDE.md; hook bắt "phải làm", skill dạy "làm thế nào"; subagent là *người dùng* kiến thức, skill là kiến thức; skill chứa *cách dùng* MCP (schema, format) — cặp bài trùng với MCP.
+So với các "vật dụng" khác trong nhà: checklist chỉ cần lúc deploy → skill rẻ hơn CLAUDE.md; hook là đứa canh cửa bắt "phải làm", skill là người dạy "làm thế nào"; subagent là *người dùng* kiến thức, skill là bản thân kiến thức; skill còn chứa *cách dùng* MCP (schema, format) — hai thứ đi cùng nhau như chìa khóa với ổ khóa.
+
+> **Tóm gọn 1 câu:** Skill là cách làm được đóng gói thành 1 file, tự kích hoạt theo ngữ cảnh, gần như không tốn phí khởi động.
 
 ---
 
 ## 2. Giải phẫu SKILL.md
+
+Mục này mổ xẻ một SKILL.md thật, để bạn biết từng dòng frontmatter "đóng vai" gì. Hiểu được cái khung, bạn viết skill như điền vào form.
 
 ```markdown
 ---
@@ -87,16 +83,18 @@ Nhận `$ARGUMENTS` (vd `/deploy staging` → `$0` = `staging`).
 
 Biến dùng được: `${CLAUDE_SKILL_DIR}` (folder skill), `${CLAUDE_PROJECT_DIR}` (repo root). Args: `$0`/`$1` positional hoặc `$ARGUMENTS[0]` — **breaking từ v2.1.19** thay `$ARGUMENTS.0` cũ (skill cũ phải sửa + test lại).
 
-Field quan trọng nhất là **`description`**: tổng mô tả mọi skill chiếm ~1% context — giữ mỗi description 1-2 câu mở đầu bằng "Dùng khi...", chi tiết dồn vào phần thân. Ma trận ai được gọi:
+Field quan trọng nhất là **`description`**: nó là "tên trên cửa phòng" — Claude đọc tên để quyết định có bước vào hay không. Tổng mô tả mọi skill chiếm ~1% context, nên giữ mỗi description 1-2 câu mở đầu bằng "Dùng khi...", chi tiết dồn vào phần thân. Ma trận ai được gọi:
 
 |  | `user-invocable: true` (mặc định) | `user-invocable: false` |
 |---|---|---|
 | `disable-model-invocation: false` (mặc định) | Cả 2 được gọi (tự kích hoạt + gọi tay) | Chỉ Claude gọi (skill nội bộ, user gõ `/ten` không thấy) |
 | `disable-model-invocation: true` | Chỉ user gọi tay `/ten` (ship/deploy) | Không ai gọi được (khóa hẳn) |
 
+> **Cách đọc bảng này:** chọn 1 hàng theo `disable-model-invocation`, 1 cột theo `user-invocable`; ô giao nhau cho biết ai (user, Claude, hoặc cả hai) có thể gọi skill đó.
+
 Settings-level: `skillOverrides` (tắt tự kích hoạt skill của người khác), `disableBundledSkills` (tắt skills đi kèm theo máy).
 
-Cấu trúc folder chuẩn:
+Cấu trúc folder chuẩn — SKILL.md là "mục lục", còn lại là các "trang" nó trỏ tới:
 
 ```text
 .claude/skills/review-pr/
@@ -105,6 +103,8 @@ Cấu trúc folder chuẩn:
   examples/output.md        # output mẫu (Claude bắt chước format)
   scripts/*.sh  templates/*.md
 ```
+
+> **Tóm gọn 1 câu:** SKILL.md gồm frontmatter (điều khiển ai gọi, khi nào) + steps ngắn gọn, và `description` là field quyết định skill có được "gọi tên" hay không.
 
 ---
 
@@ -134,6 +134,8 @@ Nhận `$ARGUMENTS` (PR number, branch, hoặc trống = diff hiện tại).
 ```
 
 `references/checklist.md`: Bug (null paths, race, unhandled rejection, migration thiếu rollback) · Security (injection, XSS, authZ, secret hardcode, SSRF) · Test (edge cases, mock ở boundary) · Perf (N+1, đọc file trong loop). `examples/output.md`: mỗi finding 1 dòng + kết quả test + verdict Approve/Request changes.
+
+> **Tóm gọn 1 câu:** Mẫu review-pr: tự kích hoạt khi nghe "review", chỉ đọc không sửa, xuất tối đa 10 findings xếp theo mức nghiêm trọng.
 
 ### 3.2. Mẫu 2 — `add-table` (quy trình migrate DB)
 
@@ -184,16 +186,22 @@ allowed-tools: Read, Bash
 
 ### 4.1. Chèn kết quả lệnh thật vào prompt
 
-Dòng `` !`command` `` — Claude chạy shell trước, thay output thật vào prompt:
+Mục này dạy mẹo "nạp dữ liệu sống" vào skill: kết quả lệnh shell được thay thẳng vào prompt.
+
+Dòng `` !`command` `` — Claude chạy shell trước, thay output thật vào prompt, như dán ảnh chụp màn hình vào đề bài trước khi giao việc:
 
 ```markdown
 Branch hiện tại: !`git branch --show-current`
 Diff stat: !`git diff --stat main...HEAD`
 ```
 
-Dùng khi thông tin đổi mỗi lần gọi (branch, diff, migrations). Không dùng khi command chậm (>2s) hoặc chứa secrets (output inject vào context, log được).
+Dùng khi thông tin đổi mỗi lần gọi (branch, diff, migrations). Không dùng khi command chậm (>2s) hoặc chứa secrets — output được inject vào context và có thể hiện trong log.
+
+> **Tóm gọn 1 câu:** Dòng `` !`command` `` biến output lệnh thật thành một phần prompt — tiện cho dữ liệu hay đổi, nguy hiểm nếu lệnh chậm hoặc dính secrets.
 
 ### 4.2. Fork skill (`context: fork`)
+
+Mục này dạy cách cho skill "phòng riêng": chạy trong worker cô lập, không dính lịch sử chat chính. Hữu ích khi công việc ồn ào nhưng kết quả chỉ cần vài dòng.
 
 Từ v2.1.218 fork skill chạy **background mặc định** (không block turn). Muốn chờ kết quả trong turn: `background: false`. Kill/check: `/tasks` + `Ctrl+X Ctrl+K ×2`.
 
@@ -214,31 +222,30 @@ model: sonnet
 | Research ồn (đọc 50 files, trả 10 dòng) | Task cần full history (sửa tiếp việc đang làm) |
 | Cô lập thất bại (research sai không làm bẩn main) | Task 1-2 bước (chi phí fork không đáng) |
 
+> **Cách đọc bảng này:** cột trái là các tình huống nên mở "phòng riêng" cho skill; cột phải là khi nào chi phí fork không đáng.
+
+> **Tóm gọn 1 câu:** Fork skill = giao việc cho một worker trong phòng riêng, phù hợp research ồn ào, không hợp task ngắn cần full ngữ cảnh.
+
 ### 4.3. Quyền, tìm skill trong monorepo, ngân sách mô tả
 
-- `allowed-tools` chỉ nới trong lượt gọi; baseline vẫn theo permission settings (bài 10). Muốn chặn thật → hook + deny rules.
+- `allowed-tools` chỉ nới quyền trong lượt gọi skill; baseline vẫn theo permission settings (bài 10). Muốn chặn thật → hook + deny rules.
 - Plugin skill có `hooks` frontmatter **bị bỏ qua**; plugin subagents không hỗ trợ `hooks`/`mcpServers`/`permissionMode` (copy ra `.claude/agents/` nếu cần).
 - Tìm skill lồng trong monorepo: `.claude/skills/` ở repo root + các thư mục cha tới repo root đều được quét; nằm sâu chỉ nạp khi task chạm `paths`.
-- Script máy làm tốt hơn người (smoke test, migrate dry-run) đặt trong `scripts/` + trỏ từ SKILL.md.
+- Script máy làm tốt hơn người (smoke test, migrate dry-run) đặt trong `scripts/` + trỏ từ SKILL.md — giao việc nhàm cho máy, người chỉ đọc kết quả.
+
+> **Tóm gọn 1 câu:** `allowed-tools` chỉ nới tạm thời trong lượt gọi, skill nằm sâu trong monorepo chỉ nạp khi chạm `paths`, và script cứng nên nằm trong `scripts/`.
 
 ---
 
 ## 5. Tạo skill từ 0 (5 bước) + bundled skills
 
+Mục này là công thức từng bước để tự tay viết skill đầu tiên, kèm danh sách skill có sẵn dùng ngay không cần viết.
+
 **5 bước ~40 phút:**
 
 1. **Đặt tên + description (5'):** tên = động từ + đối tượng (`deploy`, `review-pr`); description mở đầu bằng "Dùng khi...".
 
-```bash
-mkdir -p .claude/skills/my-skill
-cat > .claude/skills/my-skill/SKILL.md <<'EOF'
----
-name: my-skill
-description: Làm X cho Y. Dùng khi user nói <từ khóa 1>, <từ khóa 2>.
----
-# My Skill
-EOF
-```
+> 📄 **Code ví dụ:** [`examples/02-5-tao-skill-tu-0-5-buoc-bundled.sh`](examples/02-5-tao-skill-tu-0-5-buoc-bundled.sh)
 
 2. **Viết steps checklist (10'):** mỗi step có lệnh/check cụ thể + output mẫu. Dùng 3 mẫu mục 3 làm khung.
 3. **Chọn tự kích hoạt hay chỉ gọi tay (2'):** mặc định tự kích hoạt; chỉ thêm `disable-model-invocation: true` cho deploy/ship.
@@ -248,6 +255,8 @@ EOF
 Mẫu team hay viết: `/issues` (biến ý tưởng thành issue chuẩn), `/plan`, `/review`, `/ship`. Mẫu copy-paste: `templates/.claude/skills/deploy/SKILL.md` trong repo này.
 
 **Bundled skills dùng ngay, khỏi viết:** `/doctor`, `/code-review` + `/ultrareview`, `/batch`, `/debug`, `/loop`, `/verify`, `/simplify`, `/insights`, `/claude-api [migrate|managed-agents-onboard]`. Xem/gọi bằng menu `/skills`; tắt cái ế bằng `disableBundledSkills` (settings) hoặc dọn bằng `/skill-doctor` (≥2.1.252).
+
+> **Tóm gọn 1 câu:** Tạo skill = 5 bước (tên, steps, chế độ gọi, example/script, test 3 lần); trước khi tự viết, cứ nhìn vào bundled skills — nhiều khi đã có sẵn.
 
 ---
 
@@ -263,6 +272,8 @@ Mẫu team hay viết: `/issues` (biến ý tưởng thành issue chuẩn), `/pl
 | "Skill thay MCP/hook được" | Skill dạy *cách làm*, MCP cho *tay vươn ra*, hook là *luật*. Thiếu hook là rule vẫn bị quên |
 | "Description viết dài cho chi tiết" | Tổng mô tả ~1% context — 1-2 câu "Dùng khi...", chi tiết vào phần thân |
 
+> **Cách đọc bảng này:** cột trái là câu bạn từng nghe nói về skill (và dễ tin sai); cột phải là sự thật đính chính.
+
 ### Bẫy thường gặp + fix
 
 | Bẫy | Fix |
@@ -275,12 +286,16 @@ Mẫu team hay viết: `/issues` (biến ý tưởng thành issue chuẩn), `/pl
 | Nhét secrets vào skill | Secrets qua env (bài 08), không vào SKILL.md |
 | Skill cũ dùng `$ARGUMENTS.0` | Sửa thành `$0`/`$ARGUMENTS[0]` (v2.1.19+) |
 
+> **Cách đọc bảng này:** cột trái là triệu chứng/bẫy dễ dính; cột phải là cách sửa ngay, áp dụng được từ trên xuống.
+
 ### Checklist skill khỏe
 
 - [ ] Tên = động từ + đối tượng; description mở đầu bằng khi nào dùng (1-2 câu).
 - [ ] Steps <100 dòng; có 1 example output; file hỗ trợ được trỏ từ SKILL.md.
 - [ ] Test 3 lần với inputs khác nhau; `disable-model-invocation` đúng ý; không secrets.
 - [ ] Skill "ế" → dọn bằng `/skill-doctor` (≥2.1.252).
+
+> **Tóm gọn 1 câu:** Skill khỏe = tên rõ, steps ngắn, có example, test 3 lần, không secrets.
 
 ### Bài tập
 
@@ -289,8 +304,12 @@ Mẫu team hay viết: `/issues` (biến ý tưởng thành issue chuẩn), `/pl
 3. (20') Viết skill `ship` chỉ gọi tay; chạy `/ship` lên branch test — gate nào fail đầu tiên, có dừng đúng không?
 4. (15', nâng cao) Thêm `` !`git branch --show-current` `` vào 1 skill có sẵn; thêm `context: fork` vào 1 skill research, so sánh context luồng chính trước/sau.
 
+> **Tóm gọn 1 câu:** 4 bài tập đưa bạn từ cài mẫu có sẵn đến tự viết skill và so sánh trước/sau khi dùng fork.
+
 ### Link chéo
 
 - **[00 — Tổng quan](./00-tong-quan-claude-code.md)**: skill vs CLAUDE.md/hook/subagent/MCP; **[03 — CLAUDE.md](./03-claude-md-memory-rules.md)**: tách checklist khỏi CLAUDE.md, AGENTS.md chéo tool.
 - **[04 — Slash commands](./04-slash-commands-toan-tap.md)**: custom commands đã gộp vào skills; **[06 — Subagents](./06-subagents-agent-teams-parallel.md)**: fork skill, subagent nạp sẵn skill.
 - **[07 — Hooks](./07-hooks-tu-dong-hoa.md)**: skill = lời khuyên, hook = luật; **[08 — MCP](./08-mcp-ket-noi-cong-cu-ngoai.md)**: cặp skill+MCP; **[09 — Plugins](./09-plugins-marketplaces.md)**: đóng gói skills share team; **[10 — Permissions](./10-permissions-modes-availability.md)**: `allowed-tools` vs baseline; **[12 — SDK/CI](./12-agent-sdk-ci-cd-automation.md)**: routines + skill cho jobs định kỳ.
+
+> **Tóm gọn 1 câu:** Skill đứng giữa nhiều mảnh ghép — đọc các bài liên quan để biết khi nào dùng skill, khi nào dùng CLAUDE.md, hook, MCP hay plugin.

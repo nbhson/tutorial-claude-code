@@ -24,7 +24,9 @@
 
 ## 1. Vì sao phải chuẩn hóa?
 
-- Người A `CLAUDE.md` 50 dòng, người B 600 dòng → cùng prompt, output khác nhau, mỗi người khăng khăng "Claude của mình đúng".
+Mục này cho thấy chuyện gì xảy ra khi mỗi người một kiểu config — hiểu hậu quả trước, quy tắc phía sau mới có trọng lượng.
+
+- Người A `CLAUDE.md` 50 dòng, người B 600 dòng → cùng prompt, output khác nhau, mỗi người khăng khăng "Claude của mình đúng". Giống mỗi người một công thức nấu phở riêng: cùng tên món nhưng ai ăn ai biết, và không ai sửa được công thức của ai.
 - Hooks branch-protect chỉ máy A có → máy B push thẳng main, sập prod. Skills `/deploy` 3 bản khác nhau → deploy 3 kiểu, rollback không ai biết.
 
 ```text
@@ -33,9 +35,13 @@ Lớp 2 (phân phối): plugin (skills+hooks+agents+MCP) — cài 1 phát đồn
 Lớp 3 (tổ chức): cấu hình quản lý server + chính sách (policy) Team/Enterprise — khóa cái không được đổi.
 ```
 
+> **Tóm gọn 1 câu:** Không chuẩn hóa là mỗi người một bếp — cùng gọi một món mà mỗi nơi ra một vị, và lỗi của máy này máy khác không biết đường sửa.
+
 ---
 
 ## 2. Cái gì commit, cái gì không
+
+Mục này vạch ranh giới "của chung / của riêng": cái nào lên git cho cả team, cái nào ở lại máy bạn.
 
 | Commit (`settings.json`, `.claude/`, `.mcp.json`, `CLAUDE.md`) | Không commit (`settings.local.json`, `~/.claude/`, secrets) |
 |---|---|
@@ -44,33 +50,23 @@ Lớp 3 (tổ chức): cấu hình quản lý server + chính sách (policy) Tea
 | MCP servers project-scope (URL không secret) | Tokens/headers bí mật, webhook URL có secret |
 | `CLAUDE.md` gọn <200 dòng + `@import` docs | Ghi chép cá nhân, plan nháp, sổ chi phí `.claude/ledger/` (gitignore) |
 
+> **Cách đọc bảng này:** cột trái là thứ đáng để chung (ai vào repo cũng cần), cột phải là thứ đáng ở riêng (đổi trên máy bạn không ảnh hưởng ai) — một item phân vân thuộc cột nào thì hỏi "người mới vào team có cần nó không".
+
 > Team dùng chung Cursor/Codex thì để nội quy chung ở `AGENTS.md` (commit), `CLAUDE.md` chỉ giữ notes riêng của Claude ([bài 03 — CLAUDE.md & AGENTS.md](../01-huong-dan-su-dung/03-claude-md-memory-rules.md)).
 
 **Quy tắc branch cho config:** config chuẩn team đổi → PR riêng, 1 reviewer, ghi rõ version Claude đã test. Không sửa `settings.json` trực tiếp trên main khi đang hotfix. Secrets xoay → revoke + chuyển env, không commit "fix token" lên git.
+
+> **Tóm gọn 1 câu:** Ranh giới của chung / của riêng xét bằng một câu hỏi: "người mới vào team có cần nó không" — cần thì commit, không thì để local, còn bí mật thì nhất định không lên git.
 
 ---
 
 ## 3. Ví dụ: settings + CLAUDE.md + MCP chuẩn team
 
+Mục này là "bộ đồ mẫu" của team: 3 file chuẩn (settings, CLAUDE.md, MCP) copy về sửa tên project là dùng — xem mục 2 để biết vì sao cái nào được commit.
+
 ### Ví dụ 1 — `settings.json` team (copy-paste khung)
 
-```json
-{
-  "model": "sonnet",
-  "effort": "medium",
-  "hooks": {
-    "PostToolUse": [
-      { "matcher": "Edit|Write", "hooks": [{ "type": "command", "command": "${CLAUDE_PROJECT_DIR}/hooks/lint-on-write.sh" }] }
-    ],
-    "PreToolUse": [
-      { "matcher": "Bash", "hooks": [{ "type": "command", "command": "${CLAUDE_PROJECT_DIR}/hooks/branch-protect.sh" }] }
-    ],
-    "Stop": [
-      { "matcher": "", "hooks": [{ "type": "command", "command": "${CLAUDE_PROJECT_DIR}/hooks/cost-cap.sh" }] }
-    ]
-  }
-}
-```
+> 📄 **Code ví dụ:** [`examples/01-vi-du-1-settings-json-team-copy-paste.json`](examples/01-vi-du-1-settings-json-team-copy-paste.json)
 
 ### Ví dụ 2 — `CLAUDE.md` team (khung <100 dòng)
 
@@ -94,32 +90,19 @@ Lớp 3 (tổ chức): cấu hình quản lý server + chính sách (policy) Tea
 
 ### Ví dụ 3 — `.mcp.json` project-scope (không secret)
 
-```json
-{
-  "mcpServers": {
-    "repo-docs": { "url": "https://docs.internal/mcp", "transport": "http" },
-    "ci": { "url": "https://ci.internal/mcp", "transport": "http" }
-  }
-}
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-3-mcp-json-project-scope-khong.json`](examples/02-vi-du-3-mcp-json-project-scope-khong.json)
 
-```bash
-# Secrets qua env, không commit:
-export CI_MCP_TOKEN="..."       # mỗi người tự export
-export SLACK_WEBHOOK_URL="..."  # cost-cap hook đọc env này
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-3-mcp-json-project-scope-khong.sh`](examples/03-vi-du-3-mcp-json-project-scope-khong.sh)
 
 ---
 
 ## 4. Gói phân phối: plugin hay hơn copy-paste dotfiles
 
+Mục này nói về cách "giao hàng" bộ chuẩn team: copy-paste từng file là chuyển đồ đạc bằng xích lô, đóng plugin là đóng thùng chuyển nhà — cài 1 phát là tới nơi.
+
 Bộ setup chuẩn (skills + hooks + agents + MCP) dùng ≥2 repo → đóng **plugin** (trình quản lý `/plugin`). Đồng nghiệp cài 1 phát là đồng bộ.
 
-```bash
-/plugin
-# → Browse hiện trước các components (skills/hooks/agents/MCP) để soát rồi mới cài
-# → cài plugin team (vd team-claude-standard), mọi repo hưởng cùng bộ
-```
+> 📄 **Code ví dụ:** [`examples/04-4-goi-phan-phoi-plugin-hay-hon-copy.sh`](examples/04-4-goi-phan-phoi-plugin-hay-hon-copy.sh)
 
 ```text
 team-claude-standard/
@@ -133,25 +116,23 @@ Quy trình phát hành: PR vào repo plugin (kèm bằng chứng test 3 ca lint,
 
 Tổ chức lớn: managed settings + policy Team/Enterprise — khóa `bypass`, khóa push main, pin model cho CI.
 
+> **Tóm gọn 1 câu:** Plugin là chiếc thùng chuẩn của team — cài 1 lần đồng bộ mọi repo, update 1 lần cả team cùng lên version.
+
 ---
 
 ## 5. Quy trình PR với Claude (đề xuất)
 
-```bash
-# 1. Plan (Session A): /plan → duyệt plan.md, commit plan
-# 2. Implement (Session B fresh, từng phase): "Đọc plan.md, chỉ làm Phase 1, verify rồi dừng"
-# 3. Tự đọc diff trước khi nhờ review: /diff; git diff --stat
-#    → tự bắt lỗi hiển nhiên (debug log quên xóa, file lọt ngoài scope)
-# 4. Reviewer fresh: prompt reviewer ở Tips 04 (SEVERITY + verdict). Fix HIGH.
-# 5. Verify chạy thật (nếu user-visible): /verify
-# 6. Ship thành PR: /ship
-# 7. CI: review job hẹp
-claude -p "Review diff trong PR này, scope src/payments/**. Finding = bug/security/test-gap. Verdict PASS/NEEDS-FIX." --permission-mode dontAsk
-```
+Mục này là kịch bản PR chuẩn từ plan tới review — copy script trong file ví dụ là chạy được ngay.
+
+> 📄 **Code ví dụ:** [`examples/05-5-quy-trinh-pr-voi-claude-e-xuat.sh`](examples/05-5-quy-trinh-pr-voi-claude-e-xuat.sh)
+
+> **Tóm gọn 1 câu:** Quy trình PR chuẩn là đường ống 1 chiều: plan được duyệt mới implement, agent review trước người thật — không có bước nào được "đi tắt".
 
 ---
 
 ## 6. Walkthrough: từ feature tới merge trong team 3 người
+
+Mục này diễn lại toàn bộ quy trình trên thành 1 ngày-with-3-người cụ thể — đọc để thấy các vai và gate ghép với nhau ra sao trong thực tế.
 
 **Nhân sự:** An (senior, plan + review), Bình (dev, implement), Chi (QA, verify). Feature refund 3 phases.
 
@@ -161,23 +142,28 @@ claude -p "Review diff trong PR này, scope src/payments/**. Finding = bug/secur
 
 Tổng: 0 cuộc họp trực tiếp, ~5 lượt góp ý, không lần nào phải `/rewind` vì gate mỗi phase bắt sớm.
 
+> **Tóm gọn 1 câu:** Team 3 người trôi được feature 3 ngày mà không họp, nhờ mỗi vai có công cụ riêng và mỗi phase có gate chặn sớm — chuẩn hóa chính là thay cho cuộc họp.
+
 ---
 
 ## 7. Review code theo chuẩn của team
 
+Mục này quy định lớp review bắt buộc trước khi người thật vào: ai review, dùng công cụ gì cho PR cỡ nào, và chỉnh "độ khó tính" của reviewer ra sao.
+
 - **Mọi PR nontrivial đều qua reviewer fresh-context trước khi người thật vào.** Người viết không tự duyệt bài của mình ([Tips 04](./04-verification-done-that.md), [Tips 05](./05-parallel-agents.md)).
 - **PR lớn/rủi ro cao → `/ultrareview`** (fleet bug-hunting agents trên cloud — **public preview từ w17/2026**; bản CI: `claude ultrareview`, w18): 3+ agent soi correctness/security/hiệu năng, lead tổng hợp. Chậm, đắt — chỉ dùng cho PR lớn.
 
-```bash
-/code-review      # review chuẩn 1 agent, chạy background subagent (w30/2026)
-/ultrareview      # multi-agent nặng (public preview) — chỉ PR lớn/rủi ro cao
-```
+> 📄 **Code ví dụ:** [`examples/06-7-review-code-theo-chuan-cua-team.sh`](examples/06-7-review-code-theo-chuan-cua-team.sh)
 
-Kết quả review ghi thẳng vào checklist PR mục 8 (HIGH = 0 hoặc đã fix + re-review). Chỉnh chuẩn (calibration): cho reviewer chấm 3 diff lịch sử repo để biết mức độ khó tính có ổn không (false-positive ~15% chấp nhận được cho review tự làm; người thật lọc nốt).
+Kết quả review ghi thẳng vào checklist PR mục 8 (HIGH = 0 hoặc đã fix + re-review). Chỉnh chuẩn (calibration): cho reviewer chấm 3 diff lịch sử repo để biết mức độ khó tính có ổn không (false-positive ~15% chấp nhận được cho review tự làm; người thật lọc nốt). Calibrate giống chỉnh máy đo: không chỉnh thì mỗi lần đo ra một số khác.
+
+> **Tóm gọn 1 câu:** Review chuẩn team = reviewer fresh đi trước, người thật chốt sau, và reviewer được "chỉnh máy" bằng 3 diff chuẩn để khỏi đoán mò gu của team.
 
 ---
 
 ## 8. Bảng vai trò + checklist PR
+
+Mục này chia vai trong team: ai làm gì với Claude, và ai không được làm gì — rồi chốt bằng checklist dán thẳng vào PR.
 
 | Vai | Làm gì với Claude | Không làm gì |
 |---|---|---|
@@ -187,11 +173,15 @@ Kết quả review ghi thẳng vào checklist PR mục 8 (HIGH = 0 hoặc đã f
 | QA/Verifier | `/verify` chạy thật, test chập chờn ghi `FLAKY` | Không đoán nguyên nhân flaky bừa |
 | Maintainer config | Duyệt plugin/settings/hooks PR, pin version | Không sửa config thẳng main |
 
+> **Cách đọc bảng này:** tìm dòng khớp vai của bạn, đọc hết cả cột "Không làm gì" — ranh giới cột phải quan trọng không kém cột giữa, vì phần lớn drift sinh ra từ việc ai đó làm việc của người khác.
+
 Checklist PR (copy vào mẫu PR): plan.md đã duyệt (nếu >1 file)? Test xanh (log đính kèm)? `git diff --stat` chỉ chạm scope cho phép? Reviewer fresh HIGH = 0 (hoặc đã fix + re-review)? User-visible → `/verify` pass (demo log)? Changelog + docs sync? Worktree đã remove sau merge?
 
 ---
 
 ## 9. Chống lệch chuẩn (drift) & đo lường
+
+Mục này trả lời câu "chuẩn hóa rồi làm sao giữ được chuẩn đó": quy tắc phải tự chạy định kỳ, và phải đo bằng số để biết hiệu quả thật chứ không cảm giác.
 
 **Chuẩn sống, không thành giấy:**
 
@@ -208,6 +198,10 @@ Checklist PR (copy vào mẫu PR): plan.md đã duyệt (nếu >1 file)? Test xa
 | Bill/người/tuần | `/usage` + bảng phân tích | Giảm 20% sau chuẩn hóa |
 | Thời gian review (mở PR → merge) | Mở PR → merge | <24h (nhờ reviewer agent trước) |
 
+> **Cách đọc bảng này:** cột "Chỉ số" là thứ cần theo dõi, cột "Đo bằng gì" cho biết lấy số ở đâu, cột "Mục tiêu" là mốc để đánh giá hằng quý — nếu không đo được chỉ số nào, nghĩa là chuẩn đó mới là giấy chứ chưa sống.
+
+> **Tóm gọn 1 câu:** Drift là bụi bặm bám dần chứ không ngập ập tới một lần — routine định kỳ là cái chổi, còn 4 chỉ số ở bảng trên là đồng hồ đo biết chổi có trượt việc không.
+
 ---
 
 ## 10. Bẫy thường gặp + cách sửa
@@ -221,6 +215,8 @@ Checklist PR (copy vào mẫu PR): plan.md đã duyệt (nếu >1 file)? Test xa
 | Plugin không version | Update gãy cả team | Version + changelog + `/doctor` sau update |
 | Pin model cứng nhắc | Task nhỏ cũng opus, bill vọt | Route theo việc ([Tips 08](./08-tiet-kiem-cost-token.md)), pin chỉ CI |
 | Không đo lường | Chuẩn hóa 3 tháng không biết hiệu quả | 4 chỉ số mục 9, review hàng tháng |
+
+> **Tóm gọn 1 câu:** Chuẩn hóa team = phân vai rõ ai làm gì/không làm gì, commit cái chung, plugin cái dùng lại, và đo bằng số chứ không bằng cảm giác.
 
 ---
 

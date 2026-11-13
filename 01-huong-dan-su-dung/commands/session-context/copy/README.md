@@ -11,9 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/copy`
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -21,12 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Model vừa đưa patch mutex 20 dòng, team đang hóng trong Slack
-/copy
-# → sang Slack paste: code + giải thích giữ nguyên format
-# → nhanh hơn chụp màn hình, đồng đội copy code được luôn
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -35,9 +28,7 @@ Kết quả mong đợi:
 
 Verify (30 giây):
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
 
@@ -47,6 +38,8 @@ Verify (30 giây):
 | Copy cả đoạn dài 500 dòng | Không giới hạn phạm vi | Dặn rõ: "chỉ copy 20 dòng patch + 3 bullets giải thích" rồi `/copy` |
 | Format vỡ khi paste vào Slack | Slack cần markdown/plain khác nhau | Paste dưới dạng code block hoặc dùng `/export` lấy file khi cần format chuẩn |
 
+> **Cách đọc bảng này:** cột **Triệu chứng** là chuyện xảy ra sau khi dán, **Vì sao** cho biết lỗi ở đường truyền clipboard hay ở định dạng đích, **Cách sửa** là cách né tương ứng.
+
 ## Tham khảo
 
 - [../export/README.md](../../session-context/export/README.md)
@@ -55,3 +48,5 @@ Verify (30 giây):
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
 > Mẹo 1 dòng: _nói rõ phạm vi trước khi `/copy` ("chỉ copy 20 dòng patch + 3 bullet") để không dính cả đoạn dài._
+
+> **Tóm gọn 1 câu:** `/copy` chụp nhanh một đoạn hội thoại vào clipboard — kiểu chia sẻ chớp mắt, không cần in cả cuốn như `/export`.

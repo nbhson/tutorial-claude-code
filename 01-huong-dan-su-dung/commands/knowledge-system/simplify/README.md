@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/simplify <file>          # simplify cả file
-/simplify <file>:<hàm>    # chỉ 1 hàm
-/simplify --aggressive    # gọn tay hơn
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,12 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-/simplify api/auth.py:login
-# Trước: if user: → if pw: → if not locked: → try: ... (sâu 5)
-# Sau: 4 early-return (không user → raise; sai pw → raise...) + thân chính 10 dòng phẳng
-# → test auth xanh → commit
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -37,13 +28,19 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:** chạy test suite (hoặc nhóm test của hàm) sau khi duyệt diff.
 
+> **Tóm gọn 1 câu:** `/simplify` như dọn tủ quần áo: gấp gọn, bỏ đồ hỏng, treo lại có nhãn — nhưng phải chìa khóa test để chứng minh trong tủ vẫn đủ bộ đồ cũ.
+
 ## Lỗi thường gặp
+
+Bảng dưới là ba kiểu "dọn dập dềnh" hay gặp nhất — đối chiếu với cột triệu chứng rồi sửa theo cột cuối.
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Simplify xong test đỏ | Đổi hành vi (bỏ nhánh cần thiết) | Hoàn tác, simplify từng chiêu nhỏ thay vì 1 lần lớn |
 | Model chỉ format, không gọn | Hàm đã gọn hoặc prompt chung quá | Chỉ hàm cụ thể + `--aggressive`; đo số trước (độ sâu/nhánh) |
 | Gọn xong khó đọc hơn (golf-code) | Model lạm dụng one-liner | Quy tắc: tên rõ > ngắn; từ chối bản lạm dụng comprehension 3 tầng |
+
+> **Cách đọc bảng này:** mỗi dòng là một phản ứng phụ của simplify; cột "Vì sao" cho biết model đã làm quá tay ở đâu, cột "Cách sửa" là cách lùi lại an toàn.
 
 ## Tham khảo
 

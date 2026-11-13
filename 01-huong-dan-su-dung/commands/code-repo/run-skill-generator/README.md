@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/run-skill-generator`
-`/run-skill-generator <tên>`
-`/run --record`
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,11 +19,7 @@
 
 **Prompt thật (paste vào Claude Code):**
 
-```bash
-/run-skill-generator web
-# → đoán lệnh start/port/check sống → chạy thử PASS → ghi .claude/skills/run-web/SKILL.md
-git add .claude/skills/run-web/ && git commit -m "chore: add run-web recipe"
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 **Kết quả mong đợi:**
 
@@ -36,17 +28,21 @@ git add .claude/skills/run-web/ && git commit -m "chore: add run-web recipe"
 
 **Verify (30 giây):**
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
+
+Mục này là "sổ bệnh án" của `/run-skill-generator`: từ đoán sai lệnh start tới ghi đè nhầm recipe, kèm cách xử lý.
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Generator đoán sai lệnh start | Monorepo nhiều `package.json` | Trả lời tay đúng lệnh + `workingDir`; ghi rõ trong SKILL.md |
 | Chạy thử PASS nhưng `/run` sau fail | Env đổi (hết hạn token test, DB seed bị xóa) | Recipe dùng seed/fixture cố định; smoke check báo rõ thiếu gì |
 | Ghi đè nhầm recipe đang dùng tốt | Chạy generator cùng tên mà không Diff | Luôn chọn Diff trước Yes; rollback `.claude/skills/run-<tên>/` |
+
+> **Cách đọc bảng này:** cột "Triệu chứng" mô tả hiện tượng, cột "Vì sao" chỉ gốc rễ (thường là env/monorepo), cột "Cách sửa" là bước làm cụ thể.
+
+> **Tóm gọn 1 câu:** `/run-skill-generator` là viết sổ tay nấu ăn cho chính repo: nấu được một lần thì ghi công thức lại, lần sau ai vào bếp cũng làm được.
 
 ## Tham khảo
 

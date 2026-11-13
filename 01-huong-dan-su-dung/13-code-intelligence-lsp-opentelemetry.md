@@ -19,7 +19,9 @@
 
 ## 1. Vì sao cần code intelligence + metrics?
 
-Claude đọc code bằng `Read/Grep/Glob` là đọc text — không hiểu symbol nào định nghĩa ở đâu, type nào sai ở dòng nào. Hậu quả: rename 1 hàm phải grep 20 chỗ, sửa type xong không biết còn đỏ ở đâu, subagent explore đọc 300 files vì không biết jump tới definition. LSP cho Claude đúng cái IDE có; OTel cho bạn đúng cái backend có — metrics/traces mỗi turn: hook nào chậm, skill nào ngốn context, MCP nào treo.
+Mục này trả lời câu "tại sao phải thêm 2 lớp công cụ nữa" trước khi vào cài đặt — đọc xong bạn biết mình đang thiếu gì.
+
+Claude đọc code bằng `Read/Grep/Glob` là đọc text — không hiểu symbol nào định nghĩa ở đâu, type nào sai ở dòng nào. Hậu quả: rename 1 hàm phải grep 20 chỗ, sửa type xong không biết còn đỏ ở đâu, subagent explore đọc 300 files vì không biết jump tới definition. LSP cho Claude đúng cái IDE có; OTel cho bạn đúng cái backend có — metrics/traces mỗi turn: hook nào chậm, skill nào ngốn context, MCP nào treo. Ví von: LSP là cho Claude đôi mắt sáng (nhìn thẳng vào định nghĩa thay vì lục lại cả kho), còn OTel là hộp đen của máy bay — có sự cố thì nghe lại bản ghi, không ngồi phán đoán.
 
 ```text
 Không LSP:  grep "login" → 200 kết quả → đọc 30 files → bill vọt
@@ -31,9 +33,13 @@ Có OTel:    hook test-gate p99 240s + skill deploy 45K tokens → biết chính
 
 > Quy tắc: **typed language mà chưa bật LSP là tự handicap. Session chậm mà chưa nhìn metrics là đoán mò.**
 
+> **Tóm gọn 1 câu:** LSP giúp Claude "nhìn thấy" code như IDE, OTel giúp bạn "nghe được" session đang làm gì — thiếu cả hai là grep mù cộng đoán mò.
+
 ---
 
 ## 2. LSP là gì, khi nào thắng grep?
+
+Mục này phân biệt 2 công cụ tìm kiếm: grep soi chữ, LSP soi cấu trúc. Đọc để biết task nào nên dùng cái nào — đừng bật LSP rồi vẫn grep như cũ.
 
 - **LSP**: protocol chuẩn, mọi editor dùng. Mỗi ngôn ngữ có 1 language server (`typescript-language-server`, `pyright`, `rust-analyzer`, `gopls`...). Server hiểu AST/types, trả về definition/references/diagnostics qua JSON-RPC.
 - **Code intelligence plugin trong Claude Code**: cầu nối LSP ↔ Claude. Khi bật, Claude có thêm tools kiểu `goToDefinition`, `findReferences`, `getDiagnostics` (tên tool tùy bản) thay vì chỉ grep text.
@@ -47,88 +53,43 @@ Có OTel:    hook test-gate p99 240s + skill deploy 45K tokens → biết chính
 | Rename an toàn | Sửa tay từng chỗ, sót | ✓ rename symbol (server lo) |
 | Repo dynamic (JS thuần, Python không types) | ✓ đủ | LSP yếu (không type info) — khỏi bật |
 
+> **Cách đọc bảng này:** quét cột "Nhu cầu" tìm đúng việc bạn đang làm, rồi so 2 cột Grep vs LSP — dấu ✓ là người thắng; dòng cuối là ngoại lệ quan trọng nhất (repo không types thì LSP không có đất diễn).
+
 ---
 
 ## 3. Cài LSP cho typed languages (copy-paste)
 
+Mục này là 2 bước cài đặt: cài language server cho ngôn ngữ của repo, rồi bật plugin cầu nối trong Claude Code. Làm đúng thứ tự thì chạy được ngay.
+
 ### 3.1. Cài server theo ngôn ngữ (máy dev cần có trước)
 
-```bash
-# TypeScript (node ≥18):
-npm i -g typescript typescript-language-server
-# Python (typed — cần pyright hoặc pylsp):
-npm i -g pyright        # hoặc: pip install python-lsp-server
-# Go:
-go install golang.org/x/tools/gopls@latest
-# Rust:
-rustup component add rust-analyzer
-```
+> 📄 **Code ví dụ:** [`examples/01-3-1-cai-server-theo-ngon-ngu-may.sh`](examples/01-3-1-cai-server-theo-ngon-ngu-may.sh)
 
-```bash
-# Mở repo và xác nhận server nhận project — file nào có thì server đó mới hiểu project:
-ls tsconfig.json pyrightconfig.json go.mod Cargo.toml 2>/dev/null
-# TypeScript: cần tsconfig.json ở root (npx tsc --init nếu chưa có)
-# Python: pyrightconfig.json hoặc pyproject.toml · Go: go.mod · Rust: Cargo.toml
-```
+> 📄 **Code ví dụ:** [`examples/02-3-1-cai-server-theo-ngon-ngu-may.sh`](examples/02-3-1-cai-server-theo-ngon-ngu-may.sh)
 
 ### 3.2. Bật plugin trong Claude Code
 
-```bash
-# Cách 1 — trong session (nhanh, thử trước):
-/plugin
-# → tìm mục code-intelligence / lsp / language-server → Enable → chọn servers
-# → không thấy mục này thì update Claude Code lên bản mới.
+> 📄 **Code ví dụ:** [`examples/03-3-2-bat-plugin-trong-claude-code.sh`](examples/03-3-2-bat-plugin-trong-claude-code.sh)
 
-# Kiểm tra trong session:
-/doctor
-# → mục code-intelligence: enabled/disabled + servers nào chạy
-```
+> 📄 **Code ví dụ:** [`examples/04-3-2-bat-plugin-trong-claude-code.json`](examples/04-3-2-bat-plugin-trong-claude-code.json)
 
-```json
-// Cách 2 — .claude/settings.json bật cho cả team (khuyến nghị):
-{
-  "codeIntelligence": {
-    "enabled": true,
-    "servers": ["typescript", "pyright"]
-  }
-}
-```
+> 📄 **Code ví dụ:** [`examples/05-3-2-bat-plugin-trong-claude-code.sh`](examples/05-3-2-bat-plugin-trong-claude-code.sh)
 
-```bash
-# Verify sau khi bật (làm 1 lần):
-# Hỏi: "jump to definition hàm login trong src/auth.ts"
-# → phải trả về 1 file:dòng chính xác, không phải 20 kết quả grep
-# Hỏi: "file này còn lỗi type nào?" → phải liệt kê diagnostics theo dòng
-# Trả 20 kết quả grep là LSP chưa nhận project (thiếu tsconfig.json).
-```
+> **Tóm gọn 1 câu:** Cài server cho đúng ngôn ngữ + bật plugin cầu nối — 2 bước xong là Claude có tool jump/refs/diagnostics thay grep.
 
 ---
 
 ## 4. Symbol navigation + live type errors trong workflow
 
+Mục này đưa LSP vào việc hằng ngày: explore code bằng nhảy định nghĩa, và sửa lỗi type tới đâu xanh tới đó — thay vì chạy `tsc` cả repo mỗi lần.
+
 ### 4.1. Symbol navigation: explore gọn 10x
 
-```bash
-# Prompt mẫu copy-paste (so với grep: 60 kết quả cả comment/log/test cũ → 8 refs thật):
-"find references của refreshToken (dùng LSP), chỉ liệt kê call sites thật trong src/, bỏ test snapshot và comment."
-
-# Rename an toàn — server rename đúng def + refs, không sót, không sửa nhầm chuỗi "login" trong log:
-"rename symbol loginWithSSO thành loginWithOIDC (dùng LSP rename), liệt kê files đổi, không chạm test snapshot."
-
-# Explore multi-file — explorer đi theo graph thật, không đọc 300 files:
-"Từ handler POST /login trong apps/api, jump qua domain + db layers (LSP definition), trả về ≤10 files sẽ sửa + 1 dòng/file vì sao."
-```
+> 📄 **Code ví dụ:** [`examples/06-4-1-symbol-navigation-explore-gon-10x.sh`](examples/06-4-1-symbol-navigation-explore-gon-10x.sh)
 
 ### 4.2. Live type errors: sửa tới đâu xanh tới đó
 
-```bash
-# Sau mỗi change, hỏi thay vì chạy full tsc:
-"get live type errors file apps/api/auth.ts (LSP diagnostics), chỉ lỗi mới do change vừa rồi."
-
-# Gate trong hook Stop (khung — xem Tips 06): gọi tsc --noEmit cho file đổi
-# (nhanh) thay vì full suite 4 phút mỗi turn-end:
-TEST_SCOPE=auth ./hooks/test-gate.sh
-```
+> 📄 **Code ví dụ:** [`examples/07-4-2-live-type-errors-sua-toi-au.sh`](examples/07-4-2-live-type-errors-sua-toi-au.sh)
 
 ```text
 Workflow chuẩn typed task (5 bước):
@@ -137,56 +98,33 @@ Workflow chuẩn typed task (5 bước):
 Full tsc + full suite để CI, không chạy mỗi turn local.
 ```
 
+> **Tóm gọn 1 câu:** Đi theo đúng 5 bước (jump → plan → edit → diagnostics → focused test) là bạn sửa code như có IDE kèm theo, không đốt context chạy full suite mỗi turn.
+
 ---
 
 ## 5. OpenTelemetry: bật thế nào, endpoint ở đâu
+
+Mục này hướng dẫn bật "hộp đen ghi chép" cho session: từ mức nhẹ nhất (in ra console) tới mức đầy đủ (collector cả team). Bật trước, đọc metrics sau.
 
 Claude Code phát ra spans/metrics OTel mỗi turn: thời gian tool chạy, tokens per skill/MCP/hook, latency per hook, số subagents spawn. Dùng để tìm hooks chậm (p99 cao), skills ngốn context (tokens lớn), MCP treo (span timeout), fan-out sai (spawn lồng). Cần 1 collector/backend nhận OTLP (local stdout, Jaeger, Grafana, Honeycomb...) — không có backend thì export ra stdout/file vẫn debug được.
 
 ### 5.1. Bật OTel (3 mức từ nhẹ tới full)
 
-```bash
-# Mức 1 — OTLP về collector local/team (xem 5.2):
-export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4318"
-export OTEL_METRICS_EXPORTER="otlp" OTEL_TRACES_EXPORTER="otlp"
-
-# Mức 2 — in ra console/file khi chưa có collector (grep được ngay — mục 6):
-export OTEL_TRACES_EXPORTER="console" OTEL_METRICS_EXPORTER="console"
-
-# Mức 3 — team collector: endpoint team cung cấp, secrets qua env (không hardcode):
-export OTEL_EXPORTER_OTLP_ENDPOINT="https://otel.team.internal:4318"
-export OTEL_EXPORTER_OTLP_HEADERS="authorization=Bearer ${OTEL_TOKEN}"
-```
+> 📄 **Code ví dụ:** [`examples/08-5-1-bat-otel-3-muc-tu-nhe.sh`](examples/08-5-1-bat-otel-3-muc-tu-nhe.sh)
 
 ### 5.2. Collector local (docker) + verify
 
-```yaml
-# otel-collector-config.yaml — khung tối thiểu:
-receivers:
-  otlp:
-    protocols:
-      grpc: { endpoint: "0.0.0.0:4317" }
-      http: { endpoint: "0.0.0.0:4318" }
-processors:
-  batch: {}
-exporters:
-  debug: { verbosity: detailed }   # in ra log để kiểm tra trước
-  # jaeger: {}  # bật khi team có Jaeger/Grafana
-service:
-  pipelines:
-    traces: { receivers: [otlp], processors: [batch], exporters: [debug] }
-    metrics: { receivers: [otlp], processors: [batch], exporters: [debug] }
-```
+> 📄 **Code ví dụ:** [`examples/09-5-2-collector-local-docker-verify.yaml`](examples/09-5-2-collector-local-docker-verify.yaml)
 
-```bash
-docker run -p 4317:4317 -p 4318:4318 -v ./otel-collector-config.yaml:/etc/otel.yaml \
-  otel/opentelemetry-collector --config=/etc/otel.yaml
-# → mở Claude Code session, làm 1 task nhỏ, xem collector log có spans về không
-```
+> 📄 **Code ví dụ:** [`examples/10-5-2-collector-local-docker-verify.sh`](examples/10-5-2-collector-local-docker-verify.sh)
+
+> **Tóm gọn 1 câu:** Bật OTel 3 mức từ nhẹ tới full — không có backend thì console cũng đủ để bắt kẻ chậm, kẻ ngốn.
 
 ---
 
 ## 6. Metrics nào hữu ích + ví dụ query
+
+Mục này là bảng "đọc kết quả khám": mỗi metric trả lời một câu hỏi nghi vấn về session, kèm ngưỡng khi nào đáng lo. Đọc bảng trước, lấy query mẫu sau.
 
 | Metric/span | Câu hỏi | Ngưỡng cảnh báo |
 |---|---|---|
@@ -197,13 +135,11 @@ docker run -p 4317:4317 -p 4318:4318 -v ./otel-collector-config.yaml:/etc/otel.y
 | `turn.tokens_in/out` + `turn.duration` | Turn nào phình? | tokens vọt sau 1 tool → tool đó dump quá nhiều |
 | `diagnostics.count` (per file) | File nào đỏ mãn tính? | 1 file đỏ hoài → tách file, fix types gốc |
 
+> **Cách đọc bảng này:** cột "Câu hỏi" là nghi vấn bạn đang có (hook chậm? skill ngốn?), cột "Ngưỡng cảnh báo" là lúc nào mới đáng động tay — chưa chạm ngưỡng thì đừng tối ưu sớm.
+
 > Không phải mọi tín hiệu đều đi qua OTel: từ bản ≥2.1.295 terminal dùng Program Status Protocol (OSC 7501) để hiện đang làm / chờ bạn / xong — hữu ích để phân biệt session treo với session đang chạy trước khi kết luận cần OTel.
 
-```bash
-# Không có Grafana? Grep console exporter vẫn ra (mức 2):
-OTEL_TRACES_EXPORTER=console claude "làm task X" 2>&1 | grep -i "hook.*duration" | sort -k2 -n | tail -5
-OTEL_METRICS_EXPORTER=console claude "làm task X" 2>&1 | grep -i "skill.*tokens" | sort -k2 -n | tail -5
-```
+> 📄 **Code ví dụ:** [`examples/11-6-metrics-nao-huu-ich-vi-du-query.sh`](examples/11-6-metrics-nao-huu-ich-vi-du-query.sh)
 
 ```text
 # Có Grafana (team dashboard — 3 panels đủ):
@@ -212,47 +148,33 @@ OTEL_METRICS_EXPORTER=console claude "làm task X" 2>&1 | grep -i "skill.*tokens
 # Panel 3: subagent.spawn depth (heatmap) — có spawn lồng không?
 ```
 
+> **Tóm gọn 1 câu:** Chỉ theo dõi 6 metric với ngưỡng rõ ràng — metrics là kính hiển vi, không phải bộ sưu tập.
+
 ---
 
 ## 7. Ba ca thật: bắt lỗi bằng metrics rồi fix + verify
 
+Mục này là 3 câu chuyện có thật được metrics tố cáo và fix thành công — đọc để thấy quy trình "đo → fix → đo lại" chạy ra sao trong thực tế.
+
 ### 7.1. Ca A — hook test-gate chậm (4 phút → 20 giây)
 
-```bash
-# Triệu chứng: mọi turn-end đều "treo" vài phút
-# Metrics: hook test-gate p99 240s, các hook khác <2s → thủ phạm rõ
-# Fix: focused scope (env TEST_SCOPE), full suite để CI:
-TEST_SCOPE=auth ./hooks/test-gate.sh
-time TEST_SCOPE=auth ./hooks/test-gate.sh
-# → p99 240s → 20s. Verify: metrics turn sau hook <30s
-```
+> 📄 **Code ví dụ:** [`examples/12-7-1-ca-a-hook-test-gate-cham.sh`](examples/12-7-1-ca-a-hook-test-gate-cham.sh)
 
 ### 7.2. Ca B — skill deploy ngốn 45K mỗi turn
 
-```bash
-# Triệu chứng: /context 80% sau 3 turns dù task nhỏ
-# Metrics: skill.tokens_total: deploy 45K, các skill khác <3K → description quá rộng, fire nhầm
-# Fix: hẹp description (chỉ fire khi user nói "deploy staging/prod")
-#      + skillOverrides tắt auto-fire ở repo không deploy (xem Tips 07):
-/doctor
-# → "skill deploy fires 5/10 turns (unnecessary 4)" → hẹp xong còn 1/10
-# Verify: metrics skill deploy <5K/turn ở repo này
-```
+> 📄 **Code ví dụ:** [`examples/13-7-2-ca-b-skill-deploy-ngon-45k.sh`](examples/13-7-2-ca-b-skill-deploy-ngon-45k.sh)
 
 ### 7.3. Ca C — MCP github treo (span timeout hàng loạt)
 
-```bash
-# Triệu chứng: tool github gọi mãi không về
-# Metrics: mcp.tool_latency timeout 100% server github, các server khác ok
-# → token hết hạn, không phải model dở
-/mcp
-# → github-mcp đỏ → reconnect hoặc disable tạm, task tiếp tục bằng Read/Grep local
-# Verify: span latency về <2s hoặc server disabled, turn hết treo
-```
+> 📄 **Code ví dụ:** [`examples/14-7-3-ca-c-mcp-github-treo-span.sh`](examples/14-7-3-ca-c-mcp-github-treo-span.sh)
+
+> **Tóm gọn 1 câu:** Quy trình 3 ca đều như nhau: metrics chỉ tay vào thủ phạm → fix đúng chỗ → đo lại lấy bằng chứng trước/sau.
 
 ---
 
 ## 8. Pitfalls + fix
+
+Mục này là danh sách vấp đã gặp khi dùng LSP và OTel — đọc trước khi cài để đỡ mắc, hoặc tra khi có hiện tượng lạ.
 
 | Pitfall | Vì sao | Fix |
 |---|---|---|
@@ -264,6 +186,10 @@ time TEST_SCOPE=auth ./hooks/test-gate.sh
 | Tin diagnostics thay test | Types xanh mà runtime sai vẫn xảy ra | Diagnostics + focused test + `/verify` — 3 lớp, thiếu 1 là mù 1 mắt |
 | OTel token hardcode trong config | Lộ credential collector | Token qua env (`${OTEL_TOKEN}`), config file không chứa secret |
 | Hardcode xong quên rotate | Token cũ còn trong git history | Secret manager + rotate định kỳ |
+
+> **Cách đọc bảng này:** cột "Vì sao" giải thích gốc rễ, cột "Fix" là liều thuốc — 3 dòng đầu về LSP, 5 dòng sau về OTel; tìm đúng nhóm lỗi của mình trước khi đọc chéo.
+
+> **Tóm gọn 1 câu:** LSP chỉ cho repo có types, OTel chỉ hữu ích khi metrics được fix — thiếu config, thiếu hành động, hay tin diagnostics thay test đều là mù một mắt.
 
 ---
 

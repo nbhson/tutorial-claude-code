@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/setup-vertex
-/setup-vertex --check
-/status
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,16 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Login ADC trước:
-gcloud auth application-default login --project my-team-123
-# → browser OK
-
-/setup-vertex
-# → project my-team-123 [Yes] → region asia-southeast1 [Yes]
-# → auth ADC [Yes] → model sonnet [Yes]
-# → test "hello" → "Hello! (via Vertex, 1.4s)" ✓
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -41,18 +28,21 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-/status
-# → provider = Vertex AI, project + region đúng
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
+
+Mục này nói về các lỗi kết nối/quyền hay gặp khi cắm Claude Code vào Google Vertex AI — message lỗi báo rõ nguyên nhân, tra đúng dòng rồi làm theo cột "Cách sửa".
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | "API aiplatform.googleapis.com not enabled" | Project chưa bật Vertex AI API | Console bật API (link wizard đưa); đợi 2-3 phút propagation rồi chạy lại |
 | "Model not found in region" dù auth OK | Sai region (region đó chưa có Claude) | Đổi region có Claude (`asia-southeast1`/`us-central1`... check docs); đừng sửa auth |
 | "Permission denied aiplatform.endpoints.predict" | Thiếu role `aiplatform.user` | Xin role tối thiểu; test `gcloud ai models list --region=...` |
+
+> **Cách đọc bảng này:** đọc theo hàng — "Triệu chứng" là message lỗi bạn thấy, "Vì sao" chỉ tầng gây lỗi (API/region/quyền), "Cách sửa" là bước xử lý tương ứng.
+
+> **Tóm gọn 1 câu:** `/setup-vertex` cắm phích một lần là xong: project đúng, region có Claude, role đủ — sau đó mọi session chạy qua hạ tầng Google nhà mình.
 
 ## Tham khảo
 

@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/security-review`
-`/security-review --quick`
-`/security-review <path>`
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,9 +19,7 @@
 
 **Prompt thật (paste vào Claude Code):**
 
-```bash
-/security-review
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 **Kết quả mong đợi:**
 
@@ -34,17 +28,21 @@
 
 **Verify (30 giây):**
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
+
+Mục này là "sổ bệnh án" của `/security-review`: từ quét báo nhầm tới sót secret trong `.env`, kèm cách xử lý.
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Quét báo "no changes" dù vừa code | Branch chưa commit + không dùng `--quick`; mặc định so với base | Dùng `/security-review --quick` cho code chưa commit, hoặc commit rồi quét full |
 | Toàn LOW nhiễu, không có gì thật | Sensitivity cao | Về `medium`; chỉ fix khi chạm PII/tiền |
 | Bỏ sót secret trong `.env` | `.env` trong `.gitignore` nên không nằm trong diff | Tự `git grep -i "sk-\|api[_-]key" -- . ':!.git'`; thêm pre-commit hook quét secret |
+
+> **Cách đọc bảng này:** mỗi dòng một sự cố; đọc "Triệu chứng" để nhận diện, "Vì sao" để hiểu cơ chế quét, "Cách sửa" để xử lý ngay.
+
+> **Tóm gọn 1 câu:** `/security-review` là thang kiểm tra an ninh định kỳ trước khi mở cửa đón khách — rẻ hơn rất nhiều so với sự cố đã lên production.
 
 ## Tham khảo
 

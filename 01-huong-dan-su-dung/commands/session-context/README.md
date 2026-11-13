@@ -1,7 +1,7 @@
 # /session-context — nhóm 18 lệnh mở, dọn, lưu và chia nhánh phiên
 
 > **Loại:** index nhóm lệnh · **Nhóm:** Phiên làm việc & Context · **Mức rủi ro:** thấp (chỉ /rewind là mức "Có" — xóa hội thoại + revert file; còn lại chỉ đụng context phiên, riêng /restart nên chờ tool ghi file xong)
-> **Nói nôm na:** nhóm này là nơi bạn "quản lý bộ nhớ tạm" của phiên — dọn context, lưu/bàn giao, thử nhánh, quay checkpoint — mà không đụng code trên đĩa. /rewind là lệnh duy nhất "có" rủi ro thật (xóa + revert).
+> **Nói nôm na:** nhóm này là nơi bạn "quản lý bộ nhớ tạm" của phiên — dọn context, lưu/bàn giao, thử nhánh, quay checkpoint — mà không đụng code trên đĩa. Hãy hình dung cả nhóm như tủ đồ của phiên làm việc: ngăn dọn dẹp, ngăn lưu trữ, ngăn quay lui. /rewind là lệnh duy nhất "có" rủi ro thật (xóa + revert).
 
 ## Khi nào dùng
 
@@ -11,12 +11,7 @@
 
 ## Cách gọi
 
-```bash
-# go / trong session, go chu dau lenh de loc
-/compact
-/rewind
-/fork
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 Kiểm tra lệnh có ở máy bạn không: mở session, gõ `/` rồi gõ tiếp chữ đầu lệnh — version/provider khác nhau hiện lệnh khác nhau.
 
@@ -24,10 +19,7 @@ Kiểm tra lệnh có ở máy bạn không: mở session, gõ `/` rồi gõ ti�
 
 Bạn sai hướng sau vài bước, muốn quay về mốc an toàn:
 
-```bash
-/rewind
-# chon checkpoint can quay ve (co sau khi da co /diff hoac moc)
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 - Mong đợi: chọn checkpoint → hội thoại sau checkpoint bị xóa, file revert về trạng thái checkpoint.
 - Kiểm tra (≤30 giây): xem `git status`, file đã revert chưa; nếu chưa có checkpoint, /rewind sẽ báo lỗi (xem "Lỗi thường gặp").
@@ -40,6 +32,8 @@ Bạn sai hướng sau vài bước, muốn quay về mốc an toàn:
 | `/fork` hoặc `/branch` "thiếu" context — bản sao không đủ như gốc, việc phụ sai hướng | Fork không sao lưu đủ context, hoặc tắt fork mode (`CLAUDE_CODE_FORK_SUBAGENT=0`) | Kiểm tra fork mode đang bật (≥2.1.232), `/context` trước khi fork để chắc đủ context |
 | `/rewind` báo lỗi "không có checkpoint", không quay được | Phiên chưa tạo checkpoint nào (chưa chạy `/diff`, chưa có mốc) | Tạo checkpoint trước (chạy `/diff` sau mỗi bước), sau đó `/rewind` mới quay được |
 
+> **Cách đọc bảng này:** mỗi dòng là một tình huống "lệnh không chạy như mong đợi" — dò cột **Triệu chứng** theo thứ bạn gặp, **Vì sao** cho biết gốc rễ, **Cách sửa** là việc cần làm ngay.
+
 ## Bộ 3 phải nhớ
 
 > /clear trắng context khi đổi task | /compact nén khi cùng task | /rewind quay checkpoint khi sai hướng
@@ -48,7 +42,7 @@ Ngoài ra `/fork` (thử hướng B mà giữ nguyên bản gốc) cũng đáng 
 
 ## Các lệnh (18)
 
-Đọc bảng này khi cần tra nhanh: nhìn cột **Mức rủi ro** trước, chỉ `/rewind` là "Có", còn lại "Không" hoặc "Thấp". Bấm vào tên lệnh để mở bài chi tiết.
+> **Cách đọc bảng này:** cần tra nhanh thì nhìn cột **Mức rủi ro** trước — chỉ `/rewind` là "Có", còn lại "Không" hoặc "Thấp"; bấm tên lệnh ở cột đầu để mở bài chi tiết.
 
 | Lệnh | Mức rủi ro | Một dòng |
 |---|---|---|
@@ -81,11 +75,7 @@ Gõ / trong session để xem lệnh nào hiện ở máy bạn.
 
 ## Cách dùng nhóm này cho đúng
 
-```bash
-# 1. Hoc 3 lenh tru truoc (xem "Bo 3 phai nho" o tren)
-# 2. Con lai tra khi gap viec that, dung hoc het 1 luc
-# 3. Loi la trong nhom nay -> /status -> /doctor -> doc lenh tuong ung
-```
+> 📄 **Code ví dụ:** [`examples/03-cach-dung-nhom-nay-cho-ung.sh`](examples/03-cach-dung-nhom-nay-cho-ung.sh)
 
 ## Tham khảo
 
@@ -94,3 +84,5 @@ Gõ / trong session để xem lệnh nào hiện ở máy bạn.
 - [Nhóm model-mode](../model-mode/README.md) · [Nhóm knowledge-system](../knowledge-system/README.md)
 
 > Mẹo 1 dòng: _/rewind chỉ "cứu" được khi đã có checkpoint — luôn /diff sau mỗi bước để tạo mốc._
+
+> **Tóm gọn 1 câu:** Nhóm này là tủ đồ quản lý bộ nhớ phiên: dọn (`/clear`, `/compact`), lưu và rẽ nhánh (`/export`, `/fork`, `/rewind`), quản lý phiên (`/restart`, `/resume`) — chỉ `/rewind` là có rủi ro thật.

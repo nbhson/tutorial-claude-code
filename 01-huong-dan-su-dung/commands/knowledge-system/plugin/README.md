@@ -11,12 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/plugin              # mở trình quản lý plugin
-/plugin discover     # khám phá plugin
-/plugin browse       # duyệt marketplace
-# cài từ marketplace: claude plugin install --marketplace (cần ≥2.1.292)
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -24,13 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Cài cho cả team (ghi vào settings commit git)
-/plugin install commit-commands
-/plugin install pr-review-toolkit
-
-# -> ghi vào .claude/settings.json, commit để cả team dùng chung
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -39,13 +28,19 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:** `/plugin` Manage thấy enabled; gõ thử 1 lệnh của plugin để chắc đã nạp.
 
+> **Tóm gọn 1 câu:** `/plugin` là chợ ứng dụng của Claude Code: chọn trọn một bộ skill + agent + hook + MCP như mua combo thay vì lắp từng món — nhưng chỉ mua ở quán (nguồn) tin cậy và kiểm hàng bằng validate.
+
 ## Lỗi thường gặp
+
+Bảng dưới là mấy trục trặc quen mặt sau khi cài plugin — so triệu chứng của bạn với cột đầu rồi làm theo cột cuối.
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Gõ lệnh plugin báo not found | Plugin disabled hoặc session cũ chưa nạp | `/plugin` Manage kiểm tra enabled; `/clear` nạp lại |
 | `/review` hiện picker mỗi lần | 2 plugin cùng tên lệnh | Gọi đầy đủ `pluginA:review`; hoặc gỡ 1 plugin |
 | Install báo marketplace not found | Sai tên marketplace hoặc mạng chặn | Kiểm tra `marketplaces:` trong settings; thử `gh:owner/repo` trực tiếp |
+
+> **Cách đọc bảng này:** mỗi dòng là một sự cố sau cài đặt; cột "Vì sao" cho biết lỗi nằm ở plugin, session hay mạng, cột "Cách sửa" là lệnh bấm được ngay.
 
 ## Tham khảo
 

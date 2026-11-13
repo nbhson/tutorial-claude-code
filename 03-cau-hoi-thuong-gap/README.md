@@ -32,6 +32,9 @@ Section này trả lời câu: 10 file FAQ trong folder gộp lại giúp bạn 
 Folder này là "sổ tay chữa bệnh" của khóa: gặp lỗi thì mở ra tra, chưa biết chọn gì thì mở ra so.
 Mỗi file 6–8 câu hỏi, đầu file luôn có **1 sơ đồ mermaid + 1 bảng tổng hợp** để nhìn 30 giây
 là nhớ được bố cục. Đọc theo thứ tự 01 → 10 không cần thiết — vào thẳng file đúng việc.
+Hãy hình dung như bảng chỉ đường ở lối vào bệnh viện: soi đúng bảng là tới đúng phòng khám ngay, không phải đi dò từng tầng.
+
+> **Tóm gọn 1 câu:** 10 file FAQ là 10 phòng khám chuyên khoa — đừng lội từ phòng 01, hãy soi bảng (mermaid + bảng tổng hợp đầu mỗi file) rồi vào đúng phòng lỗi của bạn.
 
 ## Danh sách 10 file FAQ
 
@@ -49,6 +52,8 @@ Cần chọn nhanh file hợp với rắc rối của mình → dùng bảng nà
 | 08 | Lỗi thường gặp & troubleshooting | Lỗi lạ chưa rõ nguyên nhân — mở file này trước | [08-loi-thuong-gap-troubleshooting.md](./08-loi-thuong-gap-troubleshooting.md) |
 | 09 | Bảo mật, quyền, riêng tư | Lo lộ code/secret, kiểm soát quyền ngặt hơn | [09-bao-mat-quyen-rieng-tu.md](./09-bao-mat-quyen-rieng-tu.md) |
 | 10 | CI, SDK, routines, Web | Chạy headless trên CI, Agent SDK, bản Web | [10-ci-sdk-routines-web.md](./10-ci-sdk-routines-web.md) |
+
+> **Cách đọc bảng này:** cột "Mô tả 1 dòng" là chỗ bắt đầu — tìm dòng khớp rắc rối đang có rồi bấm link; mô tả viết ngắn nên nếu chưa rõ, mở sơ đồ "Gặp lỗi X → đọc bài nào?" ở dưới để chẩn đoán lại.
 
 ## Câu hỏi trong FAQ viết theo khung nào?
 
@@ -91,6 +96,8 @@ flowchart TD
 - Lỗi lạ chưa rõ nguyên nhân → **bài 08** trước, rồi gõ `/doctor`
 - Lo lộ code/secret, sợ bypass quyền → **bài 09**
 - Lỗi CI/CD, SDK, automation, bản Web → **bài 10**
+
+> **Tóm gọn 1 câu:** Sơ đồ trên là cột mốc chỉ đường: rắc rối nào cũng thuộc một nhánh — bám đúng nhánh là tới đúng file, còn lỗi "không rõ" thì nhánh mặc định là bài 08.
 
 > Thứ tự debug chuẩn mọi lỗi: `/status` → `claude doctor` → `/permissions` → `/mcp`+`/hooks` → `/debug` → `/bug`.
 

@@ -1,0 +1,29 @@
+name: claude-ci
+on: [pull_request]
+jobs:
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: git grep -E 'ghp_|sk-ant_|xoxb-|AKIA' -- .mcp.json .claude/ . && exit 1 || echo "secrets clean"
+  doctor-gate:
+    runs-on: ubuntu-latest
+    needs: secrets
+    steps:
+      - uses: actions/checkout@v4
+      - run: curl -fsSL https://claude.ai/install.sh | bash
+      - run: claude /doctor --json > doctor.json
+        env: { ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }} }
+      - run: python3 -c "import json,sys; d=json.load(open('doctor.json')); print(d['score']); sys.exit(1 if d['score']<70 else 0)"
+  review:
+    runs-on: ubuntu-latest
+    needs: doctor-gate
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - run: curl -fsSL https://claude.ai/install.sh | bash
+      - run: >
+          claude -p "Review diff, chỉ security + sai logic."
+          --output-format json --permission-mode dontAsk
+          --allowedTools "Read Grep Glob Bash(git diff:*)" > review.json
+        env: { ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }} }

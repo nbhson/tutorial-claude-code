@@ -1,0 +1,21 @@
+# .github/workflows/claude-review.yml (MẪU khởi đầu)
+name: claude-review
+on:
+  pull_request:
+    types: [opened, synchronize]
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # đủ history để scan secrets cũ
+      - uses: anthropics/claude-review-action@v1 # tên action minh họa
+        with:
+          claude-api-key: ${{ secrets.CLAUDE_API_KEY }}
+          comment-pr: true        # post findings lên PR
+          exclude: "fixtures/**,**.test.*" # trừ noise đã tuning
+          false-positive-filtering: true
+# Inputs chính: claude-api-key (key RIÊNG cho CI, không dùng key dev, rotate
+# định kỳ) · comment-pr (post findings lên PR) · exclude (noise đã tuning ở
+# tầng 0 — ghi lý do từng exclude) · false-positive-filtering (lọc kêu oan).

@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/init`
-`/init <gợi ý>`
-`CLAUDE_CODE_NEW_INIT=1`
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,10 +19,7 @@
 
 **Prompt thật (paste vào Claude Code):**
 
-```bash
-/init Tôi là người mới. Quét repo, sinh CLAUDE.md gồm: lệnh dev/build/test,
-cấu trúc thư mục, và 5 việc cấm làm (nếu phát hiện được từ config).
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 **Kết quả mong đợi:**
 
@@ -35,17 +28,21 @@ cấu trúc thư mục, và 5 việc cấm làm (nếu phát hiện được t�
 
 **Verify (30 giây):**
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
+
+Mục này nói về các tình huống `/init` sinh kết quả chưa đúng — tra đúng triệu chứng rồi làm theo cột "Cách sửa".
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/init` sinh lệnh test sai (`npm test` trong khi dùng pnpm) | Đoán sai package manager | Sửa tay CLAUDE.md 1 dòng; lần sau `/init` kèm gợi ý rõ package manager |
 | CLAUDE.md quá dài (>200 dòng) | Repo lớn + verbose | Bảo "rút gọn còn 60 dòng, chỉ giữ lệnh + cấm + cấu trúc" |
 | Init ở nhầm thư mục (sinh CLAUDE.md ở `~/`) | Quên `cd` vào repo | Xóa file nhầm, `cd` đúng repo, `/init` lại |
+
+> **Cách đọc bảng này:** đọc theo hàng — "Triệu chứng" là kết quả bạn nhận được, "Vì sao" chỉ nguyên nhân (đoán sai, repo lớn, sai thư mục), "Cách sửa" là việc cần làm.
+
+> **Tóm gọn 1 câu:** `/init` là lễ nhập trạch của repo: quét một lượt, lập nhà luật CLAUDE.md — nhưng phần "việc cấm" bạn vẫn phải duyệt tay chứ máy không biết tự cấm.
 
 ## Tham khảo
 

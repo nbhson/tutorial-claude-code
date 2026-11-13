@@ -18,6 +18,8 @@
 | Rules | Luật chỉ áp cho 1 thư mục, khai trong `.claude/rules/` + `paths` | `api/**` phải dùng ESM |
 | Hook | Lệnh shell chạy ngoài model theo event, bắt buộc thực thi | `PreToolUse` chặn push main |
 
+> **Cách đọc bảng này:** cột "Hiểu nôm na là gì" là hình dung đời thường của từng thuật ngữ — cứ quay lại bảng này mỗi khi quên một khái niệm.
+
 ## Mục lục
 
 - [Sơ đồ nhanh](#sơ-đồ-nhanh)
@@ -55,7 +57,11 @@ flowchart TD
 | Hooks | Khi event lửa | 0 model tokens | Luật bắt buộc (model hay miss) |
 | `/memory` | Theo user | Nhẹ | Sở thích cá nhân, không phải luật team |
 
+> **Cách đọc bảng này:** cột "Load khi nào" trả lời câu hỏi quan trọng nhất — thứ này có bị nạp vào context mỗi turn hay không; cột "Tốn bao nhiêu" cho biết giá phải trả.
+
 Quy tắc 1 dòng: **dữ kiện luôn nạp → CLAUDE.md, luật theo path → rules, quy trình → skills, gọi tay → commands, hay miss → hooks.**
+
+> **Tóm gọn 1 câu:** Chọn nơi đặt nội dung theo tần suất nạp — càng nạp thường xuyên càng đắt, càng chỉ đúng lúc cần càng rẻ.
 
 ---
 
@@ -72,6 +78,10 @@ Quy tắc 1 dòng: **dữ kiện luôn nạp → CLAUDE.md, luật theo path →
 ```
 
 File cũ để yên. Viết mới → skill; muốn gộp dần thì move nội dung sang `SKILL.md`, giữ nguyên tên → `/x` không đổi, user không phải học lại.
+
+Giải thích nôm na: command là "phiếu gọi món" chép tay — bạn phải tự trao phiếu cho bếp. Skill là "thực đơn có ảnh": đầu bếp (model) tự thấy món này hợp và tự làm mà không cần bạn trao phiếu.
+
+> **Tóm gọn 1 câu:** Command và skill cùng tạo ra `/x`, nhưng viết mới nên dùng skill vì có auto-trigger và kèm support files.
 
 **Đào sâu:** [Bài 05 — skills & custom commands](../01-huong-dan-su-dung/05-skills-custom-commands.md) · [FAQ 05 — hooks](05-hooks-faq.md)
 
@@ -90,6 +100,8 @@ Chọn vị trí:
 | Project | `.claude/skills/<tên>/` | Cả team (commit) | Chuẩn team (deploy, migrate, triage) |
 | Plugin | `<plugin>/skills/<tên>/` | Ai cài plugin | Phân phối rộng, gọi theo namespace `/plugin:skill` |
 
+> **Cách đọc bảng này:** chọn hàng theo "ai cần dùng skill này" — mình một mình, cả team, hay người ngoài cài plugin.
+
 Frontmatter:
 
 | Field | Ý nghĩa | Ví dụ |
@@ -99,6 +111,10 @@ Frontmatter:
 | `allowed-tools` | Pre-approve tools trong lượt gọi | `Bash(npm run deploy:*)` |
 | `disable-model-invocation` | `true` = chỉ gọi tay, model không tự trigger (từ 2.1.196 cũng chặn scheduled fire) | `true` cho skill nguy hiểm |
 | `context: fork` + `agent:`/`model:` | Chạy cô lập trong subagent (không thấy history); ép agent/model khi fork | `context: fork`, `model: haiku` cho rẻ |
+
+> **Cách đọc bảng này:** `description` là field quyết định skill có tự chạy hay không — đọc kỹ hàng đó trước, các field còn lại tinh chỉnh sau.
+
+Frontmatter nôm na là "mặt tiền" của skill: model chỉ đọc phần này để quyết định có bước vào "cửa hàng" hay không. Mặt tiền rõ ràng thì khách tự ghé.
 
 Template copy-paste:
 
@@ -115,6 +131,8 @@ allowed-tools: Bash(npm run deploy:*), Bash(npm run migrate:*), Read
 ```
 
 Mọi skill mới: điền đủ `name/description/allowed-tools` trước, còn lại thêm khi cần. Check: `ls ~/.claude/skills/ && ls .claude/skills/`.
+
+> **Tóm gọn 1 câu:** Đặt skill theo "ai dùng", và frontmatter — nhất là `name` + `description` — chính là mặt tiền quyết định model có gọi skill hay không.
 
 **Đào sâu:** [Bài 05 — skills & custom commands](../01-huong-dan-su-dung/05-skills-custom-commands.md) · [templates/](../templates/) · [Tip 07 — thiết kế skills](../02-tips-thuc-chien/07-thiet-ke-skills.md)
 
@@ -142,6 +160,10 @@ Script: ${CLAUDE_SKILL_DIR}/scripts/smoke.sh
 
 Chạy `/deploy staging` thật để xác nhận: thấy "Env: staging" (= `$ARGUMENTS`), thấy output git status thật, và smoke.sh chạy đúng path. Skill nào cũng nên có `$ARGUMENTS` (linh hoạt) + `` !`cmd` `` cho context tươi.
 
+Nôm na: `$ARGUMENTS` là "khách điền vào chỗ trống", `` !`cmd` `` là "bếp tự kiểm tra tủ lạnh trước khi nấu", còn `${...DIR}` là "địa chỉ nhà rõ ràng, để đâu cũng tìm ra".
+
+> **Tóm gọn 1 câu:** Input động vào skill có 3 đường: `$ARGUMENTS` từ lời gọi, `` !`cmd` `` chạy shell trước, `${CLAUDE_SKILL_DIR}` trỏ path tuyệt đối.
+
 ---
 
 ## 4. Skill không auto-trigger — debug sao?
@@ -161,11 +183,9 @@ description: Deploy staging/prod và rollback. Dùng khi user nói "deploy", "l�
 when_to_use: Khi user nhắc deploy/staging/prod/release/rollback.
 ```
 
-```bash
-# Check 2 cái còn lại (2 lệnh RỖNG nghĩa: lỗi ở description, bước 1):
-git grep -n 'disable-model-invocation' -- .claude/skills/<tên>/
-git grep -n 'skillOverrides' -- .claude/settings*.json
-```
+> 📄 **Code ví dụ:** [`examples/01-4-skill-khong-auto-trigger-debug-sao.sh`](examples/01-4-skill-khong-auto-trigger-debug-sao.sh)
+
+> **Tóm gọn 1 câu:** Skill không tự chạy thì kiểm 3 thứ theo thứ tự: description có khớp lời bạn nói, `disable-model-invocation` có đang bật, `skillOverrides` có tắt.
 
 **Đào sâu:** [lệnh `skill-doctor`](../01-huong-dan-su-dung/commands/knowledge-system/skill-doctor/README.md) · [Tip 07 — thiết kế skills](../02-tips-thuc-chien/07-thiet-ke-skills.md)
 
@@ -190,7 +210,11 @@ git grep -n 'skillOverrides' -- .claude/settings*.json
 | `/insights` | Thói quen team (HTML) | Cuối sprint |
 | `/skill-doctor` | Tìm skill không dùng (cần ≥2.1.252) | Định kỳ dọn skill ế |
 
+> **Cách đọc bảng này:** cột "Khi nào gọi" là lời nhắc nhịp độ — cột nào ghi "mỗi tháng" hay "định kỳ" thì hẳn không phải dùng hằng ngày.
+
 Mới onboard → `/doctor` (bảng điểm xanh = setup OK, dòng đỏ = vá trước) rồi `/verify` ("PASS: 3/3 endpoints" = chạy đúng). PR lớn → `/code-review`, chưa đủ sâu → `/ultrareview`.
+
+> **Tóm gọn 1 câu:** Skill bundled có sẵn khỏi cài — người mới bắt đầu bằng `/doctor` rồi `/verify`, đó là hai cái kiểm tra setup và kết quả nhanh nhất.
 
 **Đào sâu:** [lệnh `code-review`](../01-huong-dan-su-dung/commands/code-repo/code-review/README.md) · [lệnh `batch`](../01-huong-dan-su-dung/commands/code-repo/batch/README.md) · [lệnh `verify`](../01-huong-dan-su-dung/commands/code-repo/verify/README.md)
 
@@ -214,13 +238,11 @@ Chuẩn chéo công cụ: `AGENTS.md` được Claude Code đọc trực tiếp,
 - **Có sẵn codebase → `/init`:** quét code thật, sinh từ thực tế. Thử `CLAUDE_CODE_NEW_INIT=1` cho flow interactive. Xong → **xóa 50%** (nó sinh thừa) + thêm verified commands (lệnh đã chạy thật).
 - **Project mới (trống) → template:** copy `templates/CLAUDE.md` rồi sửa — không có gì để init quét (xem [FAQ 01 câu 6](01-tai-khoan-pricing-cai-dat.md#6-repo-mới-5-lệnh-setup-đầu--copy-templatesclaudemd)).
 
-```bash
-wc -l CLAUDE.md && /doctor claude-md   # mỗi tháng 1 lần
-# VD: 80 dòng "quy trình deploy 12 bước" → chuyển sang skill `deploy`,
-#     CLAUDE.md giữ 1 dòng "deploy → /deploy". Tiết kiệm ~800 tokens/session.
-```
+> 📄 **Code ví dụ:** [`examples/02-6-claude-md-ranh-gioi-o-au-init.sh`](examples/02-6-claude-md-ranh-gioi-o-au-init.sh)
 
-Dòng nào 10 turn gần nhất không dùng → chuyển ra skill/rules. Đã có mà phình → không init lại, mà tách.
+Dòng nào 10 turn gần nhất không dùng → chuyển ra skill/rules. Đã có mà phình → không init lại, mà tách. Giữ CLAUDE.md gọn như tủ lạnh: chỉ dán giấy ghi lò vi sóng và khóa cửa — còn công thức nấu chi tiết thì cất trong ngăn kéo, cần thì mở ra.
+
+> **Tóm gọn 1 câu:** CLAUDE.md chỉ giữ dữ kiện luôn nạp (<200 dòng) — có code thì sinh bằng `/init` rồi xóa bớt 50%, repo trống thì copy template.
 
 **Đào sâu:** [Bài 03 — CLAUDE.md, memory & rules](../01-huong-dan-su-dung/03-claude-md-memory-rules.md) · [Tip 01 — context hygiene](../02-tips-thuc-chien/01-context-hygiene.md) · [lệnh `init`](../01-huong-dan-su-dung/commands/code-repo/init/README.md)
 
@@ -243,7 +265,9 @@ model: haiku
 ---
 ```
 
-Gọi skill fork → "subagent" chạy riêng rồi trả tóm tắt; session chính không bị ngập log quét. Skill đọc nhiều + trả ít (research, audit, quét) → fork; skill viết/sửa tiếp mạch đang làm → không fork.
+Gọi skill fork → "subagent" chạy riêng rồi trả tóm tắt; session chính không bị ngập log quét. Skill đọc nhiều + trả ít (research, audit, quét) → fork; skill viết/sửa tiếp mạch đang làm → không fork. Ví dụ đời thường: fork giống thuê thám tử riêng đi khảo sát rồi nộp báo cáo 1 trang — bạn không cần nghe cả hành trình nó đi.
+
+> **Tóm gọn 1 câu:** `context: fork` cho skill chạy trong subagent cô lập, trả lại chỉ tóm tắt — hợp việc đọc nhiều trả ít, không hợp việc cần mạch đang làm dở.
 
 **Đào sâu:** [FAQ 07 — subagents & teams](07-subagents-teams-workflows.md) · [lệnh `fork`](../01-huong-dan-su-dung/commands/session-context/fork/README.md) · [Tip 07 — thiết kế skills](../02-tips-thuc-chien/07-thiet-ke-skills.md)
 
@@ -272,6 +296,10 @@ Chi tiết: xem `${CLAUDE_SKILL_DIR}/references/runbook.md`
 
 Skill có script/checklist dùng lại → đóng gói chung folder skill, đừng để script lang thang ngoài repo.
 
+Nôm na: `allowed-tools` là "giấy ủy quyền" — viết rõ nhân viên được ký hợp đồng thay mình, không phải giao cả ngân hàng. Còn `${CLAUDE_SKILL_DIR}` là "địa chỉ nhà" của skill — skill chuyển nhà personal/project/plugin thì giấy tờ trong nhà vẫn trỏ đúng.
+
+> **Tóm gọn 1 câu:** `allowed-tools` pre-approve tool để skill chạy headless không bị deny, còn `${CLAUDE_SKILL_DIR}` giữ path script đúng dù skill nằm ở đâu.
+
 **Đào sâu:** [FAQ 03 — permissions & modes](03-permissions-modes.md) · [Bài 05 — skills & custom commands](../01-huong-dan-su-dung/05-skills-custom-commands.md) · [templates/](../templates/)
 
 ---
@@ -286,11 +314,9 @@ Skill có script/checklist dùng lại → đóng gói chung folder skill, đừ
 4. CLAUDE.md phình → `/doctor claude-md` → tách (câu 6).
 5. `/debug` → chẩn đoán session; `/bug` nếu nghi core.
 
-```bash
-ls .claude/skills/
-git grep -n 'disable-model-invocation' -- .claude/skills/
-wc -l CLAUDE.md
-```
+> 📄 **Code ví dụ:** [`examples/03-van-loi-thi-sao-skill-command.sh`](examples/03-van-loi-thi-sao-skill-command.sh)
+
+> **Tóm gọn 1 câu:** Hỏng thì đi theo đường ống chung `/status → doctor → permissions → debug → bug`, rồi so lại từng câu trong FAQ này theo thứ tự.
 
 ---
 

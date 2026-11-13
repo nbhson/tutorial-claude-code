@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/verify`
-`/verify <phạm vi>`
-`/verify --e2e`
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,9 +19,7 @@
 
 **Prompt thật (paste vào Claude Code):**
 
-```bash
-/verify auth
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 **Kết quả mong đợi:**
 
@@ -34,17 +28,21 @@
 
 **Verify (30 giây):**
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
+
+Mục này là "sổ bệnh án" của `/verify`: từ báo skill not found tới FAIL vì port bận, kèm cách xử lý.
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/verify` báo `skill not found` / unknown | Bản < 2.1.145 | Update CLI ≥ 2.1.145 |
 | Verify chạy sai lệnh test (`npm` trong khi `pnpm`) | Chưa `/init`, CLAUDE.md thiếu/sai | `/init` lại hoặc sửa CLAUDE.md lệnh đúng rồi `/verify` lại |
 | Verify FAIL vì port đã dùng (EADDRINUSE) | App dev cũ còn chạy nền | Kill process cũ (`lsof -ti:3000 \| xargs kill`), verify lại với port riêng |
+
+> **Cách đọc bảng này:** cột "Triệu chứng" là thông báo lỗi bạn thấy, "Vì sao" chỉ nguyên nhân môi trường/config, "Cách sửa" là lệnh gõ được ngay.
+
+> **Tóm gọn 1 câu:** `/verify` bắt model nộp bài kèm lời giải: output xanh trên màn hình mới được gạch "xong", lời hứa suông không tính.
 
 ## Tham khảo
 

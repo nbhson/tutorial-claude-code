@@ -51,13 +51,17 @@ Viết theo `WRITING-STYLE.md` là bắt buộc; các mục dưới đây mô t�
 - Lệnh version-gated/provider-gated: ghi rõ bản tối thiểu, vắng mặt ở provider nào
   (vd Bedrock/AWS/GCP), cách kiểm tra bằng `/` trong session + workflow thay thế.
 
+> **Tóm gọn 1 câu:** Mỗi loại file một khung cố định — bài 300–450 dòng, lệnh 30–60 dòng 7 mục, FAQ 5 khối; theo đúng khung là PR gần như không bị dỗi.
+
 ## Quy ước đặt tên & văn phong
 
 - File/kebab-case không dấu: `NN-ten-tieng-viet.md`, folder lệnh 1 từ: `design-sync/`.
 - Tiếng Việt, xưng "bạn", code comments tiếng Việt không dấu (tránh lỗi encoding CI).
 - Tiêu đề bài 01: `# NN — Tên bài (...)`. Tips 02: `# Tips NN — Tên (...)`.
 - FAQ: giữ nguyên nội dung lệnh đã verify, chỉ thêm khung 5 bước + mermaid, không rút gọn ý.
-- Không sửa nội dung file `.md` hiện có khi thêm bài mới (trừ link index ở lượt dọn riêng).
+- Không sửa nội dung file `.md` hiện có khi thêm bài mới (trừ link index ở lượt dọn riêng) — như nhà có nội quy: thêm phòng mới thì cứ thêm, đừng phá phòng người khác đang ở.
+
+> **Tóm gọn 1 câu:** Tên kebab-case không dấu, giọng "bạn", và không đụng file cũ — thêm mới thì thoải mái, sửa cũ phải nêu lý do rõ ràng.
 
 ## PR checklist (tick hết mới merge)
 

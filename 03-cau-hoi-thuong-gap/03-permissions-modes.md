@@ -47,6 +47,8 @@ flowchart LR
 
 ## Bảng tổng hợp: allow / ask / deny + 3 files + 5 modes
 
+Mục này gom cả 3 tầng quyền (từng lệnh, từng file, cả session) vào một bảng để tra nhanh trước khi đọc sâu từng câu.
+
 | Khái niệm | Tóm tắt 1 dòng | Xem ở đâu |
 |---|---|---|
 | `allow` | Được chạy luôn, không hỏi | `/permissions` |
@@ -59,6 +61,8 @@ flowchart LR
 | `plan` | Chỉ đọc + trình plan, không sửa | Task lớn, duyệt trước |
 | `auto` | Classifier duyệt quyền thay bạn — mặc định session mới trên Pro/Max/Team từ 14/08/2026 | Task tin cậy |
 | `bypassPermissions` | Bỏ hỏi (chỉ CI sandbox) | Không dùng máy dev |
+
+> **Cách đọc bảng này:** nửa trên (3 dòng đầu) là 3 mức quyền từng lệnh, nửa dưới là nơi ghi quyền (3 files) và chế độ cả session (5 modes) — khi phân vân "mình đang ở mức nào", tra dòng tương ứng rồi bấm vào cột "Xem ở đâu" để kiểm chứng trên máy thật.
 
 Thứ tự merge (thắng dần): **defaults < project < local < managed**. Managed deny mà local allow → allow vô ích.
 
@@ -74,19 +78,13 @@ Thứ tự merge (thắng dần): **defaults < project < local < managed**. Mana
 - `.claude/settings.local.json` — cá nhân, không commit (VD: allow thêm `pnpm`).
 - Managed policy — org ép từ xa (VD: cấm `curl ... | bash`), local không gỡ được.
 
-```json
-{
-  "permissions": {
-    "allow": ["Read", "Glob", "Grep", "Bash(npm test:*)", "Bash(npm run lint:*)", "Bash(git status:*)", "Bash(git diff:*)"],
-    "ask": ["Edit", "Write", "Bash(npm install:*)", "Bash(git push:*)"],
-    "deny": ["Bash(rm -rf:*)", "Bash(sudo:*)", "Read(.env)", "Read(.env.*)", "Bash(curl * | bash:*)"]
-  }
-}
-```
+> 📄 **Code ví dụ:** [`examples/01-1-allow-ask-deny-viet-o-au.json`](examples/01-1-allow-ask-deny-viet-o-au.json)
 
 PR nào xóa mất rule `deny rm -rf` khỏi `.claude/settings.json` → `/doctor` (mục permissions) báo đỏ, CI của team chặn merge (setup 5 lệnh đầu repo xem [FAQ 01 câu 6](01-tai-khoan-pricing-cai-dat.md#6-repo-mới-5-lệnh-setup-đầu--copy-templatesclaudemd)).
 
 **Đào sâu:** [lệnh `/permissions`](../01-huong-dan-su-dung/commands/model-mode/permissions/README.md) · [câu 6 — merge thế nào](#6-3-settings-files-merge-thế-nào)
+
+> **Tóm gọn 1 câu:** Quyền viết ở 3 tầng giống 3 vòng khóa: vòng nào chốt sau (local > project > defaults) và vòng của tổ chức (managed) thì luôn chốt nhất — xem bản đã khóa hết (`/permissions`) thay vì đoán từng vòng.
 
 ---
 
@@ -112,6 +110,8 @@ Riêng cloud session: chỉ có `acceptEdits` / `plan` (`auto` tùy bản), **kh
 
 **Đào sâu:** [lệnh `/plan`](../01-huong-dan-su-dung/commands/model-mode/plan/README.md) · [bài 10 — permissions & modes theo provider](../01-huong-dan-su-dung/10-permissions-modes-availability.md)
 
+> **Tóm gọn 1 câu:** 5 mode là 5 mức "tin tưởng trao chìa nhà": hỏi từng bước, trao chìa sửa file, chỉ cho xem nhà (plan), nhờ quản gia duyệt thay (`auto`), và giao cả chùm chìa (bypass) — giao cả chùm thì chỉ khi nhà đó không có gì mất.
+
 ---
 
 ## 3. Hook vs permission rule — ai thắng?
@@ -122,6 +122,7 @@ Riêng cloud session: chỉ có `acceptEdits` / `plan` (`auto` tùy bản), **kh
 
 - **`PreToolUse` hook deny THẮNG TẤT CẢ**, kể cả `bypassPermissions` — hook là phanh tay độc lập.
 - **Hook allow KHÔNG nới được** deny của settings hay `ask` của org. Hooks chỉ siết thêm.
+
 | Cặp đấu | Ai thắng? |
 |---|---|
 | Hook deny vs `bypassPermissions` | Hook deny thắng |
@@ -129,21 +130,17 @@ Riêng cloud session: chỉ có `acceptEdits` / `plan` (`auto` tùy bản), **kh
 | Managed deny vs local allow | Managed thắng |
 | Permission allow vs `ask` mặc định | Allow thắng (trong cùng level) |
 
+> **Cách đọc bảng này:** mỗi dòng là một "đấu vật" giữa hai cơ chế — cột phải luôn nêu người thắng; quy luật chung: chặn luôn mạnh hơn cho phép, và tầng càng cao (hook/org) càng mạnh tầng dưới.
+
 Việc critical (push main, xóa DB) → hook deny + settings deny cả hai:
 
-```bash
-# scripts/guard-no-push-main.sh — chặn push main dù bypass
-#!/bin/bash
-input=$(cat)
-echo "$input" | grep -q '"command": *"git push.*main' && echo '{"decision":"block","reason":"Cấm push main"}' && exit 0
-echo '{"decision":"approve"}'
-```
+> 📄 **Code ví dụ:** [`examples/02-3-hook-vs-permission-rule-ai-thang.sh`](examples/02-3-hook-vs-permission-rule-ai-thang.sh)
 
-```json
-{ "hooks": { "PreToolUse": [{ "matcher": "Bash", "hooks": [{ "type": "command", "command": "./scripts/guard-no-push-main.sh" }] }] } }
-```
+> 📄 **Code ví dụ:** [`examples/03-3-hook-vs-permission-rule-ai-thang.json`](examples/03-3-hook-vs-permission-rule-ai-thang.json)
 
 **Đào sâu:** [FAQ 05 — hooks](05-hooks-faq.md) · [bài 07 — hooks tự động hóa](../01-huong-dan-su-dung/07-hooks-tu-dong-hoa.md)
+
+> **Tóm gọn 1 câu:** Hook là phanh tay gắn ngoài hệ thống điện của xe — mất điện (bypass) phanh vẫn ăn, nhưng phanh tay chỉ dừng được xe chứ không đạp ga hộ được.
 
 ---
 
@@ -160,7 +157,11 @@ deny "Read(.env)"      →  lách bằng `cat .env` qua Bash, `cp .env /tmp/x`
 
 Rule chặn "người ngay"; chặn "kẻ gian" (lách cố ý) → hook kiểm tra sâu + OS sandbox (container không sudo, secrets mount read-only) song song với rules.
 
+Rule permission giống cửa khóa cáp số: khóa được cửa chính, nhưng cửa sổ thì vẫn còn — muốn an toàn thật thì phải khóa cả cửa sổ (sandbox), chứ không khóa thêm 5 cái cửa nữa là đủ.
+
 **Đào sâu:** [lệnh `sandbox`](../01-huong-dan-su-dung/commands/auth-settings/sandbox/README.md) · [FAQ 09 — bảo mật & riêng tư](09-bao-mat-quyen-rieng-tu.md)
+
+> **Tóm gọn 1 câu:** Rule chặn theo chuỗi chứ không hiểu ý đồ — chặn được người vô ý, chặn không nổi người cố ý lách; muốn chắc thì thêm sandbox.
 
 ---
 
@@ -170,23 +171,13 @@ Rule chặn "người ngay"; chặn "kẻ gian" (lách cố ý) → hook kiểm 
 >
 > **Trả lời 1 câu:** `-p` không hiện prompt → mọi `ask` thành deny; fix bằng allowlist hẹp đúng việc script cần — đừng `allow Bash(*)` cho gọn, đó là mở toang.
 
-```bash
-# CI review an toàn: pre-approve read-only + lệnh hẹp, mode dontAsk
-claude -p "review diff" \
-  --permission-mode dontAsk \
-  --allowedTools "Read Grep Glob Bash(git diff:*) Bash(git log:*) Bash(npm test:*)" \
-  --output-format json
+> 📄 **Code ví dụ:** [`examples/04-5-headless-p-bi-deny-hang-loat-fix.sh`](examples/04-5-headless-p-bi-deny-hang-loat-fix.sh)
 
-# Background subagent research (read-only tuyệt đối):
-claude -p "quét auth flow" \
-  --permission-mode dontAsk \
-  --allowedTools "Read Grep Glob" \
-  --output-format json
-```
-
-Background agent cần `git push` → headless deny (vì `ask`). Fix: hoặc allow rõ `Bash(git push origin feat/*:*)`, hoặc tách bước push cho người bấm tay. Luôn chạy tay 1 lần với đúng allowlist trước khi gắn vào cron/CI.
+Background agent cần `git push` → headless deny (vì `ask`). Headless giống máy bán hàng tự động: không có nhân viên đứng cạnh để hỏi "bán chứ?" — không được lập trình sẵn thì mặc định từ chối. Fix: hoặc allow rõ `Bash(git push origin feat/*:*)`, hoặc tách bước push cho người bấm tay. Luôn chạy tay 1 lần với đúng allowlist trước khi gắn vào cron/CI.
 
 **Đào sâu:** [FAQ 10 — CI, SDK, routines, Web](10-ci-sdk-routines-web.md) · [FAQ 08 — lỗi thường gặp](08-loi-thuong-gap-troubleshooting.md)
+
+> **Tóm gọn 1 câu:** Headless là cửa hàng không có nhân viên: `ask` nào không được ghi sẵn menu thì tự hiểu là "không bán" — muốn chạy được thì ghi rõ allowlist trước, đừng để máy tự đoán.
 
 ---
 
@@ -198,15 +189,13 @@ Background agent cần `git push` → headless deny (vì `ask`). Fix: hoặc all
 
 Bản merged mới là thứ chạy thật — xem nó tại `/permissions`, đừng mở từng file đoán.
 
-```bash
-/permissions    # XEM MERGED TẠI ĐÂY, đừng mở từng file đoán
-cat .claude/settings.json
-cat .claude/settings.local.json 2>/dev/null
-```
+> 📄 **Code ví dụ:** [`examples/05-6-3-settings-files-merge-the-nao.sh`](examples/05-6-3-settings-files-merge-the-nao.sh)
 
 Local bạn `allow Bash(curl:*)` nhưng managed deny → `/permissions` hiện deny → đừng mất 30 phút debug "sao allow rồi vẫn hỏi". Hỏi admin org.
 
 **Đào sâu:** [lệnh `/permissions`](../01-huong-dan-su-dung/commands/model-mode/permissions/README.md) · [FAQ 09 — bảo mật & riêng tư](09-bao-mat-quyen-rieng-tu.md)
+
+> **Tóm gọn 1 câu:** Ba file settings chồng lên nhau như 3 lớp áo — lớp ngoài cùng của tổ chức luôn che được lớp trong; đoán lung tung từng lớp chỉ mất thời gian, mở `/permissions` xem lớp cuối là xong.
 
 ---
 
@@ -218,16 +207,13 @@ Local bạn `allow Bash(curl:*)` nhưng managed deny → `/permissions` hiện d
 
 Hook deny vẫn thắng flag này, nhưng permission hỏi thì bỏ hết — 1 lệnh `rm -rf` ngáo là đi cả máy. Mỗi khi định thêm flag vào script local hay docker dev thường trực → đó là dấu hiệu cần viết allowlist (xem [câu 5](#5-headless--p-bị-deny-hàng-loạt--fix--allowlist-thế-nào)).
 
-```bash
-# ✅ CI sandbox dùng 1 lần:
-claude -p "migrate test" --dangerously-skip-permissions
-
-# ❌ Máy dev / cloud session: KHÔNG BAO GIỜ
-```
+> 📄 **Code ví dụ:** [`examples/06-7-khi-nao-dung-dangerously-skip-permissions.sh`](examples/06-7-khi-nao-dung-dangerously-skip-permissions.sh)
 
 Mở 1 session "sạch" để soi nghi vấn (mods/hooks ngoài không load) → dùng `claude --safe-mode`; chạy ở chế độ giới hạn thêm → `--restricted`.
 
 **Đào sâu:** [FAQ 09 — bảo mật & riêng tư](09-bao-mat-quyen-rieng-tu.md) · [bài 10 — permissions & modes theo provider](../01-huong-dan-su-dung/10-permissions-modes-availability.md)
+
+> **Tóm gọn 1 câu:** `--dangerously-skip-permissions` là tháo toàn bộ ổ khóa ra một lần — chỉ làm trong nhà kho trống không mang gì giá trị (CI sandbox), tuyệt đối không phải nhà đang ở.
 
 ---
 
@@ -239,11 +225,7 @@ Mở 1 session "sạch" để soi nghi vấn (mods/hooks ngoài không load) →
 4. Trust dialog — frontmatter hooks project cần trust folder (xem [FAQ 05 câu 2](05-hooks-faq.md#2-folder-đã-trust-chưa)).
 5. `/debug` — session vẫn lạ → chẩn đoán sâu; `/bug` kèm `/status` + `claude doctor`.
 
-```bash
-/permissions
-/hooks
-/debug
-```
+> 📄 **Code ví dụ:** [`examples/07-van-loi-thi-sao-permissions-modes.sh`](examples/07-van-loi-thi-sao-permissions-modes.sh)
 
 **Tham khảo chéo:** [lệnh `/permissions`](../01-huong-dan-su-dung/commands/model-mode/permissions/README.md) · [lệnh `/hooks`](../01-huong-dan-su-dung/commands/knowledge-system/hooks/README.md) · [FAQ 05](05-hooks-faq.md) (hook vs rule) · [FAQ 09](09-bao-mat-quyen-rieng-tu.md) (bảo mật) · [FAQ 10](10-ci-sdk-routines-web.md) (CI headless)
 

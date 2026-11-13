@@ -1,0 +1,5 @@
+{
+  "permissions": {
+    "allow": ["Bash(gh pr view:*)", "Bash(gh issue view:*)", "Bash(pnpm --filter @acme/api test:*)"]
+  }
+}

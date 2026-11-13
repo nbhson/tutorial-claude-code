@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/voice
-Giữ Space
-/terminal-setup
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,15 +19,7 @@ Giữ Space
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-/voice
-# → Voice ON
-# (giữ Space) "đọc file src/auth/login.ts, tóm tắt nó làm gì, có verify JWT không" (thả)
-# → transcript: "đọc file src/auth/login.ts, tóm tắt nó làm gì, có verify JWT không" ✓
-# → Enter → model làm, bạn vừa đi vừa nghe kết quả
-/voice
-# → Voice OFF khi về bàn
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -40,18 +28,21 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-/voice
-# → báo Voice ON/OFF; giữ Space thấy transcript xuất hiện là mic ổn
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
+
+Mục này nói về các trục trặc hay gặp khi thu giọng nói — tra đúng triệu chứng rồi làm theo cột "Cách sửa".
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Giữ Space không thu, thả ra trống | OS chưa cấp quyền mic (lần đầu Deny) | Settings OS → cho terminal quyền mic; `/terminal-setup` kiểm tra lại |
 | Transcript toàn sai từ chuyên môn | Nói nhanh + từ lạ (`webhook`, `idempotency`) | Nói chậm, đánh vần tên riêng; hoặc gõ tay đoạn có từ chuyên môn |
 | Thu cả tiếng quạt/đồng nghiệp | Mic mặc định là mic xa/kém chống ồn | Đổi mic gần (tai nghe) trong settings OS; vào chỗ yên |
+
+> **Cách đọc bảng này:** đọc theo hàng — "Triệu chứng" là hiện tượng lúc thu/phát, "Vì sao" chỉ nguyên nhân (quyền OS, cách nói, mic), "Cách sửa" là việc cần làm.
+
+> **Tóm gọn 1 câu:** `/voice` là nhắn voice mà app tự đổi thành chữ — nói thay gõ khi mỏi tay, nhưng luôn đọc lại transcript trước khi gửi.
 
 ## Tham khảo
 

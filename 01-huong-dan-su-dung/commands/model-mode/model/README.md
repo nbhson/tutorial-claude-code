@@ -12,13 +12,9 @@
 
 ## Cách gọi
 
-```bash
-/model
-/model <tên>
-/model default
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
-Alias gõ được ngay bằng `/model <alias>`:
+Alias gõ được ngay bằng `/model <alias>` — coi như bảng phím bấm của dàn âm thanh: nhớ tên phím là đổi "bộ não" chỉ trong một lệnh, khỏi lục lại tên model đầy đủ:
 
 | Alias | Trỏ tới | Ghi chú |
 |---|---|---|
@@ -32,6 +28,8 @@ Alias gõ được ngay bằng `/model <alias>`:
 | `opus[1m]` | Opus 5.5 mở cửa sổ context 1M | |
 | `sonnet[1m]` | Sonnet 5.5 mở cửa sổ context 1M | |
 
+> **Cách đọc bảng này:** mỗi dòng là một alias gõ được sau `/model`; cột "Trỏ tới" cho biết phím bấm đó đổi sang não nào, cột "Ghi chú" nhắc bản tối thiểu (≥2.1.xxx) và giá nếu có — cần giá/bản chi tiết thì đối chiếu dòng đó.
+
 > Haiku 5.5 (`claude-haiku-5-5`, ≥2.1.293) đã thay Haiku 4.5 làm Haiku mặc định trên Anthropic API: 1M context, $0.10/$0.50 khi prompt ≤100K (trên 100K: $0.50/$2.50). Trên Bedrock/GCP/AWS vẫn là Haiku 4.5 (200K, $1/$5).
 > Fable 5.1 nằm ngoài hạn mức thường: trên Pro bill bằng usage credits, trên Max tốn ~50% hạn tuần mỗi lượt dùng — nên chỉ gọi tay khi thật cần.
 >
@@ -41,15 +39,7 @@ Alias gõ được ngay bằng `/model <alias>`:
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Bước 1: đang dùng sonnet, context 30%
-/model opus
-
-# Bước 2: giao bài khó, yêu cầu suy luận sâu
-Hãy phân tích race condition trong src/queue/worker.ts.
-Vẽ timeline 2 workers cùng dequeue 1 job, chỉ ra dòng nào thiếu lock,
-rồi đề xuất fix bằng mutex hoặc atomic compare-and-swap.
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -58,11 +48,13 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
+
+> **Tóm gọn 1 câu:** `/model` là thay pin cho phiên làm việc giữa chừng: nhớ dai (context, todo, file đã đọc) giữ nguyên, chỉ nguồn suy nghĩ là khác — việc dở không phải kể lại từ đầu.
 
 ## Lỗi thường gặp
+
+Bảng dưới là mấy trục trặc khi đổi "bộ não" giữa phiên — đối chiếu triệu chứng với cột đầu rồi làm theo cột cuối.
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
@@ -70,11 +62,13 @@ Kết quả mong đợi:
 | Đổi Opus mà trả lời vẫn "ngu" như cũ | Context nhiễm rác, model nào cũng sai | `/compact` hoặc `/clear` rồi hỏi lại |
 | Picker `/model` trống / chỉ 1 model | Bản CLI cũ hoặc managed policy khóa | Update `npm i -g @anthropic-ai/claude-code`; kiểm tra `settings.json` có `allowedModels` không |
 
+> **Cách đọc bảng này:** mỗi dòng là một tình huống "đổi model mà không được như ý"; cột "Vì sao" cho biết rào cản nằm ở gói, ở provider hay ở cấu hình, cột "Cách sửa" là lệnh/bước cụ thể.
+
 ## Tham khảo
 
 - [../effort/README.md](../../model-mode/effort/README.md)
 - [../fast/README.md](../../model-mode/fast/README.md)
-- [../extra-usage/README.md](../../model-mode/extra-usage/README.md)
+- [../usage-credits/README.md](../../model-mode/usage-credits/README.md)
 - [../plan/README.md](../../model-mode/plan/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 

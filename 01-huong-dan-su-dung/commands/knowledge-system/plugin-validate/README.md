@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-claude plugin validate <mod>           # in hooks + calls + red flags
-claude plugin validate <mod> --strict  # chặt hơn
-claude plugin test <mod>               # thử mod trong lồng; ≥2.1.269 có claude plugin eval
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,16 +19,7 @@ claude plugin test <mod>               # thử mod trong lồng; ≥2.1.269 có 
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-claude plugin validate awesome-reviewer
-# → hooks: tool.call(Read) [chỉ đọc — lành]
-# → calls: $.fs.read (src/**), $.model.complete
-# → red flags: NONE (không mạng, không shell, không env)
-# → KẾT LUẬN: xanh. Cài được.
-
-claude plugin test awesome-reviewer --no-hooks
-# → lõi chạy OK (đọc + chấm, không cần hooks)
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -41,13 +28,19 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:** chạy `validate` trên 1 mod đã biết lành để so baseline; xem dòng red flags.
 
+> **Tóm gọn 1 câu:** `/plugin-validate` là soi giấy phép lái xe trước khi cho khách lên xe: hooks và calls nó xin gì đều in ra giấy — red flag nặng thì vẫn phải đọc code tay trước khi cài.
+
 ## Lỗi thường gặp
+
+Bảng dưới là những báo cáo bạn có thể gặp khi validate — đối chiếu với cột "Triệu chứng" rồi làm theo "Cách sửa".
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `validate` báo mod không tồn tại | Sai tên (thiếu scope `@org/mod`) hoặc mod local sai path | Copy đúng tên marketplace; local thì đường dẫn tuyệt đối tới thư mục có manifest |
 | `--strict` block mod team tự viết | Mod nội bộ xin rộng nhưng lành (tool.call(*) cho tiện) | Sửa mod hẹp lại (liệt kê tool cụ thể) rồi validate lại — strict đúng, mod sai |
 | Test `--no-hooks` PASS nhưng cài vào lỗi | Lõi sạch nhưng hooks xung đột với mod khác (2 mod cùng tool.call Edit) | `/plugin list` tìm xung đột; disable 1 trong 2; báo author gộp |
+
+> **Cách đọc bảng này:** mỗi dòng là một cảnh báo từ `validate`; đọc cột "Vì sao" để hiểu mod xin quyền gì, cột "Cách sửa" là bước xử lý cụ thể.
 
 ## Tham khảo
 

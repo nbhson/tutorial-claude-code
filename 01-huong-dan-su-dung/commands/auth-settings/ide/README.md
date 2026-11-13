@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/ide
-/ide connect
-/ide disconnect
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,14 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# VS Code đang mở auth.ts, bôi đen hàm login:
-# Sang terminal:
-/ide connect
-# Hỏi: "sửa hàm này cho chịu được email viết hoa"
-# → Claude tự biết file + selection, sửa đúng chỗ, diff hiện inline trong IDE
-# → duyệt từng hunk bằng phím IDE, xong chạy test
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -39,10 +28,7 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-/ide
-# → hiện trạng thái kết nối + tên IDE, không còn "No IDE detected"
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
 
@@ -51,6 +37,10 @@ Kết quả mong đợi:
 | `No IDE detected` | Chưa cài extension hoặc IDE mở folder khác | Cài extension; mở đúng folder; connect lại |
 | Diff không hiện inline | Extension cũ hoặc file quá lớn | Update extension; file >1MB duyệt bằng text |
 | Diagnostics không sang | Extension chưa quyền đọc problems panel | Bật trong settings extension; reload IDE |
+
+> **Cách đọc bảng này:** cột "Triệu chứng" là báo lỗi trên màn hình, "Vì sao" nêu nguyên nhân phía extension, "Cách sửa" là việc làm trong IDE hoặc CLI — tra đúng hàng đang gặp.
+
+> **Tóm gọn 1 câu:** `/ide` mời Claude ngồi cùng bàn editor — mắt thêm ở IDE, não vẫn ở terminal, còn nút Accept/Reject vẫn trong tay bạn.
 
 ## Tham khảo
 

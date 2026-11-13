@@ -20,6 +20,8 @@
 | Worktree | Bản checkout riêng của repo, để nhiều session không giẫm file | `git worktree add ../repo-wt/feat-auth -b feat/auth` |
 | Overhead | Token tốn thêm chỉ vì công cụ, chưa tính việc thật | ~20k tokens mỗi lần spawn |
 
+> **Cách đọc bảng này:** mỗi dòng là 1 thuật ngữ xuất hiện suốt bài. Cột **Hiểu nôm na là gì** là giải thích bằng lời đời thường, cột **Ví dụ thấy ngay** là tình huống bạn sẽ gặp khi dùng Claude Code.
+
 ## Mục lục
 
 - [Sơ đồ nhanh](#sơ-đồ-nhanh)
@@ -60,6 +62,8 @@ flowchart TD
 | `/batch` (worktree-subagents) | Mỗi đứa 1 worktree + PR | Lớn nhưng có script giữ | Epic 5–30 PR, migrate lớn |
 | Kill switch `Ctrl+X Ctrl+K` ×2 | — | — | Background chạy loạn |
 
+> **Cách đọc bảng này:** mỗi dòng là 1 cách "bố trí nhân sự" cho việc. Cột **Thấy history?** cho biết worker có nhìn thấy đoạn chat cũ của bạn không, cột **Overhead** là giá token phải trả, cột **Dùng khi nào** là tình huống nên chọn cách đó.
+
 > Con số gốc: **~20k overhead mỗi lần spawn, ~3–4× token khi multi-agent, trần thực tế 3–5 agent chạy song song.** Số ~20k là ước tính cộng đồng, không phải số chính thức của Anthropic.
 
 ---
@@ -70,6 +74,8 @@ flowchart TD
 > **Trả lời 1 câu:** Chỉ spawn khi việc vừa ỒN (đọc nhiều, chỉ cần ít) vừa ĐỘC LẬP (xong là xong); gọi bằng auto (description khớp), explicit (chỉ tên), hoặc flags `--agent`/`--agents`.
 
 **Khi nào spawn** — hỏi 2 câu: (1) Việc có ỒN không (đọc >10 file mà chỉ cần tóm tắt)? (2) Có ĐỘC LẬP không (main không cần chi tiết)? Cả 2 Yes → subagent. Việc 1 bước ít file → main làm trực tiếp (đỡ ~20k). Việc phụ nhỏ mà không muốn cắt mạch chính → `/subtask` (≥2.1.212), nhẹ hơn cả subagent. Quy trình "làm theo từng bước" → **skill**, không phải worker.
+
+Subagent giống bạn giao việc cho trợ lý bên phòng bên: nói rõ đầu việc, nó tự làm, xong chỉ nộp lại bản tóm tắt — phòng bạn vẫn yên tắng, không ngập đầu chi tiết.
 
 ```text
 ✅ Subagent: "quét 50 files auth, trả 10 dòng + 5 file chính"
@@ -83,12 +89,11 @@ flowchart TD
 2. **Explicit:** bạn chỉ tên trong prompt — "dùng subagent security-reviewer soi diff này". Chắc ăn nhất.
 3. **Flags:** `--agent <tên>` (ép cả session) và `--agents '{...}'` (inline JSON, khỏi tạo file — hợp CI/script chạy 1 lần).
 
-```bash
-claude --agent explore "quét auth flow"
-claude --agents '{"reviewer":{"description":"review PR","tools":["Read","Grep","Glob"]}}' -p "review diff"
-```
+> 📄 **Code ví dụ:** [`examples/01-1-khi-nao-dung-subagent-goi-the-nao.sh`](examples/01-1-khi-nao-dung-subagent-goi-the-nao.sh)
 
 **Đào sâu:** [Bài 06 — subagent & agent teams](../01-huong-dan-su-dung/06-subagents-agent-teams-parallel.md) · [FAQ 02 — overhead token](02-model-context-token.md) · [lệnh `agents`](../01-huong-dan-su-dung/commands/knowledge-system/agents/README.md)
+
+> **Tóm gọn 1 câu:** Việc vừa ồn vừa độc lập thì spawn subagent; việc nhỏ 1–2 file thì main làm trực tiếp cho rẻ.
 
 ---
 
@@ -97,23 +102,20 @@ claude --agents '{"reviewer":{"description":"review PR","tools":["Read","Grep","
 > **Hỏi ngắn gọn:** Subagent có "nhớ" được chat mình đang làm không, hay phải giải thích lại từ đầu?
 > **Trả lời 1 câu:** Từ ≥2.1.232 fork mode bật mặc định nên subagent kế thừa nguyên context của main; muốn bản thật sự trắng thì tắt bằng `CLAUDE_CODE_FORK_SUBAGENT=0`.
 
-"Forked" là *cách spawn* (worker nhận full conversation), không phải surface riêng — đừng tìm nút "fork" trong UI.
+"Forked" là *cách spawn* (worker nhận full conversation), không phải surface riêng — đừng tìm nút "fork" trong UI. Nói đời thường: fresh là thuê nhân viên mới tinh, chưa biết gì, phải giao việc từ A đến Z; forked là nhân bản chính bạn — người kia mang theo toàn bộ trí nhớ cuộc họp của bạn, hiểu mạch ngay nhưng cũng mang theo cả rác.
 
 ```text
 Fresh (đặt CLAUDE_CODE_FORK_SUBAGENT=0):  main 100 turns → subagent thấy 0 (sạch, rẻ, an toàn)
 Forked (mặc định ≥2.1.232):              main 100 turns → subagent thấy 100 (hiểu mạch, đắt, dễ loãng)
 ```
 
-```bash
-export CLAUDE_CODE_FORK_SUBAGENT=0
-# spawn subagent reviewer với câu hỏi nó CHƯA biết:
-# "Review diff này, chỉ báo điểm security + bug"
-# → reviewer không nhắc lại reasoning cũ của main = chạy đúng fresh
-```
+> 📄 **Code ví dụ:** [`examples/02-2-subagent-co-thay-lich-su-chat-chinh.sh`](examples/02-2-subagent-co-thay-lich-su-chat-chinh.sh)
 
 Research độc lập → fresh; tiếp mạch dở dang mà sợ làm bẩn main → forked (mặc định). Ví dụ: cần reviewer "mắt mới" cho diff → đặt `CLAUDE_CODE_FORK_SUBAGENT=0` rồi mới spawn, nếu không reviewer thấy luôn reasoning của người viết và dễ gật theo.
 
 **Đào sâu:** [lệnh `fork`](../01-huong-dan-su-dung/commands/session-context/fork/README.md) · [FAQ 06 — `context: fork`](06-skills-commands-claude-md.md)
+
+> **Tóm gọn 1 câu:** Fork mode mặc định cho subagent kế thừa nguyên context của main; muốn "mắt mới" sạch sẽ thì tắt bằng `CLAUDE_CODE_FORK_SUBAGENT=0`.
 
 ---
 
@@ -122,7 +124,7 @@ Research độc lập → fresh; tiếp mạch dở dang mà sợ làm bẩn mai
 > **Hỏi ngắn gọn:** Dòng `context: fork` trong skill nghĩa là gì, khác subagent thường thế nào?
 > **Trả lời 1 câu:** Skill gắn `context: fork` chạy trong subagent cô lập (không thấy history) — hợp việc research đọc nhiều trả ít; chạy background mặc định từ v2.1.218 (đặt `background: false` trong `SKILL.md` nếu muốn chờ trong turn).
 
-Agent `Explore`/`Plan` khi fork còn skip CLAUDE.md + git status để gọn tối đa.
+Agent `Explore`/`Plan` khi fork còn skip CLAUDE.md + git status để gọn tối đa. Cứ hình dung: skill `context: fork` là bạn cử người đi khảo sát hiện trường — cấm mang theo hồ sơ vụ việc cũ, về chỉ báo cáo ngắn gọn.
 
 ```markdown
 ---
@@ -136,15 +138,13 @@ model: haiku
 2. Trả: 10 dòng tóm tắt + 5 file chính + 3 hàm entry.
 ```
 
-```bash
-/explore-auth
-# → subagent chạy riêng, main nhận ~15 dòng tóm tắt
-# → context chính không bị phình bằng log quét 50 files
-```
+> 📄 **Code ví dụ:** [`examples/03-3-skill-context-fork-la-gi.sh`](examples/03-3-skill-context-fork-la-gi.sh)
 
 Skill quét/audit/khảo sát → fork; skill viết tiếp mạch → không fork. Chi tiết frontmatter xem [FAQ 06 câu 7](06-skills-commands-claude-md.md#7-context-fork-là-gì).
 
 **Đào sâu:** [FAQ 06 — `context: fork`](06-skills-commands-claude-md.md) · [Bài 05 — skills](../01-huong-dan-su-dung/05-skills-custom-commands.md)
+
+> **Tóm gọn 1 câu:** `context: fork` biến skill thành thám tử chạy riêng trong phòng kín — không thấy history, hợp việc đọc nhiều trả tóm tắt.
 
 ---
 
@@ -153,7 +153,7 @@ Skill quét/audit/khảo sát → fork; skill viết tiếp mạch → không fo
 > **Hỏi ngắn gọn:** Subagent có được quyền tự sinh subagent con không, sâu nhất được bao nhiêu cấp?
 > **Trả lời 1 câu:** Được, nhưng token CỘNG DỒN — depth mặc định 3, trần tối đa 5 cấp (w24/2026); hạ về 1 bằng `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1`.
 
-Không giới hạn → cháy bill + loãng. Quy tắc thực dụng: tiết chế, luôn đặt `maxTurns`, dặn con "không tự đẻ thêm". Từ ≥2.1.296, frontmatter subagent khai được `autoCompactWindow` để subagent tự compact sớm hơn cửa sổ chính — hữu ích cho agent research chạy dài.
+Không giới hạn → cháy bill + loãng. Quy tắc thực dụng: tiết chế, luôn đặt `maxTurns`, dặn con "không tự đẻ thêm". Agent đẻ agent giống doanh nghiệp đa cấp: mỗi cấp thêm một lớp chi phí, đẻ 3 tầng là bill nhân theo số mũ mà output cháu đi bạn chẳng bao giờ đọc. Từ ≥2.1.296, frontmatter subagent khai được `autoCompactWindow` để subagent tự compact sớm hơn cửa sổ chính — hữu ích cho agent research chạy dài.
 
 ```text
 main → con (Explore, maxTurns 10) → hết. Con không đẻ cháu.
@@ -176,6 +176,8 @@ Check agent file đã chặn nested chưa: `git grep -n 'maxTurns\|KHÔNG spawn'
 
 **Đào sâu:** [Bài 06 — nested agents](../01-huong-dan-su-dung/06-subagents-agent-teams-parallel.md) · [FAQ 02 — token](02-model-context-token.md)
 
+> **Tóm gọn 1 câu:** Nested được phép nhưng token cộng dồn — chốt maxTurns, dặn con không đẻ cháu, trần 5 cấp.
+
 ---
 
 ## 5. Agent teams vs `/batch` — khác nhau ở đâu?
@@ -185,6 +187,8 @@ Check agent file đã chặn nested chưa: `git grep -n 'maxTurns\|KHÔNG spawn'
 
 Agent teams: **lead plan + assign + supervise teammates** (experimental, tắt mặc định — phải bật mới có). Hợp cho feature lớn đa mảng, debug đa giả thuyết song song, review song song. Task 1 người làm 30 phút xong thì teams overhead lớn — chỉ đáng khi việc đủ lớn để chia, chấp nhận token ~3–4× (xem [FAQ 02 câu 4](02-model-context-token.md#4-subagent-tốn-bao-nhiều-token-overhead--trần-15k-descriptions)).
 
+So sánh đời thường: teams như xưởng có quản đốc đứng nhìn từng công nhân; `/batch` như dây chuyền chia trạm, mỗi trạm ra 1 sản phẩm riêng có tem PR. Cả hai đều chia việc, khác chỗ người giữ mạch: model giữ, hay script giữ.
+
 | | Agent teams | `/batch` |
 |---|---|---|
 | Giữ plan bằng | Lead supervise (model) | Script + worktree-subagents |
@@ -193,16 +197,15 @@ Agent teams: **lead plan + assign + supervise teammates** (experimental, tắt m
 | Quy mô | Vài teammates | 5–30 worktree-subagents |
 | Dùng khi | Feature lớn cần supervise linh hoạt | Epic/migrate chia PR được |
 
-```bash
-# /batch: 1 change lớn → N PR
-/batch
-# → chia epic thành 5-30 worktree-subagents, mỗi đứa 1 PR, verify chéo
-# → kiểm tra: git worktree list hiện mỗi PR một checkout riêng
-```
+> **Cách đọc bảng này:** mỗi dòng so 2 cách làm trên 1 khía cạnh — cột giữa là teams, cột phải là `/batch`. Dòng cuối **Dùng khi** là gợi ý chọn nhanh nhất.
+
+> 📄 **Code ví dụ:** [`examples/04-5-agent-teams-vs-batch-khac-nhau-o.sh`](examples/04-5-agent-teams-vs-batch-khac-nhau-o.sh)
 
 Migrate 30 endpoints → `/batch` (mỗi endpoint 1 PR, review từng cái). Thiết kế lại auth (cần lead điều phối linh hoạt) → teams. Refactor 1 module nhỏ → đừng bật teams, main làm nhanh hơn.
 
 **Đào sâu:** [Bài 06 — agent teams](../01-huong-dan-su-dung/06-subagents-agent-teams-parallel.md) · [lệnh `batch`](../01-huong-dan-su-dung/commands/code-repo/batch/README.md)
+
+> **Tóm gọn 1 câu:** Teams dùng khi cần lead điều phối linh hoạt; `/batch` dùng khi việc chia được thành nhiều PR rời để chạy song song.
 
 ---
 
@@ -213,25 +216,19 @@ Migrate 30 endpoints → `/batch` (mỗi endpoint 1 PR, review từng cái). Thi
 
 **Theo dõi & kill** — agents chạy nền cần quản lý như process:
 
-```bash
-/agents    # Running (đang chạy) + Library (có gì)
-/tasks     # tasks đang chạy
-```
+> 📄 **Code ví dụ:** [`examples/05-6-theo-doi-kill-background-agent-worktrees-chong.sh`](examples/05-6-theo-doi-kill-background-agent-worktrees-chong.sh)
 
 Kill switch: `Ctrl+X Ctrl+K` **×2 trong 3s** → kill all background. Dấu hiệu kill: 3 agents cùng sửa 1 file / bill tăng mà không ra gì / output lạ → kill không tiếc, `/tasks` xác nhận sạch, spawn lại với scope hẹp hơn. Mỗi khi spawn >2 background → mở `/tasks` để mắt.
 
-**Worktrees** — 3 agents cùng sửa 1 checkout → conflict. Fix: mỗi session 1 worktree (agent view/`/batch` tự tạo; làm tay thì):
+**Worktrees** — 3 agents cùng sửa 1 checkout → conflict. Worktree giống mỗi người một bàn làm việc riêng nhưng cùng xem một bản vẽ gốc: ai sửa phần của ai, không ai đụng bàn của ai. Fix: mỗi session 1 worktree (agent view/`/batch` tự tạo; làm tay thì):
 
-```bash
-git worktree add ../myrepo-worktrees/feat-auth -b feat/auth
-git worktree list
-# → thấy 2 dòng: checkout gốc + ../myrepo-worktrees/feat-auth (feature riêng)
-git worktree remove ../myrepo-worktrees/feat-auth   # xong việc
-```
+> 📄 **Code ví dụ:** [`examples/06-6-theo-doi-kill-background-agent-worktrees-chong.sh`](examples/06-6-theo-doi-kill-background-agent-worktrees-chong.sh)
 
 VD: 3 việc song song — auth (worktree 1), payment (worktree 2), docs (worktree 3) → merge từng cái, không giẫm. 1 agent đọc-only → khỏi.
 
 **Đào sâu:** [lệnh `tasks`](../01-huong-dan-su-dung/commands/session-context/tasks/README.md) · [Bài 11 — worktrees](../01-huong-dan-su-dung/11-git-worktrees-checkpoints.md) · [lệnh `branch`](../01-huong-dan-su-dung/commands/session-context/branch/README.md)
+
+> **Tóm gọn 1 câu:** Quản background agent như quản process: `/agents` + `/tasks` để mắt, kill switch khi loạn, và >1 agent chạm code là mỗi đứa 1 worktree.
 
 ---
 
@@ -248,20 +245,13 @@ Phase 2 — Implement (Sonnet, main): gắt từng file theo tóm tắt
 Phase 3 — Verify (Opus): fresh-reviewer + /verify (chạy app thật) + tests xanh
 ```
 
-```bash
-# Phase 1: 3 research song song (rẻ)
-/model haiku
-# Phase 2: implement
-/model sonnet
-# Phase 3: review khó
-/model opus
-/verify
-# → verify PASS + tests xanh = feature thực sự xong, không phải "model nói xong"
-```
+> 📄 **Code ví dụ:** [`examples/07-7-workflow-chuan-research-song-song-implement-verify.sh`](examples/07-7-workflow-chuan-research-song-song-implement-verify.sh)
 
 Muốn ép mọi workflow agent chạy chung một model thì đặt `CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL=<model>` (≥2.1.296) thay vì sửa từng agent file. Chi tiết verify xem [Bài tips 04 — verification](../02-tips-thuc-chien/04-verification-done-that.md).
 
 **Đào sâu:** [Bài tips 05 — parallel agents](../02-tips-thuc-chien/05-parallel-agents.md) · [lệnh `verify`](../01-huong-dan-su-dung/commands/code-repo/verify/README.md)
+
+> **Tóm gọn 1 câu:** Công thức 3 pha: research rẻ chạy song song, implement ở main, verify bằng fresh-reviewer — đắt thì dùng cuối, rẻ thì dùng đầu.
 
 ---
 
@@ -273,11 +263,9 @@ Muốn ép mọi workflow agent chạy chung một model thì đặt `CLAUDE_COD
 4. Giẫm file → worktrees (câu 6).
 5. `/debug` → chẩn đoán; `/bug` nếu nghi core.
 
-```bash
-/agents
-/tasks
-/usage
-```
+> 📄 **Code ví dụ:** [`examples/08-van-loi-thi-sao-subagent-teams.sh`](examples/08-van-loi-thi-sao-subagent-teams.sh)
+
+> **Tóm gọn 1 câu:** Lỗi nào cũng có lệnh tra riêng — không trigger xem description, kẹt deny xem allowlist, tăng bill xem `/usage`, giẫm file dùng worktrees.
 
 ---
 

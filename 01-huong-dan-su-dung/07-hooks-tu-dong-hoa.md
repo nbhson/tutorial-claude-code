@@ -30,26 +30,13 @@
 
 ## 1. Hook là gì và vì sao luật thắng gợi ý
 
-**Nôm na 1 câu:** Hook là *khóa cửa tự động* — tới giờ là khóa, không cần hỏi chủ nhà (model) có muốn khóa không.
+Mục này trả lời câu hỏi nền tảng: hook là gì, và vì sao rule quan trọng phải viết thành hook thay vì để trong CLAUDE.md. Đọc để hiểu "luật" khác "gợi ý" ở chỗ nào — đó là ý duy nhất bạn cần nhớ cả bài.
 
-```bash
-mkdir -p .claude/hooks
-cat > .claude/hooks/block-main-push.sh <<'EOS'
-#!/bin/bash
-set -euo pipefail
-INPUT="$(cat)"
-CMD="$(echo "$INPUT" | jq -r '.input.command // empty')"
-if echo "$CMD" | grep -Eq 'git[[:space:]]+push.*(main|master)'; then
-  echo '{"permissionDecision":"deny","reason":"BLOCKED: không push trực tiếp main. Mở PR."}'
-  exit 2
-fi
-exit 0
-EOS
-chmod +x .claude/hooks/block-main-push.sh
-# Verify: echo '{"input":{"command":"git push origin main"}}' | .claude/hooks/block-main-push.sh; echo "exit=$?"
-```
+**Nôm na 1 câu:** Hook là *khóa cửa tự động* — tới giờ là khóa, không cần hỏi chủ nhà (model) có muốn khóa không. Hãy hình dung CLAUDE.md là tấm biển "vui lòng tắt đèn" còn hook là công tắc cảm ứng: biển thì ai đọc cũng được nhưng có người quên, cảm ứng thì tắt dù bạn có đọc hay không.
 
-**Vì sao hook chắc chắn hơn CLAUDE.md:** hook chạy **ngoài model** (harness chạy shell, không qua LLM — trừ type `prompt`/`agent`) → 0 model tokens, không bị prompt-injection thuyết phục, chạy trước cả `bypassPermissions`/`--dangerously-skip-permissions`, và **chỉ siết không nới** (hook allow không thắng được deny rules hay `ask` của org — sửa deny gốc ở bài 10).
+> 📄 **Code ví dụ:** [`examples/01-1-hook-la-gi-va-vi-sao-luat.sh`](examples/01-1-hook-la-gi-va-vi-sao-luat.sh)
+
+**Vì sao hook chắc chắn hơn CLAUDE.md:** hook chạy **ngoài model** (harness chạy shell, không qua LLM — trừ type `prompt`/`agent`) → 0 model tokens, không bị prompt-injection thuyết phục, chạy trước cả `bypassPermissions`/`--dangerously-skip-permissions`, và **chỉ siết không nới** (hook allow không thắng được deny rules hay `ask` của org — sửa deny gốc ở bài 10). Như bảo vệ tòa nhà: có được lệnh "hãy để xe vào" từ ai đó đi nữa, vẫn phải quét thẻ gốc.
 
 ```text
 CLAUDE.md "NEVER push main"   → Claude đọc, gật gù, đôi khi vẫn push (quên/misread)
@@ -58,9 +45,15 @@ PreToolUse hook match push    → block 100%, kể cả --dangerously-skip-permi
 
 > Công thức cả bài: **CLAUDE.md/skills = gợi ý (advisory) — hook = luật (law, chạy chắc)**. Rule bị Claude miss ≥2 lần → nâng thành hook. Mọi team cần ít nhất hook block-push-main + lint-on-write.
 
+> **Tóm gọn 1 câu:** CLAUDE.md là tấm biển dán tường, hook là công tắc cảm ứng — rule mà Claude quên từ 2 lần trở lên thì đừng dán biển nữa, lắp công tắc.
+
 ---
 
 ## 2. Các event + type
+
+Mục này là "bản đồ hệ nhị phân" của hook: event nào lửa lúc nào, và type nào dùng cho việc nào. Đọc để chọn đúng thời điểm và đúng loại súng trước khi viết hook đầu tiên.
+
+Bảng event như bảng lịch trình của một ngày làm việc: mỗi dòng là một thời điểm trong vòng đời session/tool, và hook của bạn đeo vào đúng thời điểm đó.
 
 | Event | Khi lửa | Dùng cho |
 |---|---|---|
@@ -79,6 +72,8 @@ PreToolUse hook match push    → block 100%, kể cả --dangerously-skip-permi
 | `InstructionsLoaded` | 1 file CLAUDE.md/rules vừa load | Validate/audit memory load |
 | `PreCompact`/`PostCompact`, `ConfigChange` | Compaction/config | Backup context trước compact |
 
+> **Cách đọc bảng này:** cột "Khi lửa" là thời điểm hook được gọi, cột "Dùng cho" là việc hay làm lúc đó — muốn chặn chuyện gì xảy ra thì tìm event đứng *trước* chuyện đó (vd chặn push → `PreToolUse`).
+
 | Type | Khi nào | Ví dụ |
 |---|---|---|
 | `command` | 95% cases — deterministic, nhanh, 0 token | Lint, block push, guard migrations |
@@ -86,11 +81,19 @@ PreToolUse hook match push    → block 100%, kể cả --dangerously-skip-permi
 | `agent` | Verify cần đọc code multi-turn (experimental) | Review diff trước khi cho push |
 | `http` / `mcp_tool` | Đẩy event ra hệ ngoài / gọi tool MCP đã connect | Log sang ticketing; PostToolUse → tạo ticket Linear |
 
+> **Cách đọc bảng này:** chọn type như chọn dụng cụ: `command` là búa — đủ cho 95% việc; 3 dòng còn lại là dụng cụ đặc biệt, chỉ lấy khi búa không đóng được.
+
 > Hooks nhận được cả **effort level** hiện tại trong event JSON (w19/2026) — có thể siết chặt hơn khi effort thấp.
+
+> **Tóm gọn 1 câu:** Chọn event theo *thời điểm* muốn can thiệp, chọn type theo *loại việc* — 95% là `command` chạy shell, 0 token.
 
 ---
 
 ## 3. Cấu hình settings.json + hợp đồng stdin/stdout
+
+Mục này nói về 2 mảng: hook ghi vào file nào, và "hợp đồng" trao đổi dữ liệu giữa harness và hook ra sao. Đọc để biết hook sống ở đâu và nói chuyện với harness bằng ngôn ngữ gì.
+
+Thứ tự ưu tiên giống hệ thống phân cấp công ty: chính sách công ty (org) thắng bản local cá nhân, bản cá nhân thắng bản team, bản team thắng bản máy — tầng nào trên ghi đè tầng dưới.
 
 Thứ tự ưu tiên: `managed policy (org) > .claude/settings.local.json (personal, không commit) > .claude/settings.json (team, commit) > ~/.claude/settings.json`. Xem merged result bằng `/permissions` — đừng đoán.
 
@@ -106,111 +109,47 @@ Thứ tự ưu tiên: `managed policy (org) > .claude/settings.local.json (perso
 - Matcher **case-sensitive** (`Edit` ≠ `edit`). Nhiều hooks cùng event chạy song song; 2 hook cùng rewrite `updatedInput` → thằng finish cuối thắng (non-deterministic — tránh overlap).
 - Hook lỗi/timeout mặc định **thả qua**; đặt `onFailure: "block"` (≥2.1.295) để chặn khi hook lỗi — dùng cho guard bảo mật.
 
+> **Tóm gọn 1 câu:** Hook sống ở 4 tầng settings (org thắng tất) và nói chuyện với harness qua stdin/stdout JSON — exit 2 là chặn, và hook chỉ có quyền siết chứ không nới.
+
 ---
 
 ## 4. Full settings.json mẫu + 5 hooks hoàn chỉnh
 
-```json
-{
-  "$schema": "https://claude.ai/code/settings-schema.json",
-  "permissions": {
-    "allow": ["Read", "Glob", "Grep", "Bash(pnpm test:*)", "Bash(git diff:*)", "Bash(git status:*)"],
-    "ask": ["Edit", "Write", "Bash(pnpm:*)", "Bash(git push:*)"],
-    "deny": ["Bash(rm -rf:*)", "Bash(git push origin main:*)", "Write(.env*)"]
-  },
-  "hooks": {
-    "SessionStart": [{ "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/session-context.sh" }],
-    "PreToolUse": [
-      { "matcher": "Bash",  "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/block-main-push.sh" },
-      { "matcher": "Write", "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/guard-migrations.sh" }
-    ],
-    "PostToolUse": [{ "matcher": "Edit|Write", "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/lint-on-write.sh" }],
-    "Stop":        [{ "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/cost-ledger.sh" }],
-    "Notification":[{ "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/notify.sh" }],
-    "SubagentStop":[{ "matcher": "explorer|tester", "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/log-subagent.sh" }]
-  }
-}
-```
+Mục này giao cho bạn 5 hook "đi kèm pin": settings.json đầy đủ + từng hook một, cài là chạy. Đọc phần mô tả từng hook để biết mỗi cái gác cửa chỗ nào trước khi dán vào repo.
+
+> 📄 **Code ví dụ:** [`examples/02-4-full-settings-json-mau-5-hooks-hoan.json`](examples/02-4-full-settings-json-mau-5-hooks-hoan.json)
+
+Hãy hình dung 5 hook này như 5 bảo vệ phân ca: một người soát từng file vừa sửa (lint), một người đứng cửa push, một người canh phòng migration, một người ghi sổ chi tiêu, một người mở cửa phòng họp đầu giờ.
 
 **Hook 1 — lint-on-write (PostToolUse Edit|Write)** — format/lint file vừa sửa, lỗi trả lại cho agent fix ngay:
 
-```bash
-#!/bin/bash
-# .claude/hooks/lint-on-write.sh — chỉ lint file vừa sửa, đừng lint cả repo (chậm 8s+)
-set -euo pipefail
-INPUT="$(cat)"
-FILES="$(echo "$INPUT" | jq -r '.input.file_path // .input.path // empty')"
-[ -z "$FILES" ] && exit 0
-echo "$FILES" | tr ' ' '\n' | grep -E '\.(ts|tsx|js|jsx)$' | while read -r f; do
-  [ -f "$f" ] || continue
-  npx prettier --write "$f" >/dev/null 2>&1 || true
-  npx eslint "$f" --max-warnings 0
-done
-# eslint fail → exit nonzero → PostToolUseFailure → Claude thấy lỗi, fix ngay.
-```
+> 📄 **Code ví dụ:** [`examples/03-4-full-settings-json-mau-5-hooks-hoan.sh`](examples/03-4-full-settings-json-mau-5-hooks-hoan.sh)
 
 **Hook 2 — branch-protect (PreToolUse Bash)** — match theo INTENT, không substring "main":
 
-```bash
-#!/bin/bash
-# .claude/hooks/block-main-push.sh — block push main/master, force-push, xóa branch remote
-set -euo pipefail
-INPUT="$(cat)"
-CMD="$(echo "$INPUT" | jq -r '.input.command // empty')"
-if echo "$CMD" | grep -Eq 'git[[:space:]]+push([^&|;]*[[:space:]]|^)(origin[[:space:]]+)?(HEAD:)?(main|master)([[:space:]]|$)'; then
-  echo '{"permissionDecision":"deny","reason":"BLOCKED: không push trực tiếp main. Mở PR từ branch feat/*."}'; exit 2
-fi
-if echo "$CMD" | grep -Eq '\-\-force($|[[:space:]])|-f([[:space:]]|$)|--force-with-lease'; then
-  echo '{"permissionDecision":"deny","reason":"BLOCKED: force-push bị cấm. Dùng rebase thường."}'; exit 2
-fi
-if echo "$CMD" | grep -Eq 'git[[:space:]]+push[[:space:]]+[^ ]*[[:space:]]+--delete|:heads/'; then
-  echo '{"permissionDecision":"deny","reason":"BLOCKED: xóa branch remote cần xác nhận tay."}'; exit 2
-fi
-exit 0
-# Test với: git push -f, git push --force, git push --force-with-lease, git push origin HEAD:main.
-```
+> 📄 **Code ví dụ:** [`examples/04-4-full-settings-json-mau-5-hooks-hoan.sh`](examples/04-4-full-settings-json-mau-5-hooks-hoan.sh)
 
 **Hook 3 — guard-migrations (PreToolUse Write)** — block sửa migration đã merge:
 
-```bash
-#!/bin/bash
-set -euo pipefail
-INPUT="$(cat)"
-FILE="$(echo "$INPUT" | jq -r '.input.file_path // .input.path // empty')"
-case "$FILE" in *db/migrations/*|*prisma/migrations/*) ;; *) exit 0 ;; esac
-if git ls-files --error-unmatch "$FILE" >/dev/null 2>&1; then
-  echo "{\"permissionDecision\":\"deny\",\"reason\":\"BLOCKED: $FILE đã merge. Viết migration MỚI.\"}"; exit 2
-fi
-```
+> 📄 **Code ví dụ:** [`examples/05-4-full-settings-json-mau-5-hooks-hoan.sh`](examples/05-4-full-settings-json-mau-5-hooks-hoan.sh)
 
 **Hook 4 — cost-ledger (Stop)** — append token usage vào CSV hàng ngày:
 
-```bash
-#!/bin/bash
-set -euo pipefail
-INPUT="$(cat)"
-LEDGER="${CLAUDE_PROJECT_DIR:-.}/.claude/cost-ledger.csv"
-[ -f "$LEDGER" ] || echo "date,tokens_in,tokens_out,note" > "$LEDGER"
-echo "$(date +%F),$(echo "$INPUT" | jq -r '.usage.input_tokens // "?"'),$(echo "$INPUT" | jq -r '.usage.output_tokens // "?"'),stop-event" >> "$LEDGER"
-# Quá cap → ping Slack webhook nếu có.
-```
+> 📄 **Code ví dụ:** [`examples/06-4-full-settings-json-mau-5-hooks-hoan.sh`](examples/06-4-full-settings-json-mau-5-hooks-hoan.sh)
 
 **Hook 5 — session-context (SessionStart)** — inject branch + git status vào context:
 
-```bash
-#!/bin/bash
-set -euo pipefail
-BRANCH="$(git branch --show-current 2>/dev/null || echo '?')"
-STATUS="$(git status --short 2>/dev/null | head -5 || true)"
-jq -n --arg b "$BRANCH" --arg s "$STATUS" \
-  '{additionalContext: ("Branch: \($b)\nGit status (top5):\n\($s)\nNhắc: chạy focused test sau sửa, không push main.")}'
-```
+> 📄 **Code ví dụ:** [`examples/07-4-full-settings-json-mau-5-hooks-hoan.sh`](examples/07-4-full-settings-json-mau-5-hooks-hoan.sh)
 
 Cài: `chmod +x .claude/hooks/*.sh` → `/hooks` xác nhận → mở session MỚI (hooks load lúc start). Ngoài 5 hook trên: Stop gate (script check, block turn-end tới khi pass), prompt-hook (judgment câu chữ), agent-hook (verify multi-turn — production ưu tiên command hooks).
+
+> **Tóm gọn 1 câu:** Cài xong nhớ 3 nhịp: chmod, `/hooks` xác nhận, mở session mới — hook không load lại giữa session như điện không có lại nguồn.
 
 ---
 
 ## 5. Walkthrough + debug khi hook không chạy
+
+Mục này là "lần đầu tiên đặt tay": cài hook đầu tiên trong 10 phút, rồi flowchart 7 bước để cứu hook im lặng. Đọc khi hook vừa cài mà không thấy nó chạy — chuyện gần như chắc chắn xảy ra ít nhất một lần.
 
 **Thêm hook đầu tiên (10 phút):**
 
@@ -236,17 +175,17 @@ Hook không chạy?
 └─ 7. Muốn nới nhưng vẫn deny?      Hook allow KHÔNG nới được deny/org ask — hooks chỉ siết (bài 10)
 ```
 
-```bash
-# Debug tay:
-echo '{"tool":"Bash","input":{"command":"git push origin main"}}'    | .claude/hooks/block-main-push.sh; echo "exit=$?"   # kỳ vọng 2
-echo '{"tool":"Bash","input":{"command":"git push origin feat/x"}}'  | .claude/hooks/block-main-push.sh; echo "exit=$?"   # kỳ vọng 0
-```
+> 📄 **Code ví dụ:** [`examples/08-5-walkthrough-debug-khi-hook-khong-chay.sh`](examples/08-5-walkthrough-debug-khi-hook-khong-chay.sh)
 
-Nhờ Claude viết hook: "Viết hook chạy eslint sau mỗi lần edit file .ts" — Claude sửa settings.json, bạn `/hooks` duyệt lại. Đối xử hooks như production code (chạy với quyền của bạn, đọc FS + network + ghi disk).
+Nhờ Claude viết hook: "Viết hook chạy eslint sau mỗi lần edit file .ts" — Claude sửa settings.json, bạn `/hooks` duyệt lại. Đối xử hooks như production code (chạy với quyền của bạn, đọc FS + network + ghi disk) — coi như giao chìa khóa nhà cho người lạ: phải biết rõ người đó là ai.
+
+> **Tóm gọn 1 câu:** Cài hook xong mà nó im lặng thì đi từng bước flowchart 7 bước từ trên xuống — 90% là sai path, sai event hoặc sai chữ hoa chữ thường của matcher.
 
 ---
 
 ## 6. Bẫy, bài tập, link
+
+Mục này là kho "vết thương đã lành": mấy hiểu nhầm và bẫy cấu hình mà người trước đã dẫm. Đọc để không phải tự va một lần nữa.
 
 ### Hiểu nhầm thường gặp
 
@@ -257,6 +196,8 @@ Nhờ Claude viết hook: "Viết hook chạy eslint sau mỗi lần edit file .
 | "Rules settings.json đủ chặn, khỏi hook" | Rules prefix-match lọt `HEAD:main`, `-f` chen giữa, binary khác. Chắc chắn → hook match theo intent |
 | "Matcher không phân biệt hoa thường" | Có phân biệt — sai case là hook im lặng |
 | "Hook thay được OS sandbox" | Hook vẫn bypass được qua binary lạ. Critical → hook + sandbox + deny rules (bài 10) |
+
+> **Cách đọc bảng này:** cột trái là lời đồn trong team, cột phải là sự thật đã kiểm chứng — nếu bạn đang tin cột trái, hãy đọc kỹ bản fix ở cột phải trước khi viết hook tiếp.
 
 ### Bẫy cấu hình + fix
 
@@ -269,6 +210,8 @@ Nhờ Claude viết hook: "Viết hook chạy eslint sau mỗi lần edit file .
 | Stop gate block mãi không thoát | Tối đa 8 blocks rồi override — nhưng fix script gốc |
 | Prompt-hook tốn token bất ngờ | Chỉ dùng `prompt` khi regex không làm được |
 
+> **Cách đọc bảng này:** cột "Bẫy" là hiện tượng gặp trên máy, cột "Fix" là việc xử lý — tra đúng dòng đang dính như tra mã lỗi, không cần đọc hết.
+
 ### Bài tập
 
 1. (15') Cài hook 2 (branch-protect); test 4 lệnh push, ghi lại cái nào lọt.
@@ -276,6 +219,8 @@ Nhờ Claude viết hook: "Viết hook chạy eslint sau mỗi lần edit file .
 3. (15') Cài hook 5 (session-context); session mới kiểm tra context có branch.
 4. (20') Viết 1 prompt-hook ("commit message có leak secret?"); so token cost vs command-hook.
 5. (15') Chạy debug flowchart cho 1 hook cấu hình sai cố ý (matcher thường); ghi lại bước bắt được lỗi.
+
+> **Tóm gọn 1 câu:** Học hook bằng tay: cài branch-protect, cài lint-on-write, rồi cố ý làm hỏng một hook để flowchart 7 bước bắt lỗi cho bạn.
 
 ### Link chéo
 

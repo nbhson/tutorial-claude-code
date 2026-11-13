@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/doctor          # audit đầy đủ
-/doctor --quick  # quét nhanh các mục chính
-/doctor --fix    # đề xuất fix, bạn duyệt từng cái
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,16 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Vừa clone repo người khác để lại, chưa biết gì:
-/doctor
-
-# Báo cáo ví dụ:
-# 🔴 claude-md: không có CLAUDE.md (0 dòng) → /init tạo mới?
-# 🟡 permissions: không có settings.json → dùng mặc định (hỏi nhiều)
-# 🟢 mcp: không có server (sạch, khỏi lo)
-# 🟡 hooks: không có (khuyên thêm guard + format)
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -43,11 +30,17 @@ Kết quả mong đợi:
 
 ## Lỗi thường gặp
 
+Mục này là "sổ bệnh án" của `/doctor`: từ điểm health tưởng thấp oan tới trim xong model làm sai, kèm cách xử lý.
+
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Trim xong model làm sai hàng loạt | Trim cắt mất luật quan trọng | `git checkout .claude/` rollback; tách rules tay rồi trim lại từng phần |
 | `/doctor` báo MCP dead dù hôm qua còn chạy | Laptop sleep kill stdio | `/mcp reconnect <tên>` rồi `/doctor mcp` lại |
 | Điểm thấp vì "thiếu CLAUDE.md" nhưng repo cố tình không cần | Repo 5 file, doctor heuristic quá đà | Bỏ qua mục đó (không phải lỗi); doctor là gợi ý, không phải luật |
+
+> **Cách đọc bảng này:** mỗi dòng một sự cố sau khi chạy hoặc fix theo `/doctor`; đọc "Vì sao" để hiểu giới hạn của tool trước khi áp "Cách sửa".
+
+> **Tóm gọn 1 câu:** `/doctor` là khám sức khoẻ tổng quát định kỳ của repo — kết quả là gợi ý, không phải bản án; bạn duyệt từng mục rồi mới sửa.
 
 ## Tham khảo
 

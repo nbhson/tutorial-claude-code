@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/login
-/login --sso
-/login --api-key
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,15 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Vừa cài xong theo bài 01, mở terminal:
-claude
-
-# Trong session gõ:
-/login
-# → Trình duyệt tự mở, bấm "Authorize Claude Code"
-# → Terminal báo: "✓ Signed in as ban@gmail.com (Pro)"
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -40,10 +28,7 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-/status
-# → dòng Account hiện đúng email + plan vừa login, không còn "not logged in"
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
 
@@ -52,6 +37,10 @@ Kết quả mong đợi:
 | Trình duyệt mở nhưng bấm Authorize xong CLI vẫn chờ | Callback localhost bị chặn (firewall/VPN) hoặc mở nhầm profile trình duyệt | Copy URL sang trình duyệt khác; tắt VPN thử; dùng device-code (mở trên máy khác, nhập mã) |
 | `No browser detected` trên máy có GUI | Biến `BROWSER` unset hoặc chạy qua tmux/SSH | Set `export BROWSER=open` (macOS) rồi `/login` lại; hoặc dùng device-code |
 | `Token expired, please re-authenticate` liên tục | Refresh token bị thu hồi (đổi pass, admin revoke) hoặc đồng hồ máy lệch | `/logout` rồi `/login` lại từ đầu; `sudo ntpdate` đồng bộ giờ |
+
+> **Cách đọc bảng này:** "Triệu chứng" là thông báo lỗi trên màn hình, "Vì sao" chỉ nguyên nhân phía mạng/tài khoản, "Cách sửa" là hướng đi thay thế — đọc đúng hàng đang dính, có hàng phải thử nhiều phương án.
+
+> **Tóm gọn 1 câu:** `/login` là cắm chìa khoá vào máy — làm một lần dùng nhiều tháng, và login xong nhớ `/status` xem mình đang là ai.
 
 ## Tham khảo
 

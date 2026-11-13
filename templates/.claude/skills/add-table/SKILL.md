@@ -11,6 +11,8 @@ allowed-tools: Bash, Read, Write, Edit
 > Stack mẫu: Postgres + file migration SQL trong `db/migrations/`.
 > Comment trong file mẫu đều tiếng Việt để người mới cũng đọc được.
 
+Skill này giống một thầu xây bàn: khảo sát nền móng (schema cũ) → đổ bê tông (migration) → lắp khóa cửa (RLS) → nghiệm thu (test), đúng thứ tự, không bước nào bỏ qua.
+
 ## Inputs
 
 1. `$ARGUMENTS` = tên bảng snake_case (vd `profiles`, `org_members`).
@@ -23,10 +25,7 @@ allowed-tools: Bash, Read, Write, Edit
 ### Bước 1 — Khảo sát schema hiện tại (không đoán)
 
 - Liệt kê migrations cũ để lấy convention đánh số:
-  ```bash
-  # Xem 5 migration gần nhất để đặt tên file tiếp theo
-  ls -1 db/migrations/ | sort | tail -5
-  ```
+  > 📄 **Code ví dụ:** [`examples/01-buoc-1-khao-sat-schema-hien-tai-khong.sh`](examples/01-buoc-1-khao-sat-schema-hien-tai-khong.sh)
 - Đọc 1 migration mẫu để copy header/style (vd `db/migrations/0001_init.sql`).
 - Đọc file models/types hiện tại nếu có (vd `apps/api/src/db/schema.ts`).
 
@@ -34,37 +33,16 @@ allowed-tools: Bash, Read, Write, Edit
 
 - Tên file: `db/migrations/<YYYYMMDDHHMMSS>_create_<ten_bang>.sql`.
 - Nội dung bắt buộc:
-  ```sql
-  -- Migration: tạo bảng profiles (ví dụ mẫu, sửa cột cho đúng domain)
-  CREATE TABLE IF NOT EXISTS profiles (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(), -- khóa chính uuid
-    user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE, -- chủ sở hữu
-    display_name text NOT NULL, -- tên hiển thị
-    created_at timestamptz NOT NULL DEFAULT now(), -- thời gian tạo
-    updated_at timestamptz NOT NULL DEFAULT now() -- thời gian sửa
-  );
-  CREATE INDEX IF NOT EXISTS idx_profiles_user_id ON profiles(user_id); -- index tra theo user
-  ```
+  > 📄 **Code ví dụ:** [`examples/02-buoc-2-viet-migration-file-moi.sql`](examples/02-buoc-2-viet-migration-file-moi.sql)
 - Chạy check cú pháp (không apply mù):
-  ```bash
-  # Dry-run hoặc lint SQL tùy tool team (ví dụ dùng psql --dry-run / sqllint)
-  pnpm db:migrate --dry-run
-  ```
+  > 📄 **Code ví dụ:** [`examples/03-buoc-2-viet-migration-file-moi.sh`](examples/03-buoc-2-viet-migration-file-moi.sh)
 
 ### Bước 3 — Bật RLS + policy (bắt buộc với Postgres)
 
+RLS là chốt cửa cuối cùng của tầng dữ liệu: dù ai đó trèo qua các tầng trên mà lọt xuống, tầng này vẫn khóa theo user.
+
 - Sau `CREATE TABLE`, luôn thêm:
-  ```sql
-  -- Bật Row Level Security: không bật = mọi role đọc được hết
-  ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-  -- Policy: user chỉ đọc/sửa dòng của chính mình
-  CREATE POLICY "profiles_owner_all" ON profiles
-    FOR ALL TO authenticated
-    USING (auth.uid() = user_id)
-    WITH CHECK (auth.uid() = user_id);
-  -- Policy: service_role bypass khi chạy job nền (nếu cần)
-  -- CREATE POLICY "profiles_service_all" ON profiles FOR ALL TO service_role USING (true);
-  ```
+  > 📄 **Code ví dụ:** [`examples/04-buoc-3-bat-rls-policy-bat-buoc-voi.sql`](examples/04-buoc-3-bat-rls-policy-bat-buoc-voi.sql)
 - NEVER để bảng user-data public read (`USING (true)` cho anon) trừ khi có yêu cầu rõ ràng.
 
 ### Bước 4 — Viết test (bắt buộc)
@@ -74,10 +52,7 @@ allowed-tools: Bash, Read, Write, Edit
   2. Insert 1 row hợp lệ → đọc lại được.
   3. RLS: user A không đọc được row của user B (expect 0 rows / 403).
 - Chạy focused test:
-  ```bash
-  # Chạy đúng file test vừa tạo, không chạy full suite
-  pnpm test db/__tests__/profiles.test.ts
-  ```
+  > 📄 **Code ví dụ:** [`examples/05-buoc-4-viet-test-bat-buoc.sh`](examples/05-buoc-4-viet-test-bat-buoc.sh)
 
 ## Output format
 
@@ -96,3 +71,5 @@ allowed-tools: Bash, Read, Write, Edit
 - NEVER tạo bảng không có RLS khi chứa `user_id` (dữ liệu user).
 - NEVER đặt tên cột camelCase trong SQL — dùng snake_case.
 - ALWAYS chạy focused test trước khi báo xong; fail → giữ migration, báo lỗi nguyên văn.
+
+> **Tóm gọn 1 câu:** Tạo bảng = 4 bước không bỏ qua: khảo sát → migration → RLS khóa cửa → test nghiệm thu, và luôn kèm 1 lệnh rollback trong báo cáo.

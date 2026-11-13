@@ -1,0 +1,26 @@
+{
+  "$schema": "https://claude.ai/code/settings-schema.json",
+  "permissions": {
+    "allow": [
+      "Read", "Glob", "Grep",
+      "Bash(git diff:*)", "Bash(git status:*)", "Bash(git log:*)",
+      "Bash(pnpm test:*)", "Bash(pnpm lint:*)"
+    ],
+    "ask": ["Edit", "Write", "Bash(pnpm:*)", "Bash(git push:*)", "Bash(git commit:*)", "Bash(docker:*)"],
+    "deny": [
+      "Bash(rm -rf:*)", "Bash(sudo:*)",
+      "Bash(git push origin main:*)", "Bash(git push origin master:*)",
+      "Write(.env*)", "Read(.env*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      { "matcher": "Bash", "type": "command",
+        "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/block-main-push.sh" }
+    ],
+    "PostToolUse": [
+      { "matcher": "Edit|Write", "type": "command",
+        "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/lint-on-write.sh" }
+    ]
+  }
+}

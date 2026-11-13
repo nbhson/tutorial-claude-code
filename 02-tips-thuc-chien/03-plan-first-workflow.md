@@ -17,11 +17,15 @@
 
 ## 1. Vì sao plan-first thắng?
 
-Plan mode rẻ (chỉ tokens suy nghĩ), code sai đắt (sửa + test + rewind): plan 1 turn (500–2000 tokens, 2 phút đọc, sai thì sửa chữ) vs code ngay 5 files sai (20K+ tokens + 5 turns sửa + rewind + test đỏ). Số liệu nội bộ team (không phải số chính thức): task >1 file mà không plan → 60% phải rewind ít nhất 1 lần; có plan duyệt → còn ~15%.
+Mục này trả lời câu hỏi "học plan mode để làm gì" bằng con số thật: plan rẻ, code sai đắt.
+
+Plan mode rẻ (chỉ tokens suy nghĩ), code sai đắt (sửa + test + rewind): plan 1 turn (500–2000 tokens, 2 phút đọc, sai thì sửa chữ) vs code ngay 5 files sai (20K+ tokens + 5 turns sửa + rewind + test đỏ). Ví von: plan giống phác thảo bản vẽ bằng bút chì — sai là tẩy cháy 2 phút; code ngay là đổ bê tông xong mới thấy sai — đục lại tốn gấp mười. Số liệu nội bộ team (không phải số chính thức): task >1 file mà không plan → 60% phải rewind ít nhất 1 lần; có plan duyệt → còn ~15%.
 
 Ba lợi ích ngoài "đỡ sai": **(1) ép scope rõ** — plan bắt liệt kê files đụng/không đụng; **(2) chia verify được** — mỗi phase có gate test, bắt lệch sớm (mục 7); **(3) lưu được** — plan là file, session implement fresh vẫn có bản đồ, không phụ thuộc trí nhớ hội thoại ([Tips 01](./01-context-hygiene.md)).
 
 Task 1 file, 1 bước, rõ ràng (đổi text, thêm log, sửa typo) → plan tốn hơn lợi. Xem mục 8.
+
+> **Tóm gọn 1 câu:** Plan-first thắng vì sửa chữ rẻ hơn sửa code gấp nhiều lần — trừ task 1 file rõ ràng thì khỏi plan.
 
 ---
 
@@ -30,6 +34,8 @@ Task 1 file, 1 bước, rõ ràng (đổi text, thêm log, sửa typo) → plan 
 Plan mode = Claude **read-only**: được đọc file, grep, outline thay đổi, hỏi ngược, sinh plan markdown; không được `Edit`/`Write` source, chạy lệnh đổi trạng thái (migrate, deploy), commit. Hiểu nôm na: cho kiến trúc sư đi đo đạc, cấm thợ đụng búa. Bên trong: permissions siết (Edit/Write bị chặn, Bash read-only tùy config); plan là markdown có cấu trúc, save được ra `plan.md`; vòng sửa chữ rẻ — bạn chê → Claude sửa chữ 2–3 vòng, mỗi vòng vài trăm tokens; thoát plan = duyệt ("ok, implement" hoặc `Shift+Tab` về default) → mới được code.
 
 > Dòng chảy: **Explore read-only** (rẻ) → **Plan chờ duyệt** (sửa chữ 2–3 vòng) → save `plan.md` → `/clear` → **Implement từng phase có gate** (đỏ thì dừng, rewind 1 phase).
+
+> **Tóm gọn 1 câu:** Plan mode = chế độ read-only: cho đo đạc và soạn bản vẽ, cấm đụng búa — duyệt xong mới được code.
 
 ---
 
@@ -47,10 +53,7 @@ default → acceptEdits → plan → auto → bypass → (quay về default)
 
 ### Cách 2 — Gõ `/plan`
 
-```bash
-/plan
-# → ép vào plan mode ngay, khỏi xoay Shift+Tab
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-2-go-plan.sh`](examples/01-cach-2-go-plan.sh)
 
 ### Cách 3 — Dặn bằng lời (không cần nhớ phím)
 
@@ -58,11 +61,15 @@ default → acceptEdits → plan → auto → bypass → (quay về default)
 "Trước khi làm gì, trình plan chi tiết và chờ duyệt. Không sửa code trong message này."
 ```
 
-Hợp cho người mới và người không viết code (xem [Tips 02](./02-prompt-engineering.md)). Mẹo: kết hợp `Shift+Tab` vào plan + câu dặn "không code, chỉ plan" để khóa 2 lớp; sau plan, `git status` phải sạch (không diff lén).
+Hợp cho người mới và người không viết code (xem [Tips 02](./02-prompt-engineering.md)). Mẹo: kết hợp `Shift+Tab` vào plan + câu dặn "không code, chỉ plan" để khóa 2 lớp — như vừa khóa cửa vừa bật báo động. Sau plan, `git status` phải sạch (không diff lén).
+
+> **Tóm gọn 1 câu:** Ba cách vào plan mode: Shift+Tab, gõ /plan, hoặc dặn bằng lời — người mới nên dùng cách dặn lời cho chắc.
 
 ---
 
 ## 4. Plan tốt gồm gì (7 mục + template)
+
+Mục này cho biết một plan "chắc tay" cần đủ mục nào — thiếu 1 mục là lúc implement phải đoán, đoán là drift.
 
 Thiếu 1 mục là lúc implement phải đoán.
 
@@ -100,9 +107,15 @@ Thiếu 1 mục là lúc implement phải đoán.
 - `pnpm ...` xanh + `git diff --stat` chỉ chạm ...
 ```
 
+7 mục trên giống checklist mang đồ đi du lịch: đọc gì/sửa gì là đồ đạc, risks là dự báo thời tiết, verify là vé tàu — đủ hết mới lên đường.
+
+> **Tóm gọn 1 câu:** Plan tốt đủ 7 mục, mỗi mục đo được: đọc/sửa file nào, thứ tự nào, cấm gì, rủi ro gì, verify thế nào, gate ra sao.
+
 ---
 
 ## 5. Ví dụ: prompt plan chuẩn copy-paste
+
+Mục này cho 3 mẫu prompt dán vào là chạy: từ feature mới đến refactor và khảo sát. Ba mẫu dưới chỉ gồm code mẫu để copy, giải thích nằm ở dòng cuối mục.
 
 ### Ví dụ 1 — Feature payments (đủ 7 mục)
 
@@ -139,9 +152,13 @@ Chờ tôi chọn phương án mới implement.
 
 Khi đã quen, chỉ cần 1 dòng: `"Vào plan mode. Trình plan 3 phases refund, mỗi phase có verify gate. Chờ duyệt. Không code."`
 
+> **Tóm gọn 1 câu:** Ba mẫu prompt có sẵn: dùng đủ 7 mục cho feature mới, ép phase gate cho refactor, và 1 dòng ngắn khi đã quen.
+
 ---
 
 ## 6. Tách 2 sessions cho task lớn (plan-then-execute)
+
+Mục này dạy cách làm task lớn cho sạch: một session lo nghĩ, một session riêng lo làm — tách để session implement không dính rác.
 
 Vì sao 2 sessions? Vì **context xuống cấp** ([Tips 01](./01-context-hygiene.md)): session research mang 30K rác explore vào người → session implement ngáo. Tách ra là sạch.
 
@@ -166,9 +183,15 @@ Xong phase 1 + test xanh mới hỏi tôi có sang phase 2 không. Không đụn
 
 **Biến thể cho team (không đồng bộ):** người A (senior) làm Session A, `git add plan.md && git commit -m "plan: refund payments (3 phases)" && git push` + PR draft; người B (junior/agent) làm Session B từ plan.md, không cần họp lại.
 
+2 sessions giống nhà hàng: đầu bếp chép thực đơn (Session A) rồi vào bếp nấu theo thực đơn (Session B) — khỏi vừa nghĩ vừa nấu làm bỏng tay.
+
+> **Tóm gọn 1 câu:** Task lớn thì tách 2 sessions: session plan chốt plan.md, session fresh chỉ việc làm theo từng phase có gate.
+
 ---
 
 ## 7. Walkthrough: feature payments 2 ngày
+
+Mục này đi trọn một case thật 2 ngày, mỗi ô trong bảng là 1 buổi làm — bạn có thể dán thẳng prompt trong cột phải.
 
 **Bối cảnh:** thêm `POST /api/payments/:id/refund`, repo Node + pnpm.
 
@@ -180,6 +203,10 @@ Xong phase 1 + test xanh mới hỏi tôi có sang phase 2 không. Không đụn
 | Ngày 2 chiều | P2b+P3 + review | Mỗi phase 1 session fresh. Xong P3: `"Spawn reviewer subagent fresh. Review git diff với plan.md. Finding = bug/security/test-gap. [SEVERITY] file:line — fix."` → `/verify` → mở PR |
 
 Tổng: 5–6 sessions gọn thay vì 1 session 90% đầy rác.
+
+> **Cách đọc bảng này:** mỗi dòng là 1 khung giờ trong 2 ngày. Cột **Session** cho biết đang ở giai đoạn nào, cột **Làm gì** là prompt copy-paste được ngay vào Claude Code.
+
+> **Tóm gọn 1 câu:** Lịch 2 ngày: ngày 1 explore + plan duyệt, ngày 2 implement từng phase rồi review fresh — mỗi việc một session.
 
 ---
 
@@ -202,11 +229,15 @@ Tổng: 5–6 sessions gọn thay vì 1 session 90% đầy rác.
 - Verify: `pnpm --filter payments test service` xanh (gồm 2 cases mới)
 ```
 
-Có gate vs không gate: không gate → chạy 1 mạch 10 steps, hỏng ở step 3 nhưng step 9 mới biết, tự thêm feature "cho tiện"; có gate → hỏng dừng ngay, rewind 1 phase, mọi thêm ngoài plan phải hỏi trước.
+Có gate vs không gate: không gate → chạy 1 mạch 10 steps, hỏng ở step 3 nhưng step 9 mới biết, tự thêm feature "cho tiện"; có gate → hỏng dừng ngay, rewind 1 phase, mọi thêm ngoài plan phải hỏi trước. Gate giống trạm thu phí trên cao tốc: không gate thì xe chạy hun hút tới khi thiếu xăng mới biết; có gate thì dừng mỗi trạm, lệch tuyến là biết ngay.
+
+> **Tóm gọn 1 câu:** Mỗi phase một cổng verify: xanh mới sang tiếp, đỏ thì dừng — không bao giờ thả model chạy 1 mạch 15 steps.
 
 ---
 
 ## 9. Khi nào plan vs làm luôn?
+
+Mục này là bảng phân nhanh: nhìn tín hiệu của task là biết cần plan hay gõ luôn.
 
 | Tín hiệu | Plan-first | Làm luôn |
 |---|---|---|
@@ -215,7 +246,11 @@ Có gate vs không gate: không gate → chạy 1 mạch 10 steps, hỏng ở st
 | Rủi ro | Đụng API/schema/migrate/auth/money | Đổi text, thêm log, typo |
 | Ví dụ | Refund payments, tách file 800 dòng, fix race | Sửa label button, thêm log |
 
+> **Cách đọc bảng này:** mỗi dòng là 1 tín hiệu để phân loại task. Cột giữa "Plan-first" và cột phải "Làm luôn" cho biết với tín hiệu đó nên chọn đường nào, hàng Ví dụ là case thực tế.
+
 > Quy tắc ngón tay: **>1 file hoặc >2 steps → vào plan mode theo phản xạ.** Được bỏ plan nhưng vẫn an toàn khi đủ cả 3: (1) lệnh verify 1 dòng; (2) NEVER viết được trong 1 dòng; (3) rewind được trong 10 giây nếu sai (chưa push, chưa migrate).
+
+> **Tóm gọn 1 câu:** Trên 1 file hoặc 2 steps là plan mode theo phản xạ — muốn bỏ plan phải đủ cả 3 điều kiện an toàn.
 
 ---
 
@@ -231,6 +266,10 @@ Có gate vs không gate: không gate → chạy 1 mạch 10 steps, hỏng ở st
 | 1 session làm hết plan 3 ngày | Mỗi phase 1 session fresh (mục 6) |
 | Tin plan là đúng tuyệt đối | Plan là giả thuyết: phase 1 rẻ nhất để kiểm chứng, sai thì sửa plan |
 
+> **Cách đọc bảng này:** mỗi hàng là 1 hiểu nhầm/bẫy hay gặp. Cột trái là chuyện bạn hay làm, cột phải là cách làm đúng thay thế.
+
+> **Tóm gọn 1 câu:** Pitfall lớn nhất là duyệt plan vội và tin plan tuyệt đối — plan chỉ là giả thuyết, phase 1 là để kiểm chứng.
+
 ---
 
 ## 11. Bài tập
@@ -240,6 +279,8 @@ Có gate vs không gate: không gate → chạy 1 mạch 10 steps, hỏng ở st
 3. **2-session flow (45p):** Session A plan + commit; Session B fresh "chỉ làm Phase 1, verify rồi dừng". So số turns + số lần rewind với cách code ngay trước đây.
 
 > Đạt: sau 2 tuần, mọi task >1 file của bạn đều có `plan.md` trước khi có diff.
+
+> **Tóm gọn 1 câu:** Sau 2 tuần luyện, phản xạ của bạn phải là: task lớn → plan.md trước, diff sau.
 
 ---
 

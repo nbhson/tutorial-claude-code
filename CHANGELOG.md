@@ -1,5 +1,9 @@
 # Changelog — Khóa Học Claude Code (tiếng Việt)
 
+File này ghi lại các đợt thay đổi của khóa theo kiểu "nhật ký sửa nhà": đợt mới nhất lên đầu, mỗi dòng là một công việc đã làm — dùng để biết repo đã đi qua đâu và đợt soát gần nhất là khi nào.
+
+> **Tóm gọn 1 câu:** Changelog = biên bản nghiệm thu của repo — đọc dòng đầu tiên để biết trạng thái mới nhất, đọc cả mục để hiểu repo đã trưởng thành ra sao.
+
 ## [Unreleased] — 2026-10-28
 
 - **Dịch** `tool-use/mcp-advanced/README.md` sang tiếng Việt (trước đây 100% tiếng Anh — vi phạm quy tắc A2/A5 của repo): thêm khung lối vào A2 + bảng thuật ngữ, giữ nguyên mọi dữ kiện kỹ thuật, comment code và link. Last verified: 2026-10-28.

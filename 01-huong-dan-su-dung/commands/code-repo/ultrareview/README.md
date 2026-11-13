@@ -13,11 +13,7 @@
 
 ## Cách gọi
 
-```bash
-`/ultrareview`
-`/ultrareview <PR/phạm vi>`
-`/ultrareview --focus security`
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -25,11 +21,7 @@
 
 **Prompt thật (paste vào Claude Code):**
 
-```bash
-/ultrareview 130
-# → hội đồng phát hiện double-spend khi retry webhook (critical)
-# mà review thường bỏ sót vì cần chạy race thật trong sandbox mới thấy.
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 **Kết quả mong đợi:**
 
@@ -38,17 +30,21 @@
 
 **Verify (30 giây):**
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
+
+Mục này là "sổ bệnh án" của `/ultrareview`: vì sao chậm, vì sao tốn, và khi nào không nên gọi.
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/ultrareview` báo không khả dụng | Bản cũ / gói không có sandbox | Update CLI; dùng `/code-review` + `/verify` thay thế |
 | Chạy 15 phút chưa xong | Diff khổng lồ | Thu hẹp phạm vi (`src/payments/` thay vì cả repo) |
 | Bill tăng mạnh | Gọi nhiều lần cho PR nhỏ | Chỉ gọi cho release/audit; PR nhỏ dùng `/review`/`/code-review` |
+
+> **Cách đọc bảng này:** đọc từ "Triệu chứng" sang "Vì sao" rồi "Cách sửa"; dòng nào nói về bill/quota thì đọc kỹ — đây là lệnh tốn quota nhất nhóm.
+
+> **Tóm gọn 1 câu:** `/ultrareview` là mời hẳn hội đồng kiểm định vào nhà — kỹ nhất nhưng đắt nhất, chỉ mời khi tài sản thật sự lớn.
 
 ## Tham khảo
 

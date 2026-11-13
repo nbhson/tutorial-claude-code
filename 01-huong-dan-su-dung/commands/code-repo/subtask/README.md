@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-`/subtask <việc>`
-`/subtask <việc> --readonly`
-`/subtask <việc> --model <tên>`
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,12 +19,7 @@
 
 **Prompt thật (paste vào Claude Code):**
 
-```bash
-# Đang viết middleware, quên verifyJWT trả về gì:
-/subtask tìm hàm verifyJWT trong src/, cho signature + file:dòng --readonly --model haiku
-# → 1 phút sau: "src/auth/jwt.ts:12 — verifyJWT(token: string): JWTPayload { sub, exp }"
-# → bạn viết tiếp luôn, không mất mạch
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 **Kết quả mong đợi:**
 
@@ -37,17 +28,21 @@
 
 **Verify (30 giây):**
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
+
+Mục này là "sổ bệnh án" của `/subtask`: từ báo unknown command tới kết quả về chậm, kèm cách xử lý.
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `/subtask` báo unknown command | CLI < 2.1.212 | Update CLI mới nhất; tạm dùng `/background` hoặc tra tay |
 | Subtask sửa luôn file chính | Quên `--readonly`, dặn "thử" mơ hồ | Rollback (`git checkout <file>`); lần sau readonly + file scratch rõ ràng |
 | Kết quả về chậm (10 phút việc 2 phút) | Giao việc quá rộng ("tóm tắt cả module") | Chia nhỏ ("chỉ 3 file X, 5 dòng"); rộng → background |
+
+> **Cách đọc bảng này:** cột "Triệu chứng" là hiện tượng tại session chính, "Vì sao" thường nằm ở độ rộng việc giao, "Cách sửa" là điều chỉnh áp dụng cho lần gọi sau.
+
+> **Tóm gọn 1 câu:** `/subtask` là gửi trợ lý ra hiệu sách tra giùm một quyển rồi mang về ngay đây — bạn không phải rời bàn làm việc.
 
 ## Tham khảo
 

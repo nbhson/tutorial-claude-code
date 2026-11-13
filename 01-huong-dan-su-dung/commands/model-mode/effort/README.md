@@ -12,11 +12,7 @@
 
 ## Cách gọi
 
-```bash
-/effort
-/effort low
-/effort medium
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -24,15 +20,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-# Bước 1: đang medium, đoán sai → tăng high thay vì đổi Opus ngay
-/effort high
-
-# Bước 2: giao lại với yêu cầu tự kiểm chứng
-Bug vẫn còn: GET /api/users?page=3&limit=20 trả total=95 nhưng thực tế 100 rows.
-Hãy đọc src/api/users.ts + query COUNT, tự viết script reproduce,
-rồi fix. Không đoán mò, phải có bằng chứng chạy được.
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -41,11 +29,13 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-# trong session: /status hoặc /context để chắc mode/context còn sạch
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
+
+> **Tóm gọn 1 câu:** `/effort` là núm vặn gas của bộ não: việc dễ để `low` chạy lướt, bài khó vặn `high`/`max` để đào sâu — và nhớ mỗi vòng vặn đều đổ xăng (token suy luận).
 
 ## Lỗi thường gặp
+
+Bảng dưới là ba cảnh báo hay thấy trên bảng đồng hồ khi vặn núm effort — so triệu chứng của bạn với cột đầu rồi sửa theo cột cuối.
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
@@ -53,12 +43,14 @@ Kết quả mong đợi:
 | Đặt `max` rồi restart mất | `max` session-only by design | Đặt lại sau mỗi session; hoặc `settings.json` để `high` persistent |
 | `high` mà trả lời vẫn cạn | Context nhiễm / prompt mơ hồ | `/compact` + viết rõ tiêu chí; thử `/goal` để ép evaluator |
 
+> **Cách đọc bảng này:** mỗi dòng là một hiện tượng sau khi vặn effort; cột "Vì sao" cho biết lỗi nằm ở bản CLI, ở cơ chế session hay ở chất lượng prompt, cột "Cách sửa" là lệnh chạy được ngay.
+
 ## Tham khảo
 
 - [../model/README.md](../../model-mode/model/README.md)
 - [../fast/README.md](../../model-mode/fast/README.md)
 - [../goal/README.md](../../model-mode/goal/README.md)
-- [../extra-usage/README.md](../../model-mode/extra-usage/README.md)
+- [../usage-credits/README.md](../../model-mode/usage-credits/README.md)
 - Bài tổng quan: `01-huong-dan-su-dung/04-slash-commands-toan-tap.md`
 
 > Mẹo 1 dòng: _chưa chắc thì gọi /effort sớm — 1 lệnh đúng lúc rẻ hơn 10 prompt sửa sai._

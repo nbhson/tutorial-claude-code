@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/claude-api                        # mở skill, xem subcommand
-/claude-api migrate <file>         # migrate code cũ sang SDK mới
-/claude-api managed-agents-onboard # onboard managed agents
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,12 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-/claude-api migrate src/llm_client.py
-# → phát hiện: dùng client.completion (cũ) + max_tokens thiếu
-# → diff: chuyển client.messages.create(model="claude-sonnet-5-5", max_tokens=1024, system=..., messages=[...])
-# → duyệt diff → chạy pytest → xong
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -39,11 +30,17 @@ Kết quả mong đợi:
 
 ## Lỗi thường gặp
 
+Mục này là "sổ bệnh án" của `/claude-api`: skill không auto-load, migrate báo đã mới, smoke test fail — và cách xử lý từng case.
+
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Skill không auto-load | File chưa mở trong context / bản cũ | Gõ tay `/claude-api`; update CLI |
 | `migrate` báo SDK đã mới | Đúng là mới — hoặc pin version cũ trong requirements | Kiểm tra `pip show anthropic`; sửa pin rồi migrate |
 | Onboard fail ở smoke test | Thiếu env trên managed (key, DB_DSN) | Khai env staging đầy đủ rồi deploy lại |
+
+> **Cách đọc bảng này:** mỗi dòng một tình huống; "Triệu chứng" là thông báo hoặc hiện tượng, "Vì sao" chỉ gốc (version/pin/env), "Cách sửa" là lệnh kiểm tra cụ thể.
+
+> **Tóm gọn 1 câu:** `/claude-api` là cẩm nang dán cạnh bàn làm việc cho dev gọi Anthropic API — mẫu đúng version, migrate đỡ lạc hướng, còn test vẫn là việc của bạn.
 
 ## Tham khảo
 

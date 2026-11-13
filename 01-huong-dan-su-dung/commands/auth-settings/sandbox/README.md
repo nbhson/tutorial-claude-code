@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/sandbox
-/sandbox on
-/sandbox off
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,16 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-/sandbox status
-# → "node 20 ✓ · network: blocked · mounts: /repo (rw)"
-/sandbox on
-# → chạy thử:
-npm install lib-la-chua-ai-nghe
-npm test
-# → lib gọi về server lạ? network blocked → fail + log, máy thật an toàn
-# → ưng thì tắt cát cài thật, không ưng thì /sandbox reset
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -41,18 +28,21 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-/sandbox status
-# → network: blocked và mount /repo đúng như cấu hình mong muốn
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
+
+Mục này nói về các trục trặc hay gặp khi làm việc trong hộp cát — so lại triệu chứng trên máy bạn rồi làm theo cột "Cách sửa".
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | `command not found` trong cát dù ngoài có | Toolchain cát thiếu | `status` xem thiếu gì; cài vào image cát hoặc chạy ngoài |
 | Lệnh cần mạng fail trong cát | Network blocked (đúng thiết kế) | Allowlist registry cần thiết, hoặc chạy ngoài khi đã tin |
 | File ghi trong cát "mất" sau reset | Reset xoá state cát | Copy kết quả ra `/repo` (mount chung) trước khi reset |
+
+> **Cách đọc bảng này:** đọc theo hàng — "Triệu chứng" là hiện tượng bạn gặp, "Vì sao" cho biết nguyên nhân nằm ở cát hay ở mình, "Cách sửa" là việc tiếp theo.
+
+> **Tóm gọn 1 câu:** `/sandbox` là sân tập có rào an toàn — thử mọi thứ lạ trong cát trước cho tới khi tin, rồi mới cho ra sân thật.
 
 ## Tham khảo
 

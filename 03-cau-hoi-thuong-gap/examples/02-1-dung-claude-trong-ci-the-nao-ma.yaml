@@ -1,0 +1,18 @@
+name: claude-review
+on: [pull_request]
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - run: curl -fsSL https://claude.ai/install.sh | bash
+      - run: >
+          claude -p "Review diff origin/main...HEAD, chỉ báo security + sai logic, bỏ qua style. Trả JSON."
+          --output-format json
+          --permission-mode dontAsk
+          --allowedTools "Read Grep Glob Bash(git diff:*) Bash(git log:*)"
+          > review.json
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      - run: python3 -c "import json; print(json.load(open('review.json'))['result'])"

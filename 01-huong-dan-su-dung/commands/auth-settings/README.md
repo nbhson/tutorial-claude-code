@@ -11,12 +11,7 @@
 
 ## Cách gọi
 
-```bash
-# gõ / trong session, gõ chữ đầu lệnh để lọc
-/login
-/status
-/sandbox
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 Kiểm tra lệnh có ở máy bạn không: mở session, gõ `/` rồi gõ tiếp chữ đầu lệnh — version/provider khác nhau hiện lệnh khác nhau.
 
@@ -24,14 +19,14 @@ Kiểm tra lệnh có ở máy bạn không: mở session, gõ `/` rồi gõ ti�
 
 Bạn mới clone repo, chưa login:
 
-```bash
-/login
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 - Mong đợi: trình duyệt mở, bạn xác thực xong, token lưu local, session chạy được lệnh cần account.
 - Kiểm tra (≤30 giây): gõ `/status` → thấy tên account + version hiện; không còn thông báo "not logged in".
 
 ## Lỗi thường gặp
+
+Mục này nói về các sự cố hay gặp khi dùng nhóm lệnh auth/settings — tra đúng triệu chứng rồi làm theo cột "Cách sửa".
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
@@ -39,7 +34,11 @@ Bạn mới clone repo, chưa login:
 | Version của bạn thấp hơn version tối thiểu của 1 lệnh trong nhóm (vd /cd cần ≥2.1.169) | Lệnh chưa có trên bản cũ | Chạy `claude --version`, update bằng `claude update`, rồi thử lại |
 | `/status` hiện quota về 0, lệnh bị chặn giữa chừng | Hết hạn mức gói trong phiên 5 giờ | Chờ reset, nâng gói, hoặc bật usage credits |
 
+> **Cách đọc bảng này:** đọc theo hàng — "Triệu chứng" là hiện tượng bạn gặp, "Vì sao" chỉ nguyên nhân nằm ở provider hay hạn mức, "Cách sửa" là lệnh/bước xử lý tương ứng.
+
 ## Bộ 3 phải nhớ
+
+Mục này gom 3 lệnh dùng nhiều nhất của nhóm — nhớ 3 dòng này là xử lý được phần lớn việc hằng ngày.
 
 > /login cắm chìa khóa 1 lần dùng nhiều tháng | /status soi account/provider/version | /sandbox thử đồ lạ trong cát
 
@@ -80,11 +79,9 @@ Gõ / trong session để xem lệnh nào hiện ở máy bạn.
 
 ## Cách dùng nhóm này cho đúng
 
-```bash
-# 1. Học 3 lệnh trụ trước (xem "Bộ 3 phải nhớ" ở trên)
-# 2. Còn lại tra khi gặp việc thật, đừng học hết 1 lúc
-# 3. Lỗi lạ trong nhóm này -> /status -> /doctor -> đọc lệnh tương ứng
-```
+> 📄 **Code ví dụ:** [`examples/03-cach-dung-nhom-nay-cho-ung.sh`](examples/03-cach-dung-nhom-nay-cho-ung.sh)
+
+> **Tóm gọn 1 câu:** Nhóm này lo "vào cửa và chỉnh nhà": login cho chắc account, config cho đúng ý, sandbox cho thử an toàn — cửa vào ổn thì mọi lệnh khác mới chạy đúng.
 
 ## Tham khảo
 

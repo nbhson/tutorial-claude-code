@@ -20,7 +20,9 @@
 
 ## 1. Plugin là gì, vì sao team cần?
 
-Plugin là 1 unit cài được, bundle: **skills + hooks + subagents + MCP servers (+ LSP servers)** — thay vì mỗi teammate setup tay 4 thứ, cài 1 phát đồng bộ.
+Mục này trả lời 2 câu: plugin thực chất là gì, và vì sao team nên quan tâm thay vì cứ copy `.claude/` từng repo.
+
+Plugin là 1 unit cài được, bundle: **skills + hooks + subagents + MCP servers (+ LSP servers)** — thay vì mỗi teammate setup tay 4 thứ, cài 1 phát đồng bộ. Hãy hình dung plugin như "combo bữa trưa": thay vì gọi từng món (skill, hook, agent, MCP) rồi dọn lại đĩa mỗi repo, bạn order 1 set và mọi người ăn cùng menu.
 
 ```text
 acme-standard/
@@ -31,7 +33,7 @@ acme-standard/
   .mcp.json                    # MCP kèm, dùng ${VAR} không secrets
 ```
 
-`.claude/` commit theo repo chỉ giải quyết 1 repo. Team 10 repos + onboarding người mới mỗi tháng → mỗi repo setup lại = drift. Plugin giải quyết cross-repo:
+`.claude/` commit theo repo chỉ giải quyết 1 repo. Team 10 repos + onboarding người mới mỗi tháng → mỗi repo setup lại = drift. Drift giống như mỗi chi nhánh một bản sao công thức nấu ăn chép tay: thời gian nào bản nào lệch nhau một chút. Plugin giải quyết cross-repo:
 
 ```text
 Không plugin:  teammate mới → clone 5 repos → mỗi repo /mcp setup tay + copy hooks + hỏi "skill deploy ở đâu?"
@@ -47,13 +49,23 @@ Update:        bump plugin version 1 nơi → cả team sync (thay vì sửa 5 r
 
 ---
 
+**Kiểm tra nhanh:** install plugin từ path local rồi mở session mới: gõ `/` thấy lệnh `/acme-standard:deploy`; `/hooks` và `/mcp` thấy hooks/MCP đã load.
+
+> **Tóm gọn 1 câu:** Plugin là "trọn gói ăn liền" cho setup Claude Code — cài 1 phát cả team giống nhau, đỡ copy tay từng repo từng người.
+
+---
+
 ## 2. Dùng plugin manager
+
+Mục này hướng dẫn cách cài, thử và gỡ plugin bằng chính giao diện `/plugin` và CLI — đọc để biết luồng "tiếp nhận một plugin mới" từ đầu đến cuối.
 
 ```text
 /plugin   → Discover / Browse / Manage (alias: /plugins)
 ```
 
-Màn hình Browse/Discover hiện trước: commands, agents, skills, hooks, MCP/LSP servers của plugin — đọc kỹ trước khi cài (nhất là hooks: nó sẽ chạy code trên máy bạn).### 2.1. Walkthrough cài plugin (10 phút)
+Màn hình Browse/Discover hiện trước: commands, agents, skills, hooks, MCP/LSP servers của plugin — đọc kỹ trước khi cài (nhất là hooks: nó sẽ chạy code trên máy bạn).
+
+### 2.1. Walkthrough cài plugin (10 phút)
 
 ```text
 Bước 1: /plugin → tab Discover (marketplaces đã add) / Browse (installed).
@@ -66,12 +78,7 @@ Bước 6: Không hợp → /plugin → Manage → Disable → Uninstall.
 
 ### 2.2. Lệnh CLI cho plugin (chạy ngoài session)
 
-```bash
-claude plugin install --marketplace  # cài plugin từ marketplace
-claude plugin eval                   # đánh giá plugin trước khi tin
-claude plugin details                # chi tiết plugin, gồm ước tính token cost
-claude plugin validate <mod>         # audit hooks/calls của mod trước khi cài
-```
+> 📄 **Code ví dụ:** [`examples/01-2-2-lenh-cli-cho-plugin-chay-ngoai.sh`](examples/01-2-2-lenh-cli-cho-plugin-chay-ngoai.sh)
 
 > Gõ `claude plugin --help` để xem cách gọi đúng ở bản của bạn — version khác nhau thì lệnh hiện khác nhau.
 
@@ -85,9 +92,14 @@ Ngoài path local và git URL, plugin còn load được từ:
 > Dù nguồn nào — path, git, .zip hay URL — đều phải qua checklist trust ở mục 6 trước khi tin. Nguồn lạ càng phải sandbox test.
 
 **Kiểm tra nhanh:** chạy đủ Bước 1–6 → plugin nằm trong `/plugin` → Manage (enabled) và gỡ được bằng Disable → Uninstall.
+
+> **Tóm gọn 1 câu:** `/plugin` là cửa hàng của Claude Code — xem hàng, cài, mở session mới để load, không ưng thì Disable gỡ sạch.
+
 ---
 
 ## 3. Khi nào build plugin, khi nào không cần?
+
+Mục này giúp bạn tránh "vung tay cầm chừng": plugin có chi phí riêng, không phải tình huống nào cũng đáng làm.
 
 ### 3.1. Chọn theo tình huống
 
@@ -97,6 +109,8 @@ Ngoài path local và git URL, plugin còn load được từ:
 | Bộ setup chuẩn (skills+hooks+agents+MCP) dùng nhiều repo | Plugin | `acme-standard` cho 10 repos |
 | Share công khai / cross-org | Plugin + marketplace | Plugin open-source review chuẩn |
 | Chỉ personal, không share | `~/.claude/skills/` | Preferences cá nhân |
+
+> **Cách đọc bảng này:** quét cột "Tình huống" để tìm đúng hoàn cảnh của bạn, rồi lấy đáp án ở cột "Chọn" — nếu hoàn cảnh của bạn nằm ở dòng 1 hoặc dòng cuối, bạn không cần đọc tiếp phần plugin.
 
 Ngưỡng build plugin: team ≥3 repos hoặc onboarding ≥1 người/tháng. Dưới ngưỡng → commit `.claude/skills/` thẳng rẻ hơn (không tốn repo riêng, version, publish).
 
@@ -111,9 +125,15 @@ Ngưỡng build plugin: team ≥3 repos hoặc onboarding ≥1 người/tháng. 
 
 Ví dụ plugin hay gặp: `security-review` (skill review + subagent + hook guard), code-intelligence plugins cho typed languages, frontend-polish (vd Impeccable: `/audit /polish /distill /critique...` chống "AI slop").
 
+Ví dụ plugin hay gặp: `security-review` (skill review + subagent + hook guard), code-intelligence plugins cho typed languages, frontend-polish (vd Impeccable: `/audit /polish /distill /critique...` chống "AI slop").
+
+> **Tóm gọn 1 câu:** Plugin có "phí vận hành" riêng (repo, version, publish) — dưới ngưỡng vài repos thì commit `.claude/` thẳng vẫn rẻ hơn.
+
 ---
 
 ## 4. Viết plugin từ zero
+
+Mục này là bản vẽ dựng plugin tay từng bộ phận: folder đặt sao, manifest ghi gì, từng thành phần sống ở đâu. Đọc xong bạn tự dựng được một plugin tối thiểu.
 
 ### 4.1. Cấu trúc folder chuẩn
 
@@ -137,32 +157,7 @@ acme-standard/                  # repo plugin (git riêng, version riêng)
 
 ### 4.2. `plugin.json` mẫu hoàn chỉnh (copy-paste)
 
-```json
-{
-  "name": "acme-standard",
-  "version": "1.0.0",
-  "description": "Standard workflow cho team Acme: deploy, review-pr, guards, agents.",
-  "author": "Acme Platform Team <platform@acme.example>",
-  "license": "MIT",
-  "skills": ["skills/deploy", "skills/review-pr"],
-  "agents": ["agents/explorer.md", "agents/security-reviewer.md"],
-  "hooks": {
-    "PreToolUse": [
-      { "matcher": "Bash", "type": "command", "command": "${CLAUDE_PLUGIN_DIR}/hooks/block-main-push.sh" }
-    ],
-    "PostToolUse": [
-      { "matcher": "Edit|Write", "type": "command", "command": "${CLAUDE_PLUGIN_DIR}/hooks/lint-on-write.sh" }
-    ]
-  },
-  "mcpServers": {
-    "github": { "command": "npx", "args": ["@anthropic/mcp-github@latest"] },
-    "fetch": { "command": "npx", "args": ["@modelcontextprotocol/server-fetch@latest"] }
-  },
-  "lspServers": {
-    "typescript": { "command": "typescript-language-server", "args": ["--stdio"] }
-  }
-}
-```
+> 📄 **Code ví dụ:** [`examples/02-4-2-plugin-json-mau-hoan-chinh-copy.json`](examples/02-4-2-plugin-json-mau-hoan-chinh-copy.json)
 
 > `${CLAUDE_PLUGIN_DIR}` = folder plugin (tương tự `${CLAUDE_SKILL_DIR}` cho skill). Đừng hardcode path tuyệt đối — plugin cài ở máy khác path khác.
 
@@ -177,25 +172,17 @@ acme-standard/                  # repo plugin (git riêng, version riêng)
 # .mcp.json — env placeholders ${VAR}, KHÔNG secrets (bài 08).
 ```
 
-```bash
-# Khung khởi tạo plugin từ zero (copy-paste):
-mkdir -p acme-standard/{.claude-plugin,skills/{deploy,review-pr},agents,hooks}
-cat > acme-standard/.claude-plugin/plugin.json <<'EOF'
-{
-  "name": "acme-standard",
-  "version": "0.1.0",
-  "description": "Standard workflow team Acme.",
-  "skills": ["skills/deploy", "skills/review-pr"]
-}
-EOF
-# Rồi copy SKILL.md từ bài 05 vào skills/*/, hooks từ bài 07 vào hooks/.
-```
+> 📄 **Code ví dụ:** [`examples/03-4-3-tung-thanh-phan.sh`](examples/03-4-3-tung-thanh-phan.sh)
 
 **Kiểm tra nhanh:** `/plugin` → Manage → Install from path `./acme-standard` cài được; session mới gõ `/` thấy lệnh namespaced, `/hooks` thấy hook vừa copy.
+
+> **Tóm gọn 1 câu:** Plugin chỉ là một folder có đúng quy ước — `plugin.json` là giấy khai sinh, còn skills/hooks/agents/MCP thì đặt đúng tủ của chúng.
 
 ---
 
 ## 5. Publish + marketplace
+
+Mục này nói về đường đi của plugin từ máy bạn ra thế giới: share mức nào cho ai, và update bằng cách nào để không gãy team.
 
 ### 5.1. 3 cấp share
 
@@ -205,22 +192,11 @@ EOF
 | **Git URL / .zip / --plugin-url** | `/plugin install git@github.com:...` hoặc `.zip`/URL | Team nội bộ (private repo), share không cần repo |
 | **Marketplace** | Add marketplace URL → Discover → Install | Org nhiều plugins / công khai |
 
-```bash
-# Team nội bộ (phổ biến nhất) — 1 repo plugins, mỗi folder 1 plugin:
-# github.com/acme/claude-plugins/acme-standard/.claude-plugin/plugin.json
-# Teammate cài: /plugin → Add marketplace → git@github.com:acme/claude-plugins.git → Install
-```
+> **Cách đọc bảng này:** 3 cấp xếp từ "gần nhất" xuống "ra công khai" — bạn đang ở cấp nào thì đọc đúng dòng đó, càng xuống dưới càng cần chuẩn bị kỹ (version, review).
 
-```json
-// .claude-plugin/marketplace.json (repo marketplace, liệt kê plugins):
-{
-  "name": "acme-marketplace",
-  "plugins": [
-    { "name": "acme-standard", "path": "./acme-standard", "version": "1.0.0" },
-    { "name": "security-review", "path": "./security-review", "version": "2.1.0" }
-  ]
-}
-```
+> 📄 **Code ví dụ:** [`examples/04-5-1-3-cap-share.sh`](examples/04-5-1-3-cap-share.sh)
+
+> 📄 **Code ví dụ:** [`examples/05-5-1-3-cap-share.json`](examples/05-5-1-3-cap-share.json)
 
 ### 5.2. Versioning + update flow
 
@@ -232,9 +208,13 @@ EOF
 5. Breaking hooks change → pin version cũ cho repos chưa sẵn sàng (đừng force update).
 ```
 
+> **Tóm gọn 1 câu:** Share plugin như giao hàng 3 cấp (test local → team nội bộ → công khai), còn update thì bump version 1 nơi để cả team đồng bộ.
+
 ---
 
 ## 6. Trust: checklist review + sandbox trước khi cài
+
+Mục này là "kiểm hàng trước khi nhận": vì hook của plugin chạy thẳng shell trên máy bạn, đừng cài thứ nào chưa đọc code.
 
 Hooks của plugin chạy shell ngay trên máy bạn → cửa chắn là "không tin ai cho tới khi đọc code".
 
@@ -254,15 +234,7 @@ Hooks của plugin chạy shell ngay trên máy bạn → cửa chắn là "khô
 
 ### 6.2. Sandbox test (6 bước, ~10 phút)
 
-```bash
-# 1. Clone/unwrap plugin vào /tmp, đọc plugin.json + từng hook .sh (checklist 6.1).
-cd /tmp/test-repo && git init && echo test > a.txt
-# 2. Cài từ path local vào repo THỬ: /plugin → Install from path
-# 3. Test từng skill namespaced: /<plugin>:<skill> với input vô hại.
-# 4. Test hooks: prompt yêu cầu việc hook phải block → xác nhận deny.
-# 5. /usage + /cost: plugin có phình context? disable skill ồn nếu cần.
-# 6. Ổn mới cài vào repo thật + pin version.
-```
+> 📄 **Code ví dụ:** [`examples/06-6-2-sandbox-test-6-buoc-10-phut.sh`](examples/06-6-2-sandbox-test-6-buoc-10-phut.sh)
 
 ### 6.3. Checklist production-ready (trước khi announce team)
 
@@ -274,9 +246,13 @@ cd /tmp/test-repo && git init && echo test > a.txt
 - [ ] CHANGELOG entry + git tag (`<plugin>-vX.Y.Z`).
 - [ ] Lịch update: cuối sprint, không giữa sprint (trừ security fix).
 
+> **Tóm gọn 1 câu:** Cài plugin = mời người lạ vào bếp — checklist review + sandbox test là bắt tay và giấy tờ trước khi mở cửa.
+
 ---
 
 ## 7. Bẫy thường gặp
+
+Mục này tổng hợp những vấp thực tế khi dùng plugin, kèm cách xử lý — đọc khi cài xong mà có gì đó "không ra như mong đợi".
 
 | Pitfall | Fix |
 |---|---|
@@ -288,6 +264,10 @@ cd /tmp/test-repo && git init && echo test > a.txt
 | Plugin phình (20 skills) → context nặng | Tách plugin nhỏ theo domain (frontend/backend/security) |
 | Skill plugin gọi thế nào? | Namespaced `/plugin:skill` — gõ `/` hoặc `/plugin list` để thấy list |
 | Secrets trong plugin? | Cấm — MCP dùng `${VAR}` placeholders, secrets ở env máy/cloud (bài 08) |
+
+> **Cách đọc bảng này:** cột "Pitfall" là triệu chứng bạn đang gặp, cột "Fix" là liều thuốc — tìm đúng triệu chứng rồi làm đúng fix, không cần đọc theo thứ tự.
+
+> **Tóm gọn 1 câu:** Phần lớn bẫy plugin thuộc 3 nhóm: gọi tên không namespaced, tin plugin chưa review, và quên rằng plugin agent/hooks có luật riêng — bẫy nào cũng có fix trong bảng.
 
 ---
 

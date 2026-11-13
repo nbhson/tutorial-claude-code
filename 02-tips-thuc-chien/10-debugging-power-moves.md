@@ -31,34 +31,28 @@ L3: /hooks + /mcp + /permissions (hook/mcp/rule nào chặn?)
 L4: /debug (troubleshoot session) → /bug (gửi Anthropic)
 ```
 
-> Quy tắc: **chưa qua L1–L3 thì chưa được kết luận "model dở".** 80% ca "model dở" là context bẩn, hook chặn nhầm, hoặc nhầm model/effort.
+> Quy tắc: **chưa qua L1–L3 thì chưa được kết luận "model dở".** 80% ca "model dở" là context bẩn, hook chặn nhầm, hoặc nhầm model/effort. Giống khám bệnh: chưa đo huyết áp mà đã đòi chụp MRI là phí tiền của cả hai bên.
 
 **Before:** đoán mò đổi model, cãi 5 turns — context 82% + hook chặn nhầm + MCP đỏ vẫn y nguyên, bill vọt. **After:** `/status` (haiku → `/model sonnet`) → `/context` (76% → `/compact` giữ plan, bỏ 2 logs) → `/hooks` (test-gate full 4p → `TEST_SCOPE=auth`) → `/mcp` (github đỏ → disable tạm).
+
+> **Tóm gọn 1 câu:** Debug là đi 4 lớp từ rẻ tới đắt — qua hết L1–L3 mà vẫn lỗi thì mới được nghi model, đó là luật.
 
 ---
 
 ## 2. L1: setup (status/doctor)
 
+Mục này là lớp khám đầu tiên: version, model, account — 3 thứ sai thì mọi thứ sau sai theo, mà check chỉ mất 10 giây.
+
 ### `/status`: mình đang là ai, ở đâu?
 
-```bash
-/status
-# → version Claude Code, model (haiku/sonnet/opus), account/plan, session, cwd, branch
-```
+> 📄 **Code ví dụ:** [`examples/01-status-minh-ang-la-ai-o-au.sh`](examples/01-status-minh-ang-la-ai-o-au.sh)
 
 - Version quá cũ → lệnh mới (`/batch`, `/ultrareview`) báo unknown. Update: `claude update` (nguyên tắc **update trước, debug sau**).
 - Model nhầm (tưởng opus mà đang haiku) → chất lượng khác hẳn. Đổi: `/model`. Cwd/branch nhầm (tưởng repo A mà đang repo B) → mọi đọc file sai: `pwd` + `git branch --show-current`.
 
 ### `/doctor` + `claude doctor`: khám tổng quát
 
-```bash
-/doctor
-# → skills/MCP/plugins cài mà không dùng vs context cost + hooks chậm + version mới + permissions lạ
-# (alias: /checkup — cùng một lệnh, từ w28/2026)
-
-claude doctor
-# → chạy ngoài terminal khi /doctor báo setup lỗi (quyền file, PATH, MCP binary, hooks exec)
-```
+> 📄 **Code ví dụ:** [`examples/02-doctor-claude-doctor-kham-tong-quat.sh`](examples/02-doctor-claude-doctor-kham-tong-quat.sh)
 
 Khám định kỳ: chụp output `/status` + `/doctor` + `claude doctor`, sửa theo thứ tự doctor báo (đỏ trước, vàng sau).
 
@@ -66,24 +60,18 @@ Khám định kỳ: chụp output `/status` + `/doctor` + `claude doctor`, sửa
 
 ## 3. L2: context + tiền (context/cost/usage)
 
+Mục này là lớp khám thứ hai: khi setup không có vấn đề, "Claude dở đi" hay bill vọt thường nằm ở context đầy hoặc một hạng mục nào đó đang ngốn — 3 lệnh dưới đây soi ra cả hai.
+
 ### `/context`: RAM còn bao nhiêu?
 
-```bash
-/context
-# → grid usage %, ai ngốn (skills, subagents, MCP, history)
-```
+> 📄 **Code ví dụ:** [`examples/03-context-ram-con-bao-nhieu.sh`](examples/03-context-ram-con-bao-nhieu.sh)
 
 - >70% → `/compact` có focus hoặc `/clear` + nạp `plan.md` ([Tips 01](./01-context-hygiene.md)).
 - Ngốn vì 1 subagent explore 40 files → lần sau scope hẹp + output contract ([Tips 05](./05-parallel-agents.md)).
 
 ### `/cost` + `/usage`: tiền + kẻ ngốn
 
-```bash
-/cost
-# → session này tốn bao nhiêu (input/output + $)
-/usage
-# → breakdown skills/subagents/plugins/per-MCP-server + rate limits
-```
+> 📄 **Code ví dụ:** [`examples/04-cost-usage-tien-ke-ngon.sh`](examples/04-cost-usage-tien-ke-ngon.sh)
 
 - Bill vọt sau fan-out → kiểm tra spawn lồng (subagent spawn subagent).
 - 1 MCP ngốn 20K mà tuần này không cần → `/mcp` tắt tạm ([Tips 08](./08-tiet-kiem-cost-token.md)).
@@ -94,19 +82,7 @@ Khám định kỳ: chụp output `/status` + `/doctor` + `claude doctor`, sửa
 
 Khi tool "lặng lẽ không chạy" hoặc bị block oan, 90% ở lớp này.
 
-```bash
-/hooks
-# → list hooks: matcher (case-sensitive!), event (Pre/Post/Stop/Start), command path
-# → kiểm tra: sai event? overlap updatedInput? script có +x không?
-
-/mcp
-# → servers nào bật? tools nào visible? server nào fail (đỏ)?
-# → quá ~10 tools visible là accuracy giảm — prune server không dùng
-
-/permissions
-# → rules cho phép/chặn gì? Có rule nào chặn lệnh bạn cần?
-# → đừng --dangerously-skip-permissions trên máy dev (chỉ CI sandbox)
-```
+> 📄 **Code ví dụ:** [`examples/05-4-l3-hooks-mcp-permissions-cai-gi-chan.sh`](examples/05-4-l3-hooks-mcp-permissions-cai-gi-chan.sh)
 
 Debug sâu hơn: xem ca 1 mục 6 (chạy script tay với stdin JSON mẫu để thấy regex sai) và đo `time ./hooks/test-gate.sh` — >5s thì focus scope (`TEST_SCOPE`) hoặc cache. MCP: disable từng server đỏ rồi thử lại lệnh fail.
 
@@ -114,16 +90,9 @@ Debug sâu hơn: xem ca 1 mục 6 (chạy script tay với stdin JSON mẫu đ�
 
 ## 5. L4: debug session + gửi bug
 
-```bash
-/debug
-# → troubleshoot session hiện tại (transcript, checkpoints, tasks kẹt, subagents nền)
+Mục này là lớp cuối cùng của thang khám: khi L1–L3 đều sạch mà lỗi vẫn còn, mới tới lượt chẩn đoán session sâu (`/debug`) và gửi bug cho Anthropic (`/bug`).
 
-/export
-# → xuất conversation ra text để share/debug (gửi đồng đội hoặc đính kèm /bug)
-
-/bug
-# → gửi bug cho Anthropic (kèm mô tả + steps + /export nếu cần)
-```
+> 📄 **Code ví dụ:** [`examples/06-5-l4-debug-session-gui-bug.sh`](examples/06-5-l4-debug-session-gui-bug.sh)
 
 Khi nào lên L4: đã qua L1–L3 mà mọi thứ "trông đúng" vẫn fail → `/debug`; nghi bug của Claude Code (không phải repo bạn) → `/export` + `/bug` với repro tối thiểu (trước đó thử terminal mới + session mới để loại trừ context bẩn).
 
@@ -131,40 +100,29 @@ Khi nào lên L4: đã qua L1–L3 mà mọi thứ "trông đúng" vẫn fail �
 
 ## 6. Ví dụ copy-paste: 3 ca cứu nhanh
 
+Mục này là 3 "vụ án mẫu" đi đúng thang L1→L4 ở trên: push bị chặn oan (L3 hook), session chậm (L2 context), subagent mất tích (L3/L4) — mỗi ca dán được vào session là chạy.
+
 ### Ca 1 — Push bị block oan (`feat/my-main-fix` không push được)
 
-```bash
-# Triệu chứng: mọi git push đều "BLOCKED", kể cả branch thường
-/hooks
-echo '{"tool_input":{"command":"git push origin feat/my-main-fix"}}' | ./hooks/branch-protect.sh; echo "exit=$?"
-# → exit=2: hook substring "main" bừa. Fix: thay bằng regex intent ở Tips 06 mục 2b.
-# Test lại 4 ca: push force + HEAD:main (phải blocked) + feat/my-main-fix (phải pass).
-```
+> 📄 **Code ví dụ:** [`examples/07-ca-1-push-bi-block-oan-feat-my.sh`](examples/07-ca-1-push-bi-block-oan-feat-my.sh)
 
 ### Ca 2 — Session bỗng chậm + trả lời lan man
 
-```bash
-/context
-# → 82%, history toàn log test cũ + 3 explorers
-/compact Giữ plan.md + decisions 1-5, bỏ log test và files đã đọc không liên quan.
-# Nếu vẫn >60%: /export → /clear → paste plan.md + "làm phase hiện tại, verify rồi dừng"
-```
+> 📄 **Code ví dụ:** [`examples/08-ca-2-session-bong-cham-tra-loi-lan.sh`](examples/08-ca-2-session-bong-cham-tra-loi-lan.sh)
 
 ### Ca 3 — Subagent chạy mãi không về
 
-```bash
-/agents
-/tasks
-# → thấy explorer-auth chạy 20 phút, không output
-# Ping 1 lần, không trả → kill: Ctrl+X Ctrl+K ×2 trong 3s
-# Spawn lại hẹp hơn: "chỉ đọc src/auth/login*.ts, ≤8 files, ≤15 bullet, không dump log"
-```
+> 📄 **Code ví dụ:** [`examples/09-ca-3-subagent-chay-mai-khong-ve.sh`](examples/09-ca-3-subagent-chay-mai-khong-ve.sh)
 
 > Ghi mỗi ca đã xử vào team log (1 dòng: nguyên nhân + fix) — lần sau 2 phút là ra.
+
+> **Tóm gọn 1 câu:** Ba ca trên chứng minh cùng một điều: đi đúng lớp từ rẻ tới đắt thì ca nào cũng dừng ở "lỗi config của mình" trước khi kịp nghi model.
 
 ---
 
 ## 7. Phím tắt & thủ thuật nhỏ đáng tiền
+
+Mục này là túi "công cụ đa năng" của người dùng lâu năm — mỗi phím một việc, thuộc được cái nào thì tiết kiệm được chừng đó giây mỗi ngày.
 
 | Phím/lệnh | Tác dụng | Khi dùng |
 |---|---|---|
@@ -178,15 +136,17 @@ echo '{"tool_input":{"command":"git push origin feat/my-main-fix"}}' | ./hooks/b
 | `/clear` / `/compact` | Reset trắng / nén giữ tóm tắt | Đổi task / cùng task đầy RAM |
 | `/doctor` / `/debug` / `/bug` | Khám setup / troubleshoot / gửi Anthropic | L1/L4 |
 
-```bash
-# 2 thủ thuật nhỏ ít người biết:
-/statusline        # 1. config 1 dòng hiện `sonnet · 42%` ngay prompt (khỏi /context mỗi lần)
-/rewind            # 2. rewind bằng lệnh khi Double-Esc không tiện trong SSH/tmux
-```
+> **Cách đọc bảng này:** cột "Tác dụng" nói phím này làm gì, cột "Khi dùng" là tình huống gợi nhớ — học thuộc theo cột phải (tình huống) thì lúc cần mới nhớ ra phím.
+
+> 📄 **Code ví dụ:** [`examples/10-7-phim-tat-thu-thuat-nho-ang-tien.sh`](examples/10-7-phim-tat-thu-thuat-nho-ang-tien.sh)
+
+> **Tóm gọn 1 câu:** 9 phím/lệnh này là dao đa năng của người dùng nâng cao — mỗi cái ít tiền, nhưng dùng thường xuyên là lời khủng.
 
 ---
 
 ## 8. Bảng tra nhanh: triệu chứng → lớp → lệnh
+
+Mục này là "cuốn sổ bệnh án rút gọn": có triệu chứng, tra ra lớp và lệnh fix, không cần đọc lại cả bài.
 
 | Triệu chứng | Lớp | Lệnh / fix |
 |---|---|---|
@@ -200,9 +160,13 @@ echo '{"tool_input":{"command":"git push origin feat/my-main-fix"}}' | ./hooks/b
 | Subagent mất tích | L3/L4 agents | `/agents`, `/tasks`, kill `Ctrl+X Ctrl+K` |
 | Shift+Tab/Enter không ăn | Terminal | `/terminal-setup` theo terminal (iTerm2/VSCode/Kitty...) |
 
+> **Cách đọc bảng này:** cột "Triệu chứng" là chỗ bắt đầu — tìm dòng khớp rồi đi ngang sang "Lớp" (để biết lỗi ở tầng nào) và "Lệnh / fix" (để hành động); không nên nhảy thẳng cột fix mà bỏ qua lớp.
+
 ---
 
 ## 9. 9 cái bẫy người dùng nâng cao vẫn dính
+
+Mục này là "hồ sơ vụ án" của 9 sai lầm kinh điển — càng rành công cụ, càng dễ dính bẫy dạng tinh vi.
 
 1. **Explore vô hạn ("investigate" không scope).** Đọc 300 files, bill vọt. Fix: scope hẹp + subagent + output contract ([Tips 01](./01-context-hygiene.md)).
 2. **Reviewer tự chấm bài mình.** Toàn PASS mù. Fix: luôn fresh reviewer ([Tips 04](./04-verification-done-that.md)).
@@ -215,6 +179,8 @@ echo '{"tool_input":{"command":"git push origin feat/my-main-fix"}}' | ./hooks/b
 9. **Quên cloud ≠ local.** Config/hooks/MCP local không lên cloud (claude.ai). Fix: cấu hình cloud-scope + test trên cloud trước khi tin. **Bonus:** `--dangerously-skip-permissions` chỉ dùng trong CI sandbox, máy dev dùng `/permissions` duyệt.
 
 **Checklist người dùng nâng cao mỗi tuần:** `Shift+Tab` thuộc tay? Double-Esc thay vì cãi quá 2 turns? `Ctrl+X Ctrl+K` như reflex? `/btw` cho hỏi phụ? `/context` + `/cost` mỗi 30–45 phút? Hook nào chặn oan? MCP nào không dùng? Có gì test local mà tưởng cloud có?
+
+> **Tóm gọn 1 câu:** 9 bẫy đều chung gốc: tin vào điều mình chưa kiểm chứng — "should work", cloud có đồ local, hook match được — mỗi tuần tự rà checklist một lần.
 
 ---
 

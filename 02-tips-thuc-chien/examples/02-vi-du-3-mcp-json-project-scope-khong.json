@@ -1,0 +1,6 @@
+{
+  "mcpServers": {
+    "repo-docs": { "url": "https://docs.internal/mcp", "transport": "http" },
+    "ci": { "url": "https://ci.internal/mcp", "transport": "http" }
+  }
+}

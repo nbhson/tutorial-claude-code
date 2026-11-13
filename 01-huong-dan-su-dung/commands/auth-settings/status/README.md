@@ -11,11 +11,7 @@
 
 ## Cách gọi
 
-```bash
-/status
-/status --short
-/status --quota
-```
+> 📄 **Code ví dụ:** [`examples/01-cach-goi.sh`](examples/01-cach-goi.sh)
 
 > Gõ `/` trong session để xem lệnh có hiện ở môi trường của bạn không (một số lệnh version-gated / provider-gated).
 
@@ -23,13 +19,7 @@
 
 Prompt thật (paste vào Claude Code):
 
-```bash
-/status
-# → Account: personal?! (tưởng work)
-# → Hôm qua vọc side-project quên đổi. Đổi ngay trước khi động vào code công ty:
-# /login --account work  (hoặc /config account → switch default)
-# /status → "work ✓" mới bắt đầu
-```
+> 📄 **Code ví dụ:** [`examples/02-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/02-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 Kết quả mong đợi:
 
@@ -38,18 +28,21 @@ Kết quả mong đợi:
 
 **Kiểm tra nhanh:**
 
-```bash
-/status --short
-# → đọc account + model + cwd trong ~3 giây, thấy ngay khi đang nhầm tài khoản
-```
+> 📄 **Code ví dụ:** [`examples/03-vi-du-that-ket-qua-mong-oi-cach.sh`](examples/03-vi-du-that-ket-qua-mong-oi-cach.sh)
 
 ## Lỗi thường gặp
+
+Mục này nói về các tình huống `/status` hiển thị thứ khiến bạn nghi ngờ — tra đúng triệu chứng rồi làm theo cột "Cách sửa".
 
 | Triệu chứng | Vì sao | Cách sửa |
 |---|---|---|
 | Status hiện acc cũ sau khi login mới | Session giữ auth snapshot, chưa reload | Session mới (hoặc `/clear`) để nhận acc mới; kiểm tra `/config account` default |
 | `Roots: X (files only)` dù đã add-dir | Thiếu env flag cho CLAUDE.md dir phụ | Xem `/add-dir` (bật flag → remove + add lại) |
 | Cache hit thấp kéo dài 1 chỗ | CLAUDE.md phình/mâu thuẫn, context loạn | `/doctor claude-md` rồi tách/trim |
+
+> **Cách đọc bảng này:** đọc theo hàng — "Triệu chứng" là thứ bảng `/status` đang hiện, "Vì sao" giải thích bóng sau con số, "Cách sửa" là việc cần làm ngay.
+
+> **Tóm gọn 1 câu:** `/status` như nhìn bảng đồng hồ trước khi lên xe: đang cầm account nào, chạy model gì, còn bao nhiêu quota — 3 giây là biết mình có đi nhầm đường không.
 
 ## Tham khảo
 

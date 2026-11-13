@@ -16,6 +16,8 @@
 | Flaky test | Test lúc xanh lúc đỏ — đoán bừa càng làm code bẩn | Chạy 3 lần ra kết quả khác → ghi `FLAKY` và dừng |
 | Calibration | Chỉnh độ khó reviewer: không quá dễ, không quá khắt | Ép reviewer chấm 3 diff lịch sử trước khi tin verdict |
 
+> **Cách đọc bảng này:** Cột "Thuật ngữ" là tên gọi, cột "Hiểu nôm na" giải thích bằng lời đời thường, cột "Ví dụ" cho thấy nó trông ra sao khi dùng thật.
+
 ---
 
 ## 1. Vì sao phải verify?
@@ -28,7 +30,11 @@ Ba câu nói dối kinh điển của LLM:
 | "Logic có vẻ đúng" | Mới đọc, chưa test | Test xanh + diff |
 | "Đã fix hết edge cases" | Mới fix 1 case bạn báo | Liệt kê cases + evidence từng cái |
 
-Không phải model cố tình nói dối — model được train để "nghe có lý". Việc của bạn là **đổi hợp đồng từ "nghe có lý" sang "chứng minh được"**. Cơ chế: prompt verify (L1) vẫn tin LLM tự báo cáo → rẻ nhưng gian lận được; Stop hook (L3) + chạy app thật (L5) là gate **ngoài model** — script/test báo pass mới cho qua. Rule: **cái gì càng quan trọng (tiền, auth, migrate) thì gate càng phải ngoài model.** Verify sớm rẻ: +30 giây ở prompt, +15 phút ở reviewer; lọt production (bug tiền/auth) x100 + mất niềm tin.
+> **Cách đọc bảng này:** Cột trái là lời Claude hay nói, cột giữa cho biết nó mới ở mức "nói suông", cột phải là thứ bạn phải đòi để chứng minh.
+
+Không phải model cố tình nói dối. Model được train để "nghe có lý" — giống đứa học sinh học tủ bài, hỏi không vào cũng trả lời được nghe thuyết phục. Việc của bạn là **đổi hợp đồng từ "nghe có lý" sang "chứng minh được"**. Cơ chế: prompt verify (L1) vẫn tin LLM tự báo cáo → rẻ nhưng gian lận được; Stop hook (L3) + chạy app thật (L5) là gate **ngoài model** — script/test báo pass mới cho qua. Giống như gate cửa ra vào: không phải phòng nhân viên tự báo "em làm việc xong rồi", mà phải quẹt thẻ mới vào được. Rule: **cái gì càng quan trọng (tiền, auth, migrate) thì gate càng phải ngoài model.** Verify sớm rẻ: +30 giây ở prompt, +15 phút ở reviewer; lọt production (bug tiền/auth) x100 + mất niềm tin.
+
+> **Tóm gọn 1 câu:** Đừng tin lời hứa của model — đòi bằng chứng (log, test, chạy thật), và càng quan trọng thì gate càng phải nằm ngoài model.
 
 ---
 
@@ -43,6 +49,10 @@ Không phải model cố tình nói dối — model được train để "nghe c
 | 5. `/verify` | Build + **chạy app thật, quan sát** | Thời gian chạy thật | Thay đổi user-visible (UI, API, refund) | `/verify` |
 | 6. Nhiều agent chéo | Nhiều agent verify chéo findings | 3–4 agents | Task critical, cần đồng thuận | `/ultrareview` (public preview từ w17/2026) |
 
+> **Cách đọc bảng này:** Bảng như một "bậc thang đắt dần" — level càng cao càng chắc chắn nhưng càng tốn thời gian; chọn level thấp nhất mà vẫn đủ an toàn cho task của bạn. Cột "Lệnh/config" là chỗ tra nhanh khi muốn dùng.
+
+Verification levels giống thang đo nhiệt độ: L1 là "chạm tay thấy ấm" — nhanh nhưng cảm tính; L5 là "đặt thermometer vào nồi" — chậm hơn nhưng biết chắc. Đi lần lượt từng level:
+
 **L1 — Prompt (nền của mọi thứ):** thêm 1 câu vào mọi prompt code — `"Sau khi sửa, chạy \`pnpm --filter <pkg> test\` và dán log pass/fail. Nếu đỏ, fix tiếp trong message này tới khi xanh hoặc dừng sau 3 lần và báo blocker."` 0 setup, dùng ngay — nhưng vẫn tin LLM báo cáo; không dùng cho tiền/auth/migrate.
 
 **L2 — `/goal` (người gác không ngủ):** `/goal Done khi \`pnpm --filter payments test\` xanh + git diff chỉ chạm src/payments/**` → evaluator check sau mỗi turn, chưa đạt thì bắt làm tiếp. Dùng cho session dài không ngồi canh (overnight, batch); luôn kèm maxTurns / điều kiện dừng (mục 9), không thả trôi.
@@ -53,13 +63,15 @@ Không phải model cố tình nói dối — model được train để "nghe c
 
 **L5 — `/verify` (chạy thật, không chỉ test):** `/verify` → build + chạy app thật, quan sát hành vi (click, gọi API, đọc log runtime). Test xanh nhưng app vẫn có thể gãy (env, migrate, webhook, CORS) — bắt buộc cho thay đổi user-visible. Bonus (từ w34/2026, v2.1.286+): viết 1 skill tên đúng `verify` → Claude tự chạy skill đó trước mỗi commit.
 
-**L6 — Nhiều agent verify chéo:** 1 tester chạy, 1 reviewer đọc diff, 1 security soi, lead tổng hợp. Dùng cho migrate tiền/auth/infra — đắt nên chỉ dùng khi đáng (xem [Tips 08](./08-tiet-kiem-cost-token.md)).
+**L6 — Nhiều agent verify chéo:** 1 tester chạy, 1 reviewer đọc diff, 1 security soi, lead tổng hợp. Giống như bảo hiểm xe: đắt, không ai mua cho xe đạp — nhưng ô tô chở tiền thì bắt buộc. Dùng cho migrate tiền/auth/infra — đắt nên chỉ dùng khi đáng (xem [Tips 08](./08-tiet-kiem-cost-token.md)).
+
+> **Tóm gọn 1 câu:** 6 level verify xếp từ rẻ tới đắt — task nhỏ dùng L1, task chạm tiền/auth thì phải lên L3–L5 trở lên.
 
 ---
 
 ## 3. Viết done criteria sao cho check được
 
-Công thức: **lệnh + phạm vi diff + bằng chứng (evidence).**
+Mục này dạy bạn cách viết "định nghĩa xong" sao cho ai đọc cũng kiểm tra được trong vài giây — vì done criteria mơ hồ chính là lý do bạn phải cãi nhau lúc review. Công thức: **lệnh + phạm vi diff + bằng chứng (evidence).**
 
 ```text
 TỆ:  "làm cho sạch, đảm bảo không lỗi" → không check được
@@ -69,6 +81,8 @@ TỐT: "Done = `pnpm --filter auth test` xanh + `pnpm lint` 0 error +
 ```
 
 Checklist: có lệnh cụ thể? có phạm vi diff? có bằng chứng paste kèm? có cấm (không đụng ..., không thêm dep)? có giới hạn (tối đa N lần, đỏ thì dừng báo)?
+
+> **Tóm gọn 1 câu:** Done criteria phải như một bài kiểm tra trắc nghiệm — mỗi câu trả lời pass/fail được bằng một lệnh chạy ra con số, không phải bằng cảm giác.
 
 ---
 
@@ -96,7 +110,7 @@ tối đa 15 turns, quá thì dừng và báo blocker.
 
 ## 5. Review phản biện đúng cách
 
-Adversarial review = reviewer có nhiệm vụ **tìm lỗi**, không phải khen.
+Mục này hướng dẫn bạn setup vòng review "trả thù" — reviewer không đụng đến người viết code nên không nể nang. Adversarial review = reviewer có nhiệm vụ **tìm lỗi**, không phải khen. Giống mời người dưng test xe trước khi bán: bạn tự vệ xe cả năm thấy sạch, họ nhìn 5 phút là thấy ngay vết xước.
 
 **Prompt reviewer chuẩn (copy-paste):**
 
@@ -120,11 +134,13 @@ Scope: chỉ review files trong `git diff --name-only`, không lan sang file kh�
 
 Vì sao phải fresh? Tự review cùng context → writer nhớ "lúc đó nghĩ gì" và tự bao biện; reviewer fresh chỉ thấy code + plan → soi như người ngoài. Giữ vòng này cho mọi PR không đơn giản; fan-out ở [Tips 05](./05-parallel-agents.md).
 
+> **Tóm gọn 1 câu:** Review phản biện chỉ hiệu quả khi reviewer "trong trắng" — chưa nghe writer giải thích gì, chỉ thấy code và soi gắt.
+
 ---
 
 ## 6. Chỉnh độ khó reviewer
 
-**Reviewer quá dễ dãi (toàn PASS)** — chỉnh bằng lịch sử repo:
+Mục này chỉ cách "hiệu chỉnh" reviewer như chỉnh nhiệt điều hòa — quá nóng thì hạ, quá lạnh thì tăng, để verdict đáng tin. **Reviewer quá dễ dãi (toàn PASS)** — chỉnh bằng lịch sử repo:
 
 ```text
 "Rate 3 diffs lịch sử này (đính kèm diff + biết trước 2 PASS 1 FAIL nhưng không nói cái nào).
@@ -139,9 +155,13 @@ thiếu comment ở code tự giải thích, test thiếu cho code 1 dòng log."
 "Chỉ flag nếu: sai logic, mất tiền, lộ secret, gãy API, test-gap ở flow tiền/auth."
 ```
 
+> **Tóm gọn 1 câu:** Reviewer cần được "calibrate" bằng ví dụ thật — quá dễ thì cho nó chấm đề có đáp án sẵn, quá gắt thì liệt kê rõ cái gì không được tính là lỗi.
+
 ---
 
 ## 7. Walkthrough: verify feature refund từ đầu tới cuối
+
+Mục này đi hết một ví dụ thật từ đầu tới cuối — tính năng hoàn tiền, thứ mà bỏ sót 1 bug là trừ tiền người dùng 2 lần — để bạn thấy 5 bước verify ghép với nhau ra sao.
 
 **Bối cảnh:** vừa implement `POST /api/payments/:id/refund` (plan 3 phases ở [Tips 03](./03-plan-first-workflow.md)).
 
@@ -167,6 +187,8 @@ Bước 5 — Ghi done vào PR: checklist tick (test xanh + log đính kèm, rev
 /verify pass, diff chỉ chạm src/payments/**) — lần sau khỏi cãi "hôm đó test chưa?".
 ```
 
+> **Tóm gọn 1 câu:** Feature tiền chạy đủ 4 lớp áo: test xanh mỗi phase (L1), gate tự động (L3), reviewer fresh (L4), rồi gọi API thật để chứng minh (L5) — và mọi bằng chứng đều paste vào PR.
+
 ---
 
 ## 8. Flaky test và bằng chứng hơn lời hứa
@@ -175,6 +197,8 @@ Bước 5 — Ghi done vào PR: checklist tick (test xanh + log đính kèm, rev
 |---|---|
 | Log test xanh paste kèm (10–20 dòng cuối) | "it should work" |
 | Screenshot/log chạy thật (`/verify`) | "đã fix hết edge cases" (liệt kê đâu?) |
+
+> **Cách đọc bảng này:** Cột trái là thứ chấp nhận được khi báo done (có file đích để xem), cột phải là lời hứa suông — đọc xong vẫn không biết kiểm tra thế nào.
 
 **Flaky test: dặn tester dừng đoán** — lời đoán root cause của model thường tự tin nhưng sai:
 
@@ -187,16 +211,19 @@ Chỉ báo: lần nào pass, lần nào fail, log khác nhau ở dòng nào."
 
 → Flaky thì người thật xem (timing, parallel, external service), không để model vá bừa làm bẩn code.
 
+Flaky test giống đồng hồ chạy chập chờn: thay vì bịa lý do, bạn cất đồng hồ đi và mang đi sửa — không cố "sửa nhanh" bằng cách đập vào nó.
+
+> **Tóm gọn 1 câu:** Chỉ nhận bằng chứng (log, screenshot), không nhận lời hứa; test flaky thì dừng và dán nhãn FLAKY — tuyệt đối không để model đoán mò rồi vá bừa.
+
 ## 9. Loops dùng có ý thức (loop/goal/stop-hook)
 
-`/loop` + `/goal` + Stop-hook-gate đều "làm tới khi đạt". Không guard = vòng lặp vô hạn đốt tiền.
+Mục này cảnh báo về vòng lặp "làm tới khi đạt" — hữu ích nhưng như xe không phanh nếu thiếu giới hạn dừng. `/loop` + `/goal` + Stop-hook-gate đều "làm tới khi đạt". Không guard = vòng lặp vô hạn đốt tiền.
 
-```bash
-/loop "Chạy pnpm --filter cart test, fix tới khi xanh" --max-turns 10
-/goal Done khi pnpm --filter cart test xanh, tối đa 10 turns, quá thì dừng và báo blocker + dán log cuối.
-```
+> 📄 **Code ví dụ:** [`examples/01-9-loops-dung-co-y-thuc-loop-goal.sh`](examples/01-9-loops-dung-co-y-thuc-loop-goal.sh)
 
 Ba guard bắt buộc: **(1) điều kiện dừng rõ ràng** (test nào xanh? log nào là pass?); **(2) giới hạn vòng** (`maxTurns`, Stop hook tối đa 8 blocks); **(3) reviewer độc lập cuối cùng** — loop chỉ đảm bảo "xanh", không đảm bảo "đúng". Loop hợp với fix test đỏ rõ ràng, lặp pattern (lint 20 files), chạy overnight; làm tay hợp với debug chưa rõ root cause, quyết định kiến trúc, task tiền/auth cần mắt human.
+
+> **Tóm gọn 1 câu:** Vòng lặp tự động phải có 3 "phanh": điều kiện dừng, giới hạn số vòng, và reviewer độc lập — thiếu một cái là vừa đốt tiền vừa không chắc đúng.
 
 ---
 
@@ -210,10 +237,14 @@ Ba guard bắt buộc: **(1) điều kiện dừng rõ ràng** (test nào xanh? 
 | Migrate/schema/tiền | L1–L6 full | Thêm multi-agent + human review bắt buộc |
 | Session overnight | L2 + L3 + L4 cuối | Goal + gate + sáng dậy review diff |
 
+> **Cách đọc bảng này:** Bảng là "menu chọn món" — cột Task là tình huống của bạn, cột Levels là bộ verify nên dùng, cột cuối cho thấy dạng done criteria tương ứng.
+
 - [ ] Done criteria viết bằng lệnh + phạm vi diff + bằng chứng? Đã chạy và dán log?
 - [ ] Diff không lan ngoài phạm vi (`git diff --stat`)?
 - [ ] Reviewer fresh đã soi (task không đơn giản)? User-visible → đã `/verify`?
 - [ ] Flaky → ghi FLAKY và dừng đoán? Loop có maxTurns + reviewer cuối?
+
+> **Tóm gọn 1 câu:** Trước khi báo done, lần lượt tick 4 ô kiểm: criteria check được, diff gọn trong phạm vi, đã có reviewer/verify, loop có phanh an toàn.
 
 ---
 
@@ -230,6 +261,8 @@ Ba guard bắt buộc: **(1) điều kiện dừng rõ ràng** (test nào xanh? 
 | Verify xong không ghi vào PR | Template Done 5 dòng (mục 7, bước 5) |
 | Gate quá chặt cho task nhỏ | Task nhỏ chỉ L1; hook/gate để task tiền/auth |
 
+> **Cách đọc bảng này:** Mỗi dòng là một sai lầm hay gặp (cột trái) kèm cách xử lý đúng (cột phải) — dùng như danh sách tra cứu khi nghi ngờ mình đang mắc lỗi.
+
 ---
 
 ## 12. Bài tập
@@ -237,6 +270,8 @@ Ba guard bắt buộc: **(1) điều kiện dừng rõ ràng** (test nào xanh? 
 1. **Viết done criteria (10p):** lấy 1 task đang làm, viết lại criteria cũ thành bản check được (lệnh + diff + bằng chứng); hỏi Claude "criteria này còn lỗ hổng verify nào?".
 2. **Review phản biện (25p):** chạy prompt reviewer mục 5 bằng subagent fresh trên 1 diff gần nhất; đếm HIGH/MED/LOW, fix HIGH — so với tự review trước đây bắt thêm được mấy cái?
 3. **Calibration + flaky (20p):** 3 diffs lịch sử (1 có bug đã biết) → bắt reviewer rate + giải thích (mục 6); 1 test hay flaky → dặn tester theo mẫu mục 8.
+
+> **Tóm gọn 1 câu:** Học xong phải làm tay: viết lại 1 criteria, chạy 1 vòng reviewer fresh, và calibrate reviewer bằng diff lịch sử — làm đủ 3 bài là thuộc quy trình.
 
 > Đạt: sau 2 tuần, 100% PR không đơn giản của bạn có log xanh + reviewer fresh + phạm vi diff trong mô tả PR.
 

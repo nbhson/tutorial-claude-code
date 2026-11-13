@@ -1,0 +1,8 @@
+// .claude-plugin/marketplace.json (repo marketplace, liệt kê plugins):
+{
+  "name": "acme-marketplace",
+  "plugins": [
+    { "name": "acme-standard", "path": "./acme-standard", "version": "1.0.0" },
+    { "name": "security-review", "path": "./security-review", "version": "2.1.0" }
+  ]
+}

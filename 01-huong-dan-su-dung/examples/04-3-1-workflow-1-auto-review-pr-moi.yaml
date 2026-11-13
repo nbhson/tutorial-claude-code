@@ -1,0 +1,43 @@
+# .github/workflows/claude-review.yml
+name: claude-review
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write   # để post comment findings
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      # Setup Claude (1 lần): curl -fsSL https://claude.ai/install.sh | bash
+      #   + echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      # Warmup (Setup hooks): claude --init-only
+      # Secrets: ANTHROPIC_API_KEY (Console) hoặc OAuth token (subscription) — không echo ra log.
+
+      - name: Review diff (guardrailed)
+        run: |
+          claude -p "Review git diff origin/${{ github.base_ref }}...HEAD. Output JSON: {findings: [{severity, file, line, msg, fix}]}. Tối đa 10 findings, chỉ lỗi thực sự." \
+            --output-format json \
+            --permission-mode dontAsk \
+            --allowedTools "Read, Grep, Glob, Bash" > review.json
+          cat review.json | jq '.findings'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Post findings as PR comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { findings = [] } = JSON.parse(require('fs').readFileSync('review.json', 'utf8'));
+            const body = findings.length
+              ? `## Claude Review (${findings.length})\n` + findings.map(f =>
+                  `- **[${f.severity}]** \`${f.file}:${f.line}\` — ${f.msg}\n  Fix: ${f.fix}`).join('\n')
+              : `## Claude Review\nKhông thấy issue.`;
+            await github.rest.issues.createComment({ ...context.repo, issue_number: context.issue.number, body });
